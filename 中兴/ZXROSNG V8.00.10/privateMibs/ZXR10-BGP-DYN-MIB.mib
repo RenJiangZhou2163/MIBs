@@ -1,0 +1,1194 @@
+-- *****************************************************************
+-- ZTE-BGP4-MIB.my
+--   
+-- June 2001, Ravindra Rathi
+--   
+-- Copyright (c) 2001, 2010 by ZTE Systems, Inc.
+-- All rights reserved.
+--   
+-- *****************************************************************
+ZXR10-BGP-DYN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE,
+        enterprises, Unsigned32, Integer32, IpAddress, Counter32 ,Gauge32
+                FROM SNMPv2-SMI
+        DisplayString
+                FROM SNMPv2-TC
+        zxr10RosngMIB
+                FROM ZXR10-SMI;
+
+zxr10BgpDynMIB MODULE-IDENTITY
+        LAST-UPDATED "201711100900Z"  -- 11 10, 2017
+        ORGANIZATION "ZTE Corporation"
+        CONTACT-INFO
+            "Wang xuan (He jian)
+             Tel: +86-25-52871138
+             E-Mail: wang.xuan6@zte.com.cn
+             "
+        DESCRIPTION
+            "ZXROSNG BGP-DYN MIB"
+        REVISION "201711100900Z"  -- 11 10, 2017
+        DESCRIPTION
+           "
+            Add an index node for zxr10BgpV4PeerTable and zxr10BgpV6PeerTable respectively.
+            " 
+        REVISION "201604080900Z"  -- 03 25, 2016
+        DESCRIPTION
+           "
+            Add enums for zxr10BPPrefixAddrModeType.
+            " 
+        REVISION "201603030900Z"  -- 03 03, 2016
+        DESCRIPTION
+           "
+            Add enums for zxr10BPPrefixAddrModeType.
+            " 
+        REVISION "201602240900Z"  -- 02 24, 2016
+        DESCRIPTION
+           "
+            Add enums for zxr10BPPrefixAddrModeType.
+            " 
+        REVISION "201511250900Z"  -- 11 25, 2015
+        DESCRIPTION
+           "
+            Modify textual label of enum value for zxr10BPPrevState.
+            " 
+        REVISION "201503040900Z"  -- 3 4, 2015
+        DESCRIPTION
+           "
+            Modify description of zxr10BRMultiExitDisc.
+            " 
+        REVISION "201412090900Z"  -- 12 9, 2014
+        DESCRIPTION
+           "
+            Add zxr10BgpV4PeerTable and zxr10BgpV6PeerTable
+            to zxr10BgpPeer.
+            " 
+
+        REVISION "201403040900Z"  -- 3 4, 2014
+        DESCRIPTION
+           "
+            Modify type of
+              zxr10BRAddrModeType,
+              zxr10BRAddrModeTypeNew,
+              zxr10BPPrefixAddrModeType,
+              zxr10BPPrefixAddrModeTypeNew
+            to enumeration.
+            " 
+
+        REVISION "201307040900Z"  -- 7 4, 2013
+        DESCRIPTION
+            "Modify zxr10BPPrefixLimit read-only.
+            " 
+        REVISION "201304120900Z"  -- 4 12, 2013
+        DESCRIPTION
+            "Add zxr10BRLocalAS,zxr10BRRD,zxr10BRLabelOutTag.
+            " 
+        REVISION "201303210900Z"  -- March 21, 2013
+        DESCRIPTION
+            "Initial version of this MIB module.
+            " 
+
+  ::= {zxr10RosngMIB 155 }
+
+zxr10BgpRoute  OBJECT IDENTIFIER
+    ::= { zxr10BgpDynMIB 1 }
+
+zxr10BgpPeer  OBJECT IDENTIFIER
+    ::= { zxr10BgpDynMIB 2 }
+
+
+
+
+-- BGP4 Received Routes for all the supported address families
+
+zxr10BgpRouteTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF Zxr10BgpRouteEntry 
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "This table contains information about routes to
+        destination networks from all BGP4 peers.  Since 
+        BGP4 can carry routes for multiple Network Layer 
+        protocols, this table has the Address Family 
+        Identifier(AFI) of the Network Layer protocol as the 
+        first index. Further for a given AFI, routes carried
+        by BGP4 are distinguished based on Subsequent Address 
+        Family Identifiers(SAFI).  Hence that is used as the
+        second index.  Conceptually there is a separate Loc-RIB
+        maintained by the BGP speaker for each combination of 
+        AFI and SAFI supported by it."
+    REFERENCE
+        "RFC-1771: A Border Gateway Protocol 4 (BGP-4),
+         RFC-2858: Multiprotocol Extensions for BGP-4,
+         RFC-2547: BGP/MPLS VPNs"
+    ::= { zxr10BgpRoute 1 }
+
+zxr10BgpRouteEntry OBJECT-TYPE
+    SYNTAX          Zxr10BgpRouteEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Information about a path to a network received from
+        a peer."
+    INDEX {
+        zxr10BRLocalAS,
+        zxr10BRPeerAddr,
+        zxr10BRAddrModeType,
+        zxr10BRVrfName,
+        zxr10BRAddrPrefix,
+        zxr10BRAddrPrefixLen
+    } 
+    ::= { zxr10BgpRouteTable 1 }
+
+Zxr10BgpRouteEntry ::= SEQUENCE {
+        zxr10BRLocalAS            Unsigned32,
+        zxr10BRPeerAddr           DisplayString,
+        zxr10BRAddrModeType       INTEGER,
+        zxr10BRVrfName            DisplayString,
+        zxr10BRAddrPrefix         OCTET STRING,
+        zxr10BRAddrPrefixLen      Unsigned32,
+        zxr10BROrigin             INTEGER,
+        zxr10BRASPathSegment      OCTET STRING,
+        zxr10BRNextHop            OCTET STRING,
+        zxr10BRMedPresent         INTEGER,
+        zxr10BRMultiExitDisc      Unsigned32,
+        zxr10BRLocalPrefPresent   INTEGER,
+        zxr10BRLocalPref          Unsigned32,
+        zxr10BRAtomicAggregate    INTEGER,
+        zxr10BRAggregatorAS       Unsigned32,
+        zxr10BRAggregatorAddrType Integer32,
+        zxr10BRAggregatorAddr     OCTET STRING,
+        zxr10BRBest               INTEGER,
+        zxr10BRUnknownAttr        OCTET STRING,
+        zxr10BRRD                 DisplayString,
+        zxr10BRRTprf              DisplayString,
+        zxr10BRLabelInTag         Unsigned32,
+        zxr10BRLabelOutTag        Unsigned32,
+        zxr10BRStatus             DisplayString
+}
+
+zxr10BRLocalAS OBJECT-TYPE
+        SYNTAX   Unsigned32(0..4294967295)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "The AS number of local BGP."
+        ::= { zxr10BgpRouteEntry  1  }
+
+zxr10BRPeerAddr OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "The remote address of peer."
+        ::= { zxr10BgpRouteEntry  2  }
+
+zxr10BRAddrModeType OBJECT-TYPE
+        SYNTAX   INTEGER  {
+                        ipv4_unicast(1),
+                        ipv4_multicast(2), 
+                        vpnv4(3),
+                        ipv4_vrf(4),      
+                        ipv6_unicast(5), 
+                        ipv6_multicast(6), 
+                        vpnv6(7), 
+                        ipv6_vrf(8),
+                        vpnv4_multicast(9),
+                        vpnv4_mcast(10),
+                        l2vpn_vpls(11),
+                        route_target(12),
+                        mdt(13),
+                        vpnv6_multicast(14),
+                        vpnv6_mcast(15)
+                    }
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "The type of address mode."
+        ::= { zxr10BgpRouteEntry  3 }
+
+zxr10BRVrfName OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "The name of vrf."
+        ::= { zxr10BgpRouteEntry  4  }
+
+
+zxr10BRAddrPrefix OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE (0..255))
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "A Network Address prefix in the Network Layer
+        Reachability Information field of BGP UPDATE message.
+        This object is a Network Address containing the prefix
+        with length specified by zxr10BRAddrPrefixLen. Any
+        bits beyond the length specified by
+        zxr10BRAddrPrefixLen are zeroed." 
+    ::= { zxr10BgpRouteEntry 5 }
+
+zxr10BRAddrPrefixLen OBJECT-TYPE
+    SYNTAX          Unsigned32 (0..2040)
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Length in bits of the Network Address prefix in the
+        Network Layer Reachability Information field." 
+    ::= { zxr10BgpRouteEntry 6 }
+
+zxr10BROrigin OBJECT-TYPE
+    SYNTAX          INTEGER  {
+                        igp(1), -- networks are interior
+                        egp(2), -- networks learned via EGP
+                        incomplete(3) -- undetermined                        
+                    }
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The ultimate origin of the route information." 
+    ::= { zxr10BgpRouteEntry 7 }
+
+zxr10BRASPathSegment OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE  (0..255))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The sequence of AS path segments.  Each AS
+        path segment is represented by a triple
+        <type, length, value>.
+
+        The type is a 1-octet field which has two
+        possible values:
+        1  AS_SET: unordered set of ASs a route in the 
+                  UPDATE message has traversed
+        2  AS_SEQUENCE: ordered set of ASs a route in the
+                       UPDATE message has traversed.
+
+        The length is a 1-octet field containing the
+        number of ASs in the value field.
+
+        The value field contains one or more AS
+        numbers, each AS is represented in the octet
+        string as a pair of octets according to the
+        following algorithm:
+
+        first-byte-of-pair = ASNumber / 256;
+        second-byte-of-pair = ASNumber & 255;" 
+    ::= { zxr10BgpRouteEntry 8 }
+
+zxr10BRNextHop OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE (0..255))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The Network Layer address of the border router
+        that should be used for the destination network." 
+    ::= { zxr10BgpRouteEntry 9 }
+
+zxr10BRMedPresent OBJECT-TYPE
+    SYNTAX          INTEGER{
+                        true(1), -- attribute presence
+                        false(2) -- attribute absence                  
+                    }
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Indicates the presence/absence of MULTI_EXIT_DISC
+        attribute for the route." 
+    ::= { zxr10BgpRouteEntry 10 }
+
+zxr10BRMultiExitDisc OBJECT-TYPE
+    SYNTAX          Unsigned32 (0..4294967295)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "This metric is used to discriminate between multiple
+        exit points to an adjacent autonomous system.  The
+        value of this object is irrelevant if the value of
+        zxr10BRMedPresent is false(2)." 
+    ::= { zxr10BgpRouteEntry 11 }
+
+zxr10BRLocalPrefPresent OBJECT-TYPE
+    SYNTAX          INTEGER{
+                        true(1), -- attribute presence
+                        false(2) -- attribute absence                  
+                    }
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Indicates the presence/absence of LOCAL_PREF
+        attribute for the route." 
+    ::= { zxr10BgpRouteEntry 12 }
+
+zxr10BRLocalPref OBJECT-TYPE
+    SYNTAX          Unsigned32 (0..4294967295)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The degree of preference calculated by the local BGP4
+        speaker for the route. The value of this object is 
+        irrelevant if the value of zxr10BRLocalPrefPresent 
+        is false(2)." 
+    ::= { zxr10BgpRouteEntry 13 }
+
+zxr10BRAtomicAggregate OBJECT-TYPE
+    SYNTAX          INTEGER  {
+                        lessSpecificRouteNotSelected(1),
+                        lessSpecificRouteSelected(2)
+                    }
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Whether or not the local system has selected a less
+        specific route without selecting a more specific
+        route." 
+    ::= { zxr10BgpRouteEntry 14 }
+
+zxr10BRAggregatorAS OBJECT-TYPE
+    SYNTAX          Unsigned32 (0..65535)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The AS number of the last BGP4 speaker that performed
+        route aggregation.  A value of zero (0) indicates the 
+        absence of this attribute." 
+    ::= { zxr10BgpRouteEntry 15 }
+
+zxr10BRAggregatorAddrType OBJECT-TYPE
+    SYNTAX          Integer32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Represents the type of Network Layer address stored
+        in zxr10BRAggregatorAddr." 
+    ::= { zxr10BgpRouteEntry 16 }
+
+zxr10BRAggregatorAddr OBJECT-TYPE
+    SYNTAX          OCTET STRING
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The Network Layer address of the last BGP4 speaker
+        that performed route aggregation.  A value of all zeros
+        indicates the absence of this attribute." 
+    ::= { zxr10BgpRouteEntry 17 }
+
+zxr10BRBest OBJECT-TYPE
+    SYNTAX          INTEGER{
+                        false(1), -- not best BGP route 
+                        true(2)  -- best BGP route
+                    }
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "An indication of whether or not this route was chosen
+        as the best BGP4 route." 
+    ::= { zxr10BgpRouteEntry 18 }
+
+zxr10BRUnknownAttr OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE  (0..255))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "One or more path attributes not understood by this
+        BGP4 speaker.  Size zero (0) indicates the absence of
+        such attribute(s).  Octets beyond the maximum size, if
+        any, are not recorded by this object.  
+
+        Each path attribute is a triple <attribute type,
+        attribute length, attribute value> of variable length.
+        Attribute Type is a two-octet field that consists of
+        the Attribute Flags octet followed by the Attribute
+        Type Code octet.  If the Extended Length bit of the 
+        Attribute Flags octet is set to 0, the third octet of 
+        the Path Attribute contains the length of the
+        attribute data in octets.  If the Extended Length bit 
+        of the Attribute Flags octet is set to 1, then the
+        third and the fourth octets of the path attribute 
+        contain the length of the attribute data in octets.
+        The remaining octets of the Path Attribute represent 
+        the attribute value and are interpreted according to 
+        the Attribute Flags and the Attribute Type Code."
+    REFERENCE
+        "RFC-1771: A Border Gateway Protocol 4 (BGP-4), 
+        section 4.3" 
+    ::= { zxr10BgpRouteEntry 19 }
+
+zxr10BRRD OBJECT-TYPE
+    SYNTAX          DisplayString (SIZE  (0..21))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The route's RD infomation."
+    ::= { zxr10BgpRouteEntry 20 }
+ 
+zxr10BRRTprf OBJECT-TYPE
+    SYNTAX          DisplayString (SIZE  (0..21))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The route's RT infomation."
+    ::= { zxr10BgpRouteEntry 21 }
+
+zxr10BRLabelInTag OBJECT-TYPE
+    SYNTAX          Unsigned32(0..4294967295)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The route's in label infomation."
+    ::= { zxr10BgpRouteEntry 22 }
+
+zxr10BRLabelOutTag OBJECT-TYPE
+    SYNTAX          Unsigned32(0..4294967295)
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The route's out label infomation."
+    ::= { zxr10BgpRouteEntry 23 }
+
+zxr10BRStatus OBJECT-TYPE
+    SYNTAX          DisplayString (SIZE  (0..21))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The route's status."
+    ::= { zxr10BgpRouteEntry 24 }
+
+-- BGP Peer table.
+
+zxr10BgpPeerPrefixTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF Zxr10BgpPeerPrefixEntry 
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "BGP peer table.  This table contains,
+        one entry per BGP peer, information about
+        the connections with BGP peers."
+    ::= { zxr10BgpPeer 1 }
+
+zxr10BgpPeerPrefixEntry OBJECT-TYPE
+    SYNTAX          Zxr10BgpPeerPrefixEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Entry containing information about the
+        connection with a BGP peer."
+    
+  INDEX {
+        zxr10BPPrefixLocalAS,
+        zxr10BPPrefixAddr,
+        zxr10BPPrefixAddrModeType,
+        zxr10BPPrefixVrfName
+    }
+  
+    ::= { zxr10BgpPeerPrefixTable 1 }
+
+Zxr10BgpPeerPrefixEntry ::= SEQUENCE {
+        zxr10BPPrefixLocalAS          Unsigned32,
+        zxr10BPPrefixAddr             DisplayString,
+        zxr10BPPrefixAddrModeType     INTEGER,
+        zxr10BPPrefixVrfName          DisplayString,
+        zxr10BPPrefixAccepted         Counter32,
+        zxr10BPPrefixDenied           Counter32,
+        zxr10BPPrefixLimit            Unsigned32,
+        zxr10BPPrefixAdvertised       Counter32,
+        zxr10BPPrefixSuppressed       Counter32,
+        zxr10BPPrefixWithdrawn        Counter32
+}
+
+zxr10BPPrefixLocalAS OBJECT-TYPE
+        SYNTAX   Unsigned32(0..4294967295)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "The AS number of local BGP."
+        ::= { zxr10BgpPeerPrefixEntry  1  }
+
+zxr10BPPrefixAddr OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "The remote address of peer."
+        ::= { zxr10BgpPeerPrefixEntry  2  }
+
+zxr10BPPrefixAddrModeType OBJECT-TYPE
+        SYNTAX  INTEGER  {
+                        ipv4_unicast(1),
+                        ipv4_multicast(2), 
+                        vpnv4(3),
+                        ipv4_vrf(4),      
+                        ipv6_unicast(5), 
+                        ipv6_multicast(6), 
+                        vpnv6(7), 
+                        ipv6_vrf(8),
+                        vpnv4_multicast(9),
+                        vpnv4_mcast(10),
+                        l2vpn_vpls(11),
+                        route_target(12),
+                        mdt(13),
+                        vpnv6_multicast(14),
+                        vpnv6_mcast(15),
+                        l2vpn_evpn(16),
+                        ipv4_vrf_multicast(17),
+                        ipv6_vrf_multicast(18),
+                        link_state(19),
+                        ipv4_flowspec(20),
+                        vpnv4_flowspec(21)
+                    }
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "The type of address family mode."
+        ::= { zxr10BgpPeerPrefixEntry  3  }
+
+zxr10BPPrefixVrfName OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "The name of vrf."
+        ::= { zxr10BgpPeerPrefixEntry  4  }
+    
+zxr10BPPrefixAccepted OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          deprecated
+    DESCRIPTION
+        "Number of Route prefixes received on this connnection,
+        which are accepted after applying filters. Possible
+        filters are route maps, prefix lists, distributed
+        lists, etc." 
+    ::= { zxr10BgpPeerPrefixEntry 5 }
+
+zxr10BPPrefixDenied OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          deprecated
+    DESCRIPTION
+        "Counter which gets incremented when a route prefix
+        received on this connection is denied  or when a route
+        prefix is denied during soft reset of this connection
+        if 'soft-reconfiguration' is on . This object is 
+        initialized to zero when the peer is  configured or
+        the router is rebooted" 
+    ::= { zxr10BgpPeerPrefixEntry 6 }
+
+zxr10BPPrefixLimit OBJECT-TYPE
+    SYNTAX          Unsigned32 (1..4294967295)
+    MAX-ACCESS      read-only
+    STATUS          deprecated
+    DESCRIPTION
+        "Max number of route prefixes accepted on this
+        connection" 
+    ::= { zxr10BgpPeerPrefixEntry 7 }
+
+zxr10BPPrefixAdvertised OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          deprecated
+    DESCRIPTION
+        "Counter which gets incremented when a route prefix
+        is advertised on this connection. This object is
+        initialized to zero when the peer is configured or 
+        the router is rebooted" 
+    ::= { zxr10BgpPeerPrefixEntry 8 }
+
+zxr10BPPrefixSuppressed OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          deprecated
+    DESCRIPTION
+        "Counter which gets incremented when a route prefix
+        is suppressed from being sent on this connection. This 
+        object is initialized to zero when the peer is 
+        configured or the router is rebooted" 
+    ::= { zxr10BgpPeerPrefixEntry 9 }
+
+zxr10BPPrefixWithdrawn OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          deprecated
+    DESCRIPTION
+        "Counter which gets incremented when a route prefix
+        is withdrawn on this connection. This object is
+        initialized to zero when the peer is configured or
+        the router is rebooted" 
+    ::= { zxr10BgpPeerPrefixEntry 10 }
+
+ 
+ 
+zxr10BgpPeerTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF Zxr10BgpPeerEntry 
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "BGP peer table.  This table contains,
+        one entry per BGP peer, information about
+        the connections with BGP peers."
+    ::= { zxr10BgpPeer 2 }
+  
+zxr10BgpPeerEntry OBJECT-TYPE
+    SYNTAX          Zxr10BgpPeerEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Entry containing information about the
+        connection with a BGP peer."
+    INDEX {
+        zxr10BPLocalAS,
+        zxr10BPRemoteAddr,
+        zxr10BPVrfName
+    } 
+    ::= { zxr10BgpPeerTable 1 }
+
+Zxr10BgpPeerEntry ::= SEQUENCE {
+        zxr10BPLocalAS                       Unsigned32,
+        zxr10BPRemoteAddr                    DisplayString,
+        zxr10BPVrfName                       DisplayString,
+        zxr10BPState                         INTEGER,
+        zxr10BPAdminStatus                   INTEGER,
+        zxr10BPNegotiatedVersion             Integer32,
+        zxr10BPLocalAddr                     OCTET STRING,
+        zxr10BPLocalPort                     Unsigned32,
+        zxr10BPLocalIdentifier               IpAddress,
+        zxr10BPRemotePort                    Unsigned32,
+        zxr10BPRemoteAs                      Unsigned32,
+        zxr10BPRemoteIdentifier              IpAddress,
+        zxr10BPInUpdates                     Counter32,
+        zxr10BPOutUpdates                    Counter32,
+        zxr10BPInTotalMessages               Counter32,
+        zxr10BPOutTotalMessages              Counter32,
+        zxr10BPLastError                     OCTET STRING,
+        zxr10BPFsmEstablishedTransition      Counter32,
+        zxr10BPFsmEstablishedTime            Gauge32,
+        zxr10BPConnectRetryInterval          Integer32,
+        zxr10BPHoldTime                      Integer32,
+        zxr10BPKeepAlive                     Integer32,
+        zxr10BPHoldTimeConfigured            Integer32,
+        zxr10BPKeepAliveConfigured           Integer32,
+        zxr10BPMinASOriginationInterval      Integer32,
+        zxr10BPMinAdvertisementInterval      Integer32,
+        zxr10BPInUpdateElapsedTime           Gauge32,
+        zxr10BPLastErrorTxt                  DisplayString,
+        zxr10BPPrevState                     INTEGER
+}
+
+zxr10BPLocalAS OBJECT-TYPE
+        SYNTAX   Unsigned32(0..4294967295)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "The AS number of local BGP."
+        ::= { zxr10BgpPeerEntry  1  }
+
+zxr10BPRemoteAddr OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "The remote address of peer."
+        ::= { zxr10BgpPeerEntry  2  }
+
+    
+zxr10BPVrfName OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "The name of vrf."
+        ::= { zxr10BgpPeerEntry  3  }
+
+
+zxr10BPState OBJECT-TYPE
+    SYNTAX          INTEGER  {
+                        idle(1),
+                        connect(2),
+                        active(3),
+                        opensent(4),
+                        openconfirm(5),
+                        established(6)
+                    }
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The BGP peer connection state."
+    REFERENCE       "RFC 4271, Section 8.2.2." 
+    ::= { zxr10BgpPeerEntry 4 }
+
+zxr10BPAdminStatus OBJECT-TYPE
+    SYNTAX          INTEGER  {
+                        stop(1),
+                        start(2)
+                    }
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The desired state of the BGP connection.
+        A transition from 'stop' to 'start' will cause
+        the BGP Manual Start Event to be generated.
+        A transition from 'start' to 'stop' will cause
+        the BGP Manual Stop Event to be generated.
+        This parameter can be used to restart BGP peer
+        connections.  Care should be used in providing
+        write access to this object without adequate
+        authentication."
+    REFERENCE       "RFC 4271, Section 8.1.2." 
+    ::= { zxr10BgpPeerEntry 5 }
+
+zxr10BPNegotiatedVersion OBJECT-TYPE
+    SYNTAX          Integer32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The negotiated version of BGP running between
+        the two peers.
+
+        This entry MUST be zero (0) unless the
+        zxr10BPState is in the openconfirm or the
+        established state.
+
+        Note that legal values for this object are
+        between 0 and 255."
+    REFERENCE
+        "RFC 4271, Section 4.2.
+         RFC 4271, Section 7." 
+    ::= { zxr10BgpPeerEntry 6 }
+
+zxr10BPLocalAddr OBJECT-TYPE
+    SYNTAX          OCTET STRING
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The local IP address of this entry's BGP
+        connection." 
+    ::= { zxr10BgpPeerEntry 7 }
+
+zxr10BPLocalPort OBJECT-TYPE
+    SYNTAX          Unsigned32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The local port for the TCP connection between
+        the BGP peers." 
+    ::= { zxr10BgpPeerEntry 8 }
+
+zxr10BPLocalIdentifier OBJECT-TYPE
+    SYNTAX          IpAddress
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The BGP Identifier of this entry's BGP peer." 
+    ::= { zxr10BgpPeerEntry 9 }
+
+zxr10BPRemotePort OBJECT-TYPE
+    SYNTAX          Unsigned32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The remote port for the TCP connection
+        between the BGP peers.  Note that the
+        objects zxr10BPLocalAddr,
+        zxr10BPLocalPort, zxr10BPRemoteAddr, and
+        zxr10BPRemotePort provide the appropriate
+        reference to the standard MIB TCP
+        connection table." 
+    ::= { zxr10BgpPeerEntry 10 }
+
+zxr10BPRemoteAs OBJECT-TYPE
+    SYNTAX          Unsigned32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The remote autonomous system number received in
+        the BGP OPEN message."
+    REFERENCE       "RFC 4271, Section 4.2." 
+    ::= { zxr10BgpPeerEntry 11 }
+
+zxr10BPRemoteIdentifier OBJECT-TYPE
+    SYNTAX          IpAddress
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The BGP Identifier of this entry's BGP peer.
+        This entry MUST be 0.0.0.0 unless the
+        zxr10BPState is in the openconfirm or the
+        established state."
+    REFERENCE       "RFC 4271, Section 4.2, 'BGP Identifier'." 
+    ::= { zxr10BgpPeerEntry 12 }
+
+zxr10BPInUpdates OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The number of BGP UPDATE messages
+        received on this connection."
+    REFERENCE       "RFC 4271, Section 4.3." 
+    ::= { zxr10BgpPeerEntry 13 }
+
+zxr10BPOutUpdates OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The number of BGP UPDATE messages
+        transmitted on this connection."
+    REFERENCE       "RFC 4271, Section 4.3." 
+    ::= { zxr10BgpPeerEntry 14 }
+
+zxr10BPInTotalMessages OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The total number of messages received
+        from the remote peer on this connection."
+    REFERENCE       "RFC 4271, Section 4." 
+    ::= { zxr10BgpPeerEntry 15 }
+
+zxr10BPOutTotalMessages OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The total number of messages transmitted to
+        the remote peer on this connection."
+    REFERENCE       "RFC 4271, Section 4." 
+    ::= { zxr10BgpPeerEntry 16 }
+
+zxr10BPLastError OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE  (2))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The last error code and subcode seen by this
+        peer on this connection.  If no error has
+        occurred, this field is zero.  Otherwise, the
+        first byte of this two byte OCTET STRING
+        contains the error code, and the second byte
+        contains the subcode."
+    REFERENCE       "RFC 4271, Section 4.5." 
+    ::= { zxr10BgpPeerEntry 17 }
+
+zxr10BPFsmEstablishedTransition OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The total number of times the BGP FSM
+        transitioned into the established state
+        for this peer."
+    REFERENCE       "RFC 4271, Section 8." 
+    ::= { zxr10BgpPeerEntry 18 }
+
+zxr10BPFsmEstablishedTime OBJECT-TYPE
+    SYNTAX          Gauge32
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "This timer indicates how long (in
+        seconds) this peer has been in the
+        established state or how long
+        since this peer was last in the
+        established state.  It is set to zero when
+        a new peer is configured or when the router is
+        booted."
+    REFERENCE       "RFC 4271, Section 8." 
+    ::= { zxr10BgpPeerEntry 19 }
+
+zxr10BPConnectRetryInterval OBJECT-TYPE
+    SYNTAX          Integer32 (1..65535)
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Time interval (in seconds) for the
+        ConnectRetry timer.  The suggested value
+        for this timer is 120 seconds."
+    REFERENCE
+        "RFC 4271, Section 8.2.2.  This is the value used
+         to initialize the 'ConnectRetryTimer'." 
+    ::= { zxr10BgpPeerEntry 20 }
+
+zxr10BPHoldTime OBJECT-TYPE
+    SYNTAX          Integer32 (0 | 3..65535)
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Time interval (in seconds) for the Hold
+        Timer established with the peer.  The
+        value of this object is calculated by this
+        BGP speaker, using the smaller of the
+        values in zxr10BPHoldTimeConfigured and the
+        Hold Time received in the OPEN message.
+
+        This value must be at least three seconds
+        if it is not zero (0).
+
+        If the Hold Timer has not been established
+        with the peer this object MUST have a value
+        of zero (0).
+
+        If the zxr10BPHoldTimeConfigured object has
+        a value of (0), then this object MUST have a
+        value of (0)."
+    REFERENCE       "RFC 4271, Section 4.2." 
+    ::= { zxr10BgpPeerEntry 21 }
+
+zxr10BPKeepAlive OBJECT-TYPE
+    SYNTAX          Integer32 (0 | 1..21845)
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Time interval (in seconds) for the KeepAlive
+        timer established with the peer.  The value
+        of this object is calculated by this BGP
+        speaker such that, when compared with
+        zxr10BPHoldTime, it has the same proportion
+        that zxr10BPKeepAliveConfigured has,
+        compared with zxr10BPHoldTimeConfigured.
+
+        If the KeepAlive timer has not been established
+        with the peer, this object MUST have a value
+        of zero (0).
+
+        If the of zxr10BPKeepAliveConfigured object
+        has a value of (0), then this object MUST have
+        a value of (0)."
+    REFERENCE       "RFC 4271, Section 4.4." 
+    ::= { zxr10BgpPeerEntry 22 }
+
+zxr10BPHoldTimeConfigured OBJECT-TYPE
+    SYNTAX          Integer32 (0 | 3..65535)
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Time interval (in seconds) for the Hold Time
+        configured for this BGP speaker with this
+        peer.  This value is placed in an OPEN
+        message sent to this peer by this BGP
+        speaker, and is compared with the Hold
+        Time field in an OPEN message received
+        from the peer when determining the Hold
+        Time (zxr10BPHoldTime) with the peer.
+        This value must not be less than three
+        seconds if it is not zero (0).  If it is
+        zero (0), the Hold Time is NOT to be
+        established with the peer.  The suggested
+        value for this timer is 90 seconds."
+    REFERENCE
+        "RFC 4271, Section 4.2.
+         RFC 4271, Section 10." 
+    ::= { zxr10BgpPeerEntry 23 }
+
+zxr10BPKeepAliveConfigured OBJECT-TYPE
+    SYNTAX          Integer32 (0 | 1..21845)
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Time interval (in seconds) for the
+        KeepAlive timer configured for this BGP
+        speaker with this peer.  The value of this
+        object will only determine the
+        KEEPALIVE messages' frequency relative to
+        the value specified in
+        zxr10BPHoldTimeConfigured; the actual
+        time interval for the KEEPALIVE messages is
+        indicated by zxr10BPKeepAlive.  A
+        reasonable maximum value for this timer
+        would be one third of that of
+        zxr10BPHoldTimeConfigured.
+        If the value of this object is zero (0),
+        no periodical KEEPALIVE messages are sent
+        to the peer after the BGP connection has
+        been established.  The suggested value for
+        this timer is 30 seconds."
+    REFERENCE
+        "RFC 4271, Section 4.4.
+         RFC 4271, Section 10." 
+    ::= { zxr10BgpPeerEntry 24 }
+
+zxr10BPMinASOriginationInterval OBJECT-TYPE
+    SYNTAX          Integer32 (1..65535)
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Time interval (in seconds) for the
+        MinASOriginationInterval timer.
+        The suggested value for this timer is 15
+        seconds."
+    REFERENCE
+        "RFC 4271, Section 9.2.1.2.
+         RFC 4271, Section 10." 
+    ::= { zxr10BgpPeerEntry 25 }
+
+zxr10BPMinAdvertisementInterval OBJECT-TYPE
+    SYNTAX          Integer32 (1..65535)
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Time interval (in seconds) for the
+        MinRouteAdvertisementInterval timer.
+        The suggested value for this timer is 30
+        seconds for EBGP connections and 5
+        seconds for IBGP connections."
+    REFERENCE
+        "RFC 4271, Section 9.2.1.1.
+         RFC 4271, Section 10." 
+    ::= { zxr10BgpPeerEntry 26 }
+
+zxr10BPInUpdateElapsedTime OBJECT-TYPE
+    SYNTAX          Gauge32
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Elapsed time (in seconds) since the last BGP
+        UPDATE message was received from the peer.
+        Each time zxr10BPInUpdates is incremented,
+        the value of this object is set to zero (0)."
+    REFERENCE
+        "RFC 4271, Section 4.3.
+         RFC 4271, Section 8.2.2, Established state." 
+    ::= { zxr10BgpPeerEntry 27 }
+
+zxr10BPLastErrorTxt OBJECT-TYPE
+    SYNTAX          DisplayString
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "Implementation specific error description for
+        bgpPeerLastErrorReceived." 
+    ::= { zxr10BgpPeerEntry 28 }
+
+zxr10BPPrevState OBJECT-TYPE
+    SYNTAX          INTEGER  {
+                        idle(1),
+                        connect(2),
+                        active(3),
+                        opensent(4),
+                        openconfirm(5),
+                        established(6),
+                        none(7)
+                    }
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The BGP peer connection previous state."
+    REFERENCE
+        "RFC 1771, Section 8, A Border Gateway Protocol 4
+         (BGP-4)." 
+    ::= { zxr10BgpPeerEntry 29 }
+
+zxr10BgpV4PeerTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10BgpV4PeerEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "BGP IPv4 peer table."
+        ::= { zxr10BgpPeer 3 }
+
+zxr10BgpV4PeerEntry OBJECT-TYPE
+        SYNTAX   Zxr10BgpV4PeerEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Entry containing information about the connection
+                 with a BGP IPv4 peer."
+        INDEX {zxr10BPV4LocalAs,
+               zxr10BPV4RemoteAddr}
+        ::= { zxr10BgpV4PeerTable 1 }
+
+Zxr10BgpV4PeerEntry ::=
+        SEQUENCE {
+                zxr10BPV4RemoteAddr                        IpAddress,
+                zxr10BPV4RoutesAccepted                    Unsigned32,
+                zxr10BPV4LocalAs                           Unsigned32
+                }
+
+zxr10BPV4RemoteAddr OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "The remote IPv4 address of this entry's BGP peer."
+        ::= { zxr10BgpV4PeerEntry  1 }
+
+zxr10BPV4RoutesAccepted OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "The number of routes learned from the remote peer."
+        ::= { zxr10BgpV4PeerEntry  2 }
+
+zxr10BPV4LocalAs OBJECT-TYPE
+        SYNTAX   Unsigned32(1..4294967295)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "The AS number of local BGP."
+        ::= { zxr10BgpV4PeerEntry  3  }
+
+zxr10BgpV6PeerTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10BgpV6PeerEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "BGP IPv6 peer table."
+        ::= { zxr10BgpPeer 4 }
+
+zxr10BgpV6PeerEntry OBJECT-TYPE
+        SYNTAX   Zxr10BgpV6PeerEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Entry containing information about the connection
+                 with a BGP IPv6 peer."
+        INDEX {zxr10BPV6LocalAs,
+               zxr10BPV6RemoteAddr}
+        ::= { zxr10BgpV6PeerTable 1 }
+
+Zxr10BgpV6PeerEntry ::=
+        SEQUENCE {
+                zxr10BPV6RemoteAddr                        DisplayString,
+                zxr10BPV6RoutesAccepted                    Unsigned32,
+                zxr10BPV6LocalAs                           Unsigned32
+                }
+
+zxr10BPV6RemoteAddr OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "The remote IPv6 address of this entry's BGP peer."
+        ::= { zxr10BgpV6PeerEntry  1 }
+
+zxr10BPV6RoutesAccepted OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "The number of routes learned from the remote peer."
+        ::= { zxr10BgpV6PeerEntry  2 }
+
+zxr10BPV6LocalAs OBJECT-TYPE
+        SYNTAX   Unsigned32(1..4294967295)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "The AS number of local BGP."
+        ::= { zxr10BgpV6PeerEntry  3  }
+
+END

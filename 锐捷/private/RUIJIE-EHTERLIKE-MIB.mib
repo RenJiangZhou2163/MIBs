@@ -1,0 +1,116 @@
+-- *****************************************************************
+-- RUIJIE-ETHERLIKE-MIB.mib:  Ruijie etherlike MIB file
+--
+-- September 2009, xiongtu
+--
+-- Copyright (c) 2009 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-ETHERLIKE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Counter64
+                FROM SNMPv2-SMI
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        IfIndex
+                FROM RUIJIE-TC
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieEtherlikeMIB MODULE-IDENTITY
+        LAST-UPDATED "200909170000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie etherlike mibs."
+        REVISION      "200909170000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 55}
+
+ruijieEtherlikeMIBObjects OBJECT IDENTIFIER ::= { ruijieEtherlikeMIB 1 }
+
+
+ruijieEtherlikeTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieEtherlikeEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Access table of frames collision counter on interface." 
+        ::= { ruijieEtherlikeMIBObjects 1 }
+    
+ruijieEtherlikeEntry OBJECT-TYPE
+        SYNTAX RuijieEtherlikeEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Interfac frames collision counter access." 
+        INDEX { ruijieEtherlikeIfIndex }
+        ::= { ruijieEtherlikeTable 1 }
+
+RuijieEtherlikeEntry ::=
+        SEQUENCE {
+            ruijieEtherlikeIfIndex IfIndex,
+      	    ruijieLocIfCollisions Counter64
+        }
+
+ruijieEtherlikeIfIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Interface number"
+        ::= { ruijieEtherlikeEntry 1 }
+
+ruijieLocIfCollisions OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Interfac frames collision counter."
+        ::= { ruijieEtherlikeEntry 2 }
+
+     
+                                     
+ruijieEtherlikeMIBConformance OBJECT IDENTIFIER ::= { ruijieEtherlikeMIB 3 }
+ruijieEtherlikeMIBCompliances OBJECT IDENTIFIER ::= { ruijieEtherlikeMIBConformance 1 }
+ruijieEtherlikeMIBGroups      OBJECT IDENTIFIER ::= { ruijieEtherlikeMIBConformance 2 }
+
+-- compliance statements
+
+ruijieEtherlikeMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie Interface MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijiecollisionMIBGroups
+                 }
+        ::= { ruijieEtherlikeMIBCompliances 1 }
+                
+-- units of conformance
+
+
+ruijiecollisionMIBGroups OBJECT-GROUP
+        OBJECTS {
+            ruijieEtherlikeIfIndex,
+      	    ruijieLocIfCollisions
+        }
+        STATUS  current
+        DESCRIPTION
+                "Interfac frames collision counter collection." 
+        ::= { ruijieEtherlikeMIBGroups 1 }         
+                        
+                
+END

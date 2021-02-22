@@ -1,0 +1,407 @@
+-- *****************************************************************
+-- RUIJIE-VSD-MIB.mib:  Ruijie VSD MIB file
+--
+-- April 2014, YuShouhua
+--
+-- Copyright (c) 2014 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-MIB-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        NOTIFICATION-TYPE,
+        Integer32
+                FROM SNMPv2-SMI
+        DisplayString,
+        MacAddress
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP,
+        NOTIFICATION-GROUP
+                FROM SNMPv2-CONF
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieVSDMIB MODULE-IDENTITY
+    LAST-UPDATED "201404020000Z"
+    ORGANIZATION "Ruijie Networks Co.,Ltd."
+    CONTACT-INFO
+        " 
+            Tel: 4008-111-000 
+
+            E-mail: service@ruijie.com.cn"
+    DESCRIPTION
+        "This module defines ruijie VSD mibs."
+    REVISION      "201404020000Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { ruijieMgmt 129}
+
+ruijieVSDMIBObjects OBJECT IDENTIFIER ::= { ruijieVSDMIB 1 }
+
+
+--
+-- VSD information
+--
+
+ruijieVSDSupport OBJECT-TYPE
+          SYNTAX Integer32
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "This node describes whether to support VSD in this device. 0 for not support, 1 for support."
+          ::= { ruijieVSDMIBObjects 1 }
+  
+ruijieVSDCurrentID OBJECT-TYPE
+          SYNTAX Integer32
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "The current VSD ID."
+          ::= { ruijieVSDMIBObjects 2 }
+          
+ruijieVSDMaxNumber OBJECT-TYPE
+          SYNTAX Integer32
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "Max number of VSDs of the system permitting, including VSD 0.Only valid in VSD 0."
+          ::= { ruijieVSDMIBObjects 3 }
+          
+ruijieVSDCurrentNumber OBJECT-TYPE
+          SYNTAX Integer32
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "The number of VSDs of this device at this time, including VSD 0. Only valid in VSD 0."
+          ::= { ruijieVSDMIBObjects 4 }   
+          
+ruijieVSDMasterMac OBJECT-TYPE
+          SYNTAX MacAddress
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "The MAC address of this device."
+          ::= { ruijieVSDMIBObjects 5 }
+          
+ruijieVSDCurrentMac OBJECT-TYPE
+          SYNTAX MacAddress
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "The MAC address of this VSD."
+          ::= { ruijieVSDMIBObjects 6 }
+        
+ruijieVSDVituralSerial OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The virtual serial number of this VSD."
+        ::= { ruijieVSDMIBObjects 7 }
+
+ruijieVSDMasterSerial OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The serial number of this device."
+        ::= { ruijieVSDMIBObjects 8 }
+
+ruijieVSDInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVSDInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "List of VSDs."
+        ::= { ruijieVSDMIBObjects 9 }
+        
+ruijieVSDInfoEntry OBJECT-TYPE
+        SYNTAX RuijieVSDInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry of a VSD information. Only valid in VSD 0."
+        INDEX { ruijieVSDInfoIndex }
+        ::= { ruijieVSDInfoTable 1 }
+    
+RuijieVSDInfoEntry ::=
+        SEQUENCE {
+           ruijieVSDInfoIndex Integer32,
+           ruijieVSDValid Integer32,
+           ruijieVSDName DisplayString,
+           ruijieVSDMacAddress MacAddress,
+           ruijieVSDSerialNumber DisplayString,
+           ruijieVSDUniqueNumber DisplayString 
+        }
+        
+ruijieVSDInfoIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "An unique value of each VSD in VSDInfoTable, equal to the value of VSD_ID + 1 . Its value ranges between
+             1 and the value of the object ruijieVSDMaxNumber."
+        ::= { ruijieVSDInfoEntry 1 }
+              
+ruijieVSDValid OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Is this VSD valid. 0-for not valid,1-for valid"
+        ::= { ruijieVSDInfoEntry 2 }
+
+ruijieVSDName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Name of the vsd."
+        ::= { ruijieVSDInfoEntry 3 }
+        
+ruijieVSDMacAddress OBJECT-TYPE
+          SYNTAX  MacAddress
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "The MAC address of VSD"
+          ::= { ruijieVSDInfoEntry 4 }
+
+ruijieVSDSerialNumber OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Serial number of the device which this VSD belongs."
+        ::= { ruijieVSDInfoEntry 5 }
+
+ruijieVSDUniqueNumber OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "A unique number of this VSD."
+        ::= { ruijieVSDInfoEntry 6 }
+
+ruijieVSDPortInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVSDPortInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "a list of port Entries."
+        ::= { ruijieVSDMIBObjects 10 }
+    
+ruijieVSDPortInfoEntry OBJECT-TYPE
+        SYNTAX RuijieVSDPortInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry containing VSD information about one port."
+        INDEX { ruijieVSDPortDevice,  ruijieVSDPortSlot, ruijieVSDPortSubslot, ruijieVSDPortPortIdx}
+        ::= { ruijieVSDPortInfoTable 1 }
+
+RuijieVSDPortInfoEntry ::= 
+        SEQUENCE {
+             ruijieVSDPortDevice Integer32,
+             ruijieVSDPortSlot Integer32,
+             ruijieVSDPortSubslot Integer32,
+             ruijieVSDPortPortIdx Integer32,
+             ruijieVSDPortIfIndex Integer32,
+             ruijieVSDPortVSDIndex Integer32
+        }
+    
+ruijieVSDPortDevice OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The device id of this port."
+        ::= { ruijieVSDPortInfoEntry 1 }
+
+ruijieVSDPortSlot OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The slot id of this port."
+        ::= { ruijieVSDPortInfoEntry 2 }
+
+ruijieVSDPortSubslot OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The sub slot id of this port. In switch, it always be 0."
+        ::= { ruijieVSDPortInfoEntry 3 }
+
+ruijieVSDPortPortIdx OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The port index of this port in this card."
+        ::= { ruijieVSDPortInfoEntry 4 }
+
+ruijieVSDPortIfIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The If index of this port in VSD."
+        ::= { ruijieVSDPortInfoEntry 5 }
+    
+ruijieVSDPortVSDIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The index of VSD which this port belongs."
+        ::= { ruijieVSDPortInfoEntry 6 }
+    
+ruijieVSDMIBTraps OBJECT IDENTIFIER ::= { ruijieVSDMIB 2 }      
+
+ruijieVSDChgDesc OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+          "The description of VSD changes, such as creating a new VSD, removing a VSD, etc."
+        ::= { ruijieVSDMIBTraps 1 }       
+        
+ruijieVSDStatusChange NOTIFICATION-TYPE
+        OBJECTS   {ruijieVSDChgDesc}
+        STATUS     current
+        DESCRIPTION
+                "While status of the VSD changed, this trap will be sent. Only valid in VSD 0."
+        ::= { ruijieVSDMIBTraps 2 }           
+
+ruijieVSDPortChgDesc OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+          "The description of VSD port changes, such as alloc ports to VSD, etc."
+        ::= { ruijieVSDMIBTraps 3 }       
+        
+ruijieVSDPortStatusChange NOTIFICATION-TYPE
+        OBJECTS   {ruijieVSDPortChgDesc}
+        STATUS     current
+        DESCRIPTION
+                "While port status of the VSD changed, this trap will be sent. Only valid in VSD 0."
+        ::= { ruijieVSDMIBTraps 4 }        
+
+-- conformance information
+
+ruijieVSDMIBConformance OBJECT IDENTIFIER ::= { ruijieVSDMIB 3 }
+ruijieVSDMIBCompliances OBJECT IDENTIFIER ::= { ruijieVSDMIBConformance 1 }
+ruijieVSDMIBGroups      OBJECT IDENTIFIER ::= { ruijieVSDMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieVSDMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie VSD MIB"
+        MODULE  -- this module
+                 
+                GROUP      ruijieVSDInfoMIBGroup
+                 DESCRIPTION
+                     "VSD general information."  
+
+                GROUP      ruijieVSDDetailInfoMIBGroup
+                 DESCRIPTION
+                     "Information of each VSD¡£"  
+                 
+                GROUP      ruijieVSDPortInfoMIBGroup
+                 DESCRIPTION
+                     "VSD port infomation¡£" 
+                 
+                GROUP      ruijieVSDChgDescGroup
+                 DESCRIPTION
+                     "Objects for VSD change notification."  
+                                      
+                GROUP       ruijieVSDMIBNotificationGroup
+                DESCRIPTION
+                     "VSD change notification."  
+                     
+        ::= { ruijieVSDMIBCompliances 1 }        
+                    
+-- units of conformance
+
+ruijieVSDInfoMIBGroup OBJECT-GROUP
+        OBJECTS {
+          ruijieVSDSupport,
+          ruijieVSDCurrentID,
+          ruijieVSDMaxNumber, 
+          ruijieVSDCurrentNumber,
+          ruijieVSDMasterMac,
+          ruijieVSDCurrentMac,
+          ruijieVSDVituralSerial,
+          ruijieVSDMasterSerial
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing VSD information to a Ruijie agent."
+        ::= { ruijieVSDMIBGroups 1 } 
+
+ruijieVSDDetailInfoMIBGroup OBJECT-GROUP
+        OBJECTS {
+           ruijieVSDInfoIndex,
+           ruijieVSDValid,
+           ruijieVSDName,
+           ruijieVSDMacAddress,
+           ruijieVSDSerialNumber,
+           ruijieVSDUniqueNumber
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing optional VSD information."
+        ::= { ruijieVSDMIBGroups 2 } 
+        
+ruijieVSDPortInfoMIBGroup OBJECT-GROUP
+        OBJECTS {
+             ruijieVSDPortDevice,
+             ruijieVSDPortSlot,
+             ruijieVSDPortSubslot,
+             ruijieVSDPortPortIdx,
+             ruijieVSDPortIfIndex,
+             ruijieVSDPortVSDIndex
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing port information of VSDs."
+        ::= { ruijieVSDMIBGroups 3 }                
+                               
+ruijieVSDChgDescGroup OBJECT-GROUP
+        OBJECTS {
+             ruijieVSDChgDesc,
+             ruijieVSDPortChgDesc
+        }
+        STATUS  current
+        DESCRIPTION
+                "Objects that providing a literal description of VSD's change."
+        ::= { ruijieVSDMIBGroups 4 }             
+        
+ruijieVSDMIBNotificationGroup NOTIFICATION-GROUP
+        NOTIFICATIONS {
+            ruijieVSDStatusChange,
+            ruijieVSDPortStatusChange
+        }
+        STATUS        current
+        DESCRIPTION
+                "The collection of notifications which used to inform VSD general status information"
+        ::= { ruijieVSDMIBGroups 5}          
+
+-- definitions in RFC 1213 made
+
+        
+END
+      

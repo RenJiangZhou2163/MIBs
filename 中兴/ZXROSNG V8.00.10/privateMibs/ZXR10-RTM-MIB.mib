@@ -1,0 +1,1368 @@
+ZXR10-RTM-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE,
+        Integer32, Unsigned32, Integer32, enterprises, IpAddress
+                FROM SNMPv2-SMI
+        RowStatus,DisplayString                           
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE, OBJECT-GROUP
+                FROM SNMPv2-CONF
+        Ipv6Address
+                FROM IPV6-TC;
+
+
+    zxr10RtmMIB MODULE-IDENTITY
+        LAST-UPDATED "201809262000Z"    --2018/09/26 20:00
+        ORGANIZATION "ZTE Corp."
+        CONTACT-INFO
+                     "luo.lei@zte.com.cn"
+        DESCRIPTION 
+                     "This MIB module provides commonly used textual 
+                      conventions for RTM. " 
+
+        REVISION     "201809262000Z"    --2018/09/26 20:00
+        DESCRIPTION  "Add zxr10RtmIpFrrRouteMasterV6Nh and
+                      zxr10RtmIpFrrRouteSlaveV6Nh in Zxr10RtmIpFrrRouteEntry." 
+
+        REVISION     "201807122000Z"    --2018/07/12 20:00
+        DESCRIPTION  "Add ownerNATMask in zxr10RtmIPv4RouteOwner, 
+                      zxr10RtmIpFrrRouteMasterOwner and
+                      zxr10RtmIpFrrRouteSlaveOwner.
+                      Add ownerSRv6 in zxr10RtmIPv6RouteOwner." 
+
+        REVISION     "201707012000Z"    --2017/07/01 20:00
+        DESCRIPTION  "Add forward route table." 
+
+        REVISION     "201703212000Z"    --2017/03/21 20:00
+        DESCRIPTION  "Change ownerSGW to ownerHAGP in zxr10RtmIpFrrRouteMasterOwner and zxr10RtmIpFrrRouteSlaveOwner." 
+
+        REVISION     "201702062000Z"    --2017/02/06 20:00
+        DESCRIPTION  "Modify the value of zxr10RtmIpFrrRouteMasterOwner and zxr10RtmIpFrrRouteSlaveOwner
+                      in zxr10RtmIpFrrRouteTable." 
+                            
+        REVISION     "201701052000Z"    --2017/01/05 20:00
+        DESCRIPTION  "Add compliance statements in conformance information
+                      of the MIB."
+
+        REVISION     "201507152000Z"    --2015/07/15 20:00
+        DESCRIPTION  "Create fib route resource object to query the forwording route
+                      statics."
+
+        REVISION     "201404032000Z"    --2014/04/03 20:00
+        DESCRIPTION  "Create ldsh wtr,ldsh hash scramble,ldsh bandwidth
+                      unaware and mpls ldsh hash field table to query the 
+                      configurations."
+
+        REVISION     "201309172000Z"    --2013/09/17 20:00
+        DESCRIPTION  "Add owner type of IP FRR table."
+        
+        REVISION     "201305202000Z"    --2013/05/20 20:00
+        DESCRIPTION  "Add L3Src field of load-share hash field table."
+
+        REVISION     "201305092000Z"    --2013/05/09 20:00
+        DESCRIPTION  "Add forward status of IP FRR table."
+
+        REVISION     "201304182000Z"    --2013/04/18 20:00
+        DESCRIPTION  "Create MPLS-Interface table to query the MPLS enabled 
+                     interfaces."
+
+        REVISION     "201304101200Z"    --2013/04/10 12:00
+        DESCRIPTION  "Create load-share hash field, hash key and 
+                     hash algorithm tables to query the configurations."
+
+        REVISION     "201303211200Z"    --2013/03/21 12:00
+        DESCRIPTION  "Initial version. 
+                      Create the architecture of the mib to be used for 
+                      RTM module, and create IP FRR table to query fast 
+                      reroute table."
+        ::= { zxr10RosngMIB 503 }
+
+
+    zte OBJECT IDENTIFIER ::={enterprises 3902}
+    zxr10 OBJECT IDENTIFIER ::={zte 3}    
+    zxr10RosngMIB OBJECT IDENTIFIER ::= { zxr10 6000}
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.1
+    zxr10RtmGlobalObjects OBJECT IDENTIFIER    ::= { zxr10RtmMIB 1 }
+    -- 1.3.6.1.4.1.3902.3.6000.503.2
+    zxr10RtmObjects OBJECT IDENTIFIER          ::= { zxr10RtmMIB 2 }
+    -- 1.3.6.1.4.1.3902.3.6000.503.3
+    zxr10RtmTraps OBJECT IDENTIFIER            ::= { zxr10RtmMIB 3 }
+    -- 1.3.6.1.4.1.3902.3.6000.503.4
+    zxr10RtmConformance OBJECT IDENTIFIER      ::= { zxr10RtmMIB 4 }
+
+
+    -- =============================
+    -- 1. zxr10RtmGlobalObjects 
+    -- =============================
+    -- =============================
+    -- 1.1 zxr10RtmLdshWtr
+    -- =============================
+    -- 1.3.6.1.4.1.3902.3.6000.503.1.1
+        zxr10RtmLdshWtr OBJECT-TYPE
+            SYNTAX      Integer32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION 
+                " The load share wtr factor."
+            ::= { zxr10RtmGlobalObjects 1 }
+    -- =============================
+    -- 1.2 zxr10RtmLdshHashScramble
+    -- =============================
+    -- 1.3.6.1.4.1.3902.3.6000.503.1.2            
+        zxr10RtmLdshHashScramble OBJECT-TYPE
+            SYNTAX      Integer32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION 
+                " The load share hash scramble factor."
+            ::= { zxr10RtmGlobalObjects 2 } 
+    -- =============================
+    -- 1.3 zxr10RtmLdshBandUnaware
+    -- =============================
+    -- 1.3.6.1.4.1.3902.3.6000.503.1.3
+        zxr10RtmLdshBandUnaware OBJECT-TYPE
+            SYNTAX      INTEGER{
+                enable(1),
+                disable(4294967295)
+            }
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION 
+                " The enable status of load share bandwidth unaware."
+             ::= { zxr10RtmGlobalObjects 3 } 
+
+    -- =============================
+    -- 1.4 zxr10RtmFibResObjects
+    -- =============================
+    -- 1.3.6.1.4.1.3902.3.6000.503.1.4
+        zxr10RtmFibResObjects OBJECT IDENTIFIER           ::= { zxr10RtmGlobalObjects 4 } 
+
+    -- =============================
+    -- 1.4.1 zxr10RtmFibRouteUsed
+    -- =============================
+    -- 1.3.6.1.4.1.3902.3.6000.503.1.4.1
+        zxr10RtmFibRouteUsed OBJECT-TYPE
+            SYNTAX      Unsigned32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION 
+                "The statics of used fib route"
+             ::= { zxr10RtmFibResObjects 1 } 
+    -- =============================
+    -- 1.4.2 zxr10RtmFibRouteFree
+    -- =============================
+    -- 1.3.6.1.4.1.3902.3.6000.503.1.4.2
+        zxr10RtmFibRouteFree OBJECT-TYPE
+            SYNTAX      Unsigned32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION 
+                "The statics of free fib route resource"
+             ::= { zxr10RtmFibResObjects 2 }              
+
+
+    -- =============================
+    --2. zxr10RtmObjects
+    -- =============================
+
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1
+    zxr10RtmRouteObjects OBJECT IDENTIFIER     ::= { zxr10RtmObjects 1 }
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2
+    zxr10RtmLdshObjects OBJECT IDENTIFIER      ::= { zxr10RtmObjects 2 }
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3
+    zxr10RtmFrrObjects OBJECT IDENTIFIER       ::= { zxr10RtmObjects 3 }
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.4
+    zxr10RtmNhObjects OBJECT IDENTIFIER        ::= { zxr10RtmObjects 4 }
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.5
+    zxr10RtmOtherObjects OBJECT IDENTIFIER     ::= { zxr10RtmObjects 5 }
+
+    -- =============================
+    --2.1 zxr10RtmRouteObjects
+    -- =============================
+
+    -- =============================
+    --2.1.1 zxr10RtmIPv4RouteTable
+    -- =============================
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.1
+    zxr10RtmIPv4RouteTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10RtmIPv4RouteEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                    "The information of routing table."  
+        ::= { zxr10RtmRouteObjects 1 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.1.1
+    zxr10RtmIPv4RouteEntry OBJECT-TYPE
+        SYNTAX      Zxr10RtmIPv4RouteEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                    "A particular IPv4 route information."
+        INDEX       { 
+                        zxr10RtmIPv4RouteVrfName,
+                        zxr10RtmIPv4RouteDest,
+                        zxr10RtmIPv4RoutePrefixLength,
+                        zxr10RtmIPv4RouteNhNo
+                    }
+        ::= { zxr10RtmIPv4RouteTable 1 } 
+
+    Zxr10RtmIPv4RouteEntry ::=
+        SEQUENCE {      
+            zxr10RtmIPv4RouteVrfName
+                DisplayString,
+            zxr10RtmIPv4RouteDest   
+                IpAddress,       
+            zxr10RtmIPv4RoutePrefixLength   
+                Unsigned32,
+            zxr10RtmIPv4RouteNhNo         
+                Unsigned32,
+            zxr10RtmIPv4RouteNextHop
+                IpAddress, 
+            zxr10RtmIPv4RouteOutIfName 
+                DisplayString,
+            zxr10RtmIPv4RouteValid
+                INTEGER,   
+            zxr10RtmIPv4RouteOwner   
+                INTEGER,
+            zxr10RtmIPv4RouteMetric         
+                Unsigned32,
+            zxr10RtmIPv4RoutePriority
+                Unsigned32
+        }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.1.1.1
+    zxr10RtmIPv4RouteVrfName OBJECT-TYPE
+        SYNTAX        DisplayString(SIZE(0..32))
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "VRF name of the route."
+        ::= { zxr10RtmIPv4RouteEntry 1 }  
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.1.1.2
+    zxr10RtmIPv4RouteDest OBJECT-TYPE    
+        SYNTAX        IpAddress        
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "The destination IP address of this route."
+        ::= { zxr10RtmIPv4RouteEntry 2 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.1.1.3
+    zxr10RtmIPv4RoutePrefixLength OBJECT-TYPE    
+        SYNTAX        Unsigned32
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "The length of the route's mask."
+        ::= { zxr10RtmIPv4RouteEntry 3 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.1.1.4
+    zxr10RtmIPv4RouteNhNo OBJECT-TYPE    
+        SYNTAX        Unsigned32      
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "The number of nexthop."
+        ::= { zxr10RtmIPv4RouteEntry 4 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.1.1.5
+    zxr10RtmIPv4RouteNextHop OBJECT-TYPE    
+        SYNTAX        IpAddress        
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The nexthop IP address of this route."
+        ::= { zxr10RtmIPv4RouteEntry 5 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.1.1.6
+    zxr10RtmIPv4RouteOutIfName OBJECT-TYPE
+        SYNTAX        DisplayString(SIZE(0..32))
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The out interface name of the route."
+        ::= { zxr10RtmIPv4RouteEntry 6 }  
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.1.1.7
+    zxr10RtmIPv4RouteValid OBJECT-TYPE
+        SYNTAX        INTEGER {
+                               true(1),
+                               false(2)
+                              }
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The validity of the route."
+        ::= { zxr10RtmIPv4RouteEntry 7 }  
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.1.1.8
+    zxr10RtmIPv4RouteOwner OBJECT-TYPE
+        SYNTAX        INTEGER {
+                               ownerStatic(1),
+                               ownerDirect(2),
+                               ownerBroadcast(3),
+                               ownerMulticast(4),
+                               ownerMartian(5),
+                               ownerAddress(6),
+                               ownerOSPF(7),
+                               ownerBGP(8),
+                               ownerBGPLabel(9),
+                               ownerRIP(10),
+                               ownerISISL1(11),
+                               ownerISISL2(12),
+                               ownerICMP(13),
+                               ownerSNMP(14),
+                               ownerNAT(15),
+                               ownerNATPT(16),
+                               ownerVRRP(17),
+                               ownerPPP(18),
+                               ownerASBRVPN(19),
+                               ownerRSVPTE(20),
+                               ownerUserIPAddr(21),
+                               ownerUserNetwork(22),
+                               ownerStaticVRFGlobalNH(23),
+                               ownerIPSec(24),
+                               ownerVPNLabel(25),
+                               ownerPSBUSIAddr(26),
+                               ownerPSUserAddr(27),
+                               ownerLdpArea(28),
+                               ownerUserSpecial(29),
+                               ownerDHCPDefault(30),
+                               ownerDHCPStatic(31),
+                               ownerSLNAT64(32),
+                               ownerVES(33),
+                               ownerBP(34),
+                               ownerHAGP(35),
+                               ownerNATMask(36),
+                               ownerInit(4294967295)
+                            }
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The validity of the route."
+        ::= { zxr10RtmIPv4RouteEntry 8 }  
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.1.1.9
+    zxr10RtmIPv4RouteMetric OBJECT-TYPE
+        SYNTAX        Unsigned32
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The metric of the route."
+        ::= { zxr10RtmIPv4RouteEntry 9 }  
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.1.1.10
+    zxr10RtmIPv4RoutePriority OBJECT-TYPE
+        SYNTAX        Unsigned32
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The priority of the route."
+        ::= { zxr10RtmIPv4RouteEntry 10 }  
+
+    -- =============================
+    --2.1.2 zxr10RtmIPv6RouteTable
+    -- =============================
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.2
+    zxr10RtmIPv6RouteTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10RtmIPv6RouteEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                    "The information of IPv6 routing table."  
+        ::= { zxr10RtmRouteObjects 2 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.2.1
+    zxr10RtmIPv6RouteEntry OBJECT-TYPE
+        SYNTAX      Zxr10RtmIPv6RouteEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                    "A particular IPv6 route information."
+        INDEX       { 
+                        zxr10RtmIPv6RouteVrfName,
+                        zxr10RtmIPv6RouteDest,
+                        zxr10RtmIPv6RoutePrefixLength,
+                        zxr10RtmIPv6RouteNhNo
+                    }
+        ::= { zxr10RtmIPv6RouteTable 1 } 
+
+    Zxr10RtmIPv6RouteEntry ::=
+        SEQUENCE {      
+            zxr10RtmIPv6RouteVrfName
+                DisplayString,
+            zxr10RtmIPv6RouteDest   
+                Ipv6Address,       
+            zxr10RtmIPv6RoutePrefixLength   
+                Unsigned32,
+            zxr10RtmIPv6RouteNhNo         
+                Unsigned32,
+            zxr10RtmIPv6RouteNextHop
+                Ipv6Address, 
+            zxr10RtmIPv6RouteOutIfName 
+                DisplayString,
+            zxr10RtmIPv6RouteValid
+                INTEGER,   
+            zxr10RtmIPv6RouteOwner   
+                INTEGER,
+            zxr10RtmIPv6RouteMetric         
+                Unsigned32,
+            zxr10RtmIPv6RoutePriority
+                Unsigned32
+        }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.2.1.1
+    zxr10RtmIPv6RouteVrfName OBJECT-TYPE
+        SYNTAX        DisplayString(SIZE(0..32))
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "VRF name of the route."
+        ::= { zxr10RtmIPv6RouteEntry 1 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.2.1.2
+    zxr10RtmIPv6RouteDest OBJECT-TYPE    
+        SYNTAX        Ipv6Address        
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "The destination IPv6 address of this route."
+        ::= { zxr10RtmIPv6RouteEntry 2 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.2.1.3
+    zxr10RtmIPv6RoutePrefixLength OBJECT-TYPE    
+        SYNTAX        Unsigned32
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "The length of the route's mask."
+        ::= { zxr10RtmIPv6RouteEntry 3 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.2.1.4
+    zxr10RtmIPv6RouteNhNo OBJECT-TYPE    
+        SYNTAX        Unsigned32      
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "The number of nexthop."
+        ::= { zxr10RtmIPv6RouteEntry 4 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.1.1.5
+    zxr10RtmIPv6RouteNextHop OBJECT-TYPE    
+        SYNTAX        Ipv6Address        
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The nexthop IPv6 address of this route."
+        ::= { zxr10RtmIPv6RouteEntry 5 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.2.1.6
+    zxr10RtmIPv6RouteOutIfName OBJECT-TYPE
+        SYNTAX        DisplayString(SIZE(0..32))
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The out interface name of the route."
+        ::= { zxr10RtmIPv6RouteEntry 6 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.2.1.7
+    zxr10RtmIPv6RouteValid OBJECT-TYPE
+        SYNTAX        INTEGER {
+                               true(1),
+                               false(2)
+                              }
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The validity of the route."
+        ::= { zxr10RtmIPv6RouteEntry 7 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.2.1.8
+    zxr10RtmIPv6RouteOwner OBJECT-TYPE
+        SYNTAX        INTEGER {
+                               ownerKernel(1),
+                               ownerConnect(2),
+                               ownerStatic(3),
+                               ownerRIP(4),
+                               ownerRIPng(5),
+                               ownerOSPF(6),
+                               ownerOSPF6(7),
+                               ownerBGP(8),
+                               ownerISISL1(9),
+                               ownerISISL2(10),
+                               ownerICMP(11),
+                               ownerMulticast(12),
+                               ownerUserIpaddr(13),
+                               ownerVRRP(14),
+                               ownerPPP(15),
+                               ownerND(16),
+                               ownerAddress(17),
+                               ownerDHCP(18),
+                               ownerSFNAT64(19),
+                               ownerSLNAT64(20),
+                               ownerAFTR(21),
+                               ownerBGPLabel(22),
+                               ownerBUSIAddress(23),
+                               ownerUserAddress(24),
+                               ownerLDPArea(25),
+                               ownerUserNetwork(26),
+                               ownerUserSpecial(27),
+                               ownerBrasPool(28),
+                               ownerSRv6(30),
+                               ownerInit(4294967295)
+                            }
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The validity of the route."
+        ::= { zxr10RtmIPv6RouteEntry 8 }  
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.2.1.9
+    zxr10RtmIPv6RouteMetric OBJECT-TYPE
+        SYNTAX        Unsigned32
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The metric of the route."
+        ::= { zxr10RtmIPv6RouteEntry 9 }  
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.1.2.1.10
+    zxr10RtmIPv6RoutePriority OBJECT-TYPE
+        SYNTAX        Unsigned32
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The priority of the route."
+        ::= { zxr10RtmIPv6RouteEntry 10 }
+
+    -- =============================
+    --2.2 zxr10RtmLdshObjects
+    -- =============================
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1
+    zxr10RtmLdshHashObjects OBJECT IDENTIFIER    ::= { zxr10RtmLdshObjects 1 }
+
+
+    -- =============================
+    --2.2.1 zxr10RtmLdshHashObjects
+    -- =============================
+
+
+    -- =============================
+    --2.2.1.1 zxr10RtmLdshHashFieldTable
+    -- =============================
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.1
+    zxr10RtmLdshHashFieldTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10RtmLdshHashFieldEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                    "The hash field of load share hash factor."  
+        ::= { zxr10RtmLdshHashObjects 1 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.1.1
+    zxr10RtmLdshHashFieldEntry OBJECT-TYPE
+        SYNTAX      Zxr10RtmLdshHashFieldEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                    "A particular hash field infomation."
+        INDEX       { 
+                        zxr10RtmLdshHashFieldIPv4,
+                        zxr10RtmLdshHashFieldIPv6,
+                        zxr10RtmLdshHashFieldBoardName
+                    }
+        ::= { zxr10RtmLdshHashFieldTable 1 } 
+        
+    Zxr10RtmLdshHashFieldEntry ::=
+        SEQUENCE {      
+            zxr10RtmLdshHashFieldIPv4
+                INTEGER,
+            zxr10RtmLdshHashFieldIPv6   
+                INTEGER,       
+            zxr10RtmLdshHashFieldBoardName   
+                DisplayString,
+            zxr10RtmLdshHashFieldL3   
+                INTEGER,
+            zxr10RtmLdshHashFieldL4         
+                INTEGER,
+            zxr10RtmLdshHashFieldL3Src         
+                INTEGER
+        }
+   
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.1.1.1
+    zxr10RtmLdshHashFieldIPv4 OBJECT-TYPE
+        SYNTAX        INTEGER {
+                          protoIPv4(1),  
+                          null(4294967295)
+                      }
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "IPv4 protocal."
+        ::= { zxr10RtmLdshHashFieldEntry 1 }  
+        
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.1.1.2
+    zxr10RtmLdshHashFieldIPv6 OBJECT-TYPE    
+        SYNTAX        INTEGER {
+                          protoIPv6(1),  
+                          null(4294967295)
+                      }        
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "IPv6 protocal."
+        ::= { zxr10RtmLdshHashFieldEntry 2 } 
+       
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.1.1.3
+    zxr10RtmLdshHashFieldBoardName OBJECT-TYPE    
+        SYNTAX        DisplayString(SIZE(0..32))
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "The board name information."
+        ::= { zxr10RtmLdshHashFieldEntry 3 } 
+         
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.1.1.4
+    zxr10RtmLdshHashFieldL3 OBJECT-TYPE    
+        SYNTAX        INTEGER {
+                          hashfieldL3(1),  
+                          null(4294967295)
+                      }
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The ldsh hash field L3 information."
+        ::= { zxr10RtmLdshHashFieldEntry 4 } 
+         
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.1.1.5
+    zxr10RtmLdshHashFieldL4 OBJECT-TYPE    
+        SYNTAX        INTEGER {
+                          hashfieldL4(1),  
+                          null(4294967295)
+                      }
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The ldsh hash field L4 information."
+        ::= { zxr10RtmLdshHashFieldEntry 5 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.1.1.6
+    zxr10RtmLdshHashFieldL3Src OBJECT-TYPE    
+        SYNTAX        INTEGER {
+                          hashfieldL3Src(1),  
+                          null(4294967295)
+                      }
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The ldsh hash field L3Src information."
+        ::= { zxr10RtmLdshHashFieldEntry 6 } 
+
+    -- =============================
+    --2.2.1.2 zxr10RtmLdshHashKeyTable
+    -- =============================
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.2
+    zxr10RtmLdshHashKeyTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10RtmLdshHashKeyEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                    "The hash key of load share hash factor."  
+        ::= { zxr10RtmLdshHashObjects 2 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.2.1
+    zxr10RtmLdshHashKeyEntry OBJECT-TYPE
+        SYNTAX      Zxr10RtmLdshHashKeyEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                    "A particular hash key infomation."
+        INDEX       { 
+                        zxr10RtmLdshHashKeyIPv6,
+                        zxr10RtmLdshHashKeyBoardName
+                    }
+        ::= { zxr10RtmLdshHashKeyTable 1 } 
+        
+    Zxr10RtmLdshHashKeyEntry ::=
+        SEQUENCE {      
+            zxr10RtmLdshHashKeyIPv6   
+                INTEGER,       
+            zxr10RtmLdshHashKeyBoardName   
+                DisplayString,
+            zxr10RtmLdshHashKeyLsb   
+                INTEGER,
+            zxr10RtmLdshHashKeyMsb         
+                INTEGER
+        }  
+        
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.2.1.1
+    zxr10RtmLdshHashKeyIPv6 OBJECT-TYPE    
+        SYNTAX        INTEGER {
+                          protoIPv6(6)
+                      }
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "IPv6 protocal."
+        ::= { zxr10RtmLdshHashKeyEntry 1 } 
+       
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.2.1.2
+    zxr10RtmLdshHashKeyBoardName OBJECT-TYPE    
+        SYNTAX        DisplayString(SIZE(0..32))
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "The board name information."
+        ::= { zxr10RtmLdshHashKeyEntry 2 } 
+         
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.2.1.3
+    zxr10RtmLdshHashKeyLsb OBJECT-TYPE    
+        SYNTAX        INTEGER {
+                          hashkeyLSB(1),  
+                          null(4294967295)
+                      }
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The ldsh hash key lsb information."
+        ::= { zxr10RtmLdshHashKeyEntry 3 } 
+         
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.2.1.4
+    zxr10RtmLdshHashKeyMsb OBJECT-TYPE    
+        SYNTAX        INTEGER {
+                          hashkeyMSB(1),  
+                          null(4294967295)
+                      }
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The ldsh hash key msb information."
+        ::= { zxr10RtmLdshHashKeyEntry 4 } 
+
+
+    -- =============================
+    --2.2.1.3 zxr10RtmLdshHashAlgorithmTable
+    -- =============================
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.3
+    zxr10RtmLdshHashAlgorithmTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10RtmLdshHashAlgorithmEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                    "The hash algorithm of load share hash factor."  
+        ::= { zxr10RtmLdshHashObjects 3 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.3.1
+    zxr10RtmLdshHashAlgorithmEntry OBJECT-TYPE
+        SYNTAX      Zxr10RtmLdshHashAlgorithmEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                    "A particular hash Algorithm infomation."
+        INDEX       { 
+                        zxr10RtmLdshHashAlgBoardName
+                    }
+        ::= { zxr10RtmLdshHashAlgorithmTable 1 } 
+        
+    Zxr10RtmLdshHashAlgorithmEntry ::=
+        SEQUENCE {      
+            zxr10RtmLdshHashAlgBoardName   
+                DisplayString,
+            zxr10RtmLdshHashAlgCrc16
+                INTEGER,
+            zxr10RtmLdshHashAlgCrc32       
+                INTEGER
+        }  
+       
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.3.1.1
+    zxr10RtmLdshHashAlgBoardName OBJECT-TYPE    
+        SYNTAX        DisplayString(SIZE(0..32))
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "The board name information."
+        ::= { zxr10RtmLdshHashAlgorithmEntry 1 } 
+         
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.3.1.2
+    zxr10RtmLdshHashAlgCrc16 OBJECT-TYPE    
+        SYNTAX        INTEGER {
+                          hashalgCRC16(1),  
+                          null(4294967295)
+                      }
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The ldsh hash algorithm crc16 information."
+        ::= { zxr10RtmLdshHashAlgorithmEntry 2 } 
+         
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.3.1.3
+    zxr10RtmLdshHashAlgCrc32 OBJECT-TYPE    
+        SYNTAX        INTEGER  {
+                          hashalgCRC32(1),  
+                          null(4294967295)
+                      }     
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The ldsh hash algorithm crc32 information."
+        ::= { zxr10RtmLdshHashAlgorithmEntry 3 } 
+
+    -- =============================
+    --2.2.1.4 zxr10RtmMplsLdshHashFieldTable
+    -- =============================
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.4
+    zxr10RtmMplsLdshHashFieldTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10RtmMplsLdshHashFieldEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                    "The hash field of mpls load share hash factor."  
+        ::= { zxr10RtmLdshHashObjects 4 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.4.1
+    zxr10RtmMplsLdshHashFieldEntry OBJECT-TYPE
+        SYNTAX      Zxr10RtmMplsLdshHashFieldEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                    "A particular mpls hash field infomation."
+        INDEX       { 
+                        zxr10RtmMplsLdshBoardName
+                    }
+        ::= { zxr10RtmMplsLdshHashFieldTable 1 } 
+        
+    Zxr10RtmMplsLdshHashFieldEntry ::=
+        SEQUENCE {          
+            zxr10RtmMplsLdshBoardName   
+                DisplayString,
+            zxr10RtmMplsLdshHashFieldIpL3   
+                INTEGER,
+            zxr10RtmMplsLdshHashFieldIpL4         
+                INTEGER,
+            zxr10RtmMplsLdshHashFieldLabel         
+                INTEGER
+        }
+   
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.4.1.1
+    zxr10RtmMplsLdshBoardName OBJECT-TYPE    
+        SYNTAX        DisplayString(SIZE(0..32))
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "The board name information."
+        ::= { zxr10RtmMplsLdshHashFieldEntry 1 } 
+         
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.4.1.2
+    zxr10RtmMplsLdshHashFieldIpL3 OBJECT-TYPE    
+        SYNTAX        INTEGER {
+                          hashfieldIpL3(1),  
+                          null(4294967295)
+                      }
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The mpls ldsh hash field IpL3 information."
+        ::= { zxr10RtmMplsLdshHashFieldEntry 2 } 
+         
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.4.1.3
+    zxr10RtmMplsLdshHashFieldIpL4 OBJECT-TYPE    
+        SYNTAX        INTEGER {
+                          hashfieldIpL4(1),  
+                          null(4294967295)
+                      }
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The mpls ldsh hash field IpL4 information."
+        ::= { zxr10RtmMplsLdshHashFieldEntry 3 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.2.1.4.1.4
+    zxr10RtmMplsLdshHashFieldLabel OBJECT-TYPE    
+        SYNTAX        INTEGER {
+                          hashfieldLabel(1),  
+                          null(4294967295)
+                      }
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The mpls ldsh hash field Label information."
+        ::= { zxr10RtmMplsLdshHashFieldEntry 4 } 
+
+    -- =============================
+    --2.3 zxr10RtmFrrObjects
+    -- =============================
+
+    -- =============================
+    --2.3.1 zxr10RtmIpFrrRouteTable
+    -- =============================
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1
+    zxr10RtmIpFrrRouteTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10RtmIpFrrRouteEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                    "The fast reroute information of routing table."  
+        ::= { zxr10RtmFrrObjects 1 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1
+    zxr10RtmIpFrrRouteEntry OBJECT-TYPE
+        SYNTAX      Zxr10RtmIpFrrRouteEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                    "A particular route's fast reroute information."
+        INDEX       { 
+                        zxr10RtmIpFrrRouteVrfName,
+                        zxr10RtmIpFrrRouteDest,
+                        zxr10RtmIpFrrRoutePrefixLength        
+                    }
+        ::= { zxr10RtmIpFrrRouteTable 1 } 
+        
+    Zxr10RtmIpFrrRouteEntry ::=
+        SEQUENCE {      
+            zxr10RtmIpFrrRouteVrfName
+                DisplayString,
+            zxr10RtmIpFrrRouteDest   
+                IpAddress,       
+            zxr10RtmIpFrrRoutePrefixLength   
+                Integer32,
+            zxr10RtmIpFrrRouteMasterNextHop         
+                IpAddress,
+            zxr10RtmIpFrrRouteMasterIfName
+                DisplayString, 
+            zxr10RtmIpFrrRouteMasterOwner 
+                INTEGER,
+            zxr10RtmIpFrrRouteMasterLabel
+                Integer32,   
+            zxr10RtmIpFrrRouteMasterPriority   
+                Integer32,
+            zxr10RtmIpFrrRouteMasterMetric         
+                Unsigned32,
+            zxr10RtmIpFrrRouteSlaveNextHop
+                IpAddress, 
+            zxr10RtmIpFrrRouteSlaveIfName 
+                DisplayString,
+            zxr10RtmIpFrrRouteSlaveOwner
+                INTEGER,
+            zxr10RtmIpFrrRouteSlaveLabel
+                Integer32,
+            zxr10RtmIpFrrRouteSlavePriority
+                Integer32,
+            zxr10RtmIpFrrRouteSlaveMetric
+                Unsigned32,
+            zxr10RtmIpFrrRouteForwardStatus
+                INTEGER,
+            zxr10RtmIpFrrRouteMasterV6Nh         
+                Ipv6Address,
+            zxr10RtmIpFrrRouteSlaveV6Nh
+                Ipv6Address
+        }
+   
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.1
+    zxr10RtmIpFrrRouteVrfName OBJECT-TYPE
+        SYNTAX        DisplayString(SIZE(0..32))
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "VRF name of the route."
+        ::= { zxr10RtmIpFrrRouteEntry 1 }  
+        
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.2
+    zxr10RtmIpFrrRouteDest OBJECT-TYPE    
+        SYNTAX        IpAddress        
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "The destination IP address of this route."
+        ::= { zxr10RtmIpFrrRouteEntry 2 } 
+       
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.3
+    zxr10RtmIpFrrRoutePrefixLength OBJECT-TYPE    
+        SYNTAX        Integer32
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION   "The length of the route's mask."
+        ::= { zxr10RtmIpFrrRouteEntry 3 } 
+         
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.4
+    zxr10RtmIpFrrRouteMasterNextHop OBJECT-TYPE    
+        SYNTAX        IpAddress      
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The nexthop of master route."
+        ::= { zxr10RtmIpFrrRouteEntry 4 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.5
+    zxr10RtmIpFrrRouteMasterIfName OBJECT-TYPE    
+        SYNTAX        DisplayString(SIZE(0..31))         
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The local interface name through which the 
+                      master next hop of this route should be reached."
+        ::= { zxr10RtmIpFrrRouteEntry 5 }  
+  
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.6
+    zxr10RtmIpFrrRouteMasterOwner OBJECT-TYPE    
+        SYNTAX        INTEGER {
+                               ownerStatic(1),
+                               ownerDirect(2),
+                               ownerBroadcast(3),
+                               ownerMulticast(4),
+                               ownerMartian(5),
+                               ownerAddress(6),
+                               ownerOSPF(7),
+                               ownerBGP(8),
+                               ownerBGPLabel(9),
+                               ownerRIP(10),
+                               ownerISISL1(11),
+                               ownerISISL2(12),
+                               ownerICMP(13),
+                               ownerSNMP(14),
+                               ownerNAT(15),
+                               ownerNATPT(16),
+                               ownerVRRP(17),
+                               ownerPPP(18),
+                               ownerASBRVPN(19),
+                               ownerRSVPTE(20),
+                               ownerUserIPAddr(21),
+                               ownerUserNetwork(22),
+                               ownerStaticVRFGlobalNH(23),
+                               ownerIPSec(24),
+                               ownerVPNLabel(25),
+                               ownerPSBUSIAddr(26),
+                               ownerPSUserAddr(27),
+                               ownerLdpArea(28),
+                               ownerUserSpecial(29),
+                               ownerDHCPDefault(30),
+                               ownerDHCPStatic(31),
+                               ownerSLNAT64(32),
+                               ownerVES(33),
+                               ownerBP(34),
+                               ownerHAGP(35),
+                               ownerNATMask(36),
+                               ownerInit(4294967295)
+                      }                 
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The protocol of master route."
+        ::= { zxr10RtmIpFrrRouteEntry 6 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.7
+    zxr10RtmIpFrrRouteMasterLabel OBJECT-TYPE    
+        SYNTAX        Integer32        
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The out label of master route."
+        ::= { zxr10RtmIpFrrRouteEntry 7 }  
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.8
+    zxr10RtmIpFrrRouteMasterPriority OBJECT-TYPE    
+        SYNTAX        Integer32
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The priority of master route."
+        ::= { zxr10RtmIpFrrRouteEntry 8 } 
+         
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.9
+    zxr10RtmIpFrrRouteMasterMetric OBJECT-TYPE    
+        SYNTAX        Unsigned32  
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The metric of master route."
+        ::= { zxr10RtmIpFrrRouteEntry 9 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.10
+    zxr10RtmIpFrrRouteSlaveNextHop OBJECT-TYPE    
+        SYNTAX        IpAddress   
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The nexthop of slave route."
+        ::= { zxr10RtmIpFrrRouteEntry 10 }  
+    
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.11
+    zxr10RtmIpFrrRouteSlaveIfName OBJECT-TYPE    
+        SYNTAX        DisplayString(SIZE(0..31))      
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The local interface name through which the slave next 
+                      hop of this route should be reached."
+        ::= { zxr10RtmIpFrrRouteEntry 11 }
+          
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.12
+    zxr10RtmIpFrrRouteSlaveOwner OBJECT-TYPE    
+        SYNTAX        INTEGER {
+                               ownerStatic(1),
+                               ownerDirect(2),
+                               ownerBroadcast(3),
+                               ownerMulticast(4),
+                               ownerMartian(5),
+                               ownerAddress(6),
+                               ownerOSPF(7),
+                               ownerBGP(8),
+                               ownerBGPLabel(9),
+                               ownerRIP(10),
+                               ownerISISL1(11),
+                               ownerISISL2(12),
+                               ownerICMP(13),
+                               ownerSNMP(14),
+                               ownerNAT(15),
+                               ownerNATPT(16),
+                               ownerVRRP(17),
+                               ownerPPP(18),
+                               ownerASBRVPN(19),
+                               ownerRSVPTE(20),
+                               ownerUserIPAddr(21),
+                               ownerUserNetwork(22),
+                               ownerStaticVRFGlobalNH(23),
+                               ownerIPSec(24),
+                               ownerVPNLabel(25),
+                               ownerPSBUSIAddr(26),
+                               ownerPSUserAddr(27),
+                               ownerLdpArea(28),
+                               ownerUserSpecial(29),
+                               ownerDHCPDefault(30),
+                               ownerDHCPStatic(31),
+                               ownerSLNAT64(32),
+                               ownerVES(33),
+                               ownerBP(34),
+                               ownerHAGP(35),
+                               ownerNATMask(36),
+                               ownerInit(4294967295)
+                      }                        
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The protocol of slave route."
+        ::= { zxr10RtmIpFrrRouteEntry 12 }  
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.13
+    zxr10RtmIpFrrRouteSlaveLabel OBJECT-TYPE    
+        SYNTAX        Integer32  
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The out label of slave route."
+        ::= { zxr10RtmIpFrrRouteEntry 13 }  
+        
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.14
+    zxr10RtmIpFrrRouteSlavePriority OBJECT-TYPE    
+        SYNTAX        Integer32 
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The priority of slave route."
+        ::= { zxr10RtmIpFrrRouteEntry 14 }  
+        
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.15
+    zxr10RtmIpFrrRouteSlaveMetric OBJECT-TYPE    
+        SYNTAX        Unsigned32   
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The metric of slave route."
+        ::= { zxr10RtmIpFrrRouteEntry 15 }  
+        
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.16
+    zxr10RtmIpFrrRouteForwardStatus OBJECT-TYPE    
+        SYNTAX        INTEGER {
+                          master(1),  
+                          slave(2),
+                          noForwarding(3),
+                          waitForCutBack(4)
+                      }      
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "Forwarding status of fast reroute."
+        ::= { zxr10RtmIpFrrRouteEntry 16 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.17
+    zxr10RtmIpFrrRouteMasterV6Nh OBJECT-TYPE    
+        SYNTAX        Ipv6Address      
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The V6 nexthop of master route."
+        ::= { zxr10RtmIpFrrRouteEntry 17 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.3.1.1.18
+    zxr10RtmIpFrrRouteSlaveV6Nh OBJECT-TYPE    
+        SYNTAX        Ipv6Address   
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The V6 nexthop of slave route."
+        ::= { zxr10RtmIpFrrRouteEntry 18 }  
+
+    -- =============================
+    --2.4 zxr10RtmNhObjects
+    -- =============================
+
+    -- =============================
+    --2.5 zxr10RtmOtherObjects
+    -- =============================
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.5.1
+    zxr10RtmMplsIfTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10RtmMplsIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                    "The interface with mpls enabled."  
+        ::= { zxr10RtmOtherObjects 1 } 
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.5.1.1
+    zxr10RtmMplsIfEntry OBJECT-TYPE
+        SYNTAX      Zxr10RtmMplsIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                    "A particular of mpls enabled interface."
+        INDEX       {
+                        zxr10RtmMplsIfName
+                    }
+        ::= { zxr10RtmMplsIfTable 1 } 
+        
+    Zxr10RtmMplsIfEntry ::=
+        SEQUENCE {      
+            zxr10RtmMplsIfName
+                DisplayString
+         }
+   
+    -- 1.3.6.1.4.1.3902.3.6000.503.2.5.1.1.1
+    zxr10RtmMplsIfName OBJECT-TYPE    
+        SYNTAX        DisplayString(SIZE(0..31))
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   "The mpls enabled interface name. The interface only 
+                      supports virtual-template, virtual-access and vlan now."
+        ::= { zxr10RtmMplsIfEntry 1 } 
+
+    -- =============================
+    --3. zxr10RtmTraps
+    -- =============================
+
+
+
+    -- =============================
+    --4. zxr10RtmConformance
+    -- =============================
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.4.1
+    zxr10RtmLdshWtrGroup OBJECT-GROUP
+        OBJECTS         {
+                            zxr10RtmLdshWtr
+        }
+        STATUS          current
+        DESCRIPTION
+                        "RTM LDSH WTR configuration group."
+        ::= { zxr10RtmConformance 1 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.4.2
+    zxr10RtmLdshHashScrambleGroup OBJECT-GROUP
+        OBJECTS         {
+                            zxr10RtmLdshHashScramble
+        }
+        STATUS          current
+        DESCRIPTION
+                        "RTM LDSH hash scramble configuration group."
+        ::= { zxr10RtmConformance 2 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.4.3
+    zxr10RtmLdshBandUnawareGroup OBJECT-GROUP
+        OBJECTS         {
+                            zxr10RtmLdshBandUnaware
+        }
+        STATUS          current
+        DESCRIPTION
+                        "RTM LDSH band unawareness configuration group."
+        ::= { zxr10RtmConformance 3 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.4.4
+    zxr10RtmFibResGroup OBJECT-GROUP
+        OBJECTS         {
+                            zxr10RtmFibRouteUsed,
+                            zxr10RtmFibRouteFree
+        }
+        STATUS          current
+        DESCRIPTION
+                        "RTM IPv4 fib resource group."
+        ::= { zxr10RtmConformance 4 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.4.5
+    zxr10RtmLdshFieldGroup OBJECT-GROUP
+        OBJECTS         {
+                            zxr10RtmLdshHashFieldL3,
+                            zxr10RtmLdshHashFieldL4,
+                            zxr10RtmLdshHashFieldL3Src
+        }
+        STATUS          current
+        DESCRIPTION
+                        "RTM LDSH hash field configuration group."
+        ::= { zxr10RtmConformance 5 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.4.6
+    zxr10RtmLdshKeyGroup OBJECT-GROUP
+        OBJECTS         {
+                            zxr10RtmLdshHashKeyLsb,
+                            zxr10RtmLdshHashKeyMsb
+        }
+        STATUS          current
+        DESCRIPTION
+                        "RTM LDSH hash key configuration group."
+        ::= { zxr10RtmConformance 6 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.4.7
+    zxr10RtmLdshHashAlgorithmGroup OBJECT-GROUP
+        OBJECTS         {
+                            zxr10RtmLdshHashAlgCrc16,
+                            zxr10RtmLdshHashAlgCrc32
+        }
+        STATUS          current
+        DESCRIPTION
+                        "RTM LDSH hash algorithm configuration group."
+        ::= { zxr10RtmConformance 7 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.4.8
+    zxr10RtmMplsLdshHashFieldGroup OBJECT-GROUP
+        OBJECTS         {
+                            zxr10RtmMplsLdshHashFieldIpL3,
+                            zxr10RtmMplsLdshHashFieldIpL4,
+                            zxr10RtmMplsLdshHashFieldLabel
+        }
+        STATUS          current
+        DESCRIPTION
+                        "RTM LDSH mpls hash field configuration group."
+        ::= { zxr10RtmConformance 8 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.4.9
+    zxr10RtmIpFrrGroup OBJECT-GROUP
+        OBJECTS         {
+                            zxr10RtmIpFrrRouteMasterNextHop,
+                            zxr10RtmIpFrrRouteMasterIfName,
+                            zxr10RtmIpFrrRouteMasterOwner,
+                            zxr10RtmIpFrrRouteMasterLabel,
+                            zxr10RtmIpFrrRouteMasterPriority,
+                            zxr10RtmIpFrrRouteMasterMetric,
+                            zxr10RtmIpFrrRouteSlaveNextHop,
+                            zxr10RtmIpFrrRouteSlaveIfName,
+                            zxr10RtmIpFrrRouteSlaveOwner,
+                            zxr10RtmIpFrrRouteSlaveLabel,
+                            zxr10RtmIpFrrRouteSlavePriority,
+                            zxr10RtmIpFrrRouteSlaveMetric,
+                            zxr10RtmIpFrrRouteForwardStatus
+        }
+        STATUS          current
+        DESCRIPTION
+                        "RTM IPv4 FRR table group."
+        ::= { zxr10RtmConformance 9 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.4.10
+    zxr10RtmMplsIfGroup OBJECT-GROUP
+        OBJECTS         {
+                            zxr10RtmMplsIfName
+        }
+        STATUS          current
+        DESCRIPTION
+                        "RTM interface with mpls capability group."
+        ::= { zxr10RtmConformance 10 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.4.11
+    zxr10RtmIPv4RouteGroup OBJECT-GROUP
+        OBJECTS         {
+                            zxr10RtmIPv4RouteNextHop,
+                            zxr10RtmIPv4RouteOutIfName,
+                            zxr10RtmIPv4RouteValid,
+                            zxr10RtmIPv4RouteOwner,
+                            zxr10RtmIPv4RouteMetric,
+                            zxr10RtmIPv4RoutePriority
+        }
+        STATUS          current
+        DESCRIPTION
+                        "RTM IPv4 route table info."
+        ::= { zxr10RtmConformance 11 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.503.4.12
+    zxr10RtmIPv6RouteGroup OBJECT-GROUP
+        OBJECTS         {
+                            zxr10RtmIPv6RouteNextHop,
+                            zxr10RtmIPv6RouteOutIfName,
+                            zxr10RtmIPv6RouteValid,
+                            zxr10RtmIPv6RouteOwner,
+                            zxr10RtmIPv6RouteMetric,
+                            zxr10RtmIPv6RoutePriority
+        }
+        STATUS          current
+        DESCRIPTION
+                        "RTM IPv6 route table info."
+        ::= { zxr10RtmConformance 12 }
+
+END
+
+--
+-- ZXROSNG-RTM-MIB.mib
+--
+

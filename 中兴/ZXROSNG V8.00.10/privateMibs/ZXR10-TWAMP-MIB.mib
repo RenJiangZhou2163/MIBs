@@ -1,0 +1,886 @@
+--  ************************************************
+--  $Id: ZXR10-TWAMP-MIB.mib  2017-11-14 15:30:22Z SONGYAN $
+--
+--  ZXR10-TWAMP-MIB.mib: ZXR10 TWAMP query MIB file
+--
+--  Nov. 2017, Song Yan
+--
+--  Copyright(c) 2012 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+
+ZXR10-TWAMP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    Unsigned32,
+    Counter32,
+    Counter64,
+    IpAddress
+        FROM SNMPv2-SMI
+        
+    RowStatus,
+    DisplayString
+         FROM SNMPv2-TC 
+    OBJECT-TYPE,
+    MODULE-IDENTITY,
+    OBJECT-IDENTITY,
+    enterprises
+        FROM SNMPv2-SMI;
+
+zxr10twampMIB MODULE-IDENTITY
+    LAST-UPDATED "201711140000Z"  -- Nov 14, 2017
+    ORGANIZATION "ZTE Corporation"
+    CONTACT-INFO
+        "ZTE Corporation 
+         Nanjing Institute of ZTE Corporation
+         
+         No.68 Zijinghua Rd. Yuhuatai District, Nanjing, China
+         
+         Tel: +86-25-52870000"
+    DESCRIPTION
+        "ZXROS SMI MIB" 
+    
+    REVISION "201711140000Z"
+    DESCRIPTION
+                "twampMib"
+    ::= { twampMib 134 }
+
+-- twamp table
+       zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+       zxr10 OBJECT IDENTIFIER ::= { zte 3}
+       twampMib OBJECT IDENTIFIER ::= { zxr10 6000}                   
+ 
+--- TWAMP CONNECTION Config Table
+--- ****************************************************************************
+
+    zxr10twampConnectionTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10twampConnectionEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The configuration table of TWAMP connection."
+        ::= { zxr10twampMIB 1 }
+
+    zxr10twampConnectionEntry  OBJECT-TYPE
+        SYNTAX  Zxr10twampConnectionEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing configuration informations which apply to the 
+             particular connection of TWAMP."
+        INDEX  { zxr10twampConnectionId }
+        ::= { zxr10twampConnectionTable 1 }
+
+    Zxr10twampConnectionEntry ::=
+        SEQUENCE {
+            zxr10twampConnectionId                  Unsigned32,
+            zxr10twampConnectionSvrAddress          IpAddress,
+            zxr10twampConnectionSvrPort             Unsigned32,
+            zxr10twampConnectionVrfName             DisplayString,
+            zxr10twampConnectionReCount             Unsigned32,
+            zxr10twampConnectionReInterval          Unsigned32,
+            zxr10twampConnectionRowStatus           RowStatus
+     }
+
+    zxr10twampConnectionId  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Connection ID used to identify the TWAMP connection."
+        ::= { zxr10twampConnectionEntry 1 }
+
+    zxr10twampConnectionSvrAddress  OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The server IP address which is specified by TWAMP connection."
+        ::= { zxr10twampConnectionEntry 2 }
+
+    zxr10twampConnectionSvrPort  OBJECT-TYPE
+        SYNTAX  Unsigned32(862 | 1025..65535)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The server TCP port which is specified by TWAMP connection."
+        ::= { zxr10twampConnectionEntry 3 }       
+        
+    zxr10twampConnectionVrfName  OBJECT-TYPE
+        SYNTAX  DisplayString(SIZE(0..32))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The VRF name of TWAMP connection."
+        ::= { zxr10twampConnectionEntry 4 }
+        
+    zxr10twampConnectionReCount  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..16)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The failed repetition number of TWAMP connection.(default :10)"
+        ::= { zxr10twampConnectionEntry 5 }       
+        
+    zxr10twampConnectionReInterval  OBJECT-TYPE
+        SYNTAX  Unsigned32(10..900)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The failed repetition interval of TWAMP connection.(default :30s)"
+        ::= { zxr10twampConnectionEntry 6 }
+   
+    zxr10twampConnectionRowStatus  OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Row status"
+        ::= { zxr10twampConnectionEntry 7 }
+
+--- ****************************************************************************
+
+--- TWAMP SESSION Config Table
+--- ****************************************************************************
+
+    zxr10twampSessionTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10twampSessionEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The configuration table of TWAMP session."
+        ::= { zxr10twampMIB 2 }
+
+    zxr10twampSessionEntry  OBJECT-TYPE
+        SYNTAX  Zxr10twampSessionEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "An entry containing configuration informations which apply to the 
+            particular session of TWAMP."
+        INDEX  { zxr10twampSessionConnectionId,
+                 zxr10twampSessionId }
+        ::= { zxr10twampSessionTable 1 }
+
+    Zxr10twampSessionEntry ::=
+        SEQUENCE {
+            zxr10twampSessionConnectionId        Unsigned32,
+            zxr10twampSessionId                  Unsigned32,
+            zxr10twampSessionSenderAddress       IpAddress,
+            zxr10twampSessionSenderPort          Unsigned32,
+            zxr10twampSessionRcvAddress          IpAddress,
+            zxr10twampSessionRcvPort             Unsigned32,
+            zxr10twampSessionVrfName             DisplayString,
+            zxr10twampSessionDetectPath          INTEGER,
+            zxr10twampSessionInboundIf           DisplayString,
+            zxr10twampSessionDscp                Unsigned32,
+            zxr10twampSessionPaddinglength       Unsigned32,
+            zxr10twampSessionTimeOut             Unsigned32,
+            zxr10twampSessionDurationMode        INTEGER,
+            zxr10twampSessionSendPktCount        Unsigned32,
+            zxr10twampSessionSendTime            Unsigned32,
+            zxr10twampSessionIntervalUnit        INTEGER,
+            zxr10twampSessionInterval            Unsigned32,
+            zxr10twampSessionStatInterval        Unsigned32,
+            zxr10twampSessionRowStatus           RowStatus
+     }
+
+    zxr10twampSessionConnectionId  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The connection ID applies to the session of TWAMP."
+        ::= { zxr10twampSessionEntry 1 }
+
+    zxr10twampSessionId  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The identity of the TWAMP session."
+        ::= { zxr10twampSessionEntry 2 }
+
+    zxr10twampSessionSenderAddress  OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The sender IP address of TWAMP session."
+        ::= { zxr10twampSessionEntry 3 }
+   
+   zxr10twampSessionSenderPort  OBJECT-TYPE
+        SYNTAX  Unsigned32(1025..65535)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The sender UDP port of TWAMP session."
+        ::= { zxr10twampSessionEntry 4 }    
+    
+    zxr10twampSessionRcvAddress  OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The receiver IP address of TWAMP session."
+        ::= { zxr10twampSessionEntry 5 }
+   
+    zxr10twampSessionRcvPort  OBJECT-TYPE
+        SYNTAX  Unsigned32(1025..65535)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The receiver UDP port of TWAMP session."
+        ::= { zxr10twampSessionEntry 6 }    
+
+    zxr10twampSessionVrfName  OBJECT-TYPE
+        SYNTAX  DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The VRF name of TWAMP session."
+        ::= { zxr10twampSessionEntry 7 }
+    
+    zxr10twampSessionDetectPath  OBJECT-TYPE
+        SYNTAX  INTEGER {down(1),up(2)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The detect path type of TWAMP session.(default :down)"
+        ::= { zxr10twampSessionEntry 8 }
+    
+    zxr10twampSessionInboundIf  OBJECT-TYPE
+        SYNTAX  DisplayString(SIZE(0..32))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The inbound-interface of TWAMP session, and it applies to 
+            condition when the detect path type is up."
+        ::= { zxr10twampSessionEntry 9 }    
+    
+    zxr10twampSessionDscp  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..63)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The DSCP value of TWAMP session.(default :0)"
+        ::= { zxr10twampSessionEntry 10 }   
+    
+    zxr10twampSessionPaddinglength  OBJECT-TYPE
+        SYNTAX  Unsigned32(27..9216)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The length of packet padding, and the upper limit of this 
+             parameter depends on the device.(default :27bytes)"
+        ::= { zxr10twampSessionEntry 11 }   
+    
+    zxr10twampSessionTimeOut  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..10)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Timeout ranges from 1s to 10s. Within this time, the 
+            server needs to reflect the test message, otherwise 
+            the message is discarded.(default :5s)"
+        ::= { zxr10twampSessionEntry 12 }       
+        
+    zxr10twampSessionDurationMode  OBJECT-TYPE
+        SYNTAX  INTEGER {continuous(1),packets(2),seconds(3)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The sending packet mode:
+            continuous:In this mode,the test packets will always be sent 
+            until the user stops.
+            packets:In this mode,the test will be stopped until the number of 
+            sending packet reaches the configured value.
+            seconds:In this mode,the test will be stopped until the time of 
+            sending packet reaches the configured value.(default :continuous)"
+        ::= { zxr10twampSessionEntry 13 }
+    
+    zxr10twampSessionSendPktCount  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..65535)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The number of sending packet which applies to condition when 
+            the sending packet mode is packets.The test will be stopped 
+            until the number of sending packet reaches the configured value."
+        ::= { zxr10twampSessionEntry 14 }   
+    
+    zxr10twampSessionSendTime  OBJECT-TYPE
+        SYNTAX  Unsigned32(0 | 60..86400)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Sending time of packets which applies to condition when the 
+            sending packet mode is seconds. The test will be stopped until 
+            the time of sending packets reaches the configured value."
+        ::= { zxr10twampSessionEntry 15 } 
+    
+    zxr10twampSessionIntervalUnit  OBJECT-TYPE
+        SYNTAX  INTEGER {second(1),millisecond(2),microsecond(3)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The unit of sending interval which including second, millisecond 
+            and microsecond.(default :second)"
+        ::= { zxr10twampSessionEntry 16 }
+    
+    zxr10twampSessionInterval  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..1000)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Packet sending interval:
+            If the unit is assigned second,it ranges from 1 to 60.
+            If the unit is assigned millisecond,it ranges from 1 to 1000.
+            If the unit is assigned microseconds,it ranges from 50 to 1000."
+        ::= { zxr10twampSessionEntry 17 }   
+    
+    zxr10twampSessionStatInterval  OBJECT-TYPE
+        SYNTAX  Unsigned32(5..60)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The statistics interval,ranges from 5s to 60s.(default :15s)"
+        ::= { zxr10twampSessionEntry 18 }   
+   
+    zxr10twampSessionRowStatus  OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Row status"
+        ::= { zxr10twampSessionEntry 19 }
+ --- *************************************************************************
+
+
+--- TWAMP PROACTIVE OPERATION Table
+--- **************************************************************************
+
+    zxr10twampProOperationTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10twampProOperationEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The configuration table of proactive TWAMP test."
+        ::= { zxr10twampMIB 3 }
+
+    zxr10twampProOperationEntry  OBJECT-TYPE
+        SYNTAX  Zxr10twampProOperationEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing configuration information applicable to a 
+             particular proactive test of TWAMP."
+        INDEX  { zxr10twampProOperationId }
+        ::= { zxr10twampProOperationTable 1 }
+
+    Zxr10twampProOperationEntry ::=
+        SEQUENCE {
+            zxr10twampProOperationId       Unsigned32,
+            zxr10twampProOperation         INTEGER
+     }
+
+    zxr10twampProOperationId  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The connection ID applies to the proactive test of TWAMP."
+        ::= { zxr10twampProOperationEntry 1 }
+
+    zxr10twampProOperation  OBJECT-TYPE
+        SYNTAX  INTEGER {stop(1),start(2)}
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "The proactive operation type which including start and stop.
+           (default :stop)"
+        ::= { zxr10twampProOperationEntry 2 }
+    
+--- ***************************************************************************
+
+
+--- TWAMP ON-DEMAND OPERATION Table
+--- **************************************************************************
+
+    zxr10twampOdOperationTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10twampOdOperationEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The configuration table of on-demand TWAMP test."
+        ::= { zxr10twampMIB 4 }
+
+    zxr10twampOdOperationEntry  OBJECT-TYPE
+        SYNTAX  Zxr10twampOdOperationEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing configuration information applicable to a 
+             particular on-demand test of TWAMP."
+        INDEX  { zxr10twampOdOperationId }
+        ::= { zxr10twampOdOperationTable 1 }
+
+    Zxr10twampOdOperationEntry ::=
+        SEQUENCE {
+            zxr10twampOdOperationId       Unsigned32,
+            zxr10twampOdOperation         INTEGER
+     }
+
+    zxr10twampOdOperationId  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The connection ID applies to the on-demand test of TWAMP."
+        ::= { zxr10twampOdOperationEntry 1 }
+
+    zxr10twampOdOperation  OBJECT-TYPE
+        SYNTAX  INTEGER {stop(1),start(2)}
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "The on-demand operation type which including start and stop.
+            (default :stop)"
+        ::= { zxr10twampOdOperationEntry 2 }
+    
+--- ***************************************************************************
+
+--- TWAMP SERVER Config Table
+--- ***************************************************************************
+    zxr10twampServer     OBJECT IDENTIFIER ::={zxr10twampMIB 5}   
+                        
+    zxr10twampSvrStatus OBJECT-TYPE
+        SYNTAX  INTEGER {disable(1),enable(2)}
+        MAX-ACCESS read-write                    
+        STATUS current
+        DESCRIPTION 
+           "The status of TWAMP server,including enable and disable.
+           (default: disable)"
+        ::={zxr10twampServer 1}    
+        
+    zxr10twampSvrInactiveTimeOut  OBJECT-TYPE
+        SYNTAX Unsigned32(10..1800)
+        MAX-ACCESS read-write 
+        STATUS current
+        DESCRIPTION 
+            "Inactivity timeout,ranges from 10s to 1800s.(default: 900)"
+        ::={zxr10twampServer 2}
+                          
+    zxr10twampSvrMaxConDuration OBJECT-TYPE
+        SYNTAX Unsigned32(0..24) 
+        MAX-ACCESS read-write 
+        STATUS current
+        DESCRIPTION 
+           "The maximum duration of connection,ranges from 0h to 24h.
+            If this node is assigned 0,it means permanence connection unless 
+            stopped manually.If it is assigned 1h to 24h,it means connection 
+            lasting time.(default: 0)"
+        ::={zxr10twampServer 3}   
+
+    zxr10twampSvrMaxConnection OBJECT-TYPE
+        SYNTAX Unsigned32(1..64) 
+        MAX-ACCESS read-write 
+        STATUS current
+        DESCRIPTION 
+           "The maximum number of connections which the minimum value is 1,
+            and the maximum value of this parameter depends on the device.
+           (default: 64)"
+        ::={zxr10twampServer 4}   
+    
+    zxr10twampSvrMaxSession OBJECT-TYPE
+        SYNTAX Unsigned32(1..128) 
+        MAX-ACCESS read-write 
+        STATUS current
+        DESCRIPTION 
+            "The maximum number of sessions which the minimum value is 1, and 
+            the maximum value of this parameter depends on the device.
+            (default: 128)"
+        ::={zxr10twampServer 5}  
+    
+    zxr10twampSvrMaxSePerConn OBJECT-TYPE
+        SYNTAX Unsigned32(1..8) 
+        MAX-ACCESS read-write 
+        STATUS current
+        DESCRIPTION 
+           "The maximum session number of each connection which the minimum 
+            value is 1, and the maximum value of this parameter depends on the
+            device.(default: 8)"
+        ::={zxr10twampServer 6}  
+    
+    zxr10twampSvrPort OBJECT-TYPE
+        SYNTAX Unsigned32(1025..65535 | 862) 
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            "The port number of server, ranges from 1025 to 65535, or 862.
+            (default: 862)"
+        ::={zxr10twampServer 7}  
+    
+    zxr10twampSvrIgnoreVrf OBJECT-TYPE
+        SYNTAX  INTEGER {disable(1),enable(2)}
+        MAX-ACCESS read-write                    
+        STATUS current
+        DESCRIPTION 
+            "The ignore-vrf status,including enable and disable.
+            (default value depends on the device)"
+        ::={zxr10twampServer 8}  
+    
+    zxr10twampSvrClientListStatus OBJECT-TYPE
+        SYNTAX  INTEGER {disable(1),enable(2)}
+        MAX-ACCESS read-write                    
+        STATUS current
+        DESCRIPTION 
+            "The status of client list, including enable and disable.
+            (default: disable)"
+        ::={zxr10twampServer 9}     
+    
+--- ***************************************************************************
+
+
+--- TWAMP CLINET LIST Config Table
+--- ***************************************************************************  
+
+    zxr10twampClientListTable  OBJECT-TYPE
+     SYNTAX SEQUENCE OF Zxr10twampClientListEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The configuration table of TWAMP client list."
+        ::= { zxr10twampMIB 6 } 
+
+    zxr10twampClientListEntry  OBJECT-TYPE
+     SYNTAX  Zxr10twampClientListEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing configuration information applicable to a 
+             particular client list of TWAMP"
+        INDEX  { zxr10twampClientListMember }
+        ::= { zxr10twampClientListTable 1 }
+   
+   Zxr10twampClientListEntry ::=
+        SEQUENCE {
+            zxr10twampClientListMember        IpAddress,
+            zxr10twampClientListRowStatus     RowStatus
+     }
+
+    zxr10twampClientListMember  OBJECT-TYPE
+        SYNTAX  IpAddress 
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IP address of the white list."
+        ::= { zxr10twampClientListEntry 1 }
+
+    zxr10twampClientListRowStatus  OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Row status"
+        ::= { zxr10twampClientListEntry 2 }   
+--- ***************************************************************************
+
+--- TWAMP RESULT Table
+--- ***************************************************************************
+
+    zxr10twampResultTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10twampResultEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The result table of TWAMP detecting."
+        ::= { zxr10twampMIB 7 }
+
+    zxr10twampResultEntry  OBJECT-TYPE
+        SYNTAX  Zxr10twampResultEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing result information applicable to TWAMP
+            detecting."
+        INDEX  { zxr10twampResultConnectionId, zxr10twampResultSessionId }
+        ::= { zxr10twampResultTable 1 }
+
+    Zxr10twampResultEntry ::=
+        SEQUENCE {
+            zxr10twampResultConnectionId        Unsigned32,
+            zxr10twampResultSessionId           Unsigned32,
+            zxr10twampResultPktSendNum          Unsigned32,
+            zxr10twampResultPktRcvNum           Unsigned32,
+            zxr10twampResultPktLossNum          Unsigned32,
+            zxr10twampResultPktLossRatio        Unsigned32,
+            zxr10twampResultTwDelay             Counter64,
+            zxr10twampResultTwDelayMin          Counter64,
+            zxr10twampResultTwDelayMax          Counter64,
+            zxr10twampResultTwDelayAvg          Counter64,
+            zxr10twampResultTwJitter            Counter64,
+            zxr10twampResultTwJitterMin         Counter64,
+            zxr10twampResultTwJitterMax         Counter64,
+            zxr10twampResultTwJitterAvg         Counter64,
+            zxr10twampResultFwdDelay            Counter64,
+            zxr10twampResultFwdDelayMin         Counter64,
+            zxr10twampResultFwdDelayMax         Counter64,
+            zxr10twampResultFwdDelayAvg         Counter64,
+            zxr10twampResultFwdJitter           Counter64,
+            zxr10twampResultFwdJitterMin        Counter64,
+            zxr10twampResultFwdJitterMax        Counter64,
+            zxr10twampResultFwdJitterAvg        Counter64,
+            zxr10twampResultRvsDelay            Counter64,
+            zxr10twampResultRvsDelayMin         Counter64,
+            zxr10twampResultRvsDelayMax         Counter64,
+            zxr10twampResultRvsDelayAvg         Counter64,
+            zxr10twampResultRvsJitter           Counter64,
+            zxr10twampResultRvsJitterMin        Counter64,
+            zxr10twampResultRvsJitterMax        Counter64,
+            zxr10twampResultRvsJitterAvg        Counter64
+     }
+
+    zxr10twampResultConnectionId  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The connection ID,ranges from 1 to 65535."
+        ::= { zxr10twampResultEntry 1 }
+
+    zxr10twampResultSessionId  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The session ID,ranges from 1 to 65535."
+        ::= { zxr10twampResultEntry 2 }
+
+    zxr10twampResultPktSendNum  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The count of sending packets."
+        ::= { zxr10twampResultEntry 3 }
+        
+    zxr10twampResultPktRcvNum  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The count of receiving packets."
+        ::= { zxr10twampResultEntry 4 }
+        
+    zxr10twampResultPktLossNum  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The count of lossing packets."
+        ::= { zxr10twampResultEntry 5 }
+        
+    zxr10twampResultPktLossRatio  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..1000000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The packet loss ratio which the precision is 1/1000000."
+        ::= { zxr10twampResultEntry 6 }
+
+    zxr10twampResultTwDelay  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Two way delay.(unit: ns)"
+        ::= { zxr10twampResultEntry 7 }
+
+    zxr10twampResultTwDelayMin  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The minimum of two way delay.(unit: ns)"
+        ::= { zxr10twampResultEntry 8 }
+
+    zxr10twampResultTwDelayMax  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The maximum of two way delay.(unit: ns)"
+        ::= { zxr10twampResultEntry 9 }
+    
+    zxr10twampResultTwDelayAvg  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The average of two way delay.(unit: ns)"
+        ::= { zxr10twampResultEntry 10 }    
+        
+    zxr10twampResultTwJitter  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Delay jitter of two way packet.(unit: ns)"
+        ::= { zxr10twampResultEntry 11 }    
+    
+    zxr10twampResultTwJitterMin  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The minimum delay jitter of two way packet.(unit: ns)"
+        ::= { zxr10twampResultEntry 12 }
+        
+    zxr10twampResultTwJitterMax  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The maximum delay jitter of two way packet.(unit: ns)"
+        ::= { zxr10twampResultEntry 13 }
+    
+    zxr10twampResultTwJitterAvg  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The average delay jitter of two way packet.(unit: ns)"
+        ::= { zxr10twampResultEntry 14 }
+    
+    zxr10twampResultFwdDelay  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The forward packet delay.(unit: ns)"
+        ::= { zxr10twampResultEntry 15 }
+    
+    zxr10twampResultFwdDelayMin  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The minimum of forward packet delay.(unit: ns)"
+        ::= { zxr10twampResultEntry 16 }   
+    
+    zxr10twampResultFwdDelayMax  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The maximum of forward packet delay.(unit: ns)"
+        ::= { zxr10twampResultEntry 17 }   
+    
+    zxr10twampResultFwdDelayAvg  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The average of forward packet delay.(unit: ns)"
+        ::= { zxr10twampResultEntry 18 }   
+    
+    zxr10twampResultFwdJitter  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Delay jitter of the forward packet.(unit: ns)"
+        ::= { zxr10twampResultEntry 19 }
+    
+    zxr10twampResultFwdJitterMin  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The minimum of delay jitter of the forward packet.(unit: ns)"
+        ::= { zxr10twampResultEntry 20 }    
+    
+    zxr10twampResultFwdJitterMax  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The maximum of delay jitter of the forward packet.(unit: ns)"
+        ::= { zxr10twampResultEntry 21 }    
+    
+    zxr10twampResultFwdJitterAvg  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The average of delay jitter of the forward packet.(unit: ns)"
+        ::= { zxr10twampResultEntry 22 }    
+    
+    zxr10twampResultRvsDelay  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The reverse packet delay.(unit: ns)"
+        ::= { zxr10twampResultEntry 23 }
+    
+    zxr10twampResultRvsDelayMin  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The minimum of reverse packet delay.(unit: ns)"
+        ::= { zxr10twampResultEntry 24 }
+    
+    zxr10twampResultRvsDelayMax  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The maximum of reverse packet delay.(unit: ns)"
+        ::= { zxr10twampResultEntry 25 }
+    
+    zxr10twampResultRvsDelayAvg  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The average of reverse packet delay.(unit: ns)"
+        ::= { zxr10twampResultEntry 26 }
+    
+    zxr10twampResultRvsJitter  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The reverse packet delay jitter.(unit: ns)"
+        ::= { zxr10twampResultEntry 27 }
+    
+    zxr10twampResultRvsJitterMin  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The minimum of delay jitter of the reverse packet.(unit: ns)"
+        ::= { zxr10twampResultEntry 28 }
+    
+    zxr10twampResultRvsJitterMax  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The maximum of delay jitter of the reverse packet.(unit: ns)"
+        ::= { zxr10twampResultEntry 29 }
+    
+    zxr10twampResultRvsJitterAvg  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The average of delay jitter of the reverse packet.(unit: ns)"
+        ::= { zxr10twampResultEntry 30 }
+        
+--- ***************************************************************************
+END

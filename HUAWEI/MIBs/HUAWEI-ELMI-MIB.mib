@@ -1,0 +1,1009 @@
+-- =================================================================
+-- Copyright (C) 2009 by HUAWEI TECHNOLOGIES. All rights reserved
+--
+-- Description:HUAWEI ELMI MIB
+-- Reference:
+-- Version: V1.00
+-- History:
+--          V1.00 maofei, 2009-10-15, publish
+-- ===========================================================
+
+    HUAWEI-ELMI-MIB DEFINITIONS ::= BEGIN
+
+        IMPORTS
+            hwDatacomm
+                FROM HUAWEI-MIB
+            EnabledStatus
+                FROM P-BRIDGE-MIB
+            ifIndex
+                FROM IF-MIB
+            VlanId
+                FROM Q-BRIDGE-MIB
+            DisplayString, RowStatus
+                FROM SNMPv2-TC
+            Integer32, MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE
+                FROM SNMPv2-SMI
+            MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+                FROM SNMPv2-CONF;
+
+
+--
+-- Textual conventions
+--
+
+
+--
+-- Module Identifier
+--
+    hwElmiMib MODULE-IDENTITY
+        LAST-UPDATED "200910151000Z"            -- Oct 15th, 2009 at 10:00 GMT
+        ORGANIZATION
+            "Huawei Technologies Co.,Ltd."
+        CONTACT-INFO
+            "Huawei Industrial Base
+              Bantian, Longgang
+               Shenzhen 518129
+               People's Republic of China
+               Website: http://www.huawei.com
+               Email: support@huawei.com
+             "
+        DESCRIPTION
+            "The HUAWEI-ELMI-MIB contains objects to
+            Manage configuration and Monitor running state
+            for E-LMI feature."
+        REVISION "200910151000Z"            -- Oct 15th, 2009 at 10:00 GMT
+        DESCRIPTION
+            "The initial revision of this MIB module."
+        ::= { hwDatacomm 214 }
+
+--
+-- Objects Identifier
+--
+
+    hwElmiScalarsObjects OBJECT IDENTIFIER ::= { hwElmiMib 1 }
+
+--
+-- Nodes Identifier
+--
+
+    hwElmiEnable OBJECT-TYPE
+        SYNTAX     EnabledStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Enable the function of Ethernet local management interface. Default is 'disable'."
+        ::= { hwElmiScalarsObjects 1 }
+
+    hwElmiMode OBJECT-TYPE
+        SYNTAX     INTEGER
+            {
+            pe(1),
+            ce(2)
+            }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Ethernet local management interface work mode. Default is 'pe'"
+        ::= { hwElmiScalarsObjects 2 }
+
+--
+-- Objects Identifier
+--
+
+    hwElmiObjects OBJECT IDENTIFIER ::= { hwElmiMib 2 }
+
+--
+-- Nodes Identifier
+--
+
+    hwElmiIfInfoTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwElmiIfInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The E-LMI interface configuration table."
+        ::= { hwElmiObjects 1 }
+
+
+    hwElmiIfInfoEntry OBJECT-TYPE
+        SYNTAX HwElmiIfInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the E-LMI interface configuration table."
+        INDEX { ifIndex }
+        ::= { hwElmiIfInfoTable 1 }
+
+    HwElmiIfInfoEntry ::=
+        SEQUENCE {
+            hwElmiIfName            DisplayString,
+            hwElmiIfEnable          EnabledStatus,
+            hwN391                  Integer32,
+            hwN393                  Integer32,
+            hwT391                  Integer32,
+            hwT392                  Integer32,
+            hwNomatchVlan           DisplayString,
+            hwNotCfgVlan            DisplayString,
+            hwElmiIfInfoRowStatus   RowStatus
+            }
+
+    hwElmiIfName OBJECT-TYPE
+        SYNTAX     DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The textual name of the interface."
+        ::= { hwElmiIfInfoEntry 1 }
+
+    hwElmiIfEnable OBJECT-TYPE
+        SYNTAX     EnabledStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "In interface view enable the function of Ethernet local management interface."
+        DEFVAL { 2 }
+        ::= { hwElmiIfInfoEntry 2 }
+
+    hwN391 OBJECT-TYPE
+        SYNTAX  Integer32 (1..66560)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Count of Polling Counter. In pe work mode, this config can't set and read."
+        DEFVAL { 360 }
+        ::= { hwElmiIfInfoEntry 3 }
+
+    hwN393 OBJECT-TYPE
+        SYNTAX  Integer32 (2..10)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Count of consecutive errors."
+        DEFVAL { 4 }
+        ::= { hwElmiIfInfoEntry 4 }
+
+    hwT391 OBJECT-TYPE
+        SYNTAX  Integer32 (5..30)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Value of Polling Timer. In pe work mode, this config can't set and read."
+        DEFVAL { 10 }
+        ::= { hwElmiIfInfoEntry 5 }
+
+    hwT392 OBJECT-TYPE
+        SYNTAX  Integer32 (0 | 5..30)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Value of Polling Verification Timer. In ce work mode, this config can't set and read.
+            The value for T392 should be greater than the value for T391.
+            if set value is 0, the Polling Verification Timer will never expires."
+        DEFVAL { 15 }
+        ::= { hwElmiIfInfoEntry 6 }
+
+    hwNomatchVlan OBJECT-TYPE
+        SYNTAX     DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The vlan which is configured but not in CE-VLAN mapping."
+        ::= { hwElmiIfInfoEntry 7 }
+
+    hwNotCfgVlan OBJECT-TYPE
+        SYNTAX     DisplayString        
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The vlan which is not configured but in CE-VLAN mapping."
+        ::= { hwElmiIfInfoEntry 8 }
+        
+    hwElmiIfInfoRowStatus  OBJECT-TYPE
+        SYNTAX     RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION 
+           "Operation status."
+        ::= { hwElmiIfInfoEntry 50 } 
+
+    hwElmiUniInfoTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwElmiUniInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The E-LMI Uni configuration table."
+        ::= { hwElmiObjects 2 }
+
+    hwElmiUniInfoEntry OBJECT-TYPE
+        SYNTAX HwElmiUniInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the E-LMI Uni configuration table."
+        INDEX { ifIndex }
+        ::= { hwElmiUniInfoTable 1 }
+
+    HwElmiUniInfoEntry ::=
+        SEQUENCE {
+            hwElmiUniIfName         DisplayString,
+            hwUniId                 OCTET STRING,
+            hwUniStatus             INTEGER,
+            hwElmiUniInfoRowStatus  RowStatus
+            }
+
+    hwElmiUniIfName OBJECT-TYPE
+        SYNTAX     DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The textual name of the interface."
+        ::= { hwElmiUniInfoEntry 1 }
+
+    hwUniId OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..64))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Identifier of UNI(User Network Interface)."
+        ::= { hwElmiUniInfoEntry 2 }
+
+    hwUniStatus OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+        up(1),
+        down(2)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Status of uni."
+        ::= { hwElmiUniInfoEntry 3 }
+
+    hwElmiUniInfoRowStatus  OBJECT-TYPE
+        SYNTAX     RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION 
+           "Operation status."
+        ::= { hwElmiUniInfoEntry 50 }        
+
+    hwElmiPeEvcTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwElmiPeEvcEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The E-LMI EVC table in pe work mode."
+        ::= { hwElmiObjects 3 }
+
+    hwElmiPeEvcEntry OBJECT-TYPE
+        SYNTAX HwElmiPeEvcEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the E-LMI pe's EVC table."
+        INDEX { hwPeEvcId }
+        ::= { hwElmiPeEvcTable 1 }
+
+    HwElmiPeEvcEntry ::=
+        SEQUENCE {
+            hwPeEvcId            OCTET STRING,
+            hwPeEvcStatus        INTEGER,
+            hwPeEvcUniCount      Integer32
+            }
+
+    hwPeEvcId OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..100))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Identifier of EVC in pe work mode."
+        ::= { hwElmiPeEvcEntry 1 }
+
+    hwPeEvcStatus OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+            active(1),
+            partiallyactive(2),
+            notactive(3)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Operational status of EVC in pe work mode."
+        ::= { hwElmiPeEvcEntry 2 }
+        
+    hwPeEvcUniCount OBJECT-TYPE
+        SYNTAX  Integer32 (2..1024)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "UNI count for the EVC in pe work mode."
+        DEFVAL { 2 }
+        ::= { hwElmiPeEvcEntry 3 }
+        
+    hwElmiPeEvcRemoteUniTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwElmiPeEvcRemoteUniEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The EVC's remote uni information table in pe work mode."
+        ::= { hwElmiObjects 4 }
+
+    hwElmiPeEvcRemoteUniEntry OBJECT-TYPE
+        SYNTAX HwElmiPeEvcRemoteUniEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the E-LMI pe's EVC table."
+        INDEX { hwPeEvcIdentifier, hwPeEvcRemoteUniId }
+        ::= { hwElmiPeEvcRemoteUniTable 1 }
+
+    HwElmiPeEvcRemoteUniEntry ::=
+        SEQUENCE {
+            hwPeEvcIdentifier       OCTET STRING,
+            hwPeEvcRemoteUniId      OCTET STRING,
+            hwPeEvcRemoteUniStatus  INTEGER
+            }
+
+    hwPeEvcIdentifier OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..100))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Identifier of EVC in pe work mode."
+        ::= { hwElmiPeEvcRemoteUniEntry 1 }
+        
+    hwPeEvcRemoteUniId OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..64))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Remote uni Identifier."
+        ::= { hwElmiPeEvcRemoteUniEntry 2 }
+
+    hwPeEvcRemoteUniStatus OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+        up(1),
+        down(2),
+        unreachable(3)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Status of remote uni."
+        ::= { hwElmiPeEvcRemoteUniEntry 3 }
+        
+    hwElmiCeEvcTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwElmiCeEvcEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The E-LMI EVC table in ce work mode."
+        ::= { hwElmiObjects 5 }
+
+    hwElmiCeEvcEntry OBJECT-TYPE
+        SYNTAX HwElmiCeEvcEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the E-LMI ce's EVC table."
+        INDEX { ifIndex, hwCeEvcId }
+        ::= { hwElmiCeEvcTable 1 }
+
+    HwElmiCeEvcEntry ::=
+        SEQUENCE {
+            hwElmiCeIfName       DisplayString,
+            hwCeEvcId            OCTET STRING,
+            hwCeEvcStatus        INTEGER,
+            hwCeEvcUniCount      Integer32
+            }
+
+    hwElmiCeIfName OBJECT-TYPE
+        SYNTAX     DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The textual name of the interface."
+        ::= { hwElmiCeEvcEntry 1 }
+        
+    hwCeEvcId OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..100))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Identifier of EVC in ce work mode."
+        ::= { hwElmiCeEvcEntry 2 }
+
+    hwCeEvcStatus OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+            active(1),
+            partiallyactive(2),
+            notactive(3),
+            unknown(4)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Operational status of EVC in ce work mode."
+        ::= { hwElmiCeEvcEntry 3 }
+        
+    hwCeEvcUniCount OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "UNI count for the EVC in ce work mode."
+        ::= { hwElmiCeEvcEntry 4 }
+        
+    hwElmiCeEvcRemoteUniTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwElmiCeEvcRemoteUniEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The EVC's remote uni information table in ce work mode."
+        ::= { hwElmiObjects 6 }
+
+    hwElmiCeEvcRemoteUniEntry OBJECT-TYPE
+        SYNTAX HwElmiCeEvcRemoteUniEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the E-LMI ce's remote uni table."
+        INDEX { ifIndex, hwCeEvcIdentifier, hwCeEvcRemoteUniId }
+        ::= { hwElmiCeEvcRemoteUniTable 1 }
+
+    HwElmiCeEvcRemoteUniEntry ::=
+        SEQUENCE {
+            hwCeIfName              DisplayString,
+            hwCeEvcIdentifier       OCTET STRING,
+            hwCeEvcRemoteUniId      OCTET STRING,
+            hwCeEvcRemoteUniStatus  INTEGER
+            }
+            
+    hwCeIfName OBJECT-TYPE
+        SYNTAX     DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The textual name of the interface."
+        ::= { hwElmiCeEvcRemoteUniEntry 1 }
+        
+    hwCeEvcIdentifier OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..100))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Identifier of EVC in ce work mode."
+        ::= { hwElmiCeEvcRemoteUniEntry 2 }
+        
+    hwCeEvcRemoteUniId OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..64))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Remote uni Identifier."
+        ::= { hwElmiCeEvcRemoteUniEntry 3 }
+
+    hwCeEvcRemoteUniStatus OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+        up(1),
+        down(2),
+        unreachable(3)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Status of remote uni."
+        ::= { hwElmiCeEvcRemoteUniEntry 4 }
+        
+    hwElmiStatisticsClearTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwElmiStatisticsClearEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The Clear E-LMI statistics counters table."
+        ::= { hwElmiObjects 7 }
+
+    hwElmiStatisticsClearEntry OBJECT-TYPE
+        SYNTAX HwElmiStatisticsClearEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the Clear E-LMI statistics counters table."
+        INDEX { ifIndex }
+        ::= { hwElmiStatisticsClearTable 1 }
+
+    HwElmiStatisticsClearEntry ::=
+        SEQUENCE {
+            hwElmiClearStatistics        INTEGER
+            }
+
+    hwElmiClearStatistics OBJECT-TYPE
+        SYNTAX     INTEGER
+            {
+            noclear(1),
+            clear(2)
+            }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "E-LMI clear statistics counters. If read, the value is 'no clear'."
+        ::= { hwElmiStatisticsClearEntry 1 }
+
+    hwElmiStatisticsTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwElmiStatisticsEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The E-LMI statistics table."
+        ::= { hwElmiObjects 8 }
+
+
+    hwElmiStatisticsEntry OBJECT-TYPE
+        SYNTAX HwElmiStatisticsEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry in the E-LMI statistics table."
+        INDEX { ifIndex }
+        ::= { hwElmiStatisticsTable 1 }
+
+    HwElmiStatisticsEntry ::=
+        SEQUENCE {
+            hwElmiLinkStatus                        INTEGER,
+            hwSendSequenceNum                       Integer32,
+            hwReceiveSequenceNum                    Integer32,
+            hwStatusCheckLastRcvdTime               DisplayString,
+            hwStatusCheckLastEnqSentTime            DisplayString,
+            hwFullStatusLastRcvdTime                DisplayString,
+            hwFullStatusEnqLastSentTime             DisplayString,
+            hwStatusCheckEnqLastRcvdTime            DisplayString,
+            hwStatusCheckLastSentTime               DisplayString,
+            hwFullStatusEnqLastRcvdTime             DisplayString,
+            hwFullStatusLastSentTime                DisplayString,
+            hwStatisticsLastClearedTime             DisplayString,
+            hwElmiCheckRcvdNum                      Integer32,
+            hwElmiCheckSentNum                      Integer32,
+            hwFullStatusRcvdNum                     Integer32,
+            hwFullStatusSentNum                     Integer32,
+            hwFullStatusContinuedRcvdNum            Integer32,
+            hwFullStatusContinuedSentNum            Integer32,
+            hwSingleEvcAsynStatusRcvdNum            Integer32,
+            hwSingleEvcAsynStatusSentNum            Integer32,
+            hwStatusTimeouts                        Integer32,
+            hwStatusEnqTimeouts                     Integer32,
+            hwInvalidSequenceNum                    Integer32,
+            hwInvalidStatusResponse                 Integer32,
+            hwUnsolicitedStatusReceived             Integer32,
+            hwInvalidProtocolVersionNum             Integer32,
+            hwInvalidEvcReferenceIdNum              Integer32,
+            hwInvalidMessageTypeNum                 Integer32,
+            hwOutofSequenceIeNum                    Integer32,
+            hwDuplicatedIeNum                       Integer32,
+            hwMandatoryIeMissingNum                 Integer32,
+            hwInvalidMandatoryIeNum                 Integer32,
+            hwInvalidNonMandatoryIeNum              Integer32,
+            hwUnrecognizedIeNum                     Integer32,
+            hwUnexpectedIeNum                       Integer32,
+            hwShortMessageNum                       Integer32
+            }
+
+    hwElmiLinkStatus OBJECT-TYPE
+        SYNTAX     INTEGER
+        {
+        up(1),
+        down(2)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Operational state of E-LMI connectivity."
+        ::= { hwElmiStatisticsEntry 1 }
+
+
+    hwSendSequenceNum OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Send sequence counter."
+        ::= { hwElmiStatisticsEntry 2 }
+
+
+    hwReceiveSequenceNum OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Receive sequence counter."
+        ::= { hwElmiStatisticsEntry 3 }
+
+
+    hwStatusCheckLastRcvdTime OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The time when the CE received the last E-LMI check status message."
+        ::= { hwElmiStatisticsEntry 4 }
+
+    hwStatusCheckLastEnqSentTime OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The time when the CE sent the last E-LMI check enquiry status message."
+        ::= { hwElmiStatisticsEntry 5 }
+
+     hwFullStatusLastRcvdTime OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The time when the CE received the last full E-LMI status message."
+        ::= { hwElmiStatisticsEntry 6 }
+
+     hwFullStatusEnqLastSentTime OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The time when the CE sent the last E-LMI status enquiry message."
+        ::= { hwElmiStatisticsEntry 7 }
+
+    hwStatusCheckEnqLastRcvdTime OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The time when the PE received the last E-LMI check enquiry status message."
+        ::= { hwElmiStatisticsEntry 8 }
+
+    hwStatusCheckLastSentTime OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The time when the PE sent the last E-LMI check status message."
+        ::= { hwElmiStatisticsEntry 9 }
+
+    hwFullStatusEnqLastRcvdTime OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The time when the PE received the last full E-LMI status enquiry message."
+        ::= { hwElmiStatisticsEntry 10 }
+
+    hwFullStatusLastSentTime OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The time when the PE sent the last E-LMI status message."
+        ::= { hwElmiStatisticsEntry 11 }
+
+    hwStatisticsLastClearedTime OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The time when the clear E-LMI statistics command was issued for the interface."
+        ::= { hwElmiStatisticsEntry 12 }
+
+    hwElmiCheckRcvdNum OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of received E-LMI check status messages."
+        ::= { hwElmiStatisticsEntry 13 }
+
+    hwElmiCheckSentNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of sent E-LMI check status messages."
+        ::= { hwElmiStatisticsEntry 14 }
+
+    hwFullStatusRcvdNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of received E-LMI full status messages."
+        ::= { hwElmiStatisticsEntry 15 }
+
+    hwFullStatusSentNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of sent E-LMI full status messages."
+        ::= { hwElmiStatisticsEntry 16 }
+
+    hwFullStatusContinuedRcvdNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of received E-LMI full status continued messages."
+        ::= { hwElmiStatisticsEntry 17 }
+
+    hwFullStatusContinuedSentNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of sent E-LMI full status continued messages."
+        ::= { hwElmiStatisticsEntry 18 }
+
+    hwSingleEvcAsynStatusRcvdNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of received E-LMI single EVC asynchronous status messages. Only in ce mode it could read."
+        ::= { hwElmiStatisticsEntry 19 }
+
+    hwSingleEvcAsynStatusSentNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of sent E-LMI single EVC asynchronous status messages.  Only in pe mode it could read."
+        ::= { hwElmiStatisticsEntry 20 }
+
+    hwStatusTimeouts  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of times that a status request has been sent but not received. Only in ce mode it could read."
+        ::= { hwElmiStatisticsEntry 21 }
+
+    hwStatusEnqTimeouts  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of times that a status request message has been not received. Only in pe mode it could read."
+        ::= { hwElmiStatisticsEntry 22 }
+
+    hwInvalidSequenceNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of times the sequence numbers of E-LMI packets do not match the sequence numbers expected."
+        ::= { hwElmiStatisticsEntry 23 }
+
+    hwInvalidStatusResponse  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of times a status response received was invalid and discarded. Only in ce mode it could read."
+        ::= { hwElmiStatisticsEntry 24 }
+
+    hwUnsolicitedStatusReceived  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of times status was received that had not been requested. Only in ce mode it could read."
+        ::= { hwElmiStatisticsEntry 25 }
+
+    hwInvalidProtocolVersionNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of times the protocol version in E-LMI message does not match what is supported."
+        ::= { hwElmiStatisticsEntry 26 }
+
+    hwInvalidEvcReferenceIdNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of times EVC reference IDs are invalid in E-LMI messages."
+        ::= { hwElmiStatisticsEntry 27 }
+
+    hwInvalidMessageTypeNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of message types that are not valid for E-LMI."
+        ::= { hwElmiStatisticsEntry 28 }
+
+    hwOutofSequenceIeNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of not in the correct sequence information elements (IEs)."
+        ::= { hwElmiStatisticsEntry 29 }
+
+    hwDuplicatedIeNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of duplicated IEs."
+        ::= { hwElmiStatisticsEntry 30 }
+
+    hwMandatoryIeMissingNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of missing mandatory IEs."
+        ::= { hwElmiStatisticsEntry 31 }
+
+    hwInvalidMandatoryIeNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of invalid mandatory IEs."
+        ::= { hwElmiStatisticsEntry 32 }
+
+    hwInvalidNonMandatoryIeNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of invalid non-mandatory IEs."
+        ::= { hwElmiStatisticsEntry 33 }
+
+    hwUnrecognizedIeNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of not recognized IEs."
+        ::= { hwElmiStatisticsEntry 34 }
+
+    hwUnexpectedIeNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of unexpected IEs."
+        ::= { hwElmiStatisticsEntry 35 }
+
+    hwShortMessageNum  OBJECT-TYPE
+        SYNTAX     Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of times the E-LMI message received is shorter than supported packets."
+        ::= { hwElmiStatisticsEntry 36 }
+
+--
+-- Notification Identifier
+--
+
+    hwElmiNotifications OBJECT IDENTIFIER ::= { hwElmiMib 3 }
+        
+    hwElmiEvcStatusPartiallyActiveFaultOccur NOTIFICATION-TYPE
+        OBJECTS { hwElmiCeIfName, hwCeEvcStatus }
+        STATUS current
+        DESCRIPTION
+            "CE get EVC's Operational status is partially active."
+        ::= { hwElmiNotifications 1 }
+
+    hwElmiEvcStatusPartiallyActiveFaultClear NOTIFICATION-TYPE
+        OBJECTS { hwElmiCeIfName, hwCeEvcStatus }
+        STATUS current
+        DESCRIPTION
+            "CE get EVC's Operational status is not partially active."
+        ::= { hwElmiNotifications 2 }
+
+    hwElmiEvcStatusNotActiveFaultOccur NOTIFICATION-TYPE
+        OBJECTS { hwElmiCeIfName, hwCeEvcStatus }
+        STATUS current
+        DESCRIPTION
+            "CE get EVC's Operational status is not-active."
+        ::= { hwElmiNotifications 3 }
+
+    hwElmiEvcStatusNotActiveFaultClear NOTIFICATION-TYPE
+        OBJECTS { hwElmiCeIfName, hwCeEvcStatus }
+        STATUS current
+        DESCRIPTION
+            "CE get EVC's Operational status is not not-active."
+        ::= { hwElmiNotifications 4 }
+
+
+    hwElmiVlanMismatch NOTIFICATION-TYPE
+        OBJECTS { hwElmiIfName, hwNomatchVlan }
+        STATUS current
+        DESCRIPTION
+            "Vlan configured but not in CE-VLAN mapping. Only show in ce mode."
+        ::= { hwElmiNotifications 5 }
+
+    hwElmiVlanNotCfg NOTIFICATION-TYPE
+        OBJECTS { hwElmiIfName, hwNotCfgVlan }
+        STATUS current
+        DESCRIPTION
+            "Vlan not configured but in CE-VLAN mapping. Only show in ce mode."
+        ::= { hwElmiNotifications 6 }
+--
+-- Conformance Identifier
+--
+
+    hwElmiConformance OBJECT IDENTIFIER ::= { hwElmiMib 4 }
+
+    hwElmiCompliances OBJECT IDENTIFIER ::= { hwElmiConformance 1 }
+
+    hwElmiFullCompliance MODULE-COMPLIANCE
+        STATUS current
+        DESCRIPTION
+            "Description."
+        MODULE -- this module
+            MANDATORY-GROUPS { hwElmiIfInfoGroup, hwElmiUniInfoGroup, hwElmiEvcGroup, 
+            hwElmiEvcRemoteUniGroup, hwElmiStatisticsGroup, hwElmiNotificationGroup }
+        ::= { hwElmiCompliances 1 }
+
+    hwElmiGroups OBJECT IDENTIFIER ::= { hwElmiConformance 2 }
+
+    hwElmiIfInfoGroup OBJECT-GROUP
+        OBJECTS { hwElmiEnable, hwElmiMode, hwNomatchVlan, hwNotCfgVlan, hwElmiIfName,
+            hwElmiIfEnable, hwN391, hwN393, hwT391, hwT392, hwElmiIfInfoRowStatus }
+        STATUS current
+        DESCRIPTION
+            "Description."
+        ::= { hwElmiGroups 1 }
+
+    hwElmiUniInfoGroup OBJECT-GROUP
+        OBJECTS { hwElmiUniIfName, hwUniId, hwUniStatus, hwElmiUniInfoRowStatus }
+       STATUS current
+        DESCRIPTION
+            "Description."
+        ::= { hwElmiGroups 2 }
+
+    hwElmiEvcGroup OBJECT-GROUP
+        OBJECTS { hwPeEvcId, hwPeEvcStatus, hwPeEvcUniCount, hwElmiCeIfName, hwCeEvcId, hwCeEvcStatus, hwCeEvcUniCount}
+        STATUS current
+        DESCRIPTION
+            "Description."
+        ::= { hwElmiGroups 3 }
+        
+    hwElmiEvcRemoteUniGroup OBJECT-GROUP
+        OBJECTS { hwPeEvcIdentifier, hwPeEvcRemoteUniId, hwPeEvcRemoteUniStatus, hwCeIfName, 
+            hwCeEvcIdentifier, hwCeEvcRemoteUniId, hwCeEvcRemoteUniStatus}
+        STATUS current
+        DESCRIPTION
+            "Description."
+        ::= { hwElmiGroups 4 }
+
+    hwElmiStatisticsGroup OBJECT-GROUP
+        OBJECTS { hwElmiClearStatistics, hwElmiLinkStatus, hwSendSequenceNum, hwReceiveSequenceNum,
+            hwStatusCheckLastRcvdTime, hwStatusCheckLastEnqSentTime, hwFullStatusLastRcvdTime, hwFullStatusEnqLastSentTime,
+            hwStatusCheckEnqLastRcvdTime, hwStatusCheckLastSentTime, hwFullStatusEnqLastRcvdTime, hwFullStatusLastSentTime,
+            hwStatisticsLastClearedTime, hwElmiCheckRcvdNum, hwElmiCheckSentNum, hwFullStatusRcvdNum, hwFullStatusSentNum,
+            hwFullStatusContinuedRcvdNum, hwFullStatusContinuedSentNum, hwSingleEvcAsynStatusRcvdNum,
+            hwSingleEvcAsynStatusSentNum, hwStatusTimeouts, hwStatusEnqTimeouts, hwInvalidSequenceNum, hwInvalidStatusResponse,
+            hwUnsolicitedStatusReceived, hwInvalidProtocolVersionNum, hwInvalidEvcReferenceIdNum, hwInvalidMessageTypeNum,
+            hwOutofSequenceIeNum, hwDuplicatedIeNum, hwMandatoryIeMissingNum, hwInvalidMandatoryIeNum,
+            hwInvalidNonMandatoryIeNum, hwUnrecognizedIeNum, hwUnexpectedIeNum, hwShortMessageNum }
+        STATUS current
+        DESCRIPTION
+            "Description."
+        ::= { hwElmiGroups 5 }
+
+    hwElmiNotificationGroup NOTIFICATION-GROUP
+        NOTIFICATIONS { hwElmiEvcStatusPartiallyActiveFaultOccur, hwElmiEvcStatusPartiallyActiveFaultClear, 
+            hwElmiEvcStatusNotActiveFaultOccur, hwElmiEvcStatusNotActiveFaultClear, hwElmiVlanMismatch, hwElmiVlanNotCfg }
+        STATUS current
+        DESCRIPTION
+            "Description."
+        ::= { hwElmiGroups 6 }
+
+    END

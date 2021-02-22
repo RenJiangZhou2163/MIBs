@@ -1,0 +1,358 @@
+-- *****************************************************************
+-- RUIJIE-FILE-MIB.mib:  Ruijie File MIB file
+--
+-- March 2002, Wuzg
+--
+-- Copyright (c) 2002 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-FILE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        IpAddress,
+        Gauge32,
+        Integer32
+                FROM SNMPv2-SMI
+        TruthValue,
+        DisplayString,
+        RowStatus
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieFileMIB MODULE-IDENTITY
+        LAST-UPDATED "200203200000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie file mibs."
+        REVISION      "200203200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 11}
+
+ruijieFileMIBObjects OBJECT IDENTIFIER ::= { ruijieFileMIB 1 }
+
+ruijieFileTransTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieFileTransEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of file transfer parameters."
+        ::= { ruijieFileMIBObjects 1 }
+        
+ruijieFileTransEntry OBJECT-TYPE
+        SYNTAX RuijieFileTransEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry of file transfer parameters."
+        INDEX { ruijieFileTransIndex }
+        ::= { ruijieFileTransTable 1 }
+    
+RuijieFileTransEntry ::=
+        SEQUENCE {
+        ruijieFileTransIndex Integer32,
+        ruijieFileTransMeans    INTEGER,
+        ruijieFileTransOperType INTEGER,
+        ruijieFileTransSrcFileName DisplayString,
+        ruijieFileTransDescFileName DisplayString,
+        ruijieFileTransServerAddr IpAddress,
+        ruijieFileTransResult INTEGER,
+        ruijieFileTransComplete TruthValue,
+        ruijieFileTransDataLength Gauge32,
+        ruijieFileTransEntryStatus RowStatus,
+        ruijieFileTransServerAddr6 OCTET STRING,
+        ruijieFileTransUserName DisplayString,
+        ruijieFileTransPassWord DisplayString,
+        ruijieFileTransFailedReason DisplayString,
+        ruijieFileTransFileType INTEGER,
+        ruijieFileTransServerPort Integer32,
+        ruijieFileTransPortType  INTEGER
+        }
+    
+ruijieFileTransIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "A value unique idenify the entry in the file transfer table.
+            the index is assigned by agent random."
+        ::= { ruijieFileTransEntry 1 }
+    
+ruijieFileTransMeans     OBJECT-TYPE
+        SYNTAX     INTEGER{
+                 tftp(1),
+                 xmodem(2),
+                 other(3)
+        }
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+                "The way to be used for any copy. Transport file by xmodem work in 
+                 only in outband.other(3) mean transfer file by a way other than tftp(1) 
+                 and xmodem(2)"
+        DEFVAL  { tftp }
+        ::= { ruijieFileTransEntry 2 }
+    
+ruijieFileTransOperType OBJECT-TYPE
+        SYNTAX INTEGER {
+            upload(1),      -- upload a file to the board
+            download(2),    -- download file frome the board
+            synchronize(3)  -- synchronize file 
+        }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "This object can be used for specifying the file transfer
+            operation type, upload or download. using tftp service 
+            file transfer can implemente between the station and agent.
+            in current agent,if synchronizing file,this object has no weight."
+        ::= { ruijieFileTransEntry 3 }
+    
+ruijieFileTransSrcFileName OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "This object tell the tftp client to know the file name
+            required to be received in tftp transfer mode;and send the file name list 
+            which separate with '\t' to synchronizing server."
+        ::= { ruijieFileTransEntry 4 }
+        
+ruijieFileTransDescFileName OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "File name the file will save as. The object has no weight to file synchronizing."
+        ::= { ruijieFileTransEntry 5 }        
+    
+ruijieFileTransServerAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "This object tell the address of transfer destination
+            when required for file transmittion. "
+        ::= { ruijieFileTransEntry 6 }
+    
+ruijieFileTransResult OBJECT-TYPE
+        SYNTAX INTEGER {
+            success(1),
+            failure(2),
+            parametersIllegel(3),
+            timeout(4)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "While the status of this entry is completed, this field of this
+            entry is valid, and carry the operation result of file transfer."
+        ::= { ruijieFileTransEntry 7 }
+        
+ruijieFileTransComplete OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "while the file transfer of use parameters stored by this entry is
+            completed the value of this field will be true(1), and if not completed
+            false(2)."
+        ::= { ruijieFileTransEntry 8 }
+
+ruijieFileTransDataLength OBJECT-TYPE
+        SYNTAX Gauge32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "the file length transferred, after the transfer is complete, this
+            value is come to valid -- the valude of field ruijieFileTransComplete
+            is true(1)."
+        ::= { ruijieFileTransEntry 9 }
+    
+ruijieFileTransEntryStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "entry status of this entry. and the means in this enviraments can
+            reffer to the text-convention definition of the RowStatus."
+        ::= { ruijieFileTransEntry 10 }
+
+ruijieFileTransServerAddr6 OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (16))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "This object tell the ipv6 address of transfer destination
+            when required for file transmittion. "
+        ::= { ruijieFileTransEntry 11 }
+
+ruijieFileTransUserName OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "UserName"
+        ::= { ruijieFileTransEntry 12 }
+
+ruijieFileTransPassWord OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "password"
+        ::= { ruijieFileTransEntry 13 }
+
+ruijieFileTransFailedReason OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "while upgrade failed, this fill tell the user why is failed"
+        ::= { ruijieFileTransEntry 14 }
+
+ruijieFileTransFileType OBJECT-TYPE
+        SYNTAX INTEGER {
+            software-version-file(1),
+            config-file(2),
+            log-file(3)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "FileType
+             1 software-version-file,
+             2 config-file
+             3 log-file "
+        ::= { ruijieFileTransEntry 15 }
+
+ruijieFileTransServerPort OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object tell the port of transfer destination
+             when required for file transmittion."
+        ::= { ruijieFileTransEntry 16 }
+        
+ruijieFileTransPortType	OBJECT-TYPE
+        SYNTAX INTEGER{
+                       byInterfacePort(1), --transfer files by Interface Port.	
+                       byMgmtPort(2)     --transfer files by MGMT Port.			
+                      }
+        MAX-ACCESS read-write
+        STATUS 	   current
+        DESCRIPTION
+              "This object tell the port type of transfer destination
+                when required for file transmittion."
+        ::= { ruijieFileTransEntry 17 }
+			  
+--=========================================
+-- end ruijieFileTransTable 
+--=========================================
+
+ruijieFileSystemMaxRoom OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "the max room of file system in units of MB."
+        ::= { ruijieFileMIBObjects 2 }
+
+ruijieFileSystemAvailableRoom OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "the available room of file system in units of MB."
+        ::= { ruijieFileMIBObjects 3 }
+
+
+-- traps define here
+ruijieFileMIBTraps       OBJECT IDENTIFIER ::= { ruijieFileMIB 0 }
+
+ruijieFileSystemUpdateFailTrap  NOTIFICATION-TYPE
+        OBJECTS   {ruijieFileTransFailedReason}
+        STATUS current
+        DESCRIPTION
+   	    "This trap is generated when the software update failed."
+        ::= { ruijieFileMIBTraps 1 }
+
+
+-- conformance information
+
+ruijieFileMIBConformance OBJECT IDENTIFIER ::= { ruijieFileMIB 2 }
+ruijieFileMIBCompliances OBJECT IDENTIFIER ::= { ruijieFileMIBConformance 1 }
+ruijieFileMIBGroups      OBJECT IDENTIFIER ::= { ruijieFileMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieFileMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie File MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieFileMIBGroup }
+                GROUP       ruijieFileTransMeansMIBGroup
+                DESCRIPTION
+                     "This group is mandatory only for those system which support
+                     other transport protocal but tftp."   
+        ::= { ruijieFileMIBCompliances 1 }
+        
+        
+-- units of conformance
+
+ruijieFileMIBGroup OBJECT-GROUP
+        OBJECTS {
+                ruijieFileTransIndex,
+                ruijieFileTransOperType,
+                ruijieFileTransSrcFileName,
+                ruijieFileTransDescFileName,
+                ruijieFileTransServerAddr,
+                ruijieFileTransResult,
+                ruijieFileTransComplete,
+                ruijieFileTransDataLength,
+                ruijieFileTransEntryStatus,
+                ruijieFileTransServerAddr6,
+                ruijieFileTransUserName,
+                ruijieFileTransPassWord,
+                ruijieFileTransFailedReason,
+                ruijieFileTransFileType,
+                ruijieFileTransServerPort,
+                ruijieFileTransPortType,
+                ruijieFileSystemMaxRoom,
+                ruijieFileSystemAvailableRoom
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing file ability to a
+                Ruijie agent."
+        ::= { ruijieFileMIBGroups 1 }      
+        
+ruijieFileTransMeansMIBGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieFileTransMeans
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing ruijieFileTransMeans to a
+                Ruijie agent."
+        ::= { ruijieFileMIBGroups 2 }            
+        
+END

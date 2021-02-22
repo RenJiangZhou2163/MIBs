@@ -1,0 +1,526 @@
+--  ************************************************
+--  $Id: zxr10ping.mib 8 2005-07-28 12:17:08Z zhanglh $
+--
+--  zxr10macping.mib: ZXR10 Ping MIB file
+--
+--  JUL. 2005, Zhang lihui
+--
+--  Copyright(c) 2005 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+
+ZXR10-MAC-PING-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    NOTIFICATION-TYPE,
+    OBJECT-IDENTITY,
+    Integer32,IpAddress,enterprises
+        FROM SNMPv2-SMI
+    TruthValue, DisplayString,
+    TEXTUAL-CONVENTION
+        FROM SNMPv2-TC;
+
+    zte MODULE-IDENTITY
+    LAST-UPDATED    "201305141430Z"
+    ORGANIZATION    "ZTE Corporation."
+    CONTACT-INFO
+        "       Zhao yanhua
+        Tel:    +86-25-52870000
+        E-Mail: zhao.yanhua3@zte.com.cn
+        "
+    DESCRIPTION
+        "ZTE MAC-PING MIB
+        "
+    REVISION        "201305141430Z"
+    DESCRIPTION
+        "modify:    zxr10PingMacInternalVlanId
+                    zxr10PingMacExternalVlanId
+                    zxr10PingMacVlanId
+                    size(1..4094) change to size(0.4094)
+                    zxr10PingMacTrapOncompletion
+                    default value from true to false
+         add:       description of some nodes
+                    default value for some nodes
+                    fix compiling warnings
+        "
+    REVISION        "201303191130Z"
+    DESCRIPTION
+        "add:       zxr10PingMacInternalVlanId
+                    zxr10PingMacExternalVlanId
+                    zxr10PingMacVlanId
+                    zxr10MacPingGlobalObjects
+        "
+    REVISION "200504120000Z"  -- April 12, 2005
+    DESCRIPTION
+        "Initial version of this MIB module.
+        "
+    ::= { enterprises 3902 }    -- assigned by IANA
+
+    zxr10 OBJECT-IDENTITY
+    STATUS          current
+    DESCRIPTION
+        "zxr10 is the root OBJECT IDENTIFIER for ZTE
+         routers and switches pruducts"
+    ::= { zte 3 }
+
+    zxr10L2vpn  OBJECT IDENTIFIER       ::= {zxr10  104}
+    zxr10MacPingMIB OBJECT IDENTIFIER   ::= {zxr10L2vpn 4}
+
+    MacPingOptionType ::= TEXTUAL-CONVENTION
+        STATUS       current
+        DESCRIPTION
+            "mac ping option type"
+        SYNTAX      INTEGER {
+                        ce(0),
+                        pe(1)
+                    }
+
+    zxr10MacPingTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10MacPingEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "mac ping information table."
+        ::= { zxr10MacPingMIB 1 }
+
+    zxr10MacPingEntry  OBJECT-TYPE
+        SYNTAX      Zxr10MacPingEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "mac ping information entry."
+        INDEX       { zxr10PingMacSerial }
+        ::= { zxr10MacPingTable 1 }
+
+    Zxr10MacPingEntry ::=
+        SEQUENCE {
+            zxr10PingMacSerial
+                Integer32,
+            zxr10PingMacDestMac
+                DisplayString,
+            zxr10PingMacControlOutEtherIf
+                Integer32,
+            zxr10PingMacIfOption
+                INTEGER,
+            zxr10PingMacPacketCount
+                Integer32,
+            zxr10PingMacTimeOut
+                Integer32,
+            zxr10PingMacHops
+                Integer32,
+            zxr10PingMacControlResultType
+                INTEGER,
+            zxr10PingMacTrapOncompletion
+                TruthValue,
+            zxr10PingMacRosStatus
+                INTEGER,
+            zxr10PingMacEntryOwner
+                DisplayString,
+            zxr10PingMacIfPeOption
+                MacPingOptionType,
+            zxr10PingMacVfiName
+                DisplayString,
+            zxr10PingMacPeerAddress
+                IpAddress,
+            zxr10PingMacInternalVlanId
+                Integer32,
+            zxr10PingMacExternalVlanId
+               Integer32,
+            zxr10PingMacVlanId
+               Integer32
+    }
+
+    zxr10PingMacSerial  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "serial number"
+        ::= { zxr10MacPingEntry 1 }
+
+    zxr10PingMacDestMac  OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "dest mac"
+        ::= { zxr10MacPingEntry 2 }
+
+    zxr10PingMacControlOutEtherIf  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "output interface if-index"
+        ::= { zxr10MacPingEntry 3 }
+
+    zxr10PingMacIfOption  OBJECT-TYPE
+        SYNTAX      INTEGER { none(0),option(1) }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "option,default:none"
+        DEFVAL      { none }
+        ::= { zxr10MacPingEntry 4 }
+
+    zxr10PingMacPacketCount  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "packet count"
+        DEFVAL      { 5 }
+        ::= { zxr10MacPingEntry 5 }
+
+    zxr10PingMacTimeOut  OBJECT-TYPE
+        SYNTAX      Integer32 (1..20)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "timeout"
+        DEFVAL      { 2 }
+        ::= { zxr10MacPingEntry 6 }
+
+    zxr10PingMacHops  OBJECT-TYPE
+        SYNTAX      Integer32 (1..10)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "hops"
+        DEFVAL      { 5 }
+        ::= { zxr10MacPingEntry 7 }
+
+    zxr10PingMacControlResultType  OBJECT-TYPE
+        SYNTAX      INTEGER { summary(0),detail(1) }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "result type"
+        DEFVAL      { summary }
+        ::= { zxr10MacPingEntry 8 }
+
+    zxr10PingMacTrapOncompletion  OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The value of this object determines when and whether to
+             generate a notification for this entry."
+        DEFVAL      { false }
+        ::= { zxr10MacPingEntry 9 }
+
+    zxr10PingMacRosStatus  OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        notActive(1),
+                        startPing(2),
+                        pingProcessing(3),
+                        pingCompleted(4)
+                    }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "This object allows to start ping or destroy entries
+            in the zxr10MacPingTable."
+        DEFVAL      { 1 }
+        ::= { zxr10MacPingEntry 10 }
+
+    zxr10PingMacEntryOwner  OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "entry owner"
+        ::= { zxr10MacPingEntry 11 }
+
+    zxr10PingMacIfPeOption  OBJECT-TYPE
+        SYNTAX      MacPingOptionType
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Controls the type of the mac-ping request.
+              0: ce ping, need zxr10PingMacControlOutEtherIf
+              1: pe ping, need zxr10PingMacVfiName and
+                 zxr10PingMacPeerAddress"
+        ::= { zxr10MacPingEntry 12 }
+
+    zxr10PingMacVfiName  OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The vpls/vpws name for PE mac-ping."
+        ::= { zxr10MacPingEntry 13 }
+
+     zxr10PingMacPeerAddress  OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The peer IP address for PE mac-ping."
+        ::= { zxr10MacPingEntry 14 }
+
+    zxr10PingMacInternalVlanId OBJECT-TYPE
+        SYNTAX      Integer32 (0..4094)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Internal VlanId, which is optional.
+             0: do not configure internal vlan."
+        DEFVAL      { 0 }
+        ::= { zxr10MacPingEntry 15 }
+
+    zxr10PingMacExternalVlanId OBJECT-TYPE
+        SYNTAX      Integer32 (0..4094)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "External VlanId, which is optional.
+             0: do not configure external vlan."
+        DEFVAL      { 0 }
+        ::= { zxr10MacPingEntry 16 }
+
+    zxr10PingMacVlanId OBJECT-TYPE
+        SYNTAX      Integer32 (0..4094)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Vlan Id, which is optional.
+             0: do not configure vlan id."
+        DEFVAL      { 0 }
+        ::= { zxr10MacPingEntry 17 }
+
+ --- mac ping result
+
+    zxr10PingMacResultTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10PingMacResultEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "mac ping result table."
+        ::= { zxr10MacPingMIB 2 }
+
+    zxr10PingMacResultEntry  OBJECT-TYPE
+        SYNTAX      Zxr10PingMacResultEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "mac ping result entry."
+        INDEX       { zxr10PingMacResultSerial }
+        ::= { zxr10PingMacResultTable 1 }
+
+    Zxr10PingMacResultEntry ::=
+        SEQUENCE {
+            zxr10PingMacResultSerial
+                Integer32,
+            zxr10PingMacResultSentPkts
+                Integer32,
+            zxr10PingMacResultRcvPkts
+                Integer32,
+            zxr10PingMacResultRoundTripMinTime
+                Integer32,
+            zxr10PingMacResultRoundTripMaxTime
+                Integer32,
+            zxr10PingMacResultRoundTripAvgTime
+                Integer32,
+            zxr10PingMacResultType
+                INTEGER,
+            zxr10PingMacExtResultDestIfName
+                DisplayString,
+            zxr10PingMacExtResultDestHostName
+                DisplayString,
+            zxr10PingMacExtResultSourceIfName
+                DisplayString,
+            zxr10PingMacExtResultSourceHostName
+                DisplayString,
+            zxr10PingMacExtResultOutVlanId
+                Integer32,
+            zxr10PingMacExtResultInVlanId
+                Integer32,
+            zxr10PingMacResultEntryOwner
+                DisplayString,
+            zxr10PingMacResultRoundWobbleMinTime
+                Integer32,
+            zxr10PingMacResultRoundWobbleMaxTime
+               Integer32,
+            zxr10PingMacResultRoundWobbleAvgTime
+               Integer32
+        }
+
+    zxr10PingMacResultSerial  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "serial number"
+        ::= { zxr10PingMacResultEntry 1 }
+
+    zxr10PingMacResultSentPkts  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "send packets"
+        ::= { zxr10PingMacResultEntry 2 }
+
+    zxr10PingMacResultRcvPkts  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "receive packets"
+        ::= { zxr10PingMacResultEntry 3 }
+
+    zxr10PingMacResultRoundTripMinTime  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "min RTT"
+        ::= { zxr10PingMacResultEntry 4 }
+
+     zxr10PingMacResultRoundTripMaxTime  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "max RTT"
+        ::= { zxr10PingMacResultEntry 5 }
+
+     zxr10PingMacResultRoundTripAvgTime  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "average RTT"
+        ::= { zxr10PingMacResultEntry 6 }
+
+     zxr10PingMacResultType  OBJECT-TYPE
+        SYNTAX      INTEGER { summary(0),detail(1) }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "result type:(0:summary, 1:detail)"
+        ::= { zxr10PingMacResultEntry 7 }
+
+     zxr10PingMacExtResultDestIfName  OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(0..32))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "destination interface"
+        ::= { zxr10PingMacResultEntry 8 }
+
+     zxr10PingMacExtResultDestHostName  OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(0..17))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "destination hostname"
+        ::= { zxr10PingMacResultEntry 9 }
+
+     zxr10PingMacExtResultSourceIfName  OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(0..32))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "source interface"
+        ::= { zxr10PingMacResultEntry 10 }
+
+     zxr10PingMacExtResultSourceHostName  OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(0..17))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "source hostname"
+        ::= { zxr10PingMacResultEntry 11 }
+
+     zxr10PingMacExtResultOutVlanId  OBJECT-TYPE
+        SYNTAX      Integer32 (0..4096)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "out vlanid"
+        ::= { zxr10PingMacResultEntry 12 }
+
+     zxr10PingMacExtResultInVlanId  OBJECT-TYPE
+        SYNTAX      Integer32 (0..4096)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "in vlanid"
+        ::= { zxr10PingMacResultEntry 13 }
+
+     zxr10PingMacResultEntryOwner  OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "entry owner"
+        ::= { zxr10PingMacResultEntry 14 }
+
+     zxr10PingMacResultRoundWobbleMinTime  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "min RWT"
+        ::= { zxr10PingMacResultEntry 15 }
+
+        zxr10PingMacResultRoundWobbleMaxTime  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "max RWT"
+        ::= { zxr10PingMacResultEntry 16 }
+
+     zxr10PingMacResultRoundWobbleAvgTime  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "average RWT"
+        ::= { zxr10PingMacResultEntry 17 }
+
+-- *******************************************************************
+--   Trap Definitions
+-- *******************************************************************
+
+    macpingNotifications   OBJECT IDENTIFIER ::= { zxr10MacPingMIB 3 }
+
+    macpingTrapResult NOTIFICATION-TYPE
+        OBJECTS
+            {
+                zxr10PingMacResultSerial,
+                zxr10PingMacResultSentPkts,
+                zxr10PingMacResultRcvPkts,
+                zxr10PingMacResultRoundTripMinTime,
+                zxr10PingMacResultRoundTripMaxTime,
+                zxr10PingMacResultRoundTripAvgTime
+            }
+     STATUS     current
+     DESCRIPTION
+         "The newMaster trap indicates that the sending agent
+         has transitioned to 'Master' state."
+     ::= { macpingNotifications 1 }
+
+-- *******************************************************************
+--   Global Configuration
+-- *******************************************************************
+
+    zxr10MacPingGlobalObjects  OBJECT IDENTIFIER ::= { zxr10MacPingMIB 4 }
+
+    zxr10PingMacEnable  OBJECT-TYPE
+        SYNTAX      INTEGER  { true(1), false(2) }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Control whether mac ping is enable."
+        DEFVAL      { false }
+        ::= { zxr10MacPingGlobalObjects 1 }
+
+END
+

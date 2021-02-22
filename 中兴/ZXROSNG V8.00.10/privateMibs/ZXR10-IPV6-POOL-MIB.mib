@@ -1,0 +1,1013 @@
+--  ************************************************************************************
+--  $Id: ZXR10-IPV6-POOL-MIB.mib 13 2011-04-01 01:01:26Z suqing $
+--
+--  ZXR10-IPV6-POOL-MIB.mib:  ROSNG IPv6 pool Configuration MIB file
+--  
+--  April. 2011, Su Qing
+--   
+--  Copyright(c) 2011 by ZTE Corporaton
+--  All rights reservered
+--
+--  *************************************************************************************
+
+    ZXR10-IPV6-POOL-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, 
+        OBJECT-TYPE,
+        Unsigned32,
+        Counter32,
+        Counter64,
+        enterprises        
+            FROM SNMPv2-SMI
+        DisplayString
+            FROM SNMPv2-TC
+        Ipv6Address
+            FROM IPV6-TC; 
+
+    zxr10IPv6PoolMIB MODULE-IDENTITY
+        LAST-UPDATED "201504030000Z"  -- April 3, 2015
+        ORGANIZATION "ZTE Corporation"
+        CONTACT-INFO
+            "ZTE Corporation 
+             Nanjing Institute of ZTE Corporation
+         
+             No.68 Zijinghua Rd. Yuhuatai District, Nanjing, China
+         
+             Tel: +86-25-52870000"
+
+        DESCRIPTION
+            "M6000 60 IPv6 pool config MIB"
+        
+        REVISION "201504030000Z"  
+        DESCRIPTION
+            "1.Change range of zxr10IPv6AddrPoolSummaryRangeNum from (0..100)
+               to (0..65535);      
+             2.Change range of zxr10IPv6AddrPoolSummaryExcludeRangeNum 
+             from (0..100) to (0..65535);
+             3.Change range of zxr10IPv6PrefixPoolSummaryRangeNum 
+             from (0..100) to (0..65535);
+             4.Change range of zxr10IPv6PrefixPoolSummaryExcludeRangeNum 
+             from (0..100) to (0..65535)."
+
+        REVISION "201503101530Z"  
+        DESCRIPTION
+            "1.Modify SYNTAX of zxr10IPv6AddrPoolSummaryPoolName,
+               change from DisplayString(SIZE(1..15)) to DisplayString(SIZE(1..31));      
+             2.Modify SYNTAX of zxr10IPv6AddrPoolRangePoolName,
+               change from DisplayString(SIZE(1..15)) to DisplayString(SIZE(1..31));   
+             3.Modify SYNTAX of zxr10IPv6AddrPoolExcludeRangePoolName,
+               change from DisplayString(SIZE(1..15)) to DisplayString(SIZE(1..31));   
+             4.Modify SYNTAX of zxr10IPv6AddrPoolConflictPoolName, 
+               change from DisplayString(SIZE(1..15)) to DisplayString(SIZE(1..31));   
+             5.Modify SYNTAX of zxr10IPv6PrefixPoolSummaryPoolName,
+               change from DisplayString(SIZE(1..15)) to DisplayString(SIZE(1..31));   
+             6.Modify SYNTAX of zxr10IPv6PrefixPoolPrefixPoolName,
+               change from DisplayString(SIZE(1..15)) to DisplayString(SIZE(1..31));   
+             7.Modify SYNTAX of zxr10IPv6PrefixPoolExcludePoolName, 
+               change from DisplayString(SIZE(1..15)) to DisplayString(SIZE(1..31))."
+
+        REVISION "201402101530Z"  
+        DESCRIPTION
+            "1.Modify DESCRIPTION of zxr10IPv6PrefixPoolPrefixDelegationLenth,
+               change to 'IPv6 delegation length.';      
+             2.Modify DESCRIPTION of zxr10IPv6PrefixPoolPrefixLenth,
+               change to 'IPv6 prefix length.';
+             3.Modify DESCRIPTION of 
+               zxr10IPv6PrefixPoolExcludePrefixDelegationLenth,
+               change to 'IPv6 delegation length.';
+             4.Modify DESCRIPTION of zxr10IPv6PrefixPoolExcludePrefixLenth, 
+               change to 'IPv6 prefix length.';
+             5.In zxr10IPv6AddrPoolExcludeTable,the 
+               zxr10IPv6AddrPoolExcludeRangeFreeIPNum and 
+               zxr10IPv6AddrPoolExcludeRangeUsedIPNum has INTEFER syntax 
+               with range, change the range (0..2048) to (0..131072); 
+             6.In zxr10IPv6PrefixPoolExcludeTable,the 
+               zxr10IPv6PrefixPoolExcludeFreePrefixNum and 
+               zxr10IPv6PrefixPoolExcludeUsedPrefixNum has INTEFER syntax 
+               with range, change the range (0..2048) to (0..131072)."
+   
+        REVISION "201310300000Z"  
+        DESCRIPTION
+            "1.Add five nodes in zxr10IPv6AddrPoolSummaryTable as follows,
+               zxr10IPv6AddrPoolSummaryTIPNumH1,
+               zxr10IPv6AddrPoolSummaryTIPNumH2,
+               zxr10IPv6AddrPoolSummaryTIPNumH3,
+               zxr10IPv6AddrPoolSummaryTIPNumH4
+               and zxr10IPv6AddrPoolSummaryUtlRatio;      
+             2.Add five nodes in zxr10IPv6PrefixPoolSummaryTable as follows,
+               zxr10IPv6PrefixPoolSumryTIPNumH1,
+               zxr10IPv6PrefixPoolSumryTIPNumH2,
+               zxr10IPv6PrefixPoolSumryTIPNumH3,
+               zxr10IPv6PrefixPoolSumryTIPNumH4
+               and zxr10IPv6PrefixPoolSumryUtlRatio; 
+             3.Add eight nodes in zxr10IPv6PoolStatGroup as follows,
+               zxr10IPv6PoolStatAddrTFreeNumH1,
+               zxr10IPv6PoolStatAddrTFreeNumH2,
+               zxr10IPv6PoolStatAddrTFreeNumH3,
+               zxr10IPv6PoolStatAddrTFreeNumH4,
+               zxr10IPv6PoolStatPrefxTFreeNumH1,
+               zxr10IPv6PoolStatPrefxTFreeNumH2,
+               zxr10IPv6PoolStatPrefxTFreeNumH3
+               and zxr10IPv6PoolStatPrefxTFreeNumH4;
+             4.In zxr10IPv6PrefixPoolPrefixTable,the 
+               zxr10IPv6PrefixPoolPrefixDelegationLenth and 
+               zxr10IPv6PrefixPoolPrefixLenth has INTEFER syntax without range,
+               add range (1..128) to them.
+             5.In zxr10IPv6PrefixPoolExcludeTable,the 
+               zxr10IPv6PrefixPoolExcludePrefixDelegationLenth and 
+               zxr10IPv6PrefixPoolExcludePrefixLenth has INTEFER syntax 
+               without range, add range (1..128) to them."
+ 
+        REVISION "201012250000Z"  
+        DESCRIPTION
+            "This mib defines management information objects for DHCP" 
+        ::= { zxr10RosngMIB 154 } 
+    
+    zte   OBJECT IDENTIFIER ::= { enterprises 3902 }  
+    zxr10 OBJECT IDENTIFIER ::= { zte 3 }
+    zxr10RosngMIB OBJECT IDENTIFIER ::= { zxr10 6000 }
+         
+    -- Mib oid define
+ 
+    zxr10IPv6AddrPool       OBJECT IDENTIFIER ::= { zxr10IPv6PoolMIB 1 }     
+    zxr10IPv6PrefixPool     OBJECT IDENTIFIER ::= { zxr10IPv6PoolMIB 2 }
+    zxr10IPv6PoolStatGroup  OBJECT IDENTIFIER ::= { zxr10IPv6PoolMIB 3 }     
+
+     -- IPv6 address pool configuration
+     -- summary table
+    zxr10IPv6AddrPoolSummaryTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv6AddrPoolSummaryEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The summary table of current address pool."
+        ::= { zxr10IPv6AddrPool 1 }
+
+    zxr10IPv6AddrPoolSummaryEntry  OBJECT-TYPE
+        SYNTAX      Zxr10IPv6AddrPoolSummaryEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This list contains IPv6 address pool summary configuration"     
+        INDEX  { zxr10IPv6AddrPoolSummaryPoolName }    
+        ::= { zxr10IPv6AddrPoolSummaryTable 1 }
+       
+    Zxr10IPv6AddrPoolSummaryEntry ::=
+        SEQUENCE {
+        zxr10IPv6AddrPoolSummaryPoolName        DisplayString,                               
+        zxr10IPv6AddrPoolSummaryRangeNum        INTEGER,
+        zxr10IPv6AddrPoolSummaryExcludeRangeNum INTEGER,
+        zxr10IPv6AddrPoolSummaryFreeIPNumH      Counter64, 
+        zxr10IPv6AddrPoolSummaryFreeIPNumL      Counter64, 
+        zxr10IPv6AddrPoolSummaryUsedIPNumH      Counter64,
+        zxr10IPv6AddrPoolSummaryUsedIPNumL      Counter64,   
+        zxr10IPv6AddrPoolSummaryThreshold       Counter32,
+        zxr10IPv6AddrPoolSummaryLockFlag        INTEGER,
+        zxr10IPv6AddrPoolSummaryConflictNum     Counter64,
+        zxr10IPv6AddrPoolSummaryConflictTime    INTEGER,
+        zxr10IPv6AddrPoolTotalIPNumH1           Unsigned32, 
+        zxr10IPv6AddrPoolTotalIPNumH2           Unsigned32,
+        zxr10IPv6AddrPoolTotalIPNumH3           Unsigned32, 
+        zxr10IPv6AddrPoolTotalIPNumH4           Unsigned32,        
+        zxr10IPv6AddrPoolSummaryUtlRatio        DisplayString    
+        }  
+
+    zxr10IPv6AddrPoolSummaryPoolName   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..31))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "IPv6 address pool name." 
+        ::= { zxr10IPv6AddrPoolSummaryEntry 1 }
+ 
+    zxr10IPv6AddrPoolSummaryRangeNum   OBJECT-TYPE
+        SYNTAX     INTEGER(0..65535) 
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The number of current IPv6 address pool's range." 
+        ::= { zxr10IPv6AddrPoolSummaryEntry 2 }   
+        
+    zxr10IPv6AddrPoolSummaryExcludeRangeNum   OBJECT-TYPE
+        SYNTAX     INTEGER(0..65535)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The number of current IPv6 address pool's exclude range." 
+        ::= { zxr10IPv6AddrPoolSummaryEntry 3 }
+ 
+    zxr10IPv6AddrPoolSummaryFreeIPNumH   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The high 8 octets of IPv6 address number which is not 
+                    used." 
+        ::= { zxr10IPv6AddrPoolSummaryEntry 4 }     
+        
+    zxr10IPv6AddrPoolSummaryFreeIPNumL   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The lower 8 octets of IPv6 address number which is not 
+                     used." 
+        ::= { zxr10IPv6AddrPoolSummaryEntry 5 }
+       
+    zxr10IPv6AddrPoolSummaryUsedIPNumH   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The high 8 octets of IPv6 address number which is 
+                     used." 
+        ::= { zxr10IPv6AddrPoolSummaryEntry 6 }
+
+    zxr10IPv6AddrPoolSummaryUsedIPNumL   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The lower 8 octets of IPv6 address number which is 
+                     used." 
+        ::= { zxr10IPv6AddrPoolSummaryEntry 7 }
+
+    zxr10IPv6AddrPoolSummaryThreshold   OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The threshold of current pool." 
+        ::= { zxr10IPv6AddrPoolSummaryEntry 8 }
+        
+    zxr10IPv6AddrPoolSummaryLockFlag   OBJECT-TYPE
+        SYNTAX     INTEGER{
+                     unlock(1),
+                     lock(2)
+                   }
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The locked flag of current pool." 
+        ::= { zxr10IPv6AddrPoolSummaryEntry 9 } 
+        
+    zxr10IPv6AddrPoolSummaryConflictNum   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The confilict address number of current pool." 
+        ::= { zxr10IPv6AddrPoolSummaryEntry 10 }  
+  
+      zxr10IPv6AddrPoolSummaryConflictTime   OBJECT-TYPE
+        SYNTAX     INTEGER(1..18000)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "IPv6 address conflict time." 
+        ::= { zxr10IPv6AddrPoolSummaryEntry 11 } 
+      
+     zxr10IPv6AddrPoolTotalIPNumH1   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The first high 4 octets of total address number which 
+                    current IPv6 address pool configured." 
+        ::= { zxr10IPv6AddrPoolSummaryEntry 12 }
+
+     zxr10IPv6AddrPoolTotalIPNumH2   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The second high 4 octets of total address number which 
+                    current IPv6 address pool configured." 
+        ::= { zxr10IPv6AddrPoolSummaryEntry 13 }
+
+     zxr10IPv6AddrPoolTotalIPNumH3   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The third high 4 octets of total address number which 
+                    current IPv6 address pool configured." 
+        ::= { zxr10IPv6AddrPoolSummaryEntry 14 }
+
+     zxr10IPv6AddrPoolTotalIPNumH4   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The last 4 octets of total address number which 
+                    current IPv6 address pool configured." 
+        ::= { zxr10IPv6AddrPoolSummaryEntry 15 }
+        
+     zxr10IPv6AddrPoolSummaryUtlRatio   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..7))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "Utilization ratio of current IPv6 address pool." 
+        ::= { zxr10IPv6AddrPoolSummaryEntry 16 }       
+
+
+   -- detail table    
+    zxr10IPv6AddrPoolRangeTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv6AddrPoolRangeEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The detail table of current pool."
+        ::= { zxr10IPv6AddrPool 2 }   
+                
+    zxr10IPv6AddrPoolRangeEntry  OBJECT-TYPE
+        SYNTAX      Zxr10IPv6AddrPoolRangeEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This list contains IPv6 address pool range configuration"     
+        INDEX  { zxr10IPv6AddrPoolRangePoolName, 
+                 zxr10IPv6AddrPoolRangeStartIP, 
+                 zxr10IPv6AddrPoolRangeVirtualRouteField }    
+        ::= { zxr10IPv6AddrPoolRangeTable 1 } 
+        
+    Zxr10IPv6AddrPoolRangeEntry ::=
+        SEQUENCE {
+        zxr10IPv6AddrPoolRangePoolName           DisplayString,                               
+        zxr10IPv6AddrPoolRangeStartIP            Ipv6Address,
+        zxr10IPv6AddrPoolRangeEndIP              Ipv6Address, 
+        zxr10IPv6AddrPoolRangeVirtualRouteField  DisplayString, 
+        zxr10IPv6AddrPoolRangeFreeIPNumH         Counter64,
+        zxr10IPv6AddrPoolRangeFreeIPNumL         Counter64,
+        zxr10IPv6AddrPoolRangeUsedIPNumH         Counter64,
+        zxr10IPv6AddrPoolRangeUsedIPNumL         Counter64
+        }
+
+    zxr10IPv6AddrPoolRangePoolName   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..31))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "IPv6 address pool name." 
+        ::= { zxr10IPv6AddrPoolRangeEntry 1 }
+        
+    zxr10IPv6AddrPoolRangeStartIP   OBJECT-TYPE
+        SYNTAX     Ipv6Address
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The start IPv6 address of current range." 
+        ::= { zxr10IPv6AddrPoolRangeEntry 2 } 
+                  
+    zxr10IPv6AddrPoolRangeEndIP   OBJECT-TYPE
+        SYNTAX     Ipv6Address
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The end IPv6 address of current range." 
+        ::= { zxr10IPv6AddrPoolRangeEntry 3 }
+        
+    zxr10IPv6AddrPoolRangeVirtualRouteField   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..32))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "VRF name which binded with current range." 
+        ::= { zxr10IPv6AddrPoolRangeEntry 4 }        
+        
+    zxr10IPv6AddrPoolRangeFreeIPNumH   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The high 8 octets of IPv6 address number which is not 
+                     used." 
+        ::= { zxr10IPv6AddrPoolRangeEntry 5 }
+        
+    zxr10IPv6AddrPoolRangeFreeIPNumL   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The lower 8 octets of IPv6 address number which is not 
+                    used." 
+        ::= { zxr10IPv6AddrPoolRangeEntry 6 }
+        
+    zxr10IPv6AddrPoolRangeUsedIPNumH   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The high 8 octets of IPv6 address number which is 
+                    used." 
+        ::= { zxr10IPv6AddrPoolRangeEntry 7 }  
+        
+    zxr10IPv6AddrPoolRangeUsedIPNumL   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The lower 8 octets of IPv6 address number which is 
+                     used." 
+        ::= { zxr10IPv6AddrPoolRangeEntry 8 }  
+
+    -- exclude table            
+    zxr10IPv6AddrPoolExcludeTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv6AddrPoolExcludeEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The exclude table of current pool."
+        ::= { zxr10IPv6AddrPool 3 }   
+                
+    zxr10IPv6AddrPoolExcludeEntry  OBJECT-TYPE
+        SYNTAX      Zxr10IPv6AddrPoolExcludeEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION                                             
+            "This list contains IPv6 address pool exclude configuration"     
+        INDEX  { zxr10IPv6AddrPoolExcludeRangePoolName, 
+                 zxr10IPv6AddrPoolExcludeRangeStartIP, 
+                 zxr10IPv6AddrPoolExcludeRangeVirtualRouteField }    
+        ::= { zxr10IPv6AddrPoolExcludeTable 1 } 
+        
+    Zxr10IPv6AddrPoolExcludeEntry ::=
+        SEQUENCE {
+        zxr10IPv6AddrPoolExcludeRangePoolName           DisplayString,                               
+        zxr10IPv6AddrPoolExcludeRangeStartIP            Ipv6Address,
+        zxr10IPv6AddrPoolExcludeRangeEndIP              Ipv6Address, 
+        zxr10IPv6AddrPoolExcludeRangeVirtualRouteField  DisplayString, 
+        zxr10IPv6AddrPoolExcludeRangeFreeIPNum          INTEGER,
+        zxr10IPv6AddrPoolExcludeRangeUsedIPNum          INTEGER
+        }
+        
+    zxr10IPv6AddrPoolExcludeRangePoolName   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..31))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "IPv6 address pool name." 
+        ::= { zxr10IPv6AddrPoolExcludeEntry 1 }    
+        
+    zxr10IPv6AddrPoolExcludeRangeStartIP   OBJECT-TYPE
+        SYNTAX     Ipv6Address
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The start IPv6 address of current exclude range."            
+        ::= { zxr10IPv6AddrPoolExcludeEntry 2 }    
+        
+    zxr10IPv6AddrPoolExcludeRangeEndIP   OBJECT-TYPE
+        SYNTAX     Ipv6Address
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The end IPv6 address of current exclude range." 
+        ::= { zxr10IPv6AddrPoolExcludeEntry 3 }  
+        
+    zxr10IPv6AddrPoolExcludeRangeVirtualRouteField   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..32))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "VRF name which binded with current exclude range."             
+        ::= { zxr10IPv6AddrPoolExcludeEntry 4 }    
+        
+    zxr10IPv6AddrPoolExcludeRangeFreeIPNum   OBJECT-TYPE
+        SYNTAX     INTEGER(0..131072)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The number of IPv6 address which is not used."        
+        ::= { zxr10IPv6AddrPoolExcludeEntry 5 }    
+        
+    zxr10IPv6AddrPoolExcludeRangeUsedIPNum   OBJECT-TYPE
+        SYNTAX     INTEGER(0..131072)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The number of IPv6 address which is used." 
+        ::= { zxr10IPv6AddrPoolExcludeEntry 6 } 
+
+  -- conflict table                            
+    zxr10IPv6AddrPoolConflictTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv6AddrPoolConflictEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The conflict table of current pool."
+        ::= { zxr10IPv6AddrPool 4 }   
+                
+    zxr10IPv6AddrPoolConflictEntry  OBJECT-TYPE
+        SYNTAX      Zxr10IPv6AddrPoolConflictEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION                                             
+            "This list contains IPv6 address pool conflict IPv6 information"     
+        INDEX  { zxr10IPv6AddrPoolConflictPoolName, 
+                 zxr10IPv6AddrPoolConflictIPv6, 
+                 zxr10IPv6AddrPoolConflictVirtualRouteField }    
+        ::= { zxr10IPv6AddrPoolConflictTable 1 } 
+        
+    Zxr10IPv6AddrPoolConflictEntry ::=
+        SEQUENCE {
+        zxr10IPv6AddrPoolConflictPoolName           DisplayString,                               
+        zxr10IPv6AddrPoolConflictTime               INTEGER,
+        zxr10IPv6AddrPoolConflictIPv6               Ipv6Address, 
+        zxr10IPv6AddrPoolConflictVirtualRouteField  DisplayString, 
+        zxr10IPv6AddrPoolConflictTimeStamp          INTEGER
+        }
+        
+    zxr10IPv6AddrPoolConflictPoolName   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..31))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "IPv6 address pool name." 
+        ::= { zxr10IPv6AddrPoolConflictEntry 1 }    
+
+    zxr10IPv6AddrPoolConflictTime   OBJECT-TYPE
+        SYNTAX     INTEGER(1..18000)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "IPv6 address conflict time." 
+        ::= { zxr10IPv6AddrPoolConflictEntry 2 }    
+        
+    zxr10IPv6AddrPoolConflictIPv6   OBJECT-TYPE
+        SYNTAX     Ipv6Address
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "IPv6 conflict address." 
+        ::= { zxr10IPv6AddrPoolConflictEntry 3 }        
+        
+    zxr10IPv6AddrPoolConflictVirtualRouteField   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..32))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "VRF name." 
+        ::= { zxr10IPv6AddrPoolConflictEntry 4 }    
+        
+    zxr10IPv6AddrPoolConflictTimeStamp   OBJECT-TYPE
+        SYNTAX     INTEGER(1..18000)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The stamp time of IPv6 conflict address." 
+        ::= { zxr10IPv6AddrPoolConflictEntry 5 }   
+
+    -- IPv6 prefix pool configuration
+    -- summary table
+    zxr10IPv6PrefixPoolSummaryTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv6PrefixPoolSummaryEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The summary table of current prefix pool."
+        ::= { zxr10IPv6PrefixPool 1 }   
+                
+    zxr10IPv6PrefixPoolSummaryEntry  OBJECT-TYPE
+        SYNTAX      Zxr10IPv6PrefixPoolSummaryEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION                                             
+            "This list contains IPv6 prefix pool summary configuration"     
+        INDEX  { zxr10IPv6PrefixPoolSummaryPoolName }    
+        ::= { zxr10IPv6PrefixPoolSummaryTable 1 } 
+        
+    Zxr10IPv6PrefixPoolSummaryEntry ::=
+        SEQUENCE {
+        zxr10IPv6PrefixPoolSummaryPoolName             DisplayString,                               
+        zxr10IPv6PrefixPoolSummaryRangeNum             INTEGER,
+        zxr10IPv6PrefixPoolSummaryExcludeRangeNum      INTEGER, 
+        zxr10IPv6PrefixPoolSummaryFreePrefixNumH       Counter64, 
+        zxr10IPv6PrefixPoolSummaryFreePrefixNumL       Counter64,
+        zxr10IPv6PrefixPoolSummaryUsedPrefixNumH       Counter64,
+        zxr10IPv6PrefixPoolSummaryUsedPrefixNumL       Counter64,
+        zxr10IPv6PrefixPoolSummaryThreshold            Counter32,   
+        zxr10IPv6PrefixPoolSummaryLockFlag             INTEGER,
+        zxr10IPv6PrefixPoolTotalIPNumH1                Unsigned32, 
+        zxr10IPv6PrefixPoolTotalIPNumH2                Unsigned32, 
+        zxr10IPv6PrefixPoolTotalIPNumH3                Unsigned32, 
+        zxr10IPv6PrefixPoolTotalIPNumH4                Unsigned32, 
+        zxr10IPv6PrefixPoolSumryUtlRatio               DisplayString
+        }
+        
+    zxr10IPv6PrefixPoolSummaryPoolName   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..31))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "IPv6 prefix pool name." 
+        ::= { zxr10IPv6PrefixPoolSummaryEntry 1 }                              
+        
+    zxr10IPv6PrefixPoolSummaryRangeNum   OBJECT-TYPE
+        SYNTAX     INTEGER(0..65535)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The number of current IPv6 prefix pool's prefix 
+                    delegation."       
+        ::= { zxr10IPv6PrefixPoolSummaryEntry 2 }
+        
+    zxr10IPv6PrefixPoolSummaryExcludeRangeNum   OBJECT-TYPE
+        SYNTAX     INTEGER(0..65535)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The number of current IPv6 prefix pool's exclude prefix 
+                    delegation." 
+        ::= { zxr10IPv6PrefixPoolSummaryEntry 3 }
+        
+    zxr10IPv6PrefixPoolSummaryFreePrefixNumH   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The high 8 octets of IPv6 address number which is not 
+                    used." 
+        ::= { zxr10IPv6PrefixPoolSummaryEntry 4 }         
+        
+    zxr10IPv6PrefixPoolSummaryFreePrefixNumL   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The lower 8 octets of IPv6 address number which is not 
+                     used." 
+        ::= { zxr10IPv6PrefixPoolSummaryEntry 5 }    
+        
+    zxr10IPv6PrefixPoolSummaryUsedPrefixNumH   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The high 8 octets of IPv6 address number which is used." 
+        ::= { zxr10IPv6PrefixPoolSummaryEntry 6 }    
+        
+    zxr10IPv6PrefixPoolSummaryUsedPrefixNumL   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The lower 8 octets of IPv6 address number which is used." 
+        ::= { zxr10IPv6PrefixPoolSummaryEntry 7 }    
+        
+    zxr10IPv6PrefixPoolSummaryThreshold   OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The threshold of current pool."          
+        ::= { zxr10IPv6PrefixPoolSummaryEntry 8 }    
+        
+    zxr10IPv6PrefixPoolSummaryLockFlag   OBJECT-TYPE
+        SYNTAX     INTEGER{
+                     unlock(1),
+                     lock(2)
+                   }
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The locked flag of current pool."           
+        ::= { zxr10IPv6PrefixPoolSummaryEntry 9 }   
+        
+        
+    zxr10IPv6PrefixPoolTotalIPNumH1   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The first high 4 octets of total number which current IPv6 
+                     prefix pool configured."
+        ::= { zxr10IPv6PrefixPoolSummaryEntry 10 }    
+
+    zxr10IPv6PrefixPoolTotalIPNumH2   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The second high 4 octets of total number which current IPv6 
+                     prefix pool configured."
+        ::= { zxr10IPv6PrefixPoolSummaryEntry 11 }    
+
+    zxr10IPv6PrefixPoolTotalIPNumH3   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The third high 4 octets of total number which current IPv6 
+                     prefix pool configured."
+        ::= { zxr10IPv6PrefixPoolSummaryEntry 12 }    
+
+    zxr10IPv6PrefixPoolTotalIPNumH4   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The last 4 octets of total number which current IPv6 
+                     prefix pool configured."
+        ::= { zxr10IPv6PrefixPoolSummaryEntry 13 }    
+
+    zxr10IPv6PrefixPoolSumryUtlRatio   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..7))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "Utilization ratio of current IPv6 prefix address pool." 
+        ::= { zxr10IPv6PrefixPoolSummaryEntry 14 }   
+
+   -- detail table                       
+    zxr10IPv6PrefixPoolPrefixTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv6PrefixPoolPrefixEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The detail table of current pool."
+        ::= { zxr10IPv6PrefixPool 2 }   
+                
+    zxr10IPv6PrefixPoolPrefixEntry  OBJECT-TYPE
+        SYNTAX      Zxr10IPv6PrefixPoolPrefixEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION                                             
+            "This list contains IPv6 prefix pool prefix delegation configuration"     
+        INDEX  { zxr10IPv6PrefixPoolPrefixPoolName, 
+                 zxr10IPv6PrefixPoolPrefixDelegation, 
+                 zxr10IPv6PrefixPoolPrefixDelegationLenth, 
+                 zxr10IPv6PrefixPoolPrefixLenth, 
+                 zxr10IPv6PrefixPoolPrefixVirtualRouteField }    
+        ::= { zxr10IPv6PrefixPoolPrefixTable 1 } 
+        
+    Zxr10IPv6PrefixPoolPrefixEntry ::=
+        SEQUENCE {
+        zxr10IPv6PrefixPoolPrefixPoolName           DisplayString,                               
+        zxr10IPv6PrefixPoolPrefixDelegation         Ipv6Address,
+        zxr10IPv6PrefixPoolPrefixDelegationLenth    INTEGER, 
+        zxr10IPv6PrefixPoolPrefixLenth              INTEGER, 
+        zxr10IPv6PrefixPoolPrefixVirtualRouteField  DisplayString,
+        zxr10IPv6PrefixPoolPrefixFreeNumH           Counter64,
+        zxr10IPv6PrefixPoolPrefixFreeNumL           Counter64,
+        zxr10IPv6PrefixPoolPrefixUsedNumH           Counter64,   
+        zxr10IPv6PrefixPoolPrefixUsedNumL           Counter64
+        }
+        
+    zxr10IPv6PrefixPoolPrefixPoolName   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..31))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "IPv6 prefix pool name." 
+        ::= { zxr10IPv6PrefixPoolPrefixEntry 1 }   
+        
+    zxr10IPv6PrefixPoolPrefixDelegation   OBJECT-TYPE
+        SYNTAX     Ipv6Address
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "IPv6 prefix delegation." 
+        ::= { zxr10IPv6PrefixPoolPrefixEntry 2 }        
+
+    zxr10IPv6PrefixPoolPrefixDelegationLenth   OBJECT-TYPE
+        SYNTAX     INTEGER(1..128)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "IPv6 delegation length." 
+        ::= { zxr10IPv6PrefixPoolPrefixEntry 3 }  
+        
+    zxr10IPv6PrefixPoolPrefixLenth   OBJECT-TYPE
+        SYNTAX     INTEGER(1..128)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "IPv6 prefix length." 
+        ::= { zxr10IPv6PrefixPoolPrefixEntry 4 }     
+        
+    zxr10IPv6PrefixPoolPrefixVirtualRouteField   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..32))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "VRF name which binded with prefix delegation." 
+        ::= { zxr10IPv6PrefixPoolPrefixEntry 5 }      
+        
+    zxr10IPv6PrefixPoolPrefixFreeNumH   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The high 8 octets of IPv6 address number which is not 
+                     used."         
+        ::= { zxr10IPv6PrefixPoolPrefixEntry 6 }      
+        
+    zxr10IPv6PrefixPoolPrefixFreeNumL   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The lower 8 octets of IPv6 address number which is not 
+                     used." 
+        ::= { zxr10IPv6PrefixPoolPrefixEntry 7 }   
+        
+    zxr10IPv6PrefixPoolPrefixUsedNumH   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The high 8 octets of IPv6 address number which is 
+                     used." 
+        ::= { zxr10IPv6PrefixPoolPrefixEntry 8 } 
+        
+    zxr10IPv6PrefixPoolPrefixUsedNumL   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The lower 8 octets of IPv6 address number which is 
+                     used." 
+        ::= { zxr10IPv6PrefixPoolPrefixEntry 9 } 
+
+   -- exclude table                           
+    zxr10IPv6PrefixPoolExcludeTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv6PrefixPoolExcludeEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The exclude table of current pool."
+        ::= { zxr10IPv6PrefixPool 3 }   
+                
+    zxr10IPv6PrefixPoolExcludeEntry  OBJECT-TYPE
+        SYNTAX      Zxr10IPv6PrefixPoolExcludeEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION                                             
+            "This list contains IPv6 prefix pool exclude configuration"     
+        INDEX  { zxr10IPv6PrefixPoolExcludePoolName, 
+                 zxr10IPv6PrefixPoolExcludePrefixDelegation, 
+                 zxr10IPv6PrefixPoolExcludePrefixDelegationLenth, 
+                 zxr10IPv6PrefixPoolExcludePrefixLenth, 
+                 zxr10IPv6PrefixPoolExcludePrefixVirtualRouteField }    
+        ::= { zxr10IPv6PrefixPoolExcludeTable 1 } 
+        
+    Zxr10IPv6PrefixPoolExcludeEntry ::=
+        SEQUENCE {
+        zxr10IPv6PrefixPoolExcludePoolName                 DisplayString,                               
+        zxr10IPv6PrefixPoolExcludePrefixDelegation         Ipv6Address,
+        zxr10IPv6PrefixPoolExcludePrefixDelegationLenth    INTEGER, 
+        zxr10IPv6PrefixPoolExcludePrefixLenth              INTEGER, 
+        zxr10IPv6PrefixPoolExcludePrefixVirtualRouteField  DisplayString,
+        zxr10IPv6PrefixPoolExcludeFreePrefixNum            INTEGER,
+        zxr10IPv6PrefixPoolExcludeUsedPrefixNum            INTEGER
+        }
+        
+    zxr10IPv6PrefixPoolExcludePoolName   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..31))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "IPv6 prefix pool name." 
+        ::= { zxr10IPv6PrefixPoolExcludeEntry 1 }      
+        
+    zxr10IPv6PrefixPoolExcludePrefixDelegation   OBJECT-TYPE
+        SYNTAX     Ipv6Address
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "IPv6 exlcude prefix delegation." 
+        ::= { zxr10IPv6PrefixPoolExcludeEntry 2 } 
+        
+    zxr10IPv6PrefixPoolExcludePrefixDelegationLenth   OBJECT-TYPE
+        SYNTAX     INTEGER(1..128)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "IPv6 delegation length."                 
+        ::= { zxr10IPv6PrefixPoolExcludeEntry 3 }     
+        
+    zxr10IPv6PrefixPoolExcludePrefixLenth   OBJECT-TYPE
+        SYNTAX     INTEGER(1..128)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "IPv6 prefix length." 
+        ::= { zxr10IPv6PrefixPoolExcludeEntry 4 } 
+        
+    zxr10IPv6PrefixPoolExcludePrefixVirtualRouteField   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..32))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "VRF name which binded with exclude prefix 
+                     delegation." 
+        ::= { zxr10IPv6PrefixPoolExcludeEntry 5 }        
+        
+    zxr10IPv6PrefixPoolExcludeFreePrefixNum   OBJECT-TYPE
+        SYNTAX     INTEGER(0..131072)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The number of IPv6 address which is not used." 
+        ::= { zxr10IPv6PrefixPoolExcludeEntry 6 }   
+        
+    zxr10IPv6PrefixPoolExcludeUsedPrefixNum   OBJECT-TYPE
+        SYNTAX     INTEGER(0..131072)
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The number of IPv6 address which is used." 
+        ::= { zxr10IPv6PrefixPoolExcludeEntry 7 }   
+
+   -- IPv6 pool statistic group     
+    -- statistic table                                    
+    zxr10IPv6PoolStatAddrPoolTotalIPNumH   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The high 8 octets of total address number 
+                     which IPv6 address pool configured."   
+        ::= { zxr10IPv6PoolStatGroup 1 }      
+     
+    zxr10IPv6PoolStatAddrPoolTotalIPNumL   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The lower 8 octets of total address number 
+                     which IPv6 address pool configured." 
+        ::= { zxr10IPv6PoolStatGroup 2 }    
+        
+    zxr10IPv6PoolStatAddrPoolTotalUsedNumH   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The high 8 octets of used address number 
+                     in IPv6 address pool." 
+        ::= { zxr10IPv6PoolStatGroup 3 } 
+        
+    zxr10IPv6PoolStatAddrPoolTotalUsedNumL   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The lower 8 octets of used address number 
+                     in IPv6 address pool." 
+        ::= { zxr10IPv6PoolStatGroup 4 }                   
+
+    zxr10IPv6PoolStatAddrPoolUtilizationRatio   OBJECT-TYPE
+        SYNTAX     DisplayString
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "Utilization ratio of IPv6 address pool." 
+        ::= { zxr10IPv6PoolStatGroup 5 }  
+        
+    zxr10IPv6PoolStatPrefixPoolTotalPrefixNumH   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The high 8 octets of total address 
+                     number which IPv6 prefix pool configured." 
+        ::= { zxr10IPv6PoolStatGroup 6 }  
+        
+    zxr10IPv6PoolStatPrefixPoolTotalPrefixNumL   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The lower 8 octets of total address 
+                     number which IPv6 prefix pool configured." 
+        ::= { zxr10IPv6PoolStatGroup 7 }   
+        
+    zxr10IPv6PoolStatPrefixPoolTotalUsedPrefixNumH   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The high 8 octets of used address number 
+                     in IPv6 prefix pool." 
+        ::= { zxr10IPv6PoolStatGroup 8 }     
+        
+    zxr10IPv6PoolStatPrefixPoolTotalUsedPrefixNumL   OBJECT-TYPE
+        SYNTAX     Counter64
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The lower 8 octets of used address number 
+                    in IPv6 prefix pool." 
+        ::= { zxr10IPv6PoolStatGroup 9 } 
+        
+    zxr10IPv6PoolStatPrefixPoolUtilizationRatio   OBJECT-TYPE
+        SYNTAX     DisplayString
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "Utilization ratio of IPv6 prefix pool." 
+        ::= { zxr10IPv6PoolStatGroup 10 } 
+        
+    zxr10IPv6PoolStatTotalUsableAddrAndPrefix   OBJECT-TYPE
+        SYNTAX     Counter32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "Total usable address and prefix."   
+        ::= { zxr10IPv6PoolStatGroup 11 }                         
+
+     zxr10IPv6PoolAddrTotalFreeNumH1   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The first high 4 octets of total free address 
+                     number in IPv6 address pool." 
+        ::= { zxr10IPv6PoolStatGroup 12 } 
+
+     zxr10IPv6PoolAddrTotalFreeNumH2   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The second high 4 octets of total free address 
+                     number in IPv6 address pool." 
+        ::= { zxr10IPv6PoolStatGroup 13 } 
+
+     zxr10IPv6PoolAddrTotalFreeNumH3   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The third high 4 octets of total free address 
+                     number in IPv6 address pool." 
+        ::= { zxr10IPv6PoolStatGroup 14 } 
+
+     zxr10IPv6PoolAddrTotalFreeNumH4   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The last 4 octets of total free address 
+                     number in IPv6 address pool." 
+        ::= { zxr10IPv6PoolStatGroup 15 } 
+            
+     zxr10IPv6PoolPrefxTotalFreeNumH1   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The first high 4 octets of total free address
+                    number in IPv6 prefix pool." 
+        ::= { zxr10IPv6PoolStatGroup 16}     
+
+     zxr10IPv6PoolPrefxTotalFreeNumH2   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The second high 4 octets of total free address
+                    number in IPv6 prefix pool." 
+        ::= { zxr10IPv6PoolStatGroup 17}     
+
+     zxr10IPv6PoolPrefxTotalFreeNumH3   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The third high 4 octets of total free address
+                    number in IPv6 prefix pool." 
+        ::= { zxr10IPv6PoolStatGroup 18}     
+
+     zxr10IPv6PoolPrefxTotalFreeNumH4   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "The last 4 octets of total free address
+                    number in IPv6 prefix pool." 
+        ::= { zxr10IPv6PoolStatGroup 19}    
+        
+
+   END
+   

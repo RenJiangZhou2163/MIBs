@@ -1,0 +1,666 @@
+-- *******************************************************************
+-- RUIJIE-VSU-MIB.mib: Ruijie VSU MIB file
+-- June 2011, linjincheng
+--
+-- Copyright (c) 2011 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- *******************************************************************
+--
+RUIJIE-VSU-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        OBJECT-TYPE,
+        MODULE-IDENTITY,
+        IpAddress,
+        NOTIFICATION-TYPE
+                FROM SNMPv2-SMI
+        Gauge
+                FROM RFC1155-SMI
+        MacAddress,
+        DisplayString
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        NOTIFICATION-GROUP,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieVsuMIB MODULE-IDENTITY
+        LAST-UPDATED "201108290000Z"
+        ORGANIZATION "$Company$"
+        CONTACT-INFO
+            " 
+        Tel: $Telephone$
+
+        E-mail: $E-mail$"
+        DESCRIPTION
+            "This module defines VSU management mibs."
+        REVISION "201106210000Z"
+        DESCRIPTION
+            "Initial version of this MIB module."
+    ::= { ruijieMgmt 102 }
+
+--********************************************************************
+--                                                                  **
+--                         VSU objects root                         **
+--                                                                  **
+--********************************************************************
+ruijieVsuMIBObjects OBJECT IDENTIFIER ::= { ruijieVsuMIB 1 }
+
+
+--***************** the VSU Topology nodes ********************
+ruijieVsuTopo OBJECT IDENTIFIER ::= { ruijieVsuMIBObjects 1 }
+
+ruijieVsuTopoShape OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        chain(1),
+                        ring(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU system topology shape"
+    ::= { ruijieVsuTopo 1 }
+
+ruijieVsuTopoConn OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The switch topology connection layout of the VSU system"
+    ::= { ruijieVsuTopo 2 }
+
+
+--***************** the VSU device nodes *********************
+ruijieVsuDeviceInfo OBJECT IDENTIFIER ::= { ruijieVsuMIBObjects 2 }
+
+ruijieVsuDomainID OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU system domain ID"
+    ::= { ruijieVsuDeviceInfo 1 }
+
+ruijieVsuDeviceTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF  RuijieVsuDeviceEntry
+        MAX-ACCESS          not-accessible 
+        STATUS              current         
+        DESCRIPTION     
+            "The whole device information in VSU system"
+    ::= { ruijieVsuDeviceInfo 2 }
+
+ruijieVsuDeviceEntry OBJECT-TYPE
+        SYNTAX      RuijieVsuDeviceEntry 
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The device information entry"
+        INDEX       { ruijieVsuDeviceID }
+    ::= { ruijieVsuDeviceTable 1 }
+
+RuijieVsuDeviceEntry ::=
+        SEQUENCE {
+            ruijieVsuDeviceID           INTEGER,   
+            ruijieVsuDeviceMac          MacAddress,
+            ruijieVsuDevicePri          INTEGER,
+            ruijieVsuDeviceDescr        DisplayString,
+            ruijieVsuDeviceStatus       INTEGER,
+            ruijieVsuDeviceRole         INTEGER
+        }
+
+ruijieVsuDeviceID OBJECT-TYPE
+        SYNTAX      INTEGER 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU system member device identifier"
+    ::= { ruijieVsuDeviceEntry 1 }
+
+ruijieVsuDeviceMac OBJECT-TYPE
+        SYNTAX      MacAddress 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU system member device mac address"
+    ::= { ruijieVsuDeviceEntry 2 }
+
+ruijieVsuDevicePri OBJECT-TYPE
+        SYNTAX      INTEGER 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU system member device priority"
+    ::= { ruijieVsuDeviceEntry 3 }
+
+ruijieVsuDeviceDescr OBJECT-TYPE
+        SYNTAX      DisplayString 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU system member device description information"
+    ::= { ruijieVsuDeviceEntry 4 }
+
+ruijieVsuDeviceStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        ok(1),
+                        recovery(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU system member device status information"
+    ::= { ruijieVsuDeviceEntry 5 }
+
+ruijieVsuDeviceRole OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        active(1),
+                        standby(2),
+                        candidate(3)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU system member device role information"
+    ::= { ruijieVsuDeviceEntry 6 }
+
+
+--***************** the VSU VSL nodes *********************
+ruijieVsuVsl OBJECT IDENTIFIER ::= { ruijieVsuMIBObjects 3 }
+
+ruijieVsuVslPortTable OBJECT-TYPE 
+        SYNTAX SEQUENCE OF  RuijieVsuVslPortEntry
+        MAX-ACCESS          not-accessible 
+        STATUS              current
+        DESCRIPTION
+            "The VSU VSL port members table"
+    ::= { ruijieVsuVsl 1 }
+
+ruijieVsuVslPortEntry OBJECT-TYPE
+        SYNTAX      RuijieVsuVslPortEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The VSU VSL port members entry"
+        INDEX       { ruijieVsuVslPortIfIndex } 
+    ::= { ruijieVsuVslPortTable 1 }
+
+RuijieVsuVslPortEntry ::=
+        SEQUENCE {
+            ruijieVsuVslPortIfIndex     INTEGER,       
+            ruijieVsuVslApIf            DisplayString,
+            ruijieVsuVslPortState       INTEGER,
+            ruijieVsuVslPortPeerIfIndex INTEGER
+        }
+
+ruijieVsuVslPortIfIndex OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU VSL AP member port index"
+    ::= { ruijieVsuVslPortEntry 1 }
+    
+ruijieVsuVslApIf OBJECT-TYPE    
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU VSL AP interface name"
+    ::= { ruijieVsuVslPortEntry 2 }
+
+ruijieVsuVslPortState OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        down(1),        
+                        up(2),
+                        ok(3),
+                        disable(4),
+                        aged(5)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU VSL AP member port's state"
+    ::= { ruijieVsuVslPortEntry 3 }
+
+ruijieVsuVslPortPeerIfIndex OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU VSL member port's peer port index"
+    ::= { ruijieVsuVslPortEntry 4 }
+    
+ruijieVsuVslTable OBJECT-TYPE 
+        SYNTAX SEQUENCE OF  RuijieVsuVslEntry
+        MAX-ACCESS          not-accessible 
+        STATUS              current
+        DESCRIPTION
+            "The VSU VSL AP table"
+    ::= { ruijieVsuVsl 2 }
+
+ruijieVsuVslEntry OBJECT-TYPE
+        SYNTAX      RuijieVsuVslEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The VSU VSL AP entry"
+        INDEX       { ruijieVsuVslApIndex } 
+    ::= { ruijieVsuVslTable 1 }
+
+RuijieVsuVslEntry ::=
+        SEQUENCE {   
+            ruijieVsuVslApIndex         INTEGER,
+            ruijieVsuVslApUptime        DisplayString
+        }
+    
+ruijieVsuVslApIndex OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU VSL AP index, which is computed by: (switch_id - 1) * 2 + vsl_ap_id"
+    ::= { ruijieVsuVslEntry 1 }
+
+ruijieVsuVslApUptime OBJECT-TYPE    
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU VSL AP Up time"
+    ::= { ruijieVsuVslEntry 2 }
+
+
+--***************** the VSU DAD nodes *********************
+ruijieVsuDad OBJECT IDENTIFIER ::= { ruijieVsuMIBObjects 4 }
+
+ruijieVsuDadExIntfTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF  RuijieVsuDadExIntfEntry
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION
+            "The VSU dual-active excluded interface table"
+    ::= { ruijieVsuDad 1 }
+
+ruijieVsuDadExIntfEntry OBJECT-TYPE
+        SYNTAX      RuijieVsuDadExIntfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The VSU dual-active excluded interface entry"
+        INDEX       { ruijieVsuDadExIfIndex }
+    ::= { ruijieVsuDadExIntfTable 1 }
+
+RuijieVsuDadExIntfEntry ::=
+        SEQUENCE {
+            ruijieVsuDadExIfIndex   INTEGER
+        }
+
+ruijieVsuDadExIfIndex OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU dual-active excluded interface index"
+    ::= { ruijieVsuDadExIntfEntry 1 }
+    
+ruijieVsuDadAP OBJECT IDENTIFIER ::= { ruijieVsuDad 2 }
+
+ruijieVsuDadAPEnable OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        yes(1),
+                        no(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicate weather DAD AP detection is enable"
+    ::= { ruijieVsuDadAP 1}
+    
+ruijieVsuDadAPIfIndex OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU DAD AP interface index"
+    ::= { ruijieVsuDadAP 2}
+    
+ruijieVsuDadAPIfStatus OBJECT-TYPE    
+        SYNTAX      INTEGER {
+                        down(1),
+                        up(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU DAD AP interface status"
+    ::= { ruijieVsuDadAP 3 }
+
+ruijieVsuDadAPMemberIfTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF  RuijieVsuDadAPMemberIfEntry
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION
+            "The VSU DAD AP member interface table"
+    ::= { ruijieVsuDadAP 4 }
+
+ruijieVsuDadAPMemberIfEntry OBJECT-TYPE
+        SYNTAX      RuijieVsuDadAPMemberIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The VSU DAD AP member interface entry"
+        INDEX {ruijieVsuDadAPMemberIfindex}
+    ::= { ruijieVsuDadAPMemberIfTable 1 }
+
+RuijieVsuDadAPMemberIfEntry ::=
+        SEQUENCE {
+            ruijieVsuDadAPMemberIfindex INTEGER,
+            ruijieVsuDadAPMemberIfStatus INTEGER
+        }
+
+ruijieVsuDadAPMemberIfindex OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU DAD AP member interface index"
+    ::= { ruijieVsuDadAPMemberIfEntry 1 }
+    
+ruijieVsuDadAPMemberIfStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        down(1),
+                        up(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU DAD AP member interface status"
+    ::= { ruijieVsuDadAPMemberIfEntry 2 }
+
+ruijieVsuDadAPRelayIfTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF  RuijieVsuDadAPRelayIfEntry
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION
+            "The VSU DAD AP relay interface table"
+    ::= { ruijieVsuDadAP 5 }
+
+ruijieVsuDadAPRelayIfEntry OBJECT-TYPE
+        SYNTAX      RuijieVsuDadAPRelayIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The VSU DAD AP relay interface entry"
+        INDEX       { ruijieVsuDadAPRelayIfIndex }
+    ::= { ruijieVsuDadAPRelayIfTable 1 }
+
+RuijieVsuDadAPRelayIfEntry ::=
+        SEQUENCE {
+            ruijieVsuDadAPRelayIfIndex   INTEGER
+        }
+
+ruijieVsuDadAPRelayIfIndex OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU DAD AP relay interface index"
+    ::= { ruijieVsuDadAPRelayIfEntry 1 }
+    
+ruijieVsuDadBFD OBJECT IDENTIFIER ::= { ruijieVsuDad 3 }
+
+ruijieVsuDadBFDEnable OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        yes(1),
+                        no(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicate weather BFD detection is enable"
+    ::= { ruijieVsuDadBFD 1 }
+
+ruijieVsuDadBFDIfTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF  RuijieVsuDadBFDIfEntry
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION
+            "The VSU BFD interface table"
+    ::= { ruijieVsuDadBFD 2 }
+
+ruijieVsuDadBFDIfEntry OBJECT-TYPE
+        SYNTAX      RuijieVsuDadBFDIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The VSU BFD interface entry"
+        INDEX { 
+            ruijieVsuDadBFDIfIndex1,
+            ruijieVsuDadBFDIfIndex2
+        }
+    ::= { ruijieVsuDadBFDIfTable 1 }
+
+RuijieVsuDadBFDIfEntry ::=
+        SEQUENCE {
+            ruijieVsuDadBFDIfIndex1   INTEGER,
+            ruijieVsuDadBFDIfIndex2   INTEGER,
+            ruijieVsuDadBFDIfStatus   INTEGER
+        }
+
+ruijieVsuDadBFDIfIndex1 OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU BFD interface index"
+    ::= { ruijieVsuDadBFDIfEntry 1 }
+    
+ruijieVsuDadBFDIfIndex2 OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU BFD interface index"
+    ::= { ruijieVsuDadBFDIfEntry 2 }
+    
+ruijieVsuDadBFDIfStatus OBJECT-TYPE    
+        SYNTAX      INTEGER {
+                        down(1),
+                        up(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU BFD interface status"
+    ::= { ruijieVsuDadBFDIfEntry 3 }
+        
+    
+--***************** the VSU forward nodes *********************
+ruijieVsuForward OBJECT IDENTIFIER ::= { ruijieVsuMIBObjects 5 }
+
+ruijieVsuForwardApllf OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        on(1),
+                        off(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicate weather AP local forward first is on"
+    ::= { ruijieVsuForward 1 }
+
+ruijieVsuForwardEcmpllf OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        on(1),
+                        off(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicate weather ECMP local forward first is on"
+    ::= { ruijieVsuForward 2 }
+
+
+--******************* the VSU Version nodes *********************
+ruijieVsuVersion OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSU system version"
+    ::= { ruijieVsuMIBObjects 6 }
+
+
+--********************************************************************
+--                                                                  **
+--                          traps nodes                             **
+--                                                                  **
+--********************************************************************
+ruijieVsuMIBTraps OBJECT IDENTIFIER ::= { ruijieVsuMIB 2 }
+ruijieVsuTrapsNtfObjects OBJECT IDENTIFIER ::= { ruijieVsuMIBTraps 1 } 
+
+ruijieVsuDeviceState OBJECT-TYPE    
+        SYNTAX      INTEGER {
+                        plugin(1),
+                        remove(2)
+                    }
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "The description of device change state"
+    ::= { ruijieVsuTrapsNtfObjects 1 }
+
+ruijieVsuSlotID OBJECT-TYPE    
+        SYNTAX      INTEGER 
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "The description of slot id"
+    ::= { ruijieVsuTrapsNtfObjects 2 }
+
+ruijieVsuDadResult OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        good(1),
+                        bad(2)
+                    }
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "The description of dual-active detection results"
+    ::= { ruijieVsuTrapsNtfObjects 3 }
+
+ruijieVsuTrapsNotifications OBJECT IDENTIFIER ::= { ruijieVsuMIBTraps 2 }
+
+ruijieVsuNotifyTopoChange NOTIFICATION-TYPE
+        OBJECTS     {
+                        ruijieVsuTopoShape
+                    }
+        STATUS      current
+        DESCRIPTION
+            "This notification is send by VSU master when topology shape change"
+    ::= { ruijieVsuTrapsNotifications 1 }
+    
+ruijieVsuNotifyDeviceChange NOTIFICATION-TYPE
+        OBJECTS     {
+                        ruijieVsuDeviceID,
+                        ruijieVsuDeviceState
+                    }
+        STATUS      current
+        DESCRIPTION
+            "This notification is send by VSU master when device plugin or remove"
+    ::= { ruijieVsuTrapsNotifications 2 }
+
+ruijieVsuNotifyDeviceRoleChange NOTIFICATION-TYPE
+        OBJECTS     {
+                        ruijieVsuDeviceID,
+                        ruijieVsuSlotID,
+                        ruijieVsuDeviceRole
+                    }
+        STATUS      current
+        DESCRIPTION
+            "This notification is send by VSU master when device role change"
+    ::= { ruijieVsuTrapsNotifications 3 }
+
+ruijieVsuNotifyDad NOTIFICATION-TYPE
+        OBJECTS     {
+                        ruijieVsuDadResult
+                    }
+        STATUS      current
+        DESCRIPTION
+            "This notification is send by VSU master when dual-active device detected"
+    ::= { ruijieVsuTrapsNotifications 4 }
+
+--********************************************************************
+--                                                                  **
+--                conformance information                           **
+--                                                                  **
+--********************************************************************
+ruijieVsuMIBConformance OBJECT IDENTIFIER ::= { ruijieVsuMIB 3}
+ruijieVsuMIBCompliances OBJECT IDENTIFIER ::= { ruijieVsuMIBConformance 1}
+ruijieVsuMIBGroups OBJECT IDENTIFIER ::= { ruijieVsuMIBConformance 2}
+
+--***************** compliance information ********************
+ruijieVsuMIBCompliance MODULE-COMPLIANCE
+        STATUS current
+        DESCRIPTION
+            "The compliance statement for entities which implement the Ruijie VSU"
+        MODULE 
+            MANDATORY-GROUPS { ruijieVsuMIBObjectsGroup, ruijieVsuMIBTrapsGroup }  
+    ::= { ruijieVsuMIBCompliances 1 }
+
+--***************** units of conformance ********************
+ruijieVsuMIBObjectsGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieVsuTopoShape,
+            ruijieVsuTopoConn,
+            ruijieVsuDomainID,
+            ruijieVsuDeviceID,
+            ruijieVsuDeviceMac,
+            ruijieVsuDevicePri,
+            ruijieVsuDeviceDescr,
+            ruijieVsuDeviceStatus,
+            ruijieVsuDeviceRole,
+            ruijieVsuVslPortIfIndex,
+            ruijieVsuVslApIf,
+            ruijieVsuVslPortState,
+            ruijieVsuVslPortPeerIfIndex,
+            ruijieVsuVslApUptime,
+            ruijieVsuDadExIfIndex,
+            ruijieVsuDadAPEnable,
+            ruijieVsuDadAPIfIndex,
+            ruijieVsuDadAPIfStatus,
+            ruijieVsuDadAPMemberIfindex,
+            ruijieVsuDadAPMemberIfStatus,
+            ruijieVsuDadAPRelayIfIndex,
+            ruijieVsuDadBFDEnable,
+            ruijieVsuDadBFDIfIndex1,
+            ruijieVsuDadBFDIfIndex2,
+            ruijieVsuDadBFDIfStatus,
+            ruijieVsuForwardApllf,
+            ruijieVsuForwardEcmpllf,
+            ruijieVsuVersion,
+            ruijieVsuDeviceState,
+            ruijieVsuSlotID,
+            ruijieVsuDadResult
+        }
+        STATUS  current
+        DESCRIPTION
+            "A collection of objects providing VSU running status to a Ruijie agent"
+    ::= { ruijieVsuMIBGroups 1 }
+
+ruijieVsuMIBTrapsGroup NOTIFICATION-GROUP
+        NOTIFICATIONS {
+            ruijieVsuNotifyTopoChange,
+            ruijieVsuNotifyDeviceChange,
+            ruijieVsuNotifyDeviceRoleChange,
+            ruijieVsuNotifyDad
+        }
+        STATUS current
+        DESCRIPTION 
+            "A collection of traps providing VSU running status to a Ruijie agent"
+    ::= { ruijieVsuMIBGroups 2 }
+
+END
+

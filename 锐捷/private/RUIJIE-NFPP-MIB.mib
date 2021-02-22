@@ -1,0 +1,103 @@
+-- *****************************************************************
+-- RUIJIE-NFPP-MIB.mib:  Ruijie NFPP MIB file
+--
+-- July 2009, yuhuabing
+--
+-- Copyright (c) 2009 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-NFPP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        NOTIFICATION-TYPE
+                FROM SNMPv2-SMI
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP,
+        NOTIFICATION-GROUP
+                FROM SNMPv2-CONF
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieNFPPMIB MODULE-IDENTITY
+        LAST-UPDATED "200907090000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie NFPP mibs."
+        REVISION      "200907090000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 43}
+
+ruijieNFPPMIBObjects OBJECT IDENTIFIER ::= { ruijieNFPPMIB 1 }
+
+  ruijieNFPPMessageContent OBJECT-TYPE
+          SYNTAX OCTET STRING(SIZE(0..512))
+          MAX-ACCESS accessible-for-notify
+          STATUS current
+          DESCRIPTION
+            "NFPP Message Content"
+          ::= { ruijieNFPPMIBObjects 0}
+
+-- notifications
+
+ruijieNFPPMIBNotificationPrefix OBJECT IDENTIFIER ::= { ruijieNFPPMIB 2 }
+ruijieNFPPMIBNotifications OBJECT IDENTIFIER ::= { ruijieNFPPMIBNotificationPrefix 0 }
+
+ruijieNFPPMessageGenerated NOTIFICATION-TYPE
+	OBJECTS   {ruijieNFPPMessageContent}
+	STATUS	   current
+	DESCRIPTION
+	       "When NFPP Event Occur, this message is Generated."
+	::= { ruijieNFPPMIBNotifications 1 }
+
+
+ruijieNFPPMIBConformance OBJECT IDENTIFIER ::= { ruijieNFPPMIB 3}
+ruijieNFPPMIBCompliances OBJECT IDENTIFIER ::= { ruijieNFPPMIBConformance 1 }
+ruijieNFPPMIBGroups      OBJECT IDENTIFIER ::= { ruijieNFPPMIBConformance 2 }
+
+-- compliance statements
+
+ruijieNFPPMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie NFPP MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { 
+                        ruijieNFPPNotifObjectsGroup,
+                        ruijieNFPPNotificationsGroup
+                 }
+         ::= { ruijieNFPPMIBCompliances 1 }
+        
+-- units of conformance
+
+ruijieNFPPNotifObjectsGroup OBJECT-GROUP
+       OBJECTS {
+           ruijieNFPPMessageContent
+       }
+       STATUS  current
+       DESCRIPTION
+                "A collection of objects that specify information for
+                 TRIP notifications."
+       ::= { ruijieNFPPMIBGroups 1 }
+       
+ruijieNFPPNotificationsGroup NOTIFICATION-GROUP
+        NOTIFICATIONS {
+               ruijieNFPPMessageGenerated     
+        }
+        STATUS        current
+        DESCRIPTION
+              "A collection of NFPP traps."
+      ::= { ruijieNFPPMIBGroups 2 }
+
+END

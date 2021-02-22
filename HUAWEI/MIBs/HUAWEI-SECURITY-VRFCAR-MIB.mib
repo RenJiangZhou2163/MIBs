@@ -1,0 +1,405 @@
+-- =============================================================================
+-- Copyright (C) 2014 by HUAWEI TECHNOLOGIES. All rights reserved.
+--    
+-- Description: The MIB is designed to get VRFCAR' statistic information. 
+-- Reference: Huawei Enterprise MIB
+-- Version: V1.00
+-- History: 
+--          V1.00 The initial version created by Juhailing 90003307. 
+-- =============================================================================
+
+HUAWEI-SECURITY-VRFCAR-MIB DEFINITIONS ::= BEGIN
+ 
+	IMPORTS   
+		RowStatus
+			FROM SNMPv2-TC
+		Gauge32, IpAddress, Counter64, OBJECT-TYPE, MODULE-IDENTITY,NOTIFICATION-TYPE
+			FROM SNMPv2-SMI 
+		MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP          
+		            FROM SNMPv2-CONF
+    		enterprises			
+		            FROM RFC1155-SMI; 
+
+		            
+		hwVrfCar MODULE-IDENTITY 
+		        LAST-UPDATED "201408212034Z"        -- March 21, 2012 at 09:00 GMT
+		        ORGANIZATION 
+		            "Huawei Technologies Co.,Ltd."
+		        CONTACT-INFO 
+		            "Huawei Industrial Base Bantian, Longgang Shenzhen 518129 People's Republic of China Website: http://www.huawei.com Email: support@huawei.com
+                     "
+		        DESCRIPTION 
+		            "V1.00
+			         The VrfCar mib is for Eudemon and USG product series.
+			         The vrfCar feature is to limit traffic rate for virtual firewall "
+			REVISION "201408212034Z"
+                        DESCRIPTION "modify for v5r1 at 201408212034Z"      
+		        ::= { hwSecurity 53 }
+		
+-- ===============================================
+-- Node definitions
+-- ===============================================
+	    
+	    	-- 1.3.6.1.4.1.2011
+		huawei OBJECT IDENTIFIER ::= { enterprises 2011 }
+	        
+		-- 1.3.6.1.4.1.2011.6
+		huaweiUtility OBJECT IDENTIFIER ::= { huawei 6 }
+	        
+		-- 1.3.6.1.4.1.2011.6.122
+		hwSecurity OBJECT IDENTIFIER ::= { huaweiUtility 122 }     
+		
+-- ===============================================
+-- Begin the hwVrfCarGlobalStats.
+-- ===============================================
+	    hwVrfCarGlobalStats OBJECT IDENTIFIER ::= { hwVrfCar 1 }
+		
+	    	hwVrfCarVrfTotal OBJECT-TYPE
+			SYNTAX Gauge32 
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Total number of virtual firewalls."
+			::= { hwVrfCarGlobalStats 1 }      
+	    
+
+
+-- ===============================================
+-- Begin the table of hwVrfCarConfigTable.
+-- ===============================================
+				    
+	    	-- 1.3.6.1.4.1.2011.6.122.53.2
+    		hwVrfCarConfigTable OBJECT-TYPE
+            		SYNTAX SEQUENCE OF HwVrfCarConfigEntry
+            		MAX-ACCESS not-accessible
+            		STATUS current
+            		DESCRIPTION
+            			"This table specifies the configuration attributes for Huawei VrfCar."   
+            		::= { hwVrfCar 2 }
+    
+    		-- 1.3.6.1.4.1.2011.6.122.53.2.1
+    		hwVrfCarConfigEntry OBJECT-TYPE
+        		SYNTAX HwVrfCarConfigEntry
+        		MAX-ACCESS not-accessible
+        		STATUS current
+        		DESCRIPTION
+            			"Each entry in the hwVrfCarConfigTable holds a set of traffic monitoring configuration parameters associated with an instance of virtual firewall."
+        		INDEX { hwVrfCarVrfIndex }
+        		::= { hwVrfCarConfigTable 1 }
+    
+    		HwVrfCarConfigEntry ::=
+        		SEQUENCE { 
+            			hwVrfCarVrfIndex
+                			Gauge32,
+            			hwVrfCarVrfName
+                			OCTET STRING,   
+                		hwVrfCarInboundCarType
+                			Gauge32,
+		            	hwVrfCarOutboundCarType
+                			Gauge32,
+                		hwVrfCarAllboundCarType
+                			Gauge32,   
+                		hwVrfCarInboundCIR
+                			Gauge32,     
+			         hwVrfCarOutboundCIR
+                			Gauge32, 
+                		hwVrfCarAllboundCIR
+                			Gauge32
+         			}
+
+        	-- 1.3.6.1.4.1.2011.6.122.53.2.1.1
+	    	hwVrfCarVrfIndex OBJECT-TYPE
+	        	SYNTAX Gauge32 
+	        	MAX-ACCESS not-accessible
+	        	STATUS current
+	        	DESCRIPTION
+	            		"Index of the virtual firewall(Vrf) ."
+	        	::= { hwVrfCarConfigEntry 1 }
+	    
+	    	hwVrfCarVrfName OBJECT-TYPE
+	        	SYNTAX OCTET STRING (SIZE (1..31))
+	        	MAX-ACCESS read-only
+	        	STATUS current
+	        	DESCRIPTION
+	            		"Name of the virtual firewall(Vrf)."
+	        	::= { hwVrfCarConfigEntry 2 }
+                                                    
+               hwVrfCarInboundCarType OBJECT-TYPE
+	        	SYNTAX Gauge32 
+	        	MAX-ACCESS read-only
+	        	STATUS current
+	        	DESCRIPTION
+	            		"Whether traffic in the inbound direction of the virtual firewall is limited.If yes, the value is 1."
+	        	::= { hwVrfCarConfigEntry 3 }
+                                        
+	    	hwVrfCarOutboundCarType OBJECT-TYPE
+	        	SYNTAX Gauge32 
+	        	MAX-ACCESS read-only
+	        	STATUS current
+	        	DESCRIPTION
+	            		"Whether traffic in the outbound direction of the virtual firewall is limited.If yes, the value is 1."
+	        	::= { hwVrfCarConfigEntry 4 }
+	   
+	    	hwVrfCarAllboundCarType OBJECT-TYPE
+	        	SYNTAX Gauge32 
+	        	MAX-ACCESS read-only
+	        	STATUS current
+	        	DESCRIPTION
+	            		"Whether traffic of all directions of the virtual firewall is limited.If yes, the value is 1."
+	        	::= { hwVrfCarConfigEntry 5 }
+	    
+	    	hwVrfCarInboundCIR OBJECT-TYPE
+	        	SYNTAX Gauge32 
+	        	MAX-ACCESS read-only
+	        	STATUS current
+	        	DESCRIPTION
+	            		"Committed information rate (CIR) for inbound traffic of the virtual firewall."
+	        	::= { hwVrfCarConfigEntry 6 }
+	    
+	    	hwVrfCarOutboundCIR OBJECT-TYPE
+	        	SYNTAX Gauge32 
+	        	MAX-ACCESS read-only
+	        	STATUS current
+	        	DESCRIPTION
+	            		"Committed information rate (CIR) for outbound traffic of the virtual firewall."
+	        	::= { hwVrfCarConfigEntry 7 }	     
+	                                            
+	    	hwVrfCarAllboundCIR OBJECT-TYPE
+	        	SYNTAX Gauge32 
+	        	MAX-ACCESS read-only
+	        	STATUS current
+	        	DESCRIPTION
+	            		"Committed information rate (CIR) for all traffic of the virtual firewall."
+	        	::= { hwVrfCarConfigEntry 8 }  
+	   
+	     	        
+-- ===============================================
+-- Begin the table of hwVrfCarStatsTable.
+-- ===============================================
+				    
+	    	-- 1.3.6.1.4.1.2011.6.122.53.3
+    		hwVrfCarStatsTable OBJECT-TYPE
+            		SYNTAX SEQUENCE OF HwVrfCarStatsEntry
+            		MAX-ACCESS not-accessible
+            		STATUS current
+            		DESCRIPTION
+            			"This table specifies the status attributes for Huawei VRFCAR."   
+            		::= { hwVrfCar 3 }
+    
+    		-- 1.3.6.1.4.1.2011.6.122.53.3.1
+    		hwVrfCarStatsEntry OBJECT-TYPE
+        		SYNTAX HwVrfCarStatsEntry
+        		MAX-ACCESS not-accessible
+        		STATUS current
+        		DESCRIPTION
+            			"Each entry in the hwVrfCarStatsTable holds a set of monitoring status parameters associated with an instance of virtual firewall."
+        		INDEX { hwVrfCarVrfIndex }
+        		::= { hwVrfCarStatsTable 1 }
+    
+    		HwVrfCarStatsEntry ::=
+        		SEQUENCE { 
+                	hwVrfCarInboundPassBytes
+                		Counter64,
+                	hwVrfCarOutboundPassBytes   
+                		Counter64,
+                	hwVrfCarAllboundPassBytes 
+                		Counter64,
+                	hwVrfCarInboundDropBytes
+                		Counter64,
+                	hwVrfCarOutboundDropBytes
+                		Counter64,
+                	hwVrfCarAllboundDropBytes
+                		Counter64
+         		} 
+	   
+	    hwVrfCarInboundPassBytes OBJECT-TYPE
+	        SYNTAX Counter64 
+	        MAX-ACCESS read-only
+	        STATUS current
+	        DESCRIPTION
+	            "Passed bytes of the incoming traffic to the virtual firewall."
+	        ::= { hwVrfCarStatsEntry 1 }   
+	    
+	    hwVrfCarOutboundPassBytes OBJECT-TYPE
+	        SYNTAX Counter64 
+	        MAX-ACCESS read-only
+	        STATUS current
+	        DESCRIPTION
+	            "Passed bytes of the outgoing traffic from the virtual firewall."
+	        ::= { hwVrfCarStatsEntry 2 }
+
+	    hwVrfCarAllboundPassBytes  OBJECT-TYPE
+	        SYNTAX Counter64 
+	        MAX-ACCESS read-only
+	        STATUS current
+	        DESCRIPTION
+	            "Passed bytes of all traffic on the virtual firewall."
+	        ::= { hwVrfCarStatsEntry 3 }
+
+	    hwVrfCarInboundDropBytes OBJECT-TYPE
+	        SYNTAX Counter64 
+	        MAX-ACCESS read-only
+	        STATUS current
+	        DESCRIPTION
+	            "Dropped bytes of the incoming traffic to the virtual firewall."
+	        ::= { hwVrfCarStatsEntry 4 }
+
+	    hwVrfCarOutboundDropBytes OBJECT-TYPE
+	        SYNTAX Counter64 
+	        MAX-ACCESS read-only
+	        STATUS current
+	        DESCRIPTION
+	            "Dropped bytes of the outgoing traffic from the virtual firewall."
+	        ::= { hwVrfCarStatsEntry 5 }
+
+	    hwVrfCarAllboundDropBytes OBJECT-TYPE
+	        SYNTAX Counter64 
+	        MAX-ACCESS read-only
+	        STATUS current
+	        DESCRIPTION
+	            "Dropped bytes of all traffic on the virtual firewall."
+	        ::= { hwVrfCarStatsEntry 6 }	    
+
+   	        
+-- ===============================================
+-- hwVrfCarTrapObject.
+-- ===============================================
+ 
+ 		hwVrfCarTrapObject OBJECT IDENTIFIER ::= { hwVrfCar 4 }
+	     	        
+	    	hwVrfCarTrapVrfName OBJECT-TYPE
+	        	SYNTAX OCTET STRING (SIZE (1..31))
+	        	MAX-ACCESS accessible-for-notify
+	        	STATUS current
+	        	DESCRIPTION
+	            		"Name of the virtual firewall(Vrf) for trap."
+	        	::= { hwVrfCarTrapObject 1 } 
+	        	
+	       hwVrfCarTrapVrfIndex OBJECT-TYPE
+	        	SYNTAX Gauge32 
+	        	MAX-ACCESS accessible-for-notify
+	        	STATUS current
+	        	DESCRIPTION
+	            		"Index of the virtual firewall(Vrf) for trap."
+	        	::= { hwVrfCarTrapObject 2 } 	
+	        
+-- ===============================================
+-- definition of traps.      
+-- ===============================================
+
+	    hwVrfCarNotifications OBJECT IDENTIFIER ::= { hwVrfCar 5 }
+			                                
+	        hwVrfCarVrfAdd NOTIFICATION-TYPE
+			OBJECTS { 
+				hwVrfCarTrapVrfName,
+				hwVrfCarTrapVrfIndex
+			        }
+			STATUS     current
+			DESCRIPTION
+			    "Send the message when a virtual firewall(Vrf) is added."
+			::= { hwVrfCarNotifications 1 }
+			
+	        hwVrfCarVrfDel NOTIFICATION-TYPE
+			OBJECTS { 
+			 
+				hwVrfCarTrapVrfName,
+				hwVrfCarTrapVrfIndex  
+			        }
+			STATUS     current
+			DESCRIPTION
+			    "Send the message when a virtual firewall(Vrf) is deleted."
+			::= { hwVrfCarNotifications 2 }   
+-- ===============================================
+-- Conformance Information             
+-- ===============================================
+
+		hwVrfCarMibConformance OBJECT IDENTIFIER ::= { hwVrfCar 6 }
+		
+		hwVrfCarMibCompliances OBJECT IDENTIFIER ::= { hwVrfCarMibConformance 1 }
+		
+		hwVrfCarMibGroups OBJECT IDENTIFIER ::= { hwVrfCarMibConformance 2 }
+		
+		
+-- ===============================================
+-- Compliance Statements             
+-- ===============================================	
+	
+        hwVrfCarMibCompliance MODULE-COMPLIANCE
+			 STATUS current
+			 DESCRIPTION 
+				" "
+			 MODULE -- this module
+			 MANDATORY-GROUPS 
+				{ 
+				hwVrfCarGlobalStatsGroup,
+				hwVrfCarConfigTableGroup,
+				hwVrfCarStatsTableGroup, 
+				hwVrfCarTrapObjectGroup
+				--hwVrfCarNotificationsGroup
+				}
+			::= { hwVrfCarMibCompliances 1 }   
+			
+	       
+	     
+		hwVrfCarGlobalStatsGroup OBJECT-GROUP
+			OBJECTS { 
+					hwVrfCarVrfTotal										
+				}
+			STATUS current
+			DESCRIPTION 
+				"1.00"
+			::= { hwVrfCarMibGroups 1 }			     
+        
+               hwVrfCarConfigTableGroup OBJECT-GROUP
+			OBJECTS { 
+					hwVrfCarVrfName,
+                                        hwVrfCarInboundCarType,
+                                        hwVrfCarOutboundCarType,
+                                        hwVrfCarAllboundCarType,
+                                        hwVrfCarInboundCIR,
+                                        hwVrfCarOutboundCIR,
+                                        hwVrfCarAllboundCIR										
+				}
+			STATUS current
+			DESCRIPTION 
+				"This group holds a set of traffic monitoring configuration
+				 parameters associated with an instance of virtual firewall."
+			::= { hwVrfCarMibGroups 2 }                    
+			
+		hwVrfCarStatsTableGroup OBJECT-GROUP
+			OBJECTS {                       
+					                    hwVrfCarInboundPassBytes,
+                                        hwVrfCarOutboundPassBytes,
+                                        hwVrfCarAllboundPassBytes,
+                                        hwVrfCarInboundDropBytes,
+                                        hwVrfCarOutboundDropBytes,
+                                        hwVrfCarAllboundDropBytes										
+				}
+			STATUS current
+			DESCRIPTION 
+				"This group This group holds a set of traffic monitoring statis
+				 parameters associated with an instance of virtual firewall."
+			::= { hwVrfCarMibGroups 3 }	
+
+			
+		hwVrfCarTrapObjectGroup OBJECT-GROUP
+			OBJECTS {                               
+                   	                hwVrfCarTrapVrfIndex,
+                                        hwVrfCarTrapVrfName     						
+				}
+			STATUS current
+			DESCRIPTION 
+				"VrfCar trap objects."
+			::= { hwVrfCarMibGroups 4 }	
+			
+	      --hwVrfCarNotificationsGroup NOTIFICATION-GROUP
+			--NOTIFICATIONS {                               
+                   		--hwVrfCarVrfAddAlert,
+                                --hwVrfCarVrfDelAlert
+               		--}
+			--STATUS current
+			--DESCRIPTION
+			  -- "VrfCar traps."
+			--::= { hwVrfCarMibGroups 5 }	
+	END
+	

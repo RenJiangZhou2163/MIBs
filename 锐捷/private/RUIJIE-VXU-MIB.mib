@@ -1,0 +1,409 @@
+-- *******************************************************************
+-- RUIJIE-VXU-MIB.mib: Ruijie VXU MIB file
+-- Aug 2013, hedong, liuxi
+--
+-- Copyright (c) 2013 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- *******************************************************************
+--
+RUIJIE-VXU-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        OBJECT-TYPE,
+        MODULE-IDENTITY,
+        IpAddress,
+        NOTIFICATION-TYPE
+                FROM SNMPv2-SMI
+        Gauge
+                FROM RFC1155-SMI
+        MacAddress,
+        DisplayString
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        NOTIFICATION-GROUP,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieVxuMIB MODULE-IDENTITY
+        LAST-UPDATED "201309040001Z"
+        ORGANIZATION "$Company$"
+        CONTACT-INFO
+            " 
+        Tel: $Telephone$
+
+        E-mail: $E-mail$"
+        DESCRIPTION
+            "This module defines VXU management mibs."
+        REVISION "201308060000Z"
+        DESCRIPTION
+            "Initial version of this MIB module."
+    ::= { ruijieMgmt 126 }
+
+--********************************************************************
+--                                                                  **
+--                         VXU objects root                         **
+--                                                                  **
+--********************************************************************
+ruijieVxuMIBObjects OBJECT IDENTIFIER ::= { ruijieVxuMIB 1 }
+
+--***************** the VXU device nodes *********************
+ruijieVxuDeviceInfo OBJECT IDENTIFIER ::= { ruijieVxuMIBObjects 1 }
+
+ruijieVxuDeviceTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF  RuijieVxuDeviceEntry
+        MAX-ACCESS          not-accessible 
+        STATUS              current         
+        DESCRIPTION     
+            "The whole device information in VXU system"
+    ::= { ruijieVxuDeviceInfo 1 }
+
+ruijieVxuDeviceEntry OBJECT-TYPE
+        SYNTAX      RuijieVxuDeviceEntry 
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The device information entry"
+        INDEX       { ruijieVxuDeviceID }
+    ::= { ruijieVxuDeviceTable 1 }
+
+RuijieVxuDeviceEntry ::=
+        SEQUENCE {
+            ruijieVxuDeviceID           INTEGER,   
+            ruijieVxuDeviceMac          MacAddress,
+            ruijieVxuDeviceDescr        DisplayString,
+            ruijieVxuDeviceRole         INTEGER
+        }
+
+ruijieVxuDeviceID OBJECT-TYPE
+        SYNTAX      INTEGER 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VXU system member device identifier"
+    ::= { ruijieVxuDeviceEntry 1 }
+
+ruijieVxuDeviceMac OBJECT-TYPE
+        SYNTAX      MacAddress 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VXU system member device mac address"
+    ::= { ruijieVxuDeviceEntry 2 }
+
+ruijieVxuDeviceDescr OBJECT-TYPE
+        SYNTAX      DisplayString 
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The VXU system member device description information"
+    ::= { ruijieVxuDeviceEntry 3 }
+
+ruijieVxuDeviceRole OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        master(1),
+                        slaver(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VXU system member device role information"
+    ::= { ruijieVxuDeviceEntry 4 }
+
+--***************** the VXU VXL nodes *********************
+ruijieVxuVxl OBJECT IDENTIFIER ::= { ruijieVxuMIBObjects 2 }
+    
+ruijieVxuVxlTable OBJECT-TYPE 
+        SYNTAX SEQUENCE OF  RuijieVxuVxlEntry
+        MAX-ACCESS          not-accessible 
+        STATUS              current
+        DESCRIPTION
+            "The VXU VXL AP table"
+    ::= { ruijieVxuVxl 1 }
+
+ruijieVxuVxlEntry OBJECT-TYPE
+        SYNTAX      RuijieVxuVxlEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The VXU VXL AP entry"
+        INDEX       { ruijieVxuChildDeviceID } 
+    ::= { ruijieVxuVxlTable 1 }
+
+RuijieVxuVxlEntry ::=
+        SEQUENCE {   
+            ruijieVxuChildDeviceID          INTEGER,     
+            ruijieVxuFatherDeviceID         INTEGER,
+            ruijieVxuFatherVxlIndex         INTEGER,
+            ruijieVxuVxlMode                INTEGER
+        }  
+        
+ruijieVxuChildDeviceID OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The child node device identifier"
+    ::= { ruijieVxuVxlEntry 1 }
+
+ruijieVxuFatherDeviceID OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The identifier of the father node of the child node"
+    ::= { ruijieVxuVxlEntry 2 }
+    
+ruijieVxuFatherVxlIndex OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VXU VXL AP index of the father node"
+    ::= { ruijieVxuVxlEntry 3 }        
+    
+ruijieVxuVxlMode OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        static(1),
+                        dynamic(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The working mode of VXL AP"
+    ::= { ruijieVxuVxlEntry 4 }    
+
+ruijieVxuVxlPortTable OBJECT-TYPE 
+        SYNTAX SEQUENCE OF  RuijieVxuVxlPortEntry
+        MAX-ACCESS          not-accessible 
+        STATUS              current
+        DESCRIPTION
+            "The VXU VXL port members table"
+    ::= { ruijieVxuVxl 2 }
+
+ruijieVxuVxlPortEntry OBJECT-TYPE
+        SYNTAX      RuijieVxuVxlPortEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The VXU VXL port members entry"
+        INDEX       { ruijieVxuVxlDeviceID, ruijieVxuVxlIndex, ruijieVxuVxlPortIndex } 
+    ::= { ruijieVxuVxlPortTable 1 }
+
+RuijieVxuVxlPortEntry ::=
+        SEQUENCE {
+        	ruijieVxuVxlDeviceID         INTEGER,
+        	ruijieVxuVxlIndex            INTEGER,
+        	ruijieVxuVxlPortIndex        INTEGER,
+        	ruijieVxuVxlPortMode         INTEGER,
+        	ruijieVxuVxlPortDeviceID     INTEGER,
+        	ruijieVxuVxlPortSlotID       INTEGER,
+        	ruijieVxuVxlPortID     	     INTEGER,
+        	ruijieVxuVxlPortPeerDeviceID INTEGER,
+        	ruijieVxuVxlPortPeerSlotID   INTEGER,
+        	ruijieVxuVxlPortPeerID       INTEGER
+        }
+
+ruijieVxuVxlDeviceID OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VXU Device id"
+    ::= { ruijieVxuVxlPortEntry 1 }
+    
+ruijieVxuVxlIndex OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VXL AP id"
+    ::= { ruijieVxuVxlPortEntry 2 }
+    
+ruijieVxuVxlPortIndex OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VXL Port id"
+    ::= { ruijieVxuVxlPortEntry 3 } 
+    
+ruijieVxuVxlPortMode OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        static(1),
+                        dynamic(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VXL Port mode"
+    ::= { ruijieVxuVxlPortEntry 4 }       
+
+ruijieVxuVxlPortDeviceID OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The device id of local VXL Port"
+    ::= { ruijieVxuVxlPortEntry 5 }   
+
+ruijieVxuVxlPortSlotID OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The slot id of local VXL Port"
+    ::= { ruijieVxuVxlPortEntry 6 }
+
+ruijieVxuVxlPortID OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The port id of local VXL Port"
+    ::= { ruijieVxuVxlPortEntry 7 }
+
+ruijieVxuVxlPortPeerDeviceID OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The device id of peer VXL Port"
+    ::= { ruijieVxuVxlPortEntry 8 }
+
+ruijieVxuVxlPortPeerSlotID OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The slot id of peer VXL Port"
+    ::= { ruijieVxuVxlPortEntry 9 }
+    
+ruijieVxuVxlPortPeerID OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The port id of peer VXL Port"
+    ::= { ruijieVxuVxlPortEntry 10 }
+
+--***************** the VXU Location nodes *********************
+ruijieVxuLocation OBJECT IDENTIFIER ::= { ruijieVxuMIBObjects 3 }
+
+ruijieVxuLocationTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF  RuijieVxuLocationEntry
+        MAX-ACCESS          not-accessible 
+        STATUS              current         
+        DESCRIPTION     
+            "Locate device in VXU system"
+    ::= { ruijieVxuLocation 1 }
+
+ruijieVxuLocationEntry OBJECT-TYPE
+        SYNTAX      RuijieVxuLocationEntry 
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The device information entry"
+        INDEX       { ruijieVxuLocationDeviceID, ruijieVxuLocationSlotID }
+    ::= { ruijieVxuLocationTable 1 }
+
+RuijieVxuLocationEntry ::=
+        SEQUENCE {
+            ruijieVxuLocationDeviceID      INTEGER,   
+            ruijieVxuLocationSlotID        INTEGER,
+            ruijieVxuLocationSet           INTEGER
+        }
+
+ruijieVxuLocationDeviceID OBJECT-TYPE
+        SYNTAX      INTEGER 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VXU system member device identifier"
+    ::= { ruijieVxuLocationEntry 1 }
+    
+ruijieVxuLocationSlotID OBJECT-TYPE
+        SYNTAX      INTEGER 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VXU system slot identifier"
+    ::= { ruijieVxuLocationEntry 2 }
+    
+ruijieVxuLocationSet OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        light(1)
+                    } 
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Light the LED of object device"
+    ::= { ruijieVxuLocationEntry 3 }
+
+--******************* the VXU Version nodes *********************
+ruijieVxuVersion OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VXU system version"
+    ::= { ruijieVxuMIBObjects 4 }
+
+--********************************************************************
+--                                                                  **
+--                          traps nodes                             **
+--                                                                  **
+--********************************************************************
+ruijieVxuMIBTraps OBJECT IDENTIFIER ::= { ruijieVxuMIB 2 }
+ruijieVxuTrapsNtfObjects OBJECT IDENTIFIER ::= { ruijieVxuMIBTraps 1 } 
+
+ruijieVxuDeviceState OBJECT-TYPE    
+        SYNTAX      INTEGER {
+                        online(1),
+                        offline(2)
+                    }
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "The description of device state change"
+    ::= { ruijieVxuTrapsNtfObjects 1 }
+    
+ruijieVxuVxlState OBJECT-TYPE    
+        SYNTAX      INTEGER {
+                        vxl(1),
+                        normal(2)
+                    }
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "The description of VXL port state change"
+    ::= { ruijieVxuTrapsNtfObjects 2 }    
+
+ruijieVxuTrapsNotifications OBJECT IDENTIFIER ::= { ruijieVxuMIBTraps 2 }
+    
+ruijieVxuNotifyDeviceChange NOTIFICATION-TYPE
+        OBJECTS     {
+                        ruijieVxuLocationDeviceID,
+                        ruijieVxuLocationSlotID,
+                        ruijieVxuDeviceState
+                    }
+        STATUS      current
+        DESCRIPTION
+            "This notification is send by VXU master when device plugin or remove"
+    ::= { ruijieVxuTrapsNotifications 1 }
+
+ruijieVxuNotifyVxlChange NOTIFICATION-TYPE
+        OBJECTS     {
+                        ruijieVxuVxlPortDeviceID,
+                        ruijieVxuVxlPortSlotID,
+                        ruijieVxuVxlPortID,
+                        ruijieVxuVxlState
+                    }
+        STATUS      current
+        DESCRIPTION
+            "This notification is send by VXU master when VXL Port change"
+    ::= { ruijieVxuTrapsNotifications 2 }       
+
+END
+

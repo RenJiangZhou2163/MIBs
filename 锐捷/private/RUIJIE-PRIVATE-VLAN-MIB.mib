@@ -1,0 +1,587 @@
+-- *****************************************************************
+-- RUIJIE-PRIVATE-VLAN-MIB 
+--
+-- March 2009, linjia
+--
+-- Copyright (c) 2009 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+--
+-- *****************************************************************
+
+RUIJIE-PRIVATE-VLAN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, 
+    OBJECT-TYPE
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, 
+    TruthValue
+        FROM SNMPv2-TC
+    ruijieMgmt
+        FROM RUIJIE-SMI
+    ifIndex
+        FROM IF-MIB
+    MODULE-COMPLIANCE, 
+    OBJECT-GROUP
+        FROM SNMPv2-CONF;
+
+ruijiePrivateVlanMIB MODULE-IDENTITY
+    LAST-UPDATED "200903230000Z"
+    ORGANIZATION "Ruijie Networks Co.,Ltd."
+    CONTACT-INFO
+            "
+            Tel: 4008-111-000 
+
+            E-mail: service@ruijie.com.cn"                      
+    DESCRIPTION             
+            "The MIB module to support Private VLAN feature on switching devices."
+    REVISION      "200903010000Z"
+    DESCRIPTION            
+            " The Initial version of this MIB module."
+    ::= { ruijieMgmt 44 } 
+
+
+-- 
+-- Textual Conventions
+--
+
+PrivateVlanType ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION            "The VLAN type as defined for Private VLAN feature.
+
+            'normal' -- this VLAN is a normal VLAN (i.e., not a 
+                        private VLAN or private group).
+
+            'primary' -- this VLAN is the primary VLAN as defined for
+                         Private VLAN feature.
+
+            'isolated' -- this VLAN is the isolated VLAN as
+                          defined for Private VLAN feature. All the 
+                          ports in the isolated VLAN can only talk 
+                          to the specifically designated ports 
+                          configured as promiscuous ports, i.e., 
+                          the ports even in the same isolated VLAN 
+                          can not talk to each other. 
+            
+            'community' -- this VLAN is the community VLAN as
+                           defined for Private VLAN feature. All the 
+                           ports in this community VLAN can behave 
+                           like ports in normal VLAN type except 
+                           that they can also receive egress packets 
+                           tagged with its associated primary VLAN 
+                           ID. 
+                           
+             A VLAN of isolated(3), community(4) type is also called a secondary VLAN."
+    SYNTAX     INTEGER {
+                       normal(1),
+                       primary(2),
+                       isolated(3),
+                       community(4)
+               }
+
+VlanIndexOrZero ::= TEXTUAL-CONVENTION
+    STATUS    current
+    DESCRIPTION            "The VLAN ID or zero as defined for Private VLAN
+            feature. If the value is between 1 and 4095
+            inclusive, it represents an IEEE 802.1Q VLAN-ID.
+            If the value is zero, it is object-specific and
+            must therefore be defined as part of the
+            description of any object which uses this syntax."
+    SYNTAX    INTEGER(0..4095)
+                 
+--VlanIndexBitmap ::= TEXTUAL-CONVENTION
+--    STATUS    current
+--    DESCRIPTION            "A string of octets containing one bit per VLAN for a 
+--            total of 1024 VLANs in the management domain.  
+--            The most significant bit of the octet string is the 
+--            lowest value VLAN of 1024 VLANs.
+--
+--            Refer to the description on the MIB object that
+--            uses this textual convention to determine the meaning
+--            of bits that are set ('1') or cleared ('0').
+
+--            The most significant bit of the bitmap is transmitted 
+--            first. Note that if the length of this string is less than
+--            128 octets, any 'missing' octets are assumed to contain
+--            the value zero. An NMS may omit any zero-valued octets
+--            from the end of this string in order to reduce SetPDU
+--            size, and the agent may also omit zero-valued trailing
+--            octets, to reduce the size of GetResponse PDUs."
+
+--    SYNTAX    OCTET STRING (SIZE (0..128))
+
+
+ruijiepvlanMIBObjects OBJECT IDENTIFIER ::= { ruijiePrivateVlanMIB 1 }
+
+ruijiepvlanVlanObjects OBJECT IDENTIFIER ::= { ruijiepvlanMIBObjects 1 }
+
+ruijiepvlanPortObjects OBJECT IDENTIFIER ::= { ruijiepvlanMIBObjects 2 }
+
+ruijiepvlanSVIObjects  OBJECT IDENTIFIER ::= { ruijiepvlanMIBObjects 3 }
+
+--
+-- VLAN tables for Private VLAN feature
+--
+
+ruijiepvlanVlanTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijiePvlanVlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION             "A table containing Private VLAN information on the 
+            VLANs which currently exist."
+    ::= { ruijiepvlanVlanObjects 1 }
+ 
+ruijiepvlanVlanEntry OBJECT-TYPE
+    SYNTAX      RuijiePvlanVlanEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION            "A conceptual row containing the Private VLAN 
+            information on the VLANs for a particular management 
+            domain."    
+    INDEX { ruijiepvlanVlanIndex}
+    ::= { ruijiepvlanVlanTable 1 }
+
+RuijiePvlanVlanEntry ::= SEQUENCE {
+    ruijiepvlanVlanIndex VlanIndexOrZero,
+    ruijiepvlanVlanPrivateVlanType PrivateVlanType,
+    ruijiepvlanVlanAssociatedPrimaryVlan VlanIndexOrZero,
+    ruijiepvlanIfAssociatedPrimaryVlan TruthValue
+}     
+
+ruijiepvlanVlanIndex OBJECT-TYPE
+    SYNTAX     VlanIndexOrZero 
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION             "Indicated the VLAN id."
+    ::= { ruijiepvlanVlanEntry 1 }
+
+ruijiepvlanVlanPrivateVlanType OBJECT-TYPE
+    SYNTAX     PrivateVlanType 
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION             "Indicated the VLAN type as defined for Private VLAN 
+            feature."
+    ::= { ruijiepvlanVlanEntry 2 }
+
+ruijiepvlanVlanAssociatedPrimaryVlan OBJECT-TYPE
+    SYNTAX     VlanIndexOrZero 
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION             "The VLAN ID of The associated primary VLAN used for 
+            the Private VLAN feature if pvlanVlanPrivateVlanType 
+            has the value of isolated(3), community(4). If pvlanVlanPrivateVlanType 
+            has the value of normal(1) or primary(2), then this 
+            object has the value of 0.
+            The value should be 0 when configuring 'private-vlan type'.
+            When configuring 'private-vlan association',the value of 0 means deleting the association, otherwise means
+            configure association on this primary vlan."
+     ::= { ruijiepvlanVlanEntry 3 }
+
+ruijiepvlanIfAssociatedPrimaryVlan OBJECT-TYPE
+    SYNTAX     TruthValue 
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION             "It indicate if the vlan assiociate with primary vlan when get the mib, and
+                             indicate if setting the assiociate with primary vlan when set the mib, 0 means
+                             configure 'private-vlan type', not 0 means configure 'private-vlan association'."
+     ::= { ruijiepvlanVlanEntry 4 }
+
+--
+-- Table for configuring host-association on host ports
+--
+
+ruijiepvlanPrivatePortTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijiePvlanPrivatePortEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION            "A table containing information of the configuration of 
+            VLAN on the host ports of the device."
+    ::= { ruijiepvlanPortObjects 1 }
+
+ruijiepvlanPrivatePortEntry OBJECT-TYPE
+    SYNTAX     RuijiePvlanPrivatePortEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION            "A conceptual row containing information of the 
+            configuration of VLAN for each host port. 
+            When pvlanPrivatePortSecondaryVlan and pvlanPrivatePortPrimaryVlan 
+            are both zero, it means deleting the configuration on the port, when they 
+            are both nonzero, it means configuring the host port, 
+            otherwise are invalid input. This table is valid only for host port."
+    INDEX      { ifIndex }
+    ::= { ruijiepvlanPrivatePortTable 1 }
+
+RuijiePvlanPrivatePortEntry ::= SEQUENCE {
+    ruijiepvlanPrivatePortPrimaryVlan  VlanIndexOrZero,
+    ruijiepvlanPrivatePortSecondaryVlan  VlanIndexOrZero
+}
+
+ruijiepvlanPrivatePortPrimaryVlan OBJECT-TYPE
+    SYNTAX     VlanIndexOrZero
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION            "The VLAN ID of the primary VLAN configured on this 
+            private port. If ruijiepvlanPrivatePortPrimaryVlan and ruijiepvlanPrivatePortSecondaryVlan
+            are both zero when set the mib, it means delete the private-vlan configuration on the host port."
+    ::= { ruijiepvlanPrivatePortEntry 1 }    
+
+ruijiepvlanPrivatePortSecondaryVlan OBJECT-TYPE
+    SYNTAX     VlanIndexOrZero
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION            "The VLAN ID of the secondary VLAN configured on this 
+            private port.If ruijiepvlanPrivatePortPrimaryVlan and ruijiepvlanPrivatePortSecondaryVlan
+            are both zero when set the mib, it means delete the private-vlan configuration on the host port."
+    ::= { ruijiepvlanPrivatePortEntry 2 }    
+
+--
+-- Table for remapping secondary VLAN to primary VLAN on promiscuous 
+-- ports for Private VLAN feature 
+--
+
+ruijiepvlanPromPortTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijiePvlanPromPortEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION            "A table containing information of secondary VLAN to 
+            primary VLAN remapping on ports of the device."
+    ::= { ruijiepvlanPortObjects 2 }
+
+ruijiepvlanPromPortEntry OBJECT-TYPE
+    SYNTAX     RuijiePvlanPromPortEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION            "A conceptual row containing information of secondary 
+            VLAN to primary VLAN remapping for each port. An entry 
+            is created by the managed system for each interface
+            which can be configured as a promiscuous port for 
+            Private VLAN feature.This table is valid only for promiscuous port."
+    INDEX      { ifIndex }
+    ::= { ruijiepvlanPromPortTable 1 }
+ 
+RuijiePvlanPromPortEntry ::= SEQUENCE {
+    ruijiepvlanPrivatePortPrimaryVlanId     VlanIndexOrZero,
+    ruijiepvlanPromPortSecondaryRemap       OCTET STRING,
+    ruijiepvlanPromPortSecondaryRemap2k     OCTET STRING,
+    ruijiepvlanPromPortSecondaryRemap3k     OCTET STRING,
+    ruijiepvlanPromPortSecondaryRemap4k     OCTET STRING    
+} 
+
+ruijiepvlanPrivatePortPrimaryVlanId OBJECT-TYPE
+    SYNTAX     VlanIndexOrZero
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION            "Primary Vlan Id configured on the promiscuous port, it is zero
+                            when delete the remapping on the port."
+    ::= { ruijiepvlanPromPortEntry 1 } 
+
+ruijiepvlanPromPortSecondaryRemap OBJECT-TYPE
+    SYNTAX     OCTET STRING (SIZE (0..128))
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION            "A string of octets containing one bit per VLAN in the
+            management domain on this port.  The first octet
+            corresponds to VLANs with VlanIndexOrZero values of 0 
+            through 7; the second octet to VLANs 8 through 15; etc.  
+            The most significant bit of each octet corresponds to 
+            the lowest value VlanIndexOrZero in that octet.
+
+            A bit can only be set to '1' when the bit is 
+            corresponding to a VLAN of Private VLAN isolated, 
+            community type which has already 
+            been associated with a primary VLAN. 
+        
+            Note that if the length of this string is less than
+            128 octets, any 'missing' octets are assumed to contain
+            the value zero. An NMS may omit any zero-valued octets
+            from the end of this string in order to reduce SetPDU 
+            size, and the agent may also omit zero-valued trailing 
+            octets, to reduce the size of GetResponse PDUs."
+    ::= { ruijiepvlanPromPortEntry 2 }
+
+ruijiepvlanPromPortSecondaryRemap2k OBJECT-TYPE
+    SYNTAX     OCTET STRING (SIZE (0..128))
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION             "A string of octets containing one bit per VLAN  for 
+            VLANs with VlanIndexOrZero values of 1024 through 2047 
+            in the management domain on this port.  The first octet 
+            corresponds to VLANs with VlanIndexOrZero values of 1024 
+            through 1031; the second octet to VLANs 1032 through 
+            1039; etc.  The most significant bit of each octet 
+            corresponds to the lowest value VlanIndexOrZero in 
+            that octet. 
+
+            A bit can only be set to '1' when the bit is 
+            corresponding to a VLAN of Private VLAN isolated or 
+            community type which has already been associated with a 
+            primary VLAN.  
+ 
+            Note that if the length of this string is less than
+            128 octets, any 'missing' octets are assumed to contain
+            the value zero. An NMS may omit any zero-valued octets
+            from the end of this string in order to reduce SetPDU 
+            size, and the agent may also omit zero-valued trailing 
+            octets, to reduce the size of GetResponse PDUs.
+
+            This object is only instantiated on devices which support
+            the range of VlanIndexOrZero up to 4095."
+    ::= { ruijiepvlanPromPortEntry 3 }
+
+ruijiepvlanPromPortSecondaryRemap3k OBJECT-TYPE
+    SYNTAX     OCTET STRING (SIZE (0..128))
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION            "A string of octets containing one bit per VLAN  for 
+            VLANs with VlanIndexOrZero values of 2048 through 3071 
+            in the management domain on this port.  The first octet 
+            corresponds to VLANs with VlanIndexOrZero values of 2048 
+            through 2055; the second octet to VLANs 2056 through 
+            2063; etc.  The most significant bit of each octet 
+            corresponds to the lowest value VlanIndexOrZero in 
+            that octet.
+
+            A bit can only be set to '1' when the bit is 
+            corresponding to a VLAN of Private VLAN isolated or 
+            community type which has already been associated with a 
+            primary VLAN. 
+
+            Note that if the length of this string is less than
+            128 octets, any 'missing' octets are assumed to contain
+            the value zero. An NMS may omit any zero-valued octets
+            from the end of this string in order to reduce SetPDU 
+            size, and the agent may also omit zero-valued trailing 
+            octets, to reduce the size of GetResponse PDUs.
+
+            This object is only instantiated on devices which support
+            the range of VlanIndexOrZero up to 4095."
+    ::= { ruijiepvlanPromPortEntry 4 }
+
+ruijiepvlanPromPortSecondaryRemap4k OBJECT-TYPE
+    SYNTAX     OCTET STRING (SIZE (0..128))
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION            "A string of octets containing one bit per VLAN  for 
+            VLANs with VlanIndexOrZero values of 3072 through 4095 
+            in the management domain on this port.  The first octet 
+            corresponds to VLANs with VlanIndexOrZero values of 3072 
+            through 3079; the second octet to VLANs 3080 through 
+            3087; etc.  The most significant bit of each octet 
+            corresponds to the lowest value VlanIndexOrZero in 
+            that octet.
+
+            A bit can only be set to '1' when the bit is 
+            corresponding to a VLAN of Private VLAN isolated or 
+            community type which has already been associated with a 
+            primary VLAN. 
+
+            Note that if the length of this string is less than
+            128 octets, any 'missing' octets are assumed to contain
+            the value zero. An NMS may omit any zero-valued octets
+            from the end of this string in order to reduce SetPDU 
+            size, and the agent may also omit zero-valued trailing 
+            octets, to reduce the size of GetResponse PDUs.
+
+            This object is only instantiated on devices which support
+            the range of VlanIndexOrZero up to 4095."
+    ::= { ruijiepvlanPromPortEntry 5 }
+
+
+--
+-- Table for configuring port mode for Private VLAN feature
+--
+
+ruijiepvlanPortModeTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijiePvlanPortModeEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION            "A table containing information of the configuration of
+            port mode for the Private VLAN feature."
+    ::= { ruijiepvlanPortObjects 3 }
+
+ruijiepvlanPortModeEntry OBJECT-TYPE
+    SYNTAX     RuijiePvlanPortModeEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION            "A conceptual row containing information of the
+            configuration of port mode on each port for the 
+            Private VLAN feature. An entry of this table is 
+            created by the managed system when the capability
+            to be a Private VLAN port is detected on an 
+            interface." 
+    INDEX      { ifIndex }
+    ::= { ruijiepvlanPortModeTable 1 }
+
+RuijiePvlanPortModeEntry ::= SEQUENCE {
+    ruijiepvlanPortMode INTEGER 
+}
+
+ruijiepvlanPortMode OBJECT-TYPE
+    SYNTAX     INTEGER {
+                       nonPrivateVlan(1), 
+                       host(2),
+                       promiscuous(3)                       
+               }        
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION            "The Private VLAN port mode on this port.  
+
+            nonPrivateVlan(1) -- this port is configured to be a
+                                 non-Private-VLAN port.
+
+            host(2) -- this port is configured to be 
+                       a Private-VLAN host port, i.e., private 
+                       port.
+
+            promiscuous(3) -- this port is configured to be
+                              a Private-VLAN promiscuous port."
+    ::= { ruijiepvlanPortModeEntry 1 }
+
+--
+-- Private VLAN mapping for the Switch Virtual Interfaces  
+--
+
+ruijiepvlanSVIMappingTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijiePvlanSVIMappingEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION            "A table containing the configuration of 
+            primary VLAN SVI (Switch Virtual Interfaces) 
+            mapping for the secondary VLANs for the Private 
+            VLAN feature."
+    ::= { ruijiepvlanSVIObjects 1 }
+
+ruijiepvlanSVIMappingEntry OBJECT-TYPE
+    SYNTAX      RuijiePvlanSVIMappingEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION            "A conceptual row containing the Primary VLAN 
+            SVI mapping configuration for the existing 
+            secondary VLANs. An entry is created by the managed 
+            system for each VLAN with corresponding VLAN's 
+            pvlanVlanPrivateVlanType of isolated(3), community(4)."
+   INDEX      { ruijiepvlanSVIMappingVlanIndex } 
+    ::= { ruijiepvlanSVIMappingTable 1 }
+
+RuijiePvlanSVIMappingEntry ::= SEQUENCE {
+    ruijiepvlanSVIMappingVlanIndex VlanIndexOrZero, 
+    ruijiepvlanSVIMappingPrimarySVI VlanIndexOrZero 
+}
+
+ruijiepvlanSVIMappingVlanIndex OBJECT-TYPE
+    SYNTAX        VlanIndexOrZero
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION             "An index value that uniquely identifies the
+            Virtual LAN associated with this information."
+    ::= { ruijiepvlanSVIMappingEntry 1 }
+
+ruijiepvlanSVIMappingPrimarySVI OBJECT-TYPE
+    SYNTAX     VlanIndexOrZero 
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION            "The Vlan ID of the primary VLAN SVI this secondary
+            VLAN is mapped to for the Private VLAN feature. 
+            This object has the value of zero if this secondary 
+            VLAN is not mapped to any primary VLAN SVI."  
+     ::= { ruijiepvlanSVIMappingEntry 2 }
+
+--
+-- Conformance Information
+--
+
+ruijiepvlanMIBConformance OBJECT IDENTIFIER ::= { ruijiePrivateVlanMIB 2 }
+ruijiepvlanMIBCompliances OBJECT IDENTIFIER ::= { ruijiepvlanMIBConformance 1 }
+ruijiepvlanMIBGroups      OBJECT IDENTIFIER ::= { ruijiepvlanMIBConformance 2}
+
+--
+-- compliance statements
+--
+
+ruijiepvlanMIBCompliance MODULE-COMPLIANCE
+    STATUS  current 
+    DESCRIPTION            "The compliance statement for Private VLAN feature 
+            implementation."
+    MODULE  -- this module
+             -- no MANDATORY-GROUPS
+
+        GROUP ruijiepvlanVlanGroup
+        DESCRIPTION                 "This group must be implemented on devices which has 
+                Private VLAN feature support."
+                
+        GROUP ruijiepvlanPrivatePortGroup
+        DESCRIPTION                 "This group must be implemented on devices which has 
+                Private VLAN feature support."
+                
+        GROUP ruijiepvlanPromPortGroup
+        DESCRIPTION                "This group must be implemented on devices which has 
+                support for promiscuous port of Private VLAN feature."
+
+        GROUP ruijiepvlanPortModeGroup
+        DESCRIPTION               "A collection of objects providing basic 
+            port mode configuration for Private VLAN feature."
+                
+        GROUP ruijiepvlanSVIGroup
+        DESCRIPTION                "A collection of objects providing  
+            svi mapping configuration for Private VLAN feature."
+                
+    ::= { ruijiepvlanMIBCompliances 1 }                             
+
+--
+-- units of conformance
+--
+ruijiepvlanVlanGroup OBJECT-GROUP
+    OBJECTS { 
+            ruijiepvlanVlanIndex,
+            ruijiepvlanVlanPrivateVlanType,
+            ruijiepvlanVlanAssociatedPrimaryVlan,           
+            ruijiepvlanIfAssociatedPrimaryVlan 
+            }
+    STATUS  current
+    DESCRIPTION            "A collection of objects providing basic VLAN 
+            configuration for Private VLAN feature."
+    ::= { ruijiepvlanMIBGroups 1 }
+    
+ruijiepvlanPrivatePortGroup OBJECT-GROUP
+    OBJECTS { 
+            ruijiepvlanPrivatePortPrimaryVlan,
+            ruijiepvlanPrivatePortSecondaryVlan
+            }
+    STATUS  current
+    DESCRIPTION            "A collection of objects providing basic 
+            private port configuration for Private VLAN 
+            feature."
+    ::= { ruijiepvlanMIBGroups 2 }
+    
+ruijiepvlanPromPortGroup OBJECT-GROUP
+    OBJECTS {               
+            ruijiepvlanPrivatePortPrimaryVlan,
+            ruijiepvlanPromPortSecondaryRemap,
+            ruijiepvlanPromPortSecondaryRemap2k,
+            ruijiepvlanPromPortSecondaryRemap3k,
+            ruijiepvlanPromPortSecondaryRemap4k
+            }
+    STATUS  current
+    DESCRIPTION            "A collection of objects providing basic 
+            promiscuous port configuration for Private 
+            VLAN feature."
+    ::= { ruijiepvlanMIBGroups 3 }  
+
+ruijiepvlanPortModeGroup OBJECT-GROUP
+    OBJECTS {               
+            ruijiepvlanPortMode
+            }
+    STATUS  current
+    DESCRIPTION            "A collection of objects providing basic 
+            port mode configuration for Private VLAN feature."
+    ::= { ruijiepvlanMIBGroups 4 }  
+
+ruijiepvlanSVIGroup OBJECT-GROUP
+    OBJECTS {               
+            ruijiepvlanSVIMappingPrimarySVI
+            }
+    STATUS  current
+    DESCRIPTION            "A collection of objects providing  
+            svi mapping configuration for Private VLAN feature."
+    ::= { ruijiepvlanMIBGroups 5 } 
+END

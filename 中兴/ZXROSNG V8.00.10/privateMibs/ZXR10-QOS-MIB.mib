@@ -1,0 +1,3800 @@
+--*****************************************************************
+--ZXR10-QOS-MIB
+--OAM
+--2011-8-5 9:35
+--
+--
+--Copyright (c) 1985-2013 by ZTE Corp.
+--All rights reserved.
+--*****************************************************************
+    
+ZXR10-QOS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Integer32, Unsigned32, Counter32,enterprises,IpAddress 
+        FROM SNMPv2-SMI
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF
+    DisplayString, TEXTUAL-CONVENTION, RowStatus
+        FROM SNMPv2-TC
+    zxr10,zxr10RosngMIB        
+        FROM ZXR10-SMI; 
+
+zxr10QosMIB MODULE-IDENTITY
+        LAST-UPDATED  "201701130910Z"
+        ORGANIZATION  "ZTE Corporation"
+        CONTACT-INFO
+            "       Hu Jun
+            Tel:    +86-25-52870000
+            E-Mail: hu.jun11@zte.com.cn "
+        DESCRIPTION   "The MIB module to describe the QoS protocol."   
+        
+        REVISION      "201701130910Z"
+        DESCRIPTION   "Modify the mib file by adding traffic shape direction.
+                       Modify the mib file by amending pmap set mark description."
+        
+        REVISION      "201701090910Z"
+        DESCRIPTION   "Modify the mib file by adding inner and outer flag."
+        
+        REVISION      "201505290910Z"
+        DESCRIPTION   "Modify the mib file by adding dscp not and pre not."
+
+        REVISION      "201408250910Z"
+        DESCRIPTION   "Modify the mib file based on criterion."
+
+        REVISION      "201404231456Z"
+        DESCRIPTION   "Modify the mib file based on criterion."
+ 
+        REVISION      "201402201842Z"
+        DESCRIPTION   "Modify the mib file based on criterion."
+
+        REVISION      "201401141500Z"
+        DESCRIPTION   "Add new tables and leaf nodes.
+                       Modify the mib file based on criterion."
+
+        REVISION      "201312041000Z"
+        DESCRIPTION   "Add new tables and leaf nodes.
+                       Modify the mib file based on criterion."
+
+        REVISION      "201307191600Z"
+        DESCRIPTION   "Add new tables and leaf nodes.
+                       Modify the mib file based on criterion."
+
+        REVISION      "201106270000Z"
+        DESCRIPTION   "add:   zxr10QosMIB
+                       Initial version of this MIB module."
+        ::= { zxr10QosMIBObjects 2 }
+
+zxr10QosMIBObjects      OBJECT IDENTIFIER ::= { zxr10RosngMIB 30 }
+
+zClassMapObjects               OBJECT IDENTIFIER ::= { zxr10QosMIB 1 }      
+zPolicyMapObjects              OBJECT IDENTIFIER ::= { zxr10QosMIB 2 }  
+zServicePolicyObjects          OBJECT IDENTIFIER ::= { zxr10QosMIB 3 }
+zxr10QosTraffShapeObjects      OBJECT IDENTIFIER ::= { zxr10QosMIB 4 } 
+zxr10QosTraffShapeDirObjects   OBJECT IDENTIFIER ::= { zxr10QosMIB 5 } 
+
+zMatchObjects               OBJECT IDENTIFIER ::= { zClassMapObjects 2 }
+zPmapClassObjects           OBJECT IDENTIFIER ::= { zPolicyMapObjects 2 }
+
+zSwitchFabric               OBJECT IDENTIFIER ::= { zServicePolicyObjects 2 }
+
+--******************************************************
+--    he follow part defined some data types which will 
+--    be used in this mib file later  
+--****************************************************** 
+MacAddress ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION  "The data type of mac address"
+    SYNTAX       OCTET STRING (SIZE (6))
+    
+BitmapDscp  ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION  "The data type of Dscp"
+    SYNTAX       OCTET STRING (SIZE(0..65535))
+
+BitmapMplsexp  ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION  "The data type of MplsExp"
+    SYNTAX       OCTET STRING (SIZE(0..65535))
+
+BitmapPrec  ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION  "The data type of precedence"
+    SYNTAX       OCTET STRING (SIZE(0..65535))
+
+BitmapVlan  ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION  "The data type of vlan"
+    SYNTAX       OCTET STRING (SIZE(0..65535))
+
+Bitmap8021p  ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION  "The data type of 8021p"
+    SYNTAX       OCTET STRING (SIZE(0..65535))
+
+QosMatchSrvClass ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            "server class of PHB info ,see below:
+             be  Best effort
+             af1 Assured forwarding class 1
+             af2 Assured forwarding class 2
+             af3 Assured forwarding class 3
+             af4 Assured forwarding class 4
+             ef  Expedited forward
+             cs6 Internetwork control service class
+             cs7 Network control service class"
+    SYNTAX   INTEGER {be(1),af1(2),af2(3),af3(4),
+                      af4(5),ef(6),cs6(7),cs7(8)}
+
+QosMatchDscpExSrvClass ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            "resserved words of DSCP info ,see below:
+            af11    Match packets with AF11 dscp (001010)                                
+            af12    Match packets with AF12 dscp (001100)                                
+            af13    Match packets with AF13 dscp (001110)                                
+            af21    Match packets with AF21 dscp (010010)                                
+            af22    Match packets with AF22 dscp (010100)                                
+            af23    Match packets with AF23 dscp (010110)                                
+            af31    Match packets with AF31 dscp (011010)                                
+            af32    Match packets with AF32 dscp (011100)                                
+            af33    Match packets with AF33 dscp (011110)                                
+            af41    Match packets with AF41 dscp (100010)                                
+            af42    Match packets with AF42 dscp (100100)                                
+            af43    Match packets with AF43 dscp (100110)                                
+            cs1     Match packets with CS1(precedence 1) dscp (001000)                   
+            cs2     Match packets with CS2(precedence 2) dscp (010000)                   
+            cs3     Match packets with CS3(precedence 3) dscp (011000)                   
+            cs4     Match packets with CS4(precedence 4) dscp (100000)                   
+            cs5     Match packets with CS5(precedence 5) dscp (101000)                   
+            cs6     Match packets with CS6(precedence 6) dscp (110000)                   
+            cs7     Match packets with CS7(precedence 7) dscp (111000)                   
+            default Match packets with default dscp (000000)                             
+            ef      Match packets with EF dscp (101110)"
+    SYNTAX   INTEGER {af11(10),af12(12),af13(14),af21(18),af22(20),af23(22),
+                      af31(26),af32(28),af33(30),af41(34),af42(36),af43(38),
+                      cs1(8),cs2(16),cs3(24),cs4(32),cs5(40),cs6(48),
+                      cs7(56),default(0),ef(46)}
+
+--*****************************************************************
+--*****************************************************************
+--zClassMapTable  
+--*****************************************************************
+zClassMapTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZClassMapEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Class Map table"
+        ::= { zClassMapObjects 1  }
+
+zClassMapEntry OBJECT-TYPE
+        SYNTAX   ZClassMapEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "H-QoS class map"
+        INDEX {zClassMapStrcmapname }
+        ::= { zClassMapTable 1 }
+
+ZClassMapEntry ::=
+        SEQUENCE {
+                zClassMapStrcmapname                             
+                    DisplayString,
+                zClassMapUmatchrelattype                         
+                    Unsigned32,
+                zClassMapUiptype                                  
+                    Unsigned32,
+                zClassMapMatchtype                                
+                    Unsigned32,
+                zClassMapModeType
+                    Unsigned32
+        }
+
+zClassMapStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class map"            
+        ::= { zClassMapEntry  1  }
+
+zClassMapUmatchrelattype OBJECT-TYPE
+        SYNTAX   Unsigned32(0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "match-all Packets meet all of the match criteria
+                 match-any Packets meet any of the match criteria"
+        ::= { zClassMapEntry  2  }
+
+zClassMapUiptype OBJECT-TYPE
+        SYNTAX   Unsigned32(0..2)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "ipv4 Packets based on IPv4
+                 ipv6 Packets based on IPv6"
+        ::= { zClassMapEntry  3  }
+                                
+zClassMapMatchtype OBJECT-TYPE
+        SYNTAX   Unsigned32(0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "The flag of configruing match type:
+                bit0: dscp
+                bit1: mplsexp
+                bit2: precedence
+                bit3: invlan
+                bit4: outvlan
+                bit5: in8021p
+                bit6: out8021p
+                bit7: interface
+                bit8: qosgroup
+                bit9: vrf
+                bit10: unicast
+                bit11: multicast
+                bit12: mac address
+                bit13: child
+                bit14: ipv4 acl
+                bit15: ipv6 acl
+                bit16: vlss
+                bit17: vpws
+                bit18: vpls
+                bit19: dpi
+                bit20: serv class
+                bit21: link acl
+                bit22: dscp ex"
+        ::= { zClassMapEntry  4  }
+        
+zClassMapModeType  OBJECT-TYPE
+        SYNTAX   Unsigned32(0..3)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION 
+                  "The mode type of class-map.
+                  0  Class map based on normal
+                  1  Class map based on phb
+                  2  Class map based on sub-interface
+                  3  Class map based on switch-fabric"
+        ::= { zClassMapEntry  5  }
+
+--*****************************************************************
+--*****************************************************************
+--zMatchDscpTable obsolete
+--*****************************************************************
+zMatchDscpTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZMatchDscpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+                "Match DSCP table"
+        ::= { zMatchObjects 1  }
+
+zMatchDscpEntry OBJECT-TYPE
+        SYNTAX   ZMatchDscpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+                "Set DSCP value as match criteria"
+        INDEX {zMatchDscpStrcmapname}
+        ::= { zMatchDscpTable 1 }
+
+ZMatchDscpEntry ::=
+        SEQUENCE {
+                zMatchDscpStrcmapname       
+                    DisplayString,
+                zMatchDscpRgdscp            
+                    BitmapDscp,
+                zMatchDscpBdscp             
+                    Unsigned32,
+                zMatchDscpValue             
+                    BitmapDscp
+        }
+
+zMatchDscpStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "strCMapName
+                 WORD Name of the class map"
+        ::= { zMatchDscpEntry  1  }
+
+zMatchDscpRgdscp OBJECT-TYPE
+        SYNTAX   BitmapDscp
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "rgdscp"
+        ::= { zMatchDscpEntry  2  }
+
+zMatchDscpBdscp OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "Select DSCP as match criteria"
+        ::= { zMatchDscpEntry  3  }
+
+zMatchDscpValue OBJECT-TYPE
+        SYNTAX   BitmapDscp
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "DSCP value or range(max num:4;spacing mark:,)"
+        ::= { zMatchDscpEntry  4  }
+        
+--*****************************************************************
+--*****************************************************************
+--zMatchMplsexpTable
+--*****************************************************************
+zMatchMplsexpTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZMatchMplsexpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match MPLS-EXP table"
+        ::= { zMatchObjects 2  }
+
+zMatchMplsexpEntry OBJECT-TYPE
+        SYNTAX   ZMatchMplsexpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set MPLS-EXP as match criteria"
+        INDEX {zMatchMplsexpStrcmapname }
+        ::= { zMatchMplsexpTable 1 }
+
+ZMatchMplsexpEntry ::=
+        SEQUENCE {
+                zMatchMplsexpStrcmapname                          
+                    DisplayString,
+                zMatchMplsexpRgmplsexp                            
+                    BitmapMplsexp,
+                zMatchMplsexpBmplsexp                             
+                    Unsigned32,
+                zMatchMplsexpValue                                
+                    BitmapMplsexp
+        }
+
+zMatchMplsexpStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "strCMapName
+                 WORD Name of the class map"
+        ::= { zMatchMplsexpEntry  1  }
+
+zMatchMplsexpRgmplsexp OBJECT-TYPE
+        SYNTAX   BitmapMplsexp
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "rgmplsExp"
+        ::= { zMatchMplsexpEntry  2  }
+
+zMatchMplsexpBmplsexp OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select MPLS-EXP as match criteria"
+        ::= { zMatchMplsexpEntry  3  }
+
+zMatchMplsexpValue OBJECT-TYPE
+        SYNTAX   BitmapMplsexp
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "MPLS-EXP value or range(max num:4;spacing mark:,)"
+        ::= { zMatchMplsexpEntry  4  }
+
+--*****************************************************************
+--*****************************************************************
+--zMatchPrecTable  obsolete
+--*****************************************************************
+zMatchPrecTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZMatchPrecEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+                "Match IP Precedence table"
+        ::= { zMatchObjects 3  }
+
+zMatchPrecEntry OBJECT-TYPE
+        SYNTAX   ZMatchPrecEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+                "Set IP Precedence value as match criteria"
+        INDEX {zMatchPrecStrcmapname }
+        ::= { zMatchPrecTable 1 }
+
+ZMatchPrecEntry ::=
+        SEQUENCE {
+                zMatchPrecStrcmapname                             
+                    DisplayString,
+                zMatchPrecRgprec                                  
+                    BitmapPrec,
+                zMatchPrecBprec                                   
+                    Unsigned32,
+                zMatchPrecValue                                   
+                    BitmapPrec      
+        }
+
+zMatchPrecStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "strCMapName
+                 WORD Name of the class map"
+        ::= { zMatchPrecEntry  1  }
+
+zMatchPrecRgprec OBJECT-TYPE
+        SYNTAX   BitmapPrec
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "rgprec"
+        ::= { zMatchPrecEntry  2  }
+
+zMatchPrecBprec OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "Select IP-Precedence as match criteria"
+        ::= { zMatchPrecEntry  3  }
+
+zMatchPrecValue OBJECT-TYPE
+        SYNTAX   BitmapPrec
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "IP Precedence value or range(max num:4;spacing mark:,)
+                "
+        ::= { zMatchPrecEntry  4  }
+
+--*****************************************************************
+--*****************************************************************
+--zMatchInVlanTable
+--*****************************************************************
+zMatchInVlanTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZMatchInVlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match inner-VLAN table"
+        ::= { zMatchObjects 4  }
+
+zMatchInVlanEntry OBJECT-TYPE
+        SYNTAX   ZMatchInVlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set inner-VLAN value as match criteria"
+        INDEX {zMatchInVlanStrcmapname }
+        ::= { zMatchInVlanTable 1 }
+
+ZMatchInVlanEntry ::=
+        SEQUENCE {
+                zMatchInVlanStrcmapname                           
+                    DisplayString,
+                zMatchInVlanRginvlan                              
+                    BitmapVlan,
+                zMatchInVlanBinvlan                               
+                    Unsigned32,
+                zMatchInVlanValue                                 
+                    BitmapVlan
+        }
+
+zMatchInVlanStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "strCMapName
+                 WORD Name of the class map"
+        ::= { zMatchInVlanEntry  1  }
+
+zMatchInVlanRginvlan OBJECT-TYPE
+        SYNTAX   BitmapVlan
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "rginVlan"
+        ::= { zMatchInVlanEntry  2  }
+
+zMatchInVlanBinvlan OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select inner-VLAN as match criteria"
+        ::= { zMatchInVlanEntry  3  }
+
+zMatchInVlanValue OBJECT-TYPE
+        SYNTAX   BitmapVlan
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "In-VLAN value or range(max num:4;spacing mark:,)
+                "
+        ::= { zMatchInVlanEntry  4  }
+
+
+--*****************************************************************
+--*****************************************************************
+--zMatchOutVlanTable
+--*****************************************************************
+zMatchOutVlanTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZMatchOutVlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match outer-VLAN table"
+        ::= { zMatchObjects 5  }
+
+zMatchOutVlanEntry OBJECT-TYPE
+        SYNTAX   ZMatchOutVlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set outer-VLAN value as match criteria"
+        INDEX {zMatchOutVlanStrcmapname }
+        ::= { zMatchOutVlanTable 1 }
+
+ZMatchOutVlanEntry ::=
+        SEQUENCE {
+                zMatchOutVlanStrcmapname                          
+                    DisplayString,
+                zMatchOutVlanRgoutvlan                            
+                    BitmapVlan,
+                zMatchOutVlanBoutvlan                             
+                    Unsigned32,
+                zMatchOutVlanValue                                
+                    BitmapVlan
+        }
+
+zMatchOutVlanStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "strCMapName
+                 WORD Name of the class map"
+        ::= { zMatchOutVlanEntry  1  }
+
+zMatchOutVlanRgoutvlan OBJECT-TYPE
+        SYNTAX   BitmapVlan
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "rgoutVlan"
+        ::= { zMatchOutVlanEntry  2  }
+
+zMatchOutVlanBoutvlan OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select outer-VLAN as match criteria"
+        ::= { zMatchOutVlanEntry  3  }
+
+zMatchOutVlanValue OBJECT-TYPE
+        SYNTAX   BitmapVlan
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Out-VLAN value or range(max num:4;spacing mark:,)
+                "
+        ::= { zMatchOutVlanEntry  4  }
+
+
+--*****************************************************************
+--*****************************************************************
+--zMatchIn8021pTable
+--*****************************************************************
+zMatchIn8021pTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZMatchIn8021pEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match inner 802.1p table"
+        ::= { zMatchObjects 6  }
+
+zMatchIn8021pEntry OBJECT-TYPE
+        SYNTAX   ZMatchIn8021pEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set inner 802.1p value as match criteria"
+        INDEX {zMatchIn8021pStrcmapname }
+        ::= { zMatchIn8021pTable 1 }
+
+ZMatchIn8021pEntry ::=
+        SEQUENCE {
+                zMatchIn8021pStrcmapname                          
+                    DisplayString,
+                zMatchIn8021pRgin8021p                            
+                    Bitmap8021p,
+                zMatchIn8021pBin8021p                             
+                    Unsigned32,
+                zMatchIn8021pValue                                
+                    Bitmap8021p
+        }
+
+zMatchIn8021pStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "strCMapName
+                 WORD Name of the class map"
+        ::= { zMatchIn8021pEntry  1  }
+
+zMatchIn8021pRgin8021p OBJECT-TYPE
+        SYNTAX   Bitmap8021p
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "rgin8021p" 
+       ::= { zMatchIn8021pEntry  2  }
+
+zMatchIn8021pBin8021p OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select inner 802.1p as match criteria"
+        ::= { zMatchIn8021pEntry  3  }
+
+zMatchIn8021pValue OBJECT-TYPE
+        SYNTAX   Bitmap8021p
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "In8021p value or range (max num:4;spacing mark:,)
+                "
+        ::= { zMatchIn8021pEntry  4  }
+        
+--*****************************************************************
+--*****************************************************************
+--zMatchOut8021pTable
+--*****************************************************************
+zMatchOut8021pTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZMatchOut8021pEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match  outer 802.1p table"
+        ::= { zMatchObjects 7  }
+
+zMatchOut8021pEntry OBJECT-TYPE
+        SYNTAX   ZMatchOut8021pEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set outer 802.1p value as match criteria"
+        INDEX {zMatchOut8021pStrcmapname }
+        ::= { zMatchOut8021pTable 1 }
+
+ZMatchOut8021pEntry ::=
+        SEQUENCE {
+                zMatchOut8021pStrcmapname                         
+                    DisplayString,
+                zMatchOut8021pRgout8021p                          
+                    Bitmap8021p,
+                zMatchOut8021pBout8021p                           
+                    Unsigned32,
+                zMatchOut8021pValue                               
+                    Bitmap8021p
+        }
+
+zMatchOut8021pStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "strCMapName
+                 WORD Name of the class map"
+        ::= { zMatchOut8021pEntry  1  }
+
+zMatchOut8021pRgout8021p OBJECT-TYPE
+        SYNTAX   Bitmap8021p
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "rgout8021p"
+        ::= { zMatchOut8021pEntry  2  }
+
+zMatchOut8021pBout8021p OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select outer 802.1p as match criteria"
+        ::= { zMatchOut8021pEntry  3  }
+
+zMatchOut8021pValue OBJECT-TYPE
+        SYNTAX   Bitmap8021p
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Out8021p value or range (max num:4;spacing mark:,)
+                "
+        ::= { zMatchOut8021pEntry  4  }
+
+
+--*****************************************************************
+--*****************************************************************
+--zMatchIntfTable  
+--*****************************************************************
+zMatchIntfTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZMatchIntfEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match interface table"
+        ::= { zMatchObjects 8  }
+
+zMatchIntfEntry OBJECT-TYPE
+        SYNTAX   ZMatchIntfEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set interface name as match criteria"
+        INDEX {zMatchIntfStrcmapname }
+        ::= { zMatchIntfTable 1 }
+
+ZMatchIntfEntry ::=
+        SEQUENCE {
+                zMatchIntfStrcmapname                             
+                    DisplayString,
+                zMatchIntfStrintfname                             
+                    DisplayString,
+                zMatchIntfBuntag                                  
+                    Unsigned32,
+                zMatchIntfBifname                                 
+                    Unsigned32
+        }
+
+zMatchIntfStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "strCMapName
+                 WORD Name of the class map"
+        ::= { zMatchIntfEntry  1  }
+
+zMatchIntfStrintfname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the interface"
+        ::= { zMatchIntfEntry  2  }
+
+zMatchIntfBuntag OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "tag"
+        ::= { zMatchIntfEntry  3  }
+
+zMatchIntfBifname OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select interface name as match criteria"
+        ::= { zMatchIntfEntry  4  }
+
+
+
+--*****************************************************************
+--*****************************************************************
+--zMatchQosGrpTable
+--*****************************************************************
+zMatchQosGrpTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZMatchQosGrpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match qos-group table"
+        ::= { zMatchObjects 9  }
+
+zMatchQosGrpEntry OBJECT-TYPE
+        SYNTAX   ZMatchQosGrpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set qos id as match criteria"
+        INDEX {zMatchQosGrpStrcmapname }
+        ::= { zMatchQosGrpTable 1 }
+
+ZMatchQosGrpEntry ::=
+        SEQUENCE {
+                zMatchQosGrpStrcmapname                          
+                    DisplayString,
+                zMatchQosGrpBqosgrp                               
+                    Unsigned32,
+                zMatchQosGrpWqosgrp                               
+                    Unsigned32
+        }
+
+zMatchQosGrpStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "strCMapName
+                 WORD Name of the class map"
+        ::= { zMatchQosGrpEntry  1  }
+
+zMatchQosGrpBqosgrp OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select qos-group as match criteria"
+        ::= { zMatchQosGrpEntry  2  }
+
+zMatchQosGrpWqosgrp OBJECT-TYPE
+        SYNTAX   Unsigned32(1..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-65535> Set qos-group number"
+        ::= { zMatchQosGrpEntry  3  }
+        
+--*****************************************************************
+--*****************************************************************
+--zMatchVrfNameTable
+--*****************************************************************
+zMatchVrfNameTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZMatchVrfNameEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match vrf name table"
+        ::= { zMatchObjects 10  }
+
+zMatchVrfNameEntry OBJECT-TYPE
+        SYNTAX   ZMatchVrfNameEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set vrf name as match criteria"
+        INDEX {zMatchVrfNameStrcmapname }
+        ::= { zMatchVrfNameTable 1 }
+
+ZMatchVrfNameEntry ::=
+        SEQUENCE {
+                zMatchVrfNameStrcmapname                          
+                    DisplayString,
+                zMatchVrfNameStrvrfname                           
+                    DisplayString,
+                zMatchVrfNameBvrf                                 
+                    Unsigned32
+        }
+
+zMatchVrfNameStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "strCMapName
+                 WORD Name of the class map"
+        ::= { zMatchVrfNameEntry  1  }
+
+zMatchVrfNameStrvrfname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Vrf Name"
+        ::= { zMatchVrfNameEntry  2  }
+
+zMatchVrfNameBvrf OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select vrf name as match criteria"
+        ::= { zMatchVrfNameEntry  3  }
+
+
+
+--*****************************************************************
+--*****************************************************************
+--zMatchUnicastTable
+--*****************************************************************
+zMatchUnicastTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZMatchUnicastEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match unicast table"
+        ::= { zMatchObjects 11  }
+
+zMatchUnicastEntry OBJECT-TYPE
+        SYNTAX   ZMatchUnicastEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set unicast as match criteria"
+        INDEX {zMatchUnicastStrcmapname }
+        ::= { zMatchUnicastTable 1 }
+
+ZMatchUnicastEntry ::=
+        SEQUENCE {
+                zMatchUnicastStrcmapname                          
+                    DisplayString,
+                zMatchUnicastBunicast                             
+                    Unsigned32,
+                zMatchUnicastPriority
+                    Unsigned32
+        }
+
+zMatchUnicastStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "strCMapName
+                 WORD Name of the class map"
+        ::= { zMatchUnicastEntry  1  }
+
+zMatchUnicastBunicast OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select unicast as match criteria"
+        ::= { zMatchUnicastEntry  2  }
+
+zMatchUnicastPriority OBJECT-TYPE
+        SYNTAX   Unsigned32(1..4)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "1  Specify the high priority of queue
+                 2  Specify the middle priority of queue
+                 3  Specify the normal priority of queue
+                 4  Specify the low priority of queue"
+        ::= { zMatchUnicastEntry  3 }
+
+--*****************************************************************
+--*****************************************************************
+--zMatchMuticastTable
+--*****************************************************************
+zMatchMuticastTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZMatchMuticastEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match multicast table"
+        ::= { zMatchObjects 12  }
+
+zMatchMuticastEntry OBJECT-TYPE
+        SYNTAX   ZMatchMuticastEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set multicast value as match criteria"
+        INDEX {zMatchMuticastStrcmapname }
+        ::= { zMatchMuticastTable 1 }
+
+ZMatchMuticastEntry ::=
+        SEQUENCE {
+                zMatchMuticastStrcmapname                         
+                    DisplayString,
+                zMatchMuticastBmuticast                           
+                    Unsigned32,
+                zMatchMuticastPriority
+                    Unsigned32
+        }
+
+zMatchMuticastStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "strCMapName
+                 WORD Name of the class map"
+        ::= { zMatchMuticastEntry  1  }
+
+zMatchMuticastBmuticast OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select multicast as match criteria"
+        ::= { zMatchMuticastEntry  2  }
+
+zMatchMuticastPriority OBJECT-TYPE
+        SYNTAX   Unsigned32(1..4)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "1  Specify the high priority of queue
+                 2  Specify the middle priority of queue
+                 3  Specify the normal priority of queue
+                 4  Specify the low priority of queue"
+        ::= { zMatchMuticastEntry  3 }
+
+--*****************************************************************
+--*****************************************************************
+--zMatchMacTable
+--*****************************************************************
+zMatchMacTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZMatchMacEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match mac-address table"
+        ::= { zMatchObjects 13  }
+
+zMatchMacEntry OBJECT-TYPE
+        SYNTAX   ZMatchMacEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set mac-address value as match criteria"
+        INDEX {zMatchMacStrcmapname }
+        ::= { zMatchMacTable 1 }
+
+ZMatchMacEntry ::=
+        SEQUENCE {
+                zMatchMacStrcmapname                              
+                    DisplayString,
+                zMatchMacStrmacaddr                               
+                    MacAddress,
+                zMatchMacBmacaddr                                 
+                    Unsigned32
+        }
+
+zMatchMacStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "strCMapName
+                 WORD Name of the class map"
+        ::= { zMatchMacEntry  1  }
+
+zMatchMacStrmacaddr OBJECT-TYPE
+        SYNTAX   MacAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Set mac-address"
+        ::= { zMatchMacEntry  2  }
+
+zMatchMacBmacaddr OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select mac-address as match criteria"
+        ::= { zMatchMacEntry  3  }
+        
+--*****************************************************************
+--*****************************************************************
+--zMatchChildTable
+--*****************************************************************
+zMatchChildTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZMatchChildEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match child table"
+        ::= { zMatchObjects 14  }
+
+zMatchChildEntry OBJECT-TYPE
+        SYNTAX   ZMatchChildEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set child as match criteria"
+        INDEX {zMatchChildStrcmapname }
+        ::= { zMatchChildTable 1 }
+
+ZMatchChildEntry ::=
+        SEQUENCE {
+                zMatchChildStrcmapname                            
+                    DisplayString,
+                zMatchChildBchild                                 
+                    Unsigned32
+        }
+
+zMatchChildStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "strCMapName
+                 WORD Name of the class map"
+        ::= { zMatchChildEntry  1  }
+
+zMatchChildBchild OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Set the mark of null class"
+        ::= { zMatchChildEntry  2  }
+
+
+
+--*****************************************************************
+--*****************************************************************
+--zMatchV4aclTable
+--*****************************************************************
+zMatchV4aclTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZMatchV4aclEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match ipv4-access-list table"
+        ::= { zMatchObjects 15  }
+
+zMatchV4aclEntry OBJECT-TYPE
+        SYNTAX   ZMatchV4aclEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set IPv4 ACL name as match criteria"
+        INDEX {zMatchV4aclStrcmapname,zMatchV4aclStrv4name }
+        ::= { zMatchV4aclTable 1 }
+
+ZMatchV4aclEntry ::=
+        SEQUENCE {
+                zMatchV4aclStrcmapname                           
+                    DisplayString,
+                zMatchV4aclStrv4name                              
+                    DisplayString,
+                zMatchV4aclBv4name                                
+                    Unsigned32
+        }
+
+zMatchV4aclStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class map"
+        ::= { zMatchV4aclEntry  1  }
+
+zMatchV4aclStrv4name OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Select ipv4-access-list name"
+        ::= { zMatchV4aclEntry  2  }
+
+zMatchV4aclBv4name OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select ipv4-access-list as match criteria"
+        ::= { zMatchV4aclEntry  3  }
+
+
+
+--*****************************************************************
+--*****************************************************************
+--zMatchV6aclTable
+--*****************************************************************
+zMatchV6aclTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZMatchV6aclEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match ipv6-access-list table"
+        ::= { zMatchObjects 16  }
+
+zMatchV6aclEntry OBJECT-TYPE
+        SYNTAX   ZMatchV6aclEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set IPv6 ACl name as match criteria"
+        INDEX {zMatchV6aclStrcmapname,zMatchV6aclStrv6name }
+        ::= { zMatchV6aclTable 1 }
+
+ZMatchV6aclEntry ::=
+        SEQUENCE {
+                zMatchV6aclStrcmapname                           
+                    DisplayString,
+                zMatchV6aclStrv6name                              
+                    DisplayString,
+                zMatchV6aclBv6name                               
+                    Unsigned32
+        }
+
+zMatchV6aclStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class map"
+        ::= { zMatchV6aclEntry  1  }
+
+zMatchV6aclStrv6name OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Select ipv6-access-list name"
+        ::= { zMatchV6aclEntry  2  }
+
+zMatchV6aclBv6name OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select ipv6-access-list as match criteria"
+        ::= { zMatchV6aclEntry  3  }
+
+
+--*****************************************************************
+--*****************************************************************
+--zxr10QosMatchVpwsTable  
+--*****************************************************************
+zxr10QosMatchVpwsTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10QosMatchVpwsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match VPWS Table"
+        ::= { zMatchObjects 17  }
+
+zxr10QosMatchVpwsEntry OBJECT-TYPE
+        SYNTAX   Zxr10QosMatchVpwsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set VPWS name value as match criteria"
+        INDEX {zxr10QosMatchVpwsCmapName}
+        ::= { zxr10QosMatchVpwsTable 1 }
+
+Zxr10QosMatchVpwsEntry ::=
+        SEQUENCE {
+                zxr10QosMatchVpwsCmapName                           
+                    DisplayString,
+                zxr10QosMatchVpwsName                              
+                    DisplayString,
+                zxr10QosMatchVpwsId                               
+                    Unsigned32
+        }
+
+zxr10QosMatchVpwsCmapName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class map"
+        ::= { zxr10QosMatchVpwsEntry  1  }
+
+zxr10QosMatchVpwsName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..32))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select VPWS instance name as match criteria"
+        ::= { zxr10QosMatchVpwsEntry  2  }
+
+zxr10QosMatchVpwsId OBJECT-TYPE
+        SYNTAX   Unsigned32(0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Vpn id, which is copyed from VPWS object."
+        ::= { zxr10QosMatchVpwsEntry  3  }
+
+
+--*****************************************************************
+--*****************************************************************
+--zxr10QosMatchVplsTable  
+--*****************************************************************
+zxr10QosMatchVplsTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10QosMatchVplsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match VPLS Table"
+        ::= { zMatchObjects 18  }
+
+zxr10QosMatchVplsEntry OBJECT-TYPE
+        SYNTAX   Zxr10QosMatchVplsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set VPLS name as match criteria"
+        INDEX {zxr10QosMatchVplsCmapName}
+        ::= { zxr10QosMatchVplsTable 1 }
+
+Zxr10QosMatchVplsEntry ::=
+        SEQUENCE {
+                zxr10QosMatchVplsCmapName                           
+                    DisplayString,
+                zxr10QosMatchVplsName                              
+                    DisplayString,
+                zxr10QosMatchVplsId                               
+                    Unsigned32
+        }
+
+zxr10QosMatchVplsCmapName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class map"
+        ::= { zxr10QosMatchVplsEntry  1  }
+
+zxr10QosMatchVplsName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..32))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select VPLS instance name as match criteria"
+        ::= { zxr10QosMatchVplsEntry  2  }
+
+zxr10QosMatchVplsId OBJECT-TYPE
+        SYNTAX   Unsigned32(0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Vpn id, which is copyed from VPLS object"
+        ::= { zxr10QosMatchVplsEntry  3  }
+       
+
+--*****************************************************************
+--*****************************************************************
+--zxr10QosMatchPhbTable  
+--*****************************************************************
+zxr10QosMatchPhbTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10QosMatchPhbEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match PHB Table"
+        ::= { zMatchObjects 19  }
+
+zxr10QosMatchPhbEntry OBJECT-TYPE
+        SYNTAX   Zxr10QosMatchPhbEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set PHB info as match criteria"
+        INDEX {zxr10QosMatchPhbCmapName}
+        ::= { zxr10QosMatchPhbTable 1 }
+
+Zxr10QosMatchPhbEntry ::=
+        SEQUENCE {
+                zxr10QosMatchPhbCmapName                           
+                    DisplayString,
+                zxr10QosMatchPhbFlag                              
+                    Unsigned32,
+                zxr10QosMatchPhbServClass
+                    QosMatchSrvClass
+        }
+
+zxr10QosMatchPhbCmapName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class map"
+        ::= { zxr10QosMatchPhbEntry  1  }
+
+zxr10QosMatchPhbFlag OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select PHB as match criteria"
+        ::= { zxr10QosMatchPhbEntry  2  }
+
+zxr10QosMatchPhbServClass OBJECT-TYPE
+        SYNTAX   QosMatchSrvClass
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "service class"
+        ::= { zxr10QosMatchPhbEntry  3  }
+
+--*****************************************************************
+--zxr10QosMatchLinkaclTable
+--*****************************************************************
+zxr10QosMatchLinkaclTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10QosMatchLinkaclEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match link-access-list table"
+        ::= { zMatchObjects 20  }
+
+zxr10QosMatchLinkaclEntry OBJECT-TYPE
+        SYNTAX   Zxr10QosMatchLinkaclEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set link ACL name as match criteria"
+        INDEX { zxr10QosMatchLinkaclCmapName, zxr10QosMatchLinkaclName }
+        ::= { zxr10QosMatchLinkaclTable 1 }
+
+Zxr10QosMatchLinkaclEntry ::=
+        SEQUENCE {
+                zxr10QosMatchLinkaclCmapName                           
+                    DisplayString,
+                zxr10QosMatchLinkaclName                              
+                    DisplayString,
+                zxr10QosMatchLinkaclBName                                
+                    Unsigned32
+        }
+
+zxr10QosMatchLinkaclCmapName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class map"
+        ::= { zxr10QosMatchLinkaclEntry  1  }
+
+zxr10QosMatchLinkaclName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WORD Select link-access-list name"
+        ::= { zxr10QosMatchLinkaclEntry  2  }
+
+zxr10QosMatchLinkaclBName OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select link-access-list as match criteria"
+        ::= { zxr10QosMatchLinkaclEntry  3  }
+
+--*****************************************************************
+--zxr10QosMatchDscpExTable  obsolete
+--*****************************************************************
+zxr10QosMatchDscpExTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10QosMatchDscpExEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+                "Match DSCP reserved-key table"
+        ::= { zMatchObjects 21  }
+
+zxr10QosMatchDscpExEntry OBJECT-TYPE
+        SYNTAX   Zxr10QosMatchDscpExEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+                "Configure DSCP in the manner of PHB"
+        INDEX {zxr10QosMatchDscpExCmapName,zxr10QosMatchDscpExValue}
+        ::= { zxr10QosMatchDscpExTable 1 }
+
+Zxr10QosMatchDscpExEntry ::=
+        SEQUENCE {
+                zxr10QosMatchDscpExCmapName                             
+                    DisplayString, 
+                zxr10QosMatchDscpExValue                                   
+                    QosMatchDscpExSrvClass,
+                zxr10QosMatchBDscpEx                                   
+                    Unsigned32   
+                }
+
+zxr10QosMatchDscpExCmapName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+                "WORD Name of the class map"
+        ::= { zxr10QosMatchDscpExEntry  1  }
+
+zxr10QosMatchDscpExValue OBJECT-TYPE
+        SYNTAX   QosMatchDscpExSrvClass
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+                "DSCP value in the manner of PHB"
+        ::= { zxr10QosMatchDscpExEntry  2  }
+
+zxr10QosMatchBDscpEx OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "DSCP reserved-words mark"
+        ::= { zxr10QosMatchDscpExEntry  3  }
+
+--*****************************************************************
+--*****************************************************************
+--zxr10QosMatchDscpTable
+--*****************************************************************
+zxr10QosMatchDscpTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10QosMatchDscpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match DSCP table"
+        ::= { zMatchObjects 22  }
+
+zxr10QosMatchDscpEntry OBJECT-TYPE
+        SYNTAX   Zxr10QosMatchDscpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set DSCP value as match criteria"
+        INDEX {zxr10QosMatchDscpStrcmapname,
+               zxr10QosMatchDscpIpType}
+        ::= { zxr10QosMatchDscpTable 1 }
+
+Zxr10QosMatchDscpEntry ::=
+        SEQUENCE {
+                zxr10QosMatchDscpStrcmapname       
+                    DisplayString,
+                zxr10QosMatchDscpRgdscp            
+                    BitmapDscp, 
+                zxr10QosMatchDscpBdscp             
+                    Unsigned32,
+                zxr10QosMatchDscpValue             
+                    BitmapDscp,
+                zxr10QosMatchDscpIpType
+                    Unsigned32,
+                zxr10QosMatchDscpValueNotFlag 
+                    Unsigned32
+        }
+
+zxr10QosMatchDscpStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "strCMapName
+                 WORD Name of the class map"
+        ::= { zxr10QosMatchDscpEntry  1  }
+
+zxr10QosMatchDscpRgdscp OBJECT-TYPE
+        SYNTAX   BitmapDscp
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "rgdscp"
+        ::= { zxr10QosMatchDscpEntry  2  }
+
+zxr10QosMatchDscpBdscp OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "Select DSCP as match criteria"
+        ::= { zxr10QosMatchDscpEntry  3  }
+
+zxr10QosMatchDscpValue OBJECT-TYPE
+        SYNTAX   BitmapDscp
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "DSCP value or range(max num:4;spacing mark:,)"
+        ::= { zxr10QosMatchDscpEntry  4  }
+
+zxr10QosMatchDscpIpType OBJECT-TYPE
+        SYNTAX   Unsigned32(0..2)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "0 Packets based on IP any
+                 1 Packets based on IPv4
+                 2 Packets based on IPv6"
+        ::= { zxr10QosMatchDscpEntry  5  }
+
+zxr10QosMatchDscpValueNotFlag OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "DSCP value not flag"
+        ::= { zxr10QosMatchDscpEntry  6  }
+
+--*****************************************************************
+--zxr10QosMatchDscpNewExTable
+--*****************************************************************
+zxr10QosMatchDscpExNewTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10QosMatchDscpExNewEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match DSCP reserved-key table"
+        ::= { zMatchObjects 23  }
+
+zxr10QosMatchDscpExNewEntry OBJECT-TYPE
+        SYNTAX   Zxr10QosMatchDscpExNewEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Configure DSCP in the manner of PHB"
+        INDEX {zxr10QosMatchDscpExNewCmapName, 
+               zxr10QosMatchDscpExNewIpType,
+               zxr10QosMatchDscpExNewValue}
+        ::= { zxr10QosMatchDscpExNewTable 1 }
+
+Zxr10QosMatchDscpExNewEntry ::=
+        SEQUENCE {
+                    zxr10QosMatchDscpExNewCmapName                             
+                        DisplayString, 
+                    zxr10QosMatchDscpExNewValue                                   
+                        QosMatchDscpExSrvClass,
+                    zxr10QosMatchBDscpExNew                                   
+                        Unsigned32,
+                    zxr10QosMatchDscpExNewIpType
+                        Unsigned32   
+                }
+
+zxr10QosMatchDscpExNewCmapName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class map"
+        ::= { zxr10QosMatchDscpExNewEntry  1  }
+
+zxr10QosMatchDscpExNewValue OBJECT-TYPE
+        SYNTAX   QosMatchDscpExSrvClass
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "DSCP value in the manner of PHB"
+        ::= { zxr10QosMatchDscpExNewEntry  2  }
+
+zxr10QosMatchBDscpExNew OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "DSCP reserved-words mark"
+        ::= { zxr10QosMatchDscpExNewEntry  3  }
+
+zxr10QosMatchDscpExNewIpType OBJECT-TYPE
+        SYNTAX   Unsigned32(0..2)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "0 Packets based on IP any
+                 1 Packets based on IPv4
+                 2 Packets based on IPv6"
+        ::= { zxr10QosMatchDscpExNewEntry  4 }
+
+--*****************************************************************
+--*****************************************************************
+--zxr10QosMatchPrecTable
+--*****************************************************************
+zxr10QosMatchPrecTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10QosMatchPrecEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Match IP Precedence table"
+        ::= { zMatchObjects 24 }
+
+zxr10QosMatchPrecEntry OBJECT-TYPE
+        SYNTAX   Zxr10QosMatchPrecEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set IP Precedence value as match criteria"
+        INDEX {zxr10QosMatchPrecStrcmapname,
+               zxr10QosMatchPrecIpType}
+        ::= { zxr10QosMatchPrecTable 1 }
+
+Zxr10QosMatchPrecEntry ::=
+        SEQUENCE {
+                zxr10QosMatchPrecStrcmapname                             
+                    DisplayString,
+                zxr10QosMatchPrecRgprec                                  
+                    BitmapPrec,
+                zxr10QosMatchPrecBprec                                   
+                    Unsigned32,
+                zxr10QosMatchPrecValue                                   
+                    BitmapPrec,
+                zxr10QosMatchPrecIpType
+                    Unsigned32,  
+                zxr10QosMatchPrecValueNotFlag
+                    Unsigned32
+        }
+
+zxr10QosMatchPrecStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "strCMapName
+                 WORD Name of the class map"
+        ::= { zxr10QosMatchPrecEntry  1  }
+
+zxr10QosMatchPrecRgprec OBJECT-TYPE
+        SYNTAX   BitmapPrec
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "rgprec"
+        ::= { zxr10QosMatchPrecEntry  2  }
+
+zxr10QosMatchPrecBprec OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Select IP-Precedence as match criteria"
+        ::= { zxr10QosMatchPrecEntry  3  }
+
+zxr10QosMatchPrecValue OBJECT-TYPE
+        SYNTAX   BitmapPrec
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "IP Precedence value or range(max num:4;spacing mark:,)
+                "
+        ::= { zxr10QosMatchPrecEntry  4  }
+ 
+zxr10QosMatchPrecIpType OBJECT-TYPE
+        SYNTAX   Unsigned32(0..2)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "0 Packets based on IP any
+                 1 Packets based on IPv4
+                 2 Packets based on IPv6"
+        ::= { zxr10QosMatchPrecEntry  5  }
+
+zxr10QosMatchPrecValueNotFlag OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "IP Precedence value not flag"
+        ::= { zxr10QosMatchPrecEntry  6  }
+
+--*****************************************************************
+--*****************************************************************
+--zPolicyMapTable  
+--*****************************************************************
+zPolicyMapTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZPolicyMapEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "POLICY MAP table"
+        ::= { zPolicyMapObjects 1  }
+
+zPolicyMapEntry OBJECT-TYPE
+        SYNTAX   ZPolicyMapEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                " H-QoS policy map"
+        INDEX {zPolicyMapStrpmapname }
+        ::= { zPolicyMapTable 1 }
+
+ZPolicyMapEntry ::=
+        SEQUENCE {
+                zPolicyMapStrpmapname
+                    DisplayString,
+                zPolicyMapModeType
+                    Unsigned32
+        }
+
+zPolicyMapStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zPolicyMapEntry  1  }
+
+zPolicyMapModeType OBJECT-TYPE
+        SYNTAX   Unsigned32(0..4)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "The type of policy-map.
+                 0    normal type
+                 1    car-action type
+                 2    phb-based type
+                 3    sub-interface-based type
+                 4    switch-fabric-based type"
+        ::= { zPolicyMapEntry  2  }
+
+--*****************************************************************
+--*****************************************************************
+--zPmapClassTable
+--*****************************************************************
+zPmapClassTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZPmapClassEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "POLICY CLASS TABLE"
+        ::= { zPmapClassObjects 1 }
+
+zPmapClassEntry OBJECT-TYPE
+        SYNTAX   ZPmapClassEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                " H-QoS policy class"
+        INDEX { zPmapClassStrpmapname,
+               zPmapClassStrcmapname,
+               zPmapClassBclassdefault }
+        ::= { zPmapClassTable 1 }
+
+ZPmapClassEntry ::=
+        SEQUENCE {
+                zPmapClassStrpmapname
+                    DisplayString,
+                zPmapClassStrcmapname
+                    DisplayString,
+                zPmapClassBclassdefault
+                    Unsigned32
+        }
+
+zPmapClassStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zPmapClassEntry 1 }
+
+zPmapClassStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class"
+        ::= { zPmapClassEntry 2 }
+
+zPmapClassBclassdefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify the default class"
+        ::= { zPmapClassEntry 3 }
+
+--*****************************************************************
+--*****************************************************************
+--zPmapClassDefaultTable  class-default
+--*****************************************************************
+zPmapClassDefaultTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZPmapClassDefaultEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "PMAP CLASS-DEFAULT TABLE"
+        ::= { zPmapClassObjects 2 }
+
+zPmapClassDefaultEntry OBJECT-TYPE
+        SYNTAX   ZPmapClassDefaultEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                " H-QoS policy class-default"
+        INDEX {zPmapClassDefaultStrpmapname,
+               zPmapClassDefaultBclassdefault }
+        ::= { zPmapClassDefaultTable 1 }
+
+ZPmapClassDefaultEntry ::=
+        SEQUENCE {
+                zPmapClassDefaultStrpmapname
+                    DisplayString,
+                zPmapClassDefaultBclassdefault
+                    Unsigned32
+        }
+
+zPmapClassDefaultStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zPmapClassDefaultEntry  1 }
+
+zPmapClassDefaultBclassdefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify the default class"
+        ::= { zPmapClassDefaultEntry  2  }
+
+--*****************************************************************
+--*****************************************************************
+--zPmapBwTable
+--*****************************************************************
+zPmapBwTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZPmapBwEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "BANDWIDTH TABLE"
+        ::= { zPmapClassObjects 3  }
+
+zPmapBwEntry OBJECT-TYPE
+        SYNTAX   ZPmapBwEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set minimum guaranteed bandwidth"
+        INDEX {zPmapBwStrpmapname,
+               zPmapBwStrcmapname,
+               zPmapBwBclassdefault }
+        ::= { zPmapBwTable 1 }
+
+ZPmapBwEntry ::=
+        SEQUENCE {
+                zPmapBwStrpmapname                                
+                    DisplayString,
+                zPmapBwStrcmapname                                
+                    DisplayString,
+                zPmapBwBclassdefault                              
+                    Unsigned32,
+                zPmapBwWbwvalue                                   
+                    Unsigned32,
+                zPmapBwBbwvalue                                   
+                    Unsigned32
+        }
+
+zPmapBwStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zPmapBwEntry  1  }
+
+zPmapBwStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class"
+        ::= { zPmapBwEntry  2  }
+
+zPmapBwBclassdefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify the default class"
+        ::= { zPmapBwEntry  3  }
+
+zPmapBwWbwvalue OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-100> Set the exact bandwidth percentage"
+        ::= { zPmapBwEntry  4  }
+
+zPmapBwBbwvalue OBJECT-TYPE
+        SYNTAX   Unsigned32(1..100)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-100> Select percent as bandwidth unit"
+        ::= { zPmapBwEntry  5  }
+
+
+
+--*****************************************************************
+--*****************************************************************
+--zPmapHpolicyTable
+--*****************************************************************
+zPmapHpolicyTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZPmapHpolicyEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "PMAP HPOLICY TABALE"
+        ::= { zPmapClassObjects 4  }
+
+zPmapHpolicyEntry OBJECT-TYPE
+        SYNTAX   ZPmapHpolicyEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set hierarchical service policy"
+        INDEX {zPmapHpolicyStrpmapname,
+               zPmapHpolicyStrcmapname,
+               zPmapHpolicyBclassdefault }
+        ::= { zPmapHpolicyTable 1 }
+
+ZPmapHpolicyEntry ::=
+        SEQUENCE {
+                zPmapHpolicyStrpmapname                           
+                    DisplayString,
+                zPmapHpolicyStrcmapname                           
+                    DisplayString,
+                zPmapHpolicyBclassdefault                         
+                    Unsigned32,
+                zPmapHpolicyStrpmapnameh                          
+                    DisplayString,
+                zPmapHpolicyBclsservicepolicy                     
+                    Unsigned32
+        }
+
+zPmapHpolicyStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zPmapHpolicyEntry  1  }
+
+zPmapHpolicyStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class"
+        ::= { zPmapHpolicyEntry  2  }
+
+zPmapHpolicyBclassdefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify the default class"
+        ::= { zPmapHpolicyEntry  3  }
+
+zPmapHpolicyStrpmapnameh OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the hierarchical policy"
+        ::= { zPmapHpolicyEntry  4  }
+
+zPmapHpolicyBclsservicepolicy OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify the hqos"
+        ::= { zPmapHpolicyEntry  5  }
+
+--*****************************************************************
+--*****************************************************************
+--zPmapCarTable
+--*****************************************************************
+zPmapCarTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZPmapCarEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "PMAP CAR TABLE"
+        ::= { zPmapClassObjects 5  }
+
+zPmapCarEntry OBJECT-TYPE
+        SYNTAX   ZPmapCarEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set traffic policing"
+        INDEX {zPmapCarStrpmapname,zPmapCarStrcmapname,zPmapCarBclassdefault }
+        ::= { zPmapCarTable 1 }
+
+ZPmapCarEntry ::=
+        SEQUENCE {
+                zPmapCarStrpmapname                               
+                    DisplayString,
+                zPmapCarStrcmapname                               
+                    DisplayString,
+                zPmapCarBclassdefault                             
+                    Unsigned32,
+                zPmapCarDwcir                                     
+                    Unsigned32,
+                zPmapCarDwcbs                                     
+                    Unsigned32,
+                zPmapCarDwpir                                     
+                    Unsigned32,
+                zPmapCarDwpbs                                     
+                    Unsigned32,
+                zPmapCarBpolcevalue                               
+                    Unsigned32
+        }
+
+zPmapCarStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zPmapCarEntry  1  }
+
+zPmapCarStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class"
+        ::= { zPmapCarEntry  2  }
+
+zPmapCarBclassdefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify the default class"
+        ::= { zPmapCarEntry  3  }
+
+zPmapCarDwcir OBJECT-TYPE
+        SYNTAX   Unsigned32(0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Set the CIR value in kilobits per second"
+        ::= { zPmapCarEntry  4  }
+
+zPmapCarDwcbs OBJECT-TYPE
+        SYNTAX   Unsigned32(0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "For CAR:Set the CBS value in bytes
+                 For TP :Set the CBS value in KB"
+        ::= { zPmapCarEntry  5  }
+
+zPmapCarDwpir OBJECT-TYPE
+        SYNTAX   Unsigned32(0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Set the PIR value in kilobits per second"
+        ::= { zPmapCarEntry  6  }
+
+zPmapCarDwpbs OBJECT-TYPE
+        SYNTAX   Unsigned32(0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "For CAR:set the PBS value in bytes
+                 For TP :set the PBS value in KB"
+        ::= { zPmapCarEntry  7  }
+
+zPmapCarBpolcevalue OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify the CAR"
+        ::= { zPmapCarEntry  8  }
+
+
+
+--*****************************************************************
+--*****************************************************************
+--zPmapPriLevelTable
+--*****************************************************************
+zPmapPriLevelTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZPmapPriLevelEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "PQ TABLE"
+        ::= { zPmapClassObjects 6  }
+
+zPmapPriLevelEntry OBJECT-TYPE
+        SYNTAX   ZPmapPriLevelEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set PQ priority level"
+        INDEX {zPmapPriLevelStrpmapname,
+               zPmapPriLevelStrcmapname,
+               zPmapPriLevelBclassdefault }
+        ::= { zPmapPriLevelTable 1 }
+
+ZPmapPriLevelEntry ::=
+        SEQUENCE {
+                zPmapPriLevelStrpmapname                          
+                    DisplayString,
+                zPmapPriLevelStrcmapname                          
+                    DisplayString,
+                zPmapPriLevelBclassdefault                        
+                    Unsigned32,
+                zPmapPriLevelWprivalue                            
+                    Unsigned32,
+                zPmapPriLevelBpqvalue                             
+                    Unsigned32
+        }
+
+zPmapPriLevelStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zPmapPriLevelEntry  1  }
+
+zPmapPriLevelStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class"
+        ::= { zPmapPriLevelEntry  2  }
+
+zPmapPriLevelBclassdefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify the default class"
+        ::= { zPmapPriLevelEntry  3  }
+
+zPmapPriLevelWprivalue OBJECT-TYPE
+        SYNTAX   Unsigned32(1..4)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-4> Set the priority level of PQ"
+        ::= { zPmapPriLevelEntry  4  }
+
+zPmapPriLevelBpqvalue OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify PQ"
+        ::= { zPmapPriLevelEntry  5  }
+
+--*****************************************************************
+--*****************************************************************
+--zPmapPriLlqTable
+--*****************************************************************
+zPmapPriLlqTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZPmapPriLlqEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "LLQ TABLE"
+        ::= { zPmapClassObjects 7  }
+
+zPmapPriLlqEntry OBJECT-TYPE
+        SYNTAX   ZPmapPriLlqEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set LLQ priority"
+        INDEX {zPmapPriLlqStrpmapname,
+               zPmapPriLlqStrcmapname,
+               zPmapPriLlqBclassdefault }
+        ::= { zPmapPriLlqTable 1 }
+
+ZPmapPriLlqEntry ::=
+        SEQUENCE {
+                zPmapPriLlqStrpmapname                            
+                    DisplayString,
+                zPmapPriLlqStrcmapname                            
+                    DisplayString,
+                zPmapPriLlqBclassdefault                          
+                    Unsigned32,
+                zPmapPriLlqBllq                                   
+                    Unsigned32
+        }
+
+zPmapPriLlqStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zPmapPriLlqEntry  1  }
+
+zPmapPriLlqStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class"
+        ::= { zPmapPriLlqEntry  2  }
+
+zPmapPriLlqBclassdefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify the default class"
+        ::= { zPmapPriLlqEntry  3  }
+
+zPmapPriLlqBllq OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify LLQ"
+        ::= { zPmapPriLlqEntry  4  }
+
+
+
+--*****************************************************************
+--*****************************************************************
+--zPmapWredEnableTable
+--*****************************************************************
+zPmapWredEnableTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZPmapWredEnableEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "PMAP_WRED_ENABLE"
+        ::= { zPmapClassObjects 8  }
+
+zPmapWredEnableEntry OBJECT-TYPE
+        SYNTAX   ZPmapWredEnableEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Enable WRED"
+        INDEX {zPmapWredEnableStrpmapname,
+               zPmapWredEnableStrcmapname,
+               zPmapWredEnableBclassdefault }
+        ::= { zPmapWredEnableTable 1 }
+
+ZPmapWredEnableEntry ::=
+        SEQUENCE {
+                zPmapWredEnableStrpmapname                        
+                    DisplayString,
+                zPmapWredEnableStrcmapname                        
+                    DisplayString,
+                zPmapWredEnableBclassdefault                      
+                    Unsigned32,
+                zPmapWredEnableBenable                            
+                    Unsigned32
+        }
+
+zPmapWredEnableStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zPmapWredEnableEntry  1  }
+
+zPmapWredEnableStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class"
+        ::= { zPmapWredEnableEntry  2  }
+
+zPmapWredEnableBclassdefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify the default class"
+        ::= { zPmapWredEnableEntry  3  }
+
+zPmapWredEnableBenable OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify WRED enable"
+        ::= { zPmapWredEnableEntry  4  }
+
+
+
+--*****************************************************************
+--*****************************************************************
+--zPmapWredWeightTable
+--*****************************************************************
+zPmapWredWeightTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZPmapWredWeightEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "PMAP_WRED_WEIGHT TABLE"
+        ::= { zPmapClassObjects 9  }
+
+zPmapWredWeightEntry OBJECT-TYPE
+        SYNTAX   ZPmapWredWeightEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set WRED exponential weight factor"
+        INDEX {zPmapWredWeightStrpmapname,
+               zPmapWredWeightStrcmapname,
+               zPmapWredWeightBclassdefault }
+        ::= { zPmapWredWeightTable 1 }
+
+ZPmapWredWeightEntry ::=
+        SEQUENCE {
+                zPmapWredWeightStrpmapname                        
+                    DisplayString,
+                zPmapWredWeightStrcmapname                        
+                    DisplayString,
+                zPmapWredWeightBclassdefault                      
+                    Unsigned32,
+                zPmapWredWeightBweight                            
+                    Unsigned32,
+                zPmapWredWeightWexponent                          
+                    Unsigned32
+        }
+
+zPmapWredWeightStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zPmapWredWeightEntry  1  }
+
+zPmapWredWeightStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class"
+        ::= { zPmapWredWeightEntry  2  }
+
+zPmapWredWeightBclassdefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify the default class"
+        ::= { zPmapWredWeightEntry  3  }
+
+zPmapWredWeightBweight OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify WRED exponential weight factor"
+        ::= { zPmapWredWeightEntry  4  }
+
+zPmapWredWeightWexponent OBJECT-TYPE
+        SYNTAX   Unsigned32(1..16)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-16> Exponent used in weighted average calculation"
+        ::= { zPmapWredWeightEntry  5  }
+
+--*****************************************************************
+--*****************************************************************
+--zPmapWredPrecValuTable
+--*****************************************************************
+zPmapWredPrecValuTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZPmapWredPrecValuEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "PMAP_WRED_PREC_VALU TABLE"
+        ::= { zPmapClassObjects 10  }
+
+zPmapWredPrecValuEntry OBJECT-TYPE
+        SYNTAX   ZPmapWredPrecValuEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "PMAP_WRED_PREC_VALU"
+        INDEX {zPmapWredPrecValuStrpmapname,
+               zPmapWredPrecValuStrcmapname,
+               zPmapWredPrecValuBclassdefault,
+               zPmapWredPrecValuWprecvalue }
+        ::= { zPmapWredPrecValuTable 1 }
+
+ZPmapWredPrecValuEntry ::=
+        SEQUENCE {
+                zPmapWredPrecValuStrpmapname                      
+                    DisplayString,
+                zPmapWredPrecValuStrcmapname                      
+                    DisplayString,
+                zPmapWredPrecValuBclassdefault                    
+                    Unsigned32,
+                zPmapWredPrecValuWprecvalue                       
+                    Unsigned32,
+                zPmapWredPrecValuDwminthreshold                   
+                    Unsigned32,
+                zPmapWredPrecValuDwmaxthreshold                   
+                    Unsigned32,
+                zPmapWredPrecValuWmarkprob                        
+                    Unsigned32
+        }
+
+zPmapWredPrecValuStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zPmapWredPrecValuEntry  1  }
+
+zPmapWredPrecValuStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class"
+        ::= { zPmapWredPrecValuEntry  2  }
+
+zPmapWredPrecValuBclassdefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify the default class"
+        ::= { zPmapWredPrecValuEntry  3  }
+
+zPmapWredPrecValuWprecvalue OBJECT-TYPE
+        SYNTAX   Unsigned32(0..7)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<0-7> Set the IP-Precedence value"
+        ::= { zPmapWredPrecValuEntry  4  }
+
+zPmapWredPrecValuDwminthreshold OBJECT-TYPE
+        SYNTAX   Unsigned32(1..1024000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-1024000> Set the minimum threshold in kilobytes"
+        ::= { zPmapWredPrecValuEntry  5  }
+
+zPmapWredPrecValuDwmaxthreshold OBJECT-TYPE
+        SYNTAX   Unsigned32(1..1024000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-1024000> Set the maximum threshold in kilobytes"
+        ::= { zPmapWredPrecValuEntry  6  }
+
+zPmapWredPrecValuWmarkprob OBJECT-TYPE
+        SYNTAX   Unsigned32(1..100)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-100> Set mark probability denominator"
+        ::= { zPmapWredPrecValuEntry  7  }
+
+--*****************************************************************
+--*****************************************************************
+--zPmapSetPrecTable  
+--*****************************************************************
+zPmapSetPrecTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZPmapSetPrecEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+                "PMAP_SET_PREC TABLE"
+        ::= { zPmapClassObjects 11  }
+
+zPmapSetPrecEntry OBJECT-TYPE
+        SYNTAX   ZPmapSetPrecEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+                "PMAP_SET_PREC"
+        INDEX {zPmapSetPrecStrpmapname,
+               zPmapSetPrecStrcmapname,
+               zPmapSetPrecBclassdefault }
+        ::= { zPmapSetPrecTable 1 }
+
+ZPmapSetPrecEntry ::=
+        SEQUENCE {
+                zPmapSetPrecStrpmapname                           
+                    DisplayString,
+                zPmapSetPrecStrcmapname                           
+                    DisplayString,
+                zPmapSetPrecBclassdefault                         
+                    Unsigned32,
+                zPmapSetPrecBprec                                 
+                    Unsigned32,
+                zPmapSetPrecWprec                                 
+                    Unsigned32,
+                zPmapSetPrecUcinheritfrom                         
+                    INTEGER,
+                zPmapSetPrecBinherit                              
+                    Unsigned32                    
+        }
+
+zPmapSetPrecStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zPmapSetPrecEntry  1  }
+
+zPmapSetPrecStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "WORD Name of the class"
+        ::= { zPmapSetPrecEntry  2  }
+
+zPmapSetPrecBclassdefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "Specify the default class"
+        ::= { zPmapSetPrecEntry  3  }
+
+zPmapSetPrecBprec OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "bprec"
+        ::= { zPmapSetPrecEntry  4  }
+
+zPmapSetPrecWprec OBJECT-TYPE
+        SYNTAX   Unsigned32(0..7)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "wprec"
+        ::= { zPmapSetPrecEntry  5  }
+
+zPmapSetPrecUcinheritfrom OBJECT-TYPE
+        SYNTAX   INTEGER{precedence(1),mpls_exp(2),dot1p(3),dscp(4)}
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "ucinheritFrom"
+        ::= { zPmapSetPrecEntry  6  }
+
+zPmapSetPrecBinherit OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "binherit"
+        ::= { zPmapSetPrecEntry  7  }  
+
+
+--*****************************************************************
+--*****************************************************************
+--zPmapSetMplsTable
+--*****************************************************************
+zPmapSetMplsTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZPmapSetMplsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+                "PMAP_SET_MPLS"
+        ::= { zPmapClassObjects 12  }
+
+zPmapSetMplsEntry OBJECT-TYPE
+        SYNTAX   ZPmapSetMplsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+                "PMAP_SET_MPLS"
+        INDEX {zPmapSetMplsStrpmapname,
+               zPmapSetMplsStrcmapname,
+               zPmapSetMplsBclassdefault }
+        ::= { zPmapSetMplsTable 1 }
+
+ZPmapSetMplsEntry ::=
+        SEQUENCE {
+                zPmapSetMplsStrpmapname                           
+                    DisplayString,
+                zPmapSetMplsStrcmapname                           
+                    DisplayString,
+                zPmapSetMplsBclassdefault                         
+                    Unsigned32,
+                zPmapSetMplsBmplsexp                              
+                    Unsigned32,
+                zPmapSetMplsWmplsexp                              
+                    Unsigned32,
+                zPmapSetMplsUcinheritfrom                         
+                    INTEGER,
+                zPmapSetMplsBinherit                              
+                    Unsigned32
+        }
+
+zPmapSetMplsStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "strPMapName"
+        ::= { zPmapSetMplsEntry  1  }
+
+zPmapSetMplsStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "strCMapName"
+        ::= { zPmapSetMplsEntry  2  }
+
+zPmapSetMplsBclassdefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "bClassDefault
+                class-default"
+        ::= { zPmapSetMplsEntry  3  }
+
+zPmapSetMplsBmplsexp OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "bmplsExp"
+        ::= { zPmapSetMplsEntry  4  }
+
+zPmapSetMplsWmplsexp OBJECT-TYPE
+        SYNTAX   Unsigned32(0..7)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "wmplsExp"
+        ::= { zPmapSetMplsEntry  5  }
+
+zPmapSetMplsUcinheritfrom OBJECT-TYPE
+        SYNTAX   INTEGER{precedence(1),mpls_exp(2),dot1p(3),dscp(4)}
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "ucinheritFrom"
+        ::= { zPmapSetMplsEntry  6  }
+
+zPmapSetMplsBinherit OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "binherit"
+        ::= { zPmapSetMplsEntry  7  }
+
+--*****************************************************************
+--*****************************************************************
+--zPmapSetDscpTable
+--*****************************************************************
+zPmapSetDscpTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZPmapSetDscpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+                "PMAP_SET_DSCP"
+        ::= { zPmapClassObjects 13  }
+
+zPmapSetDscpEntry OBJECT-TYPE
+        SYNTAX   ZPmapSetDscpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+                "PMAP_SET_DSCP"
+        INDEX {zPmapSetDscpStrpmapname,
+               zPmapSetDscpStrcmapname,
+               zPmapSetDscpBclassdefault }
+        ::= { zPmapSetDscpTable 1 }
+
+ZPmapSetDscpEntry ::=
+        SEQUENCE {
+                zPmapSetDscpStrpmapname                           
+                    DisplayString,
+                zPmapSetDscpStrcmapname                           
+                    DisplayString,
+                zPmapSetDscpBclassdefault                         
+                    Unsigned32,
+                zPmapSetDscpBdscp                                 
+                    Unsigned32,
+                zPmapSetDscpWdscp                                 
+                    Unsigned32,
+                zPmapSetDscpUcinheritfrom                         
+                    INTEGER,
+                zPmapSetDscpBinherit                              
+                    Unsigned32
+        }
+
+zPmapSetDscpStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "strPMapName"
+        ::= { zPmapSetDscpEntry  1  }
+
+zPmapSetDscpStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "strCMapName"
+        ::= { zPmapSetDscpEntry  2  }
+
+zPmapSetDscpBclassdefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "class-default"
+        ::= { zPmapSetDscpEntry  3  }
+
+zPmapSetDscpBdscp OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "bdscp"
+        ::= { zPmapSetDscpEntry  4  }
+
+zPmapSetDscpWdscp OBJECT-TYPE
+        SYNTAX   Unsigned32(0..63)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "wdscp"
+        ::= { zPmapSetDscpEntry  5  }
+
+zPmapSetDscpUcinheritfrom OBJECT-TYPE
+        SYNTAX   INTEGER{precedence(1),mpls_exp(2),dot1p(3),dscp(4)}
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "ucinheritFrom"
+        ::= { zPmapSetDscpEntry  6  }
+
+zPmapSetDscpBinherit OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "binherit"
+        ::= { zPmapSetDscpEntry  7  }
+
+
+
+--*****************************************************************
+--*****************************************************************
+--zPmapSet8021pTable
+--*****************************************************************
+zPmapSet8021pTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZPmapSet8021pEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+                "PMAP_SET_8021P"
+        ::= { zPmapClassObjects 14  }
+
+zPmapSet8021pEntry OBJECT-TYPE
+        SYNTAX   ZPmapSet8021pEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+                "PMAP_SET_8021P"
+        INDEX {zPmapSet8021pStrpmapname,
+               zPmapSet8021pStrcmapname,
+               zPmapSet8021pBclassdefault }
+        ::= { zPmapSet8021pTable 1 }
+
+ZPmapSet8021pEntry ::=
+        SEQUENCE {
+                zPmapSet8021pStrpmapname                          
+                    DisplayString,
+                zPmapSet8021pStrcmapname                          
+                    DisplayString,
+                zPmapSet8021pBclassdefault                        
+                    Unsigned32,
+                zPmapSet8021pB8021p                               
+                    Unsigned32,
+                zPmapSet8021pW8021p                               
+                    Unsigned32,
+                zPmapSet8021pUcheritfrom                          
+                    INTEGER,
+                zPmapSet8021pBinherit                             
+                    Unsigned32
+        }
+
+zPmapSet8021pStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "strPMapName"
+        ::= { zPmapSet8021pEntry  1  }
+
+zPmapSet8021pStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "strCMapName"
+        ::= { zPmapSet8021pEntry  2  }
+
+zPmapSet8021pBclassdefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "class-default"
+        ::= { zPmapSet8021pEntry  3  }
+
+zPmapSet8021pB8021p OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "b8021p"
+        ::= { zPmapSet8021pEntry  4  }
+
+zPmapSet8021pW8021p OBJECT-TYPE
+        SYNTAX   Unsigned32(0..7)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "w8021p"
+        ::= { zPmapSet8021pEntry  5  }
+
+zPmapSet8021pUcheritfrom OBJECT-TYPE
+        SYNTAX   INTEGER{precedence(1),mpls_exp(2),dot1p(3),dscp(4)}
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "ucheritFrom"
+        ::= { zPmapSet8021pEntry  6  }
+
+zPmapSet8021pBinherit OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "binherit"
+        ::= { zPmapSet8021pEntry  7  }  
+               
+--*****************************************************************
+--*****************************************************************
+--zPmapBwRemainingTable
+--*****************************************************************
+zPmapBwRemainingTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZPmapBwRemainingEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "PMAP_BANDWIDTH_REMAINING TABLE"
+        ::= { zPmapClassObjects 15  }
+
+zPmapBwRemainingEntry OBJECT-TYPE
+        SYNTAX   ZPmapBwRemainingEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set leftover bandwidth"
+        INDEX {zPmapBwRemainingPMapName, 
+               zPmapBwRemainingCMapName, 
+               zPmapBwRemainingClassDefault}
+        ::= { zPmapBwRemainingTable 1 }
+
+ZPmapBwRemainingEntry ::=
+        SEQUENCE {
+                zPmapBwRemainingPMapName                          
+                    DisplayString,
+                zPmapBwRemainingCMapName                          
+                    DisplayString,
+                zPmapBwRemainingClassDefault                      
+                    Unsigned32,
+                zPmapBwRemainingFlag                              
+                    Unsigned32,
+                zPmapBwRemainingValue                                             
+                    Unsigned32
+        }
+
+zPmapBwRemainingPMapName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zPmapBwRemainingEntry  1  }
+
+zPmapBwRemainingCMapName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class"
+        ::= { zPmapBwRemainingEntry  2  }
+
+zPmapBwRemainingClassDefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify the default class"
+        ::= { zPmapBwRemainingEntry  3  }
+
+zPmapBwRemainingFlag OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify the bandwidth-remaining"
+        ::= { zPmapBwRemainingEntry  4  }
+
+zPmapBwRemainingValue OBJECT-TYPE
+        SYNTAX   Unsigned32(1..100)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-100> Set the guaranteed percentage"
+        ::= { zPmapBwRemainingEntry  5  }
+
+--*****************************************************************
+--*****************************************************************
+--zPmapSetMarkTable  
+--*****************************************************************
+zPmapSetMarkTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZPmapSetMarkEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "PMAP_SET_MARK TABLE"
+        ::= { zPmapClassObjects 16  }
+
+zPmapSetMarkEntry OBJECT-TYPE
+        SYNTAX   ZPmapSetMarkEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Mark a packet,802.1p or
+                DSCP or MPLS-EXP or IP Precedence"
+        INDEX {zPmapSetMarkStrpmapname,
+               zPmapSetMarkStrcmapname,
+               zPmapSetMarkBclassdefault,
+               zPmapSetMarkUtype }
+        ::= { zPmapSetMarkTable 1 }
+
+ZPmapSetMarkEntry ::=
+        SEQUENCE {
+                zPmapSetMarkStrpmapname                           
+                    DisplayString,
+                zPmapSetMarkStrcmapname                           
+                    DisplayString,
+                zPmapSetMarkBclassdefault                         
+                    Unsigned32,
+                zPmapSetMarkUtype                                 
+                    INTEGER,
+                zPmapSetMarkWsetval                               
+                    Unsigned32,
+                zPmapSetMarkUcinheritfrom                         
+                    INTEGER,
+                zPmapSetMarkBinherit                              
+                    Unsigned32,
+                zPmapSetInOutFlag                              
+                    Unsigned32    
+        }
+
+zPmapSetMarkStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zPmapSetMarkEntry  1  }
+
+zPmapSetMarkStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class"
+        ::= { zPmapSetMarkEntry  2  }
+
+zPmapSetMarkBclassdefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Specify the default class"
+        ::= { zPmapSetMarkEntry  3  }
+
+zPmapSetMarkUtype OBJECT-TYPE
+        SYNTAX   INTEGER{precedence(1),mpls_exp(2),dot1p(3),dscp(4)}
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "precedence Select precedence as mark type
+                 mpls_exp   Select MPLS-EXP as mark type
+                 dot1p      Select 802.1p as mark type
+                 dscp       Select DSCP as mark type"
+        ::= { zPmapSetMarkEntry  4  }
+
+zPmapSetMarkWsetval OBJECT-TYPE
+        SYNTAX   Unsigned32(0..63)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Set the mark value"
+        ::= { zPmapSetMarkEntry  5  }
+
+zPmapSetMarkUcinheritfrom OBJECT-TYPE
+        SYNTAX   INTEGER{precedence(1),mpls_exp(2),dot1p(3),dscp(4)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "dot1p      Select 802.1p as source inherit
+                 dscp       Select dscp as source inherit
+                 mpls_exp   Select MPLS-EXP as source inherit
+                 precedence Select precedence as source inherit"
+        ::= { zPmapSetMarkEntry  6  }
+
+zPmapSetMarkBinherit OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Specify the inherit"
+        ::= { zPmapSetMarkEntry  7  } 
+        
+zPmapSetInOutFlag OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "inner or outer flag.
+                 0 is outer flag.
+                 1 is inner and outer flag."
+        ::= { zPmapSetMarkEntry  8  }
+
+
+        
+--*****************************************************************
+--*****************************************************************
+--zxr10QosPmapWredColorTable
+--*****************************************************************
+zxr10QosPmapWredColorTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10QosPmapWredColorEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WRED COLOR TABLE"
+        ::= { zPmapClassObjects 17  }
+
+zxr10QosPmapWredColorEntry OBJECT-TYPE
+        SYNTAX   Zxr10QosPmapWredColorEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WRED thresholds based on color"
+        INDEX {zxr10QosPmapWredColorPolName,
+               zxr10QosPmapWredColorClsName,
+               zxr10QosPmapWredColorDefault,
+               zxr10QosPmapWredColorType
+               }
+        ::= { zxr10QosPmapWredColorTable 1 }
+
+Zxr10QosPmapWredColorEntry ::=
+        SEQUENCE {
+                zxr10QosPmapWredColorPolName                           
+                    DisplayString,
+                zxr10QosPmapWredColorClsName                           
+                    DisplayString,
+                zxr10QosPmapWredColorDefault                         
+                    Unsigned32,
+                zxr10QosPmapWredColorType                                 
+                    INTEGER,
+                zxr10QosPmapWredColorFlag
+                    Unsigned32,                       
+                zxr10QosPmapWredColorMinThresh
+                    Unsigned32,
+                zxr10QosPmapWredColorMaxThresh                              
+                    Unsigned32,
+                zxr10QosPmapWredColorPrio
+                    Unsigned32
+        }   
+        
+zxr10QosPmapWredColorPolName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zxr10QosPmapWredColorEntry  1  }
+
+zxr10QosPmapWredColorClsName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class"
+        ::= { zxr10QosPmapWredColorEntry  2  }
+
+zxr10QosPmapWredColorDefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Specify the default class"
+        ::= { zxr10QosPmapWredColorEntry  3  } 
+        
+zxr10QosPmapWredColorType OBJECT-TYPE
+        SYNTAX   INTEGER{green(1),yellow(2),red(3)}
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "green   Green packets
+                 yellow  Yellow packets
+                 red     Red packets"
+        ::= { zxr10QosPmapWredColorEntry  4  }
+
+zxr10QosPmapWredColorFlag OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Configure WRED thresholds based on colo"
+        ::= { zxr10QosPmapWredColorEntry  5  }
+        
+zxr10QosPmapWredColorMinThresh OBJECT-TYPE
+        SYNTAX   Unsigned32(1..1024000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-1024000> Set the minimum threshold in kilobytes"
+        ::= { zxr10QosPmapWredColorEntry  6  }
+
+zxr10QosPmapWredColorMaxThresh OBJECT-TYPE
+        SYNTAX   Unsigned32(1..1024000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-1024000> Set the maximum threshold in kilobytes"
+        ::= { zxr10QosPmapWredColorEntry  7  }
+
+zxr10QosPmapWredColorPrio OBJECT-TYPE
+        SYNTAX   Unsigned32(1..100)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-100> Set mark probability denominator"
+        ::= { zxr10QosPmapWredColorEntry  8  }
+
+
+--*****************************************************************
+--*****************************************************************
+--zxr10QosPmapShapeTable
+--*****************************************************************
+zxr10QosPmapShapeTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10QosPmapShapeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Shape TABLE"
+        ::= { zPmapClassObjects 18  }
+
+zxr10QosPmapShapeEntry OBJECT-TYPE
+        SYNTAX   Zxr10QosPmapShapeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set the flow shape based on policy-map"
+        INDEX {zxr10QosPmapShapePolName,
+               zxr10QosPmapShapeClsName,
+               zxr10QosPmapShapeClsDefault
+               }
+        ::= { zxr10QosPmapShapeTable 1 }
+
+Zxr10QosPmapShapeEntry ::=
+        SEQUENCE {
+                zxr10QosPmapShapePolName                           
+                    DisplayString,
+                zxr10QosPmapShapeClsName                           
+                    DisplayString,
+                zxr10QosPmapShapeClsDefault                         
+                    Unsigned32,
+                zxr10QosPmapShapeType                                 
+                    INTEGER,
+                zxr10QosPmapShapePrecent
+                    Unsigned32,                       
+                zxr10QosPmapShapeRate
+                    Unsigned32,
+                zxr10QosPmapShapeBcValue                              
+                    Unsigned32,
+                zxr10QosPmapShapeBeValue
+                    Unsigned32
+        }   
+        
+zxr10QosPmapShapePolName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zxr10QosPmapShapeEntry  1  }
+
+zxr10QosPmapShapeClsName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class"
+        ::= { zxr10QosPmapShapeEntry  2  }
+
+zxr10QosPmapShapeClsDefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Specify the default class"
+        ::= { zxr10QosPmapShapeEntry  3  } 
+        
+zxr10QosPmapShapeType OBJECT-TYPE
+        SYNTAX   INTEGER{peak(1),average(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "peak   Set peak as shape type
+                average Set average as shape type"
+        ::= { zxr10QosPmapShapeEntry  4  }
+
+zxr10QosPmapShapePrecent OBJECT-TYPE
+        SYNTAX   Unsigned32(1..100)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-100> Set the exact rate percentage"
+        ::= { zxr10QosPmapShapeEntry  5  }
+        
+zxr10QosPmapShapeRate OBJECT-TYPE
+        SYNTAX   Unsigned32(1..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-4294967295> Set the average or peak  rate in kbps"
+        ::= { zxr10QosPmapShapeEntry  6  }
+
+zxr10QosPmapShapeBcValue OBJECT-TYPE
+        SYNTAX   Unsigned32(1..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-4294967295> Set the average or peak  rate in kbps"
+        ::= { zxr10QosPmapShapeEntry  7  }
+
+zxr10QosPmapShapeBeValue OBJECT-TYPE
+        SYNTAX   Unsigned32(1..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-4294967295> Set the be value in kilobits per second"
+        ::= { zxr10QosPmapShapeEntry  8  }
+  
+--*****************************************************************
+--*****************************************************************
+--zxr10QosPmapMapTable
+--*****************************************************************
+zxr10QosPmapMapTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10QosPmapMapEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "MAP TABLE"
+        ::= { zPmapClassObjects 19  }
+
+zxr10QosPmapMapEntry OBJECT-TYPE
+        SYNTAX   Zxr10QosPmapMapEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Set the packet level"
+        INDEX {zxr10QosPmapMapStrpmapname,
+               zxr10QosPmapMapStrcmapname,
+               zxr10QosPmapMapBclassdefault }
+        ::= { zxr10QosPmapMapTable 1 }
+
+Zxr10QosPmapMapEntry ::=
+        SEQUENCE {
+                zxr10QosPmapMapStrpmapname                          
+                    DisplayString,
+                zxr10QosPmapMapStrcmapname                          
+                    DisplayString,
+                zxr10QosPmapMapBclassdefault                        
+                    Unsigned32,
+                zxr10QosPmapMapValue                            
+                    Unsigned32,
+                zxr10QosPmapMapSign                             
+                    Unsigned32
+        }
+
+zxr10QosPmapMapStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zxr10QosPmapMapEntry  1  }
+
+zxr10QosPmapMapStrcmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the class"
+        ::= { zxr10QosPmapMapEntry  2  }
+
+zxr10QosPmapMapBclassdefault OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Specify the default class"
+        ::= { zxr10QosPmapMapEntry  3  }
+
+zxr10QosPmapMapValue OBJECT-TYPE
+        SYNTAX   Unsigned32(1..4)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "1 High priority
+                 2 Middle priority
+                 3 normal priority
+                 4 Low priority"
+        ::= { zxr10QosPmapMapEntry  4  }
+
+zxr10QosPmapMapSign OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Map sign"
+        ::= { zxr10QosPmapMapEntry  5  }  
+                         
+--*****************************************************************
+--*****************************************************************
+--zServicePolicyTable
+--*****************************************************************
+zServicePolicyTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZServicePolicyEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "SERVICE POLICY TABLE"
+        ::= { zServicePolicyObjects 1  }
+
+zServicePolicyEntry OBJECT-TYPE
+        SYNTAX   ZServicePolicyEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Configure H-QoS policy bind on the interface"
+        INDEX {zServicePolicyStrifname,
+               zServicePolicyDirection,
+               zServicePolicyBoundtype }
+        ::= { zServicePolicyTable 1 }
+
+ZServicePolicyEntry ::=
+        SEQUENCE {
+                zServicePolicyStrifname                           
+                    DisplayString,
+                zServicePolicyDirection                           
+                    INTEGER,
+                zServicePolicyBoundtype                           
+                    INTEGER,
+                zServicePolicyStrpmapname                         
+                    DisplayString,
+                zServicePolicyStatShare
+                    Unsigned32
+        }
+
+zServicePolicyStrifname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the attaching interface"
+        ::= { zServicePolicyEntry  1  }
+
+zServicePolicyDirection OBJECT-TYPE
+        SYNTAX   INTEGER{input(1),output(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "input  Attaches to the input interface
+                 output Attaches to the output interface"
+        ::= { zServicePolicyEntry  2  }
+
+zServicePolicyBoundtype OBJECT-TYPE
+        SYNTAX   INTEGER{normal(1),overwrite(2),append(3)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "normal    Set policies bound on link-ports with normal
+                 overwrite Set policies bound on link-ports with overwrite
+                 append    Set policies bound on link-ports with append"
+        ::= { zServicePolicyEntry  3  }
+
+zServicePolicyStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zServicePolicyEntry  4  }
+
+zServicePolicyStatShare OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Set statistical-share.
+                0   statistical-share is not configured
+                1   statistical-share is configured"
+        ::= { zServicePolicyEntry  5  }
+        
+--*****************************************************************
+--*****************************************************************
+--zSwitchFabric
+--*****************************************************************
+
+zSwitchFabricStrpmapname OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+                "WORD Name of the policy map"
+        ::= { zSwitchFabric  1  }   
+
+--*****************************************************************
+--*****************************************************************
+--zxr10QosSwitchFabricTable
+--*****************************************************************
+
+zxr10QosSwitchFabricTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10QosSwitchFabricEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "SWITCH_FABRIC TABLE"
+        ::= { zServicePolicyObjects 3  }  
+        
+zxr10QosSwitchFabricEntry OBJECT-TYPE
+        SYNTAX   Zxr10QosSwitchFabricEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Configure H-QoS switch fabric policy bind"
+        INDEX {zxr10QosSwitchFabricShelf,
+               zxr10QosSwitchFabricSlot,
+               zxr10QosSwitchFabricMode,
+               zxr10QosSwitchFabricSubslot,
+               zxr10QosSwitchFabricPort }
+        ::= { zxr10QosSwitchFabricTable 1 }
+
+Zxr10QosSwitchFabricEntry ::=
+        SEQUENCE {
+                zxr10QosSwitchFabricShelf                           
+                    Unsigned32,
+                zxr10QosSwitchFabricSlot                           
+                    Unsigned32, 
+                zxr10QosSwitchFabricMode                         
+                    INTEGER, 
+                zxr10QosSwitchFabricSubslot                           
+                    Unsigned32,
+                zxr10QosSwitchFabricPort                         
+                    Unsigned32,     
+                zxr10QosSwitchFabricPMapName                         
+                    DisplayString
+        }  
+        
+zxr10QosSwitchFabricShelf OBJECT-TYPE
+        SYNTAX   Unsigned32(0..255)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Specify the shelf"
+        ::= { zxr10QosSwitchFabricEntry  1  }
+        
+zxr10QosSwitchFabricSlot OBJECT-TYPE
+        SYNTAX   Unsigned32(0..255)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Specify the slot"
+        ::= { zxr10QosSwitchFabricEntry  2  }
+
+zxr10QosSwitchFabricMode OBJECT-TYPE
+        SYNTAX   INTEGER{uni_cast(1),multi_cast(2),switch_port(3)}
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Specify the mode"
+        ::= { zxr10QosSwitchFabricEntry  3  }
+      
+zxr10QosSwitchFabricSubslot OBJECT-TYPE
+        SYNTAX   Unsigned32(0..255)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Specify the subslot
+                 Invalid value:255"
+        ::= { zxr10QosSwitchFabricEntry  4  }
+        
+zxr10QosSwitchFabricPort OBJECT-TYPE
+        SYNTAX   Unsigned32(0..255)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Specify the port
+                 Invalid value:255"
+        ::= { zxr10QosSwitchFabricEntry  5  }
+
+zxr10QosSwitchFabricPMapName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Name of the policy"
+        ::= { zxr10QosSwitchFabricEntry  6  }
+
+
+--*****************************************************************
+--*****************************************************************
+--zxr10QosTraffShapeTable
+--*****************************************************************        
+zxr10QosTraffShapeTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10QosTraffShapeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "TRAFFIC SHAPE TABLE"
+        ::= { zxr10QosTraffShapeObjects 1  }  
+        
+zxr10QosTraffShapeEntry OBJECT-TYPE
+        SYNTAX   Zxr10QosTraffShapeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Configure traffic shape on the interface"
+        INDEX {zxr10QosTraffShapeIfName }
+        ::= { zxr10QosTraffShapeTable 1 }
+
+Zxr10QosTraffShapeEntry ::=
+        SEQUENCE {
+                zxr10QosTraffShapeIfName                           
+                    DisplayString,
+                zxr10QosTraffShapeRate                           
+                    Unsigned32,
+                zxr10QosTraffShapeBurstSize                           
+                    Unsigned32,
+                zxr10QosTraffShapeExBurstSize                         
+                    Unsigned32
+        }  
+        
+zxr10QosTraffShapeIfName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the attaching interface"
+        ::= { zxr10QosTraffShapeEntry  1  }
+        
+zxr10QosTraffShapeRate OBJECT-TYPE
+        SYNTAX   Unsigned32(8..10000000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<8-10000000> Rate in kilobits per second"
+        ::= { zxr10QosTraffShapeEntry  2  }
+        
+zxr10QosTraffShapeBurstSize OBJECT-TYPE
+        SYNTAX   Unsigned32(2..250000000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<2-250000000> Burst size in KB"
+        ::= { zxr10QosTraffShapeEntry  3  }
+        
+zxr10QosTraffShapeExBurstSize OBJECT-TYPE
+        SYNTAX   Unsigned32(2..250000000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<2-250000000> Excess burst size in KB"
+        ::= { zxr10QosTraffShapeEntry  4  }
+
+--*****************************************************************
+--*****************************************************************
+--zxr10QosTraffShapeDirTable
+--*****************************************************************        
+zxr10QosTraffShapeDirTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10QosTraffShapeDirEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "TRAFFIC SHAPE DIRECTION TABLE"
+        ::= { zxr10QosTraffShapeDirObjects 1  }  
+        
+zxr10QosTraffShapeDirEntry OBJECT-TYPE
+        SYNTAX   Zxr10QosTraffShapeDirEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Configure traffic shape on the interface and direction"
+        INDEX {zxr10QosTraffShapeDirIfName,
+               zxr10QosTraffShapeDirection }
+        ::= { zxr10QosTraffShapeDirTable 1 }
+
+Zxr10QosTraffShapeDirEntry ::=
+        SEQUENCE {
+                zxr10QosTraffShapeDirIfName                           
+                    DisplayString,
+                zxr10QosTraffShapeDirection
+                    INTEGER,
+                zxr10QosTraffShapeDirRate                           
+                    Unsigned32,
+                zxr10QosTraffShapeDirBurstSize                           
+                    Unsigned32,
+                zxr10QosTraffShapeDirExBurstSize                         
+                    Unsigned32
+        }  
+        
+zxr10QosTraffShapeDirIfName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "WORD Name of the attaching interface"
+        ::= { zxr10QosTraffShapeDirEntry  1  }
+        
+zxr10QosTraffShapeDirection OBJECT-TYPE
+        SYNTAX   INTEGER{input(1)}
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "input Attaches to the input interface"
+        ::= { zxr10QosTraffShapeDirEntry  2  }    
+        
+zxr10QosTraffShapeDirRate OBJECT-TYPE
+        SYNTAX   Unsigned32(8..10000000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<8-10000000> Rate in kilobits per second"
+        ::= { zxr10QosTraffShapeDirEntry  3  }
+        
+zxr10QosTraffShapeDirBurstSize OBJECT-TYPE
+        SYNTAX   Unsigned32(2..250000000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<2-250000000> Burst size in KB"
+        ::= { zxr10QosTraffShapeDirEntry  4  }
+        
+zxr10QosTraffShapeDirExBurstSize OBJECT-TYPE
+        SYNTAX   Unsigned32(2..250000000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<2-250000000> Excess burst size in KB"
+        ::= { zxr10QosTraffShapeDirEntry  5  }
+        
+END

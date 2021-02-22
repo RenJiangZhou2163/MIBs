@@ -1,0 +1,335 @@
+-- *****************************************************************
+-- RUIJIE-VOICE-VLAN-MIB.mib:  Ruijie Voice VLAN MIB file
+--
+-- June 2009, miaoshifu
+--
+-- Copyright (c) 2009 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-VOICE-VLAN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE
+                FROM SNMPv2-SMI
+        RowStatus,
+        MacAddress
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        IfIndex
+                FROM RUIJIE-TC        
+        EnabledStatus
+        	      FROM P-BRIDGE-MIB        
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieVoiceVlanMIB MODULE-IDENTITY
+        LAST-UPDATED "200906180000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie voice vlan mibs."
+        REVISION      "200906180000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 52}
+
+-- Voice VLAN
+
+ruijieVoiceVlanMIBObjects OBJECT IDENTIFIER ::= { ruijieVoiceVlanMIB 1 }
+
+
+ruijieVoiceVlanOuiTable OBJECT-TYPE
+		    SYNTAX  SEQUENCE OF RuijieVoiceVlanOuiEntry
+		    MAX-ACCESS not-accessible
+		    STATUS   current
+		    DESCRIPTION
+		        " A table containing the mac address which can be identified by voice vlan "
+		    ::= { ruijieVoiceVlanMIBObjects 1 }
+
+ruijieVoiceVlanOuiEntry OBJECT-TYPE
+		    SYNTAX  RuijieVoiceVlanOuiEntry
+		    MAX-ACCESS not-accessible
+		    STATUS current
+		    DESCRIPTION
+		        " A table containing the mac address which can be identified by voice vlan "
+        INDEX   { ruijieVoiceVlanOuiAddress }		
+        ::= { ruijieVoiceVlanOuiTable 1}
+
+RuijieVoiceVlanOuiEntry	::=
+	      SEQUENCE {
+		            ruijieVoiceVlanOuiAddress	MacAddress  ,
+		            ruijieVoiceVlanOuiMask	MacAddress  ,
+		            ruijieVoiceVlanOuiDescription	OCTET STRING  ,
+		            ruijieVoiceVlanOuiRowStatus  	RowStatus
+		    }
+
+ruijieVoiceVlanOuiAddress OBJECT-TYPE
+    		SYNTAX  MacAddress  
+		    MAX-ACCESS read-only
+		    STATUS current
+		    DESCRIPTION
+		        " Mac address can be identified by voice vlan "
+		    ::= { ruijieVoiceVlanOuiEntry 1 }
+
+ruijieVoiceVlanOuiMask OBJECT-TYPE
+    		SYNTAX  MacAddress  
+		    MAX-ACCESS read-write
+		    STATUS current
+		    DESCRIPTION
+		        " The mask of mac address "
+		    ::= { ruijieVoiceVlanOuiEntry 2 }
+
+ruijieVoiceVlanOuiDescription OBJECT-TYPE
+    		SYNTAX  OCTET STRING (SIZE(0..30))
+		    MAX-ACCESS read-write
+		    STATUS current
+		    DESCRIPTION
+		        " The description of oui "
+		    ::= { ruijieVoiceVlanOuiEntry 3 }
+
+ruijieVoiceVlanOuiRowStatus OBJECT-TYPE
+    		SYNTAX  RowStatus  
+		    MAX-ACCESS read-write
+		    STATUS current
+		    DESCRIPTION
+		        " Current operation status of the row  "
+		    ::= { ruijieVoiceVlanOuiEntry 4 }
+
+ruijieVoiceVlanEnabledId  OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            " Voice vlan enable status: enabled (2..4094), disabled (0xffffffff) "
+        ::= { ruijieVoiceVlanMIBObjects 2 }
+
+ruijieVoiceVlanPortEnableTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieVoiceVlanPortEnableEntry
+        MAX-ACCESS not-accessible
+        STATUS   current
+        DESCRIPTION
+            " A list of voice vlan enable entries."
+        ::= { ruijieVoiceVlanMIBObjects  3  }
+
+ruijieVoiceVlanPortEnableEntry OBJECT-TYPE
+        SYNTAX  RuijieVoiceVlanPortEnableEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            " list of interface voice vlan enable status."
+        INDEX   { ruijieVoiceVlanPortEnableIfIndex }		
+        ::= { ruijieVoiceVlanPortEnableTable 1}
+
+RuijieVoiceVlanPortEnableEntry ::=
+        SEQUENCE {
+		            ruijieVoiceVlanPortEnableIfIndex  IfIndex,
+		            ruijieVoiceVlanPortStatus   EnabledStatus 
+		    }
+
+ruijieVoiceVlanPortEnableIfIndex OBJECT-TYPE
+        SYNTAX  IfIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            " "
+--      REFERENCE "ifIndex in RFC1213"            
+	      ::= { ruijieVoiceVlanPortEnableEntry 1 }
+
+ruijieVoiceVlanPortStatus OBJECT-TYPE
+        SYNTAX  EnabledStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+             " Port voice vlan status"
+        ::= { ruijieVoiceVlanPortEnableEntry 2 }
+
+ruijieVoiceVlanAgingTime  OBJECT-TYPE
+        SYNTAX  INTEGER (5..10000)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            " Voice vlan aging time, the unit of which is minute"
+	      DEFVAL      { 1440 }
+        ::= { ruijieVoiceVlanMIBObjects  4 }
+
+ruijieVoiceVlanSecurityState  OBJECT-TYPE
+       SYNTAX  INTEGER
+       {
+        security (1),
+        normal (2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            " Voice vlan security mode status "
+        ::= { ruijieVoiceVlanMIBObjects 5 }
+
+ruijieVoiceVlanCos  OBJECT-TYPE
+        SYNTAX  INTEGER (0..7)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            " Voice vlan cos"
+	      DEFVAL      { 6 }
+        ::= { ruijieVoiceVlanMIBObjects  6 }    
+
+ruijieVoiceVlanDscp  OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            " Voice vlan dscp"
+	      DEFVAL      { 46 }
+        ::= { ruijieVoiceVlanMIBObjects  7 }               
+
+ruijieVoiceVlanPortModeTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieVoiceVlanPortModeEntry
+        MAX-ACCESS not-accessible
+        STATUS   current
+        DESCRIPTION
+            " A list of voice vlan mode entries."
+        ::= { ruijieVoiceVlanMIBObjects  8  }
+
+ruijieVoiceVlanPortModeEntry OBJECT-TYPE
+        SYNTAX  RuijieVoiceVlanPortModeEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            " An entry containing voice vlan mode information,
+            which is applicable to a voice vlan enabled interface."
+        INDEX   { ruijieVoiceVlanPortIfIndex }		
+        ::= { ruijieVoiceVlanPortModeTable 1}
+
+RuijieVoiceVlanPortModeEntry ::=
+        SEQUENCE {
+		            ruijieVoiceVlanPortIfIndex  IfIndex ,
+		            ruijieVoiceVlanPortMode	    INTEGER 
+		    }
+
+ruijieVoiceVlanPortIfIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            " The index of interface on which voice vlan function
+            is enabled."
+--      REFERENCE "ifIndex in RFC1213"            
+	      ::= { ruijieVoiceVlanPortModeEntry 1 }
+
+ruijieVoiceVlanPortMode OBJECT-TYPE
+        SYNTAX  INTEGER
+        	{
+        	auto (1),
+        	manual (2)
+        	}
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+             " Voice vlan configuration mode status, which is 
+            applicable to a voice vlan enabled interface."
+        ::= { ruijieVoiceVlanPortModeEntry 2 }
+
+ruijieVoiceVlanMacTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieVoiceVlanMacEntry
+        MAX-ACCESS not-accessible
+        STATUS   current
+        DESCRIPTION
+            " A list of telephone device entries."
+        ::= { ruijieVoiceVlanMIBObjects  9  }
+
+ruijieVoiceVlanMacEntry OBJECT-TYPE
+        SYNTAX  RuijieVoiceVlanMacEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            " An entry containing telephone device information,
+            which is applicable to a voice vlan enabled interface."
+        INDEX   { ruijieVoiceVlanMacAddress, ruijieVoiceVlanMacIfIndex }		
+        ::= { ruijieVoiceVlanMacTable 1}
+
+RuijieVoiceVlanMacEntry ::=
+        SEQUENCE {
+               ruijieVoiceVlanMacAddress         MacAddress,
+               ruijieVoiceVlanMacIfIndex         IfIndex ,
+               ruijieVoiceVlanMacDescription     OCTET STRING 
+        }
+
+ruijieVoiceVlanMacAddress OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+             " Mac address can be identified by voice vlan."
+        ::= { ruijieVoiceVlanMacEntry 1 }
+
+ruijieVoiceVlanMacIfIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION 
+            " The index of interface on which voice vlan function
+            is enabled."
+--      REFERENCE "ifIndex in RFC1213"            
+        ::= { ruijieVoiceVlanMacEntry 2 }
+
+ruijieVoiceVlanMacDescription OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..30))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " The description of telephone device."
+        ::= { ruijieVoiceVlanMacEntry 3 }
+
+
+ruijieVoiceVlanMIBConformance OBJECT IDENTIFIER ::= { ruijieVoiceVlanMIB 2 }
+ruijieVoiceVlanMIBCompliances OBJECT IDENTIFIER ::= { ruijieVoiceVlanMIBConformance 1 }
+ruijieVoiceVlanMIBGroups      OBJECT IDENTIFIER ::= { ruijieVoiceVlanMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieVoiceVlanMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie Voice Vlan MIB."
+        MODULE  -- this module
+                MANDATORY-GROUPS { 
+                        ruijieVoiceVlanMIBGroup
+                 }
+         ::= { ruijieVoiceVlanMIBCompliances 1 }
+         
+-- units of conformance
+
+ruijieVoiceVlanMIBGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieVoiceVlanOuiAddress,
+		        ruijieVoiceVlanOuiMask,
+		        ruijieVoiceVlanOuiDescription,
+		        ruijieVoiceVlanOuiRowStatus,
+		        ruijieVoiceVlanEnabledId,
+		        ruijieVoiceVlanPortStatus,
+		        ruijieVoiceVlanAgingTime,
+		        ruijieVoiceVlanSecurityState, 
+		        ruijieVoiceVlanCos,
+		        ruijieVoiceVlanDscp,
+		        ruijieVoiceVlanPortMode,
+                        ruijieVoiceVlanMacAddress,
+                        ruijieVoiceVlanMacIfIndex,
+                        ruijieVoiceVlanMacDescription
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing voice vlan managment."
+        ::= { ruijieVoiceVlanMIBGroups 1 }
+END

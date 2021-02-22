@@ -1,0 +1,136 @@
+ -- *****************************************************************
+-- SNMPSECURITY.mib 
+-- chen meijin
+-- 2010-3-10 9:35
+-- 
+--
+-- Copyright (c) 1985-2008 by ZTE Corp.
+-- All rights reserved.
+-- *****************************************************************
+ 
+ ZXR10-SNMP-SECURITY-MIB DEFINITIONS ::= BEGIN
+ 
+ IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE,
+        Integer32, NOTIFICATION-TYPE,enterprises, Unsigned32,Counter32
+                FROM SNMPv2-SMI        
+        TEXTUAL-CONVENTION
+                FROM SNMPv2-TC;
+ 
+ 
+ zxr10-snmpsecurity MODULE-IDENTITY
+        LAST-UPDATED "201504140000Z"
+        ORGANIZATION "ZTE Corp."
+        CONTACT-INFO
+               "ZTE"
+        DESCRIPTION 
+                ""
+        REVISION "201504140000Z"
+        DESCRIPTION
+            "Delete the TAB char,
+            modify definition of SecurityStage,
+                   definition of ChangeStage,
+                   definition of ChangeReason,
+                   and SYNTAX of secTryCount from INTEGER to Counter32." 
+        REVISION "200905200000Z"
+        DESCRIPTION
+                "snmp-security"
+        ::= { zxr10 8}
+zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+zxr10 OBJECT IDENTIFIER ::= { zte 3}
+SecurityStage ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            ""
+    SYNTAX       INTEGER { normal(0),
+                       watch(1),
+                       quiet(2) }
+ChangeStage ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            ""
+    SYNTAX       INTEGER { 
+                      normalTOwatch(0),
+                      watchTOquiet(1),
+                      watchTOnormal(2),
+                      quietTOnormal(3) }
+ChangeReason ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            ""
+    SYNTAX       INTEGER { countReach(0),timeReach(1) }
+secBadCommunity OBJECT-TYPE
+        SYNTAX   OCTET STRING
+        MAX-ACCESS  accessible-for-notify
+        STATUS  current
+        DESCRIPTION "The wrong community string."
+        ::= { zxr10-snmpsecurity 1 }
+
+secIP  OBJECT-TYPE
+        SYNTAX   OCTET STRING
+        MAX-ACCESS  accessible-for-notify
+        STATUS  current
+        DESCRIPTION "The source ip."
+        ::= { zxr10-snmpsecurity 2 }
+secCurrentStage  OBJECT-TYPE
+        SYNTAX   SecurityStage
+        MAX-ACCESS  accessible-for-notify
+        STATUS  current
+        DESCRIPTION "The current stage."
+        ::= { zxr10-snmpsecurity 3 }
+
+secTime OBJECT-TYPE
+        SYNTAX   OCTET STRING
+        MAX-ACCESS  accessible-for-notify
+        STATUS  current
+        DESCRIPTION "The time of loging off."
+        ::= { zxr10-snmpsecurity 4 }
+secChangeStage OBJECT-TYPE
+        SYNTAX   ChangeStage
+        MAX-ACCESS  accessible-for-notify
+        STATUS  current
+        DESCRIPTION "The stage which the security model is in."
+  ::= { zxr10-snmpsecurity 5 }
+secChangeReason OBJECT-TYPE
+        SYNTAX   ChangeReason
+        MAX-ACCESS  accessible-for-notify
+        STATUS  current
+        DESCRIPTION "The reason which result to change stage."
+  ::= { zxr10-snmpsecurity 6 }
+secTryCount  OBJECT-TYPE
+        SYNTAX   Counter32
+        MAX-ACCESS  accessible-for-notify
+        STATUS  current
+        DESCRIPTION "The count of failure try."
+  ::= { zxr10-snmpsecurity 7 } 
+
+securityTrap OBJECT IDENTIFIER ::= { zxr10-snmpsecurity 8 }
+failureTrap NOTIFICATION-TYPE
+        OBJECTS {
+     secBadCommunity,
+                 secIP,
+     secCurrentStage 
+                }
+        STATUS             current
+        DESCRIPTION
+           "when a failed login happened, send a trap."
+   ::= { securityTrap 1 }
+changestageTrap NOTIFICATION-TYPE
+        OBJECTS {
+     secTime,
+                 secChangeStage,
+     secChangeReason,
+                 secTryCount     
+                }
+        STATUS             current
+        DESCRIPTION
+           "when a failed login happened, send a trap."
+   ::= { securityTrap 2 }    
+
+END
+
+
+
+
+  
+  

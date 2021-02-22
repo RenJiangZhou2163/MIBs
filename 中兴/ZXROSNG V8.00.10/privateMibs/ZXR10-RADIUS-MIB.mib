@@ -1,0 +1,1532 @@
+--*****************************************************************
+-- ZXR10-RADIUS-MIB
+-- OAM
+-- 2013-10-29 10:54  zhuhuaxing
+-- Copyright (c) 1985-2013 by ZTE Corp.
+-- All rights reserved. 
+--*****************************************************************
+
+ZXR10-RADIUS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,OBJECT-TYPE,enterprises,IpAddress,Counter32,
+    Integer32
+        FROM SNMPv2-SMI
+    DisplayString,TruthValue,TEXTUAL-CONVENTION,RowStatus
+        FROM SNMPv2-TC
+    zxr10
+        FROM ZXR10-SMI;
+
+zxr10RADIUS MODULE-IDENTITY
+        LAST-UPDATED "201709211000Z"
+        ORGANIZATION "ZTE Corporation"
+        CONTACT-INFO
+            "       Jin Kang
+            Tel:    +86-25-52870000
+            E-Mail: jin.kang@zte.com.cn "
+
+        DESCRIPTION
+            "M6000 60 RADIUS config MIB"
+
+    REVISION "201709211000Z"
+        DESCRIPTION
+            "1.Add new leaf  locationAndOption82 under zxr10RadAuthenNasPortIdFormat 
+             2.Add new leaf  locationAndOption82 under zxr10RadAccountNasPortIdFormat "
+
+    REVISION "201701061000Z"
+        DESCRIPTION
+            "1.Add new leaf zxr10RadAuthenAlgorithm under zxr10RadAuthenGroupTable"
+
+        REVISION "201612271000Z"
+        DESCRIPTION
+            "1.Add new table zxr10RadAuthenNasPortIdTable
+             2.Add new table zxr10RadAccountNasPortIdTable"
+            
+	REVISION "201508131000Z"
+        DESCRIPTION
+            "1.The description of leaf zxr10RadAuthenServerLongKey
+             2.The description of leaf zxr10RadAuthenServerEncryptLongKey
+             3.The description of leaf zxr10RadAccountServerLongKey
+             4.The description of leaf zxr10RadAccountServerEncryptLongKey"    
+
+	REVISION "201504281000Z"
+        DESCRIPTION
+            "1.The description of leaf zxr10RadiusAuthenServerIPAddress 
+             2.The description of leaf zxr10RadiusAccountServerIPAddress
+	     3.The description of leaf zxr10RadAuthenServerIPAddress 
+             4.The description of leaf zxr10RadAccountServerIPAddress" 
+	     
+      
+	REVISION "201411200000Z"  
+        DESCRIPTION
+            "1.Add new tables zxr10RadiusAuthSvrStatDataTable
+             and zxr10RadiusAccSvrStatDataTable." 
+
+
+        REVISION "201403201000Z"
+        DESCRIPTION
+            "1.leaf zxr10RadAuthenServerID max value modified to 16
+             2.leaf zxr10RadAccountServerID max value modified to 16"
+
+        REVISION "201312021000Z"
+        DESCRIPTION
+            "1.zxr10RadiusAuthenGroupTable 
+               1.3.6.1.4.1.3902.3.6000.162.1 obsolete
+             2.zxr10RadiusAuthenServerTable 
+               1.3.6.1.4.1.3902.3.6000.162.2 obsolete
+             3.zxr10RadiusAccountGroupTable 
+               1.3.6.1.4.1.3902.3.6000.162.3 obsolete
+             4.zxr10RadiusAccountServerTable
+               1.3.6.1.4.1.3902.3.6000.162.4 obsolete
+             5.zxr10RadAuthenGroupTable 
+               1.3.6.1.4.1.3902.3.6000.162.5 add
+             6.zxr10RadAuthenServerTable 
+               1.3.6.1.4.1.3902.3.6000.162.6 add
+             7.zxr10RadAccountGroupTable 
+               1.3.6.1.4.1.3902.3.6000.162.7 add
+             8.zxr10RadAccountServerTable
+               1.3.6.1.4.1.3902.3.6000.162.8 add"
+
+        REVISION "201106070000Z"
+        DESCRIPTION
+            "This mib defines management information objects for RADIUS"
+        ::= { zxr10RosngMIB 162 }
+
+   zxr10RosngMIB OBJECT IDENTIFIER ::= { zxr10 6000}
+
+--******************************************************
+--    he follow part defined some data types which will 
+--    be used in this mib file later  
+--****************************************************** 
+RadiusProtType ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            "The true value of radius protocol type."
+    SYNTAX   INTEGER {standard(1),other(2)}
+
+RadiusSvrMaster ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            "The true value of radius master server flag."
+    SYNTAX   INTEGER {slave(0),master(1)}
+
+--******************************************************
+-- the RADIUS authentication group table--obsolete
+--******************************************************
+    zxr10RadiusAuthenGroupTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10RadiusAuthenGroupEntry
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "A table containing radius authentication group information."
+              ::= { zxr10RADIUS 1 }
+
+    zxr10RadiusAuthenGroupEntry OBJECT-TYPE
+              SYNTAX  Zxr10RadiusAuthenGroupEntry
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "Information about radius authentication group."
+              INDEX   { 
+                          zxr10RadiusAuthenGroupID
+                      }
+              ::= { zxr10RadiusAuthenGroupTable 1 }
+
+    Zxr10RadiusAuthenGroupEntry ::=
+              SEQUENCE {
+                  zxr10RadiusAuthenGroupID
+                      Integer32,
+                  zxr10RadiusAuthenGroupName
+                      DisplayString,
+                  zxr10RadiusAuthenServerProtType
+                      RadiusProtType,
+                  zxr10RadiusAuthenServerRetransmit
+                      Integer32,
+                  zxr10RadiusAuthenServerTimeout
+                      Integer32
+              }
+
+    zxr10RadiusAuthenGroupID OBJECT-TYPE
+              SYNTAX  Integer32
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS authentication group number."
+              ::= { zxr10RadiusAuthenGroupEntry 1 }
+              
+    zxr10RadiusAuthenGroupName OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(1..31))
+              MAX-ACCESS  read-only
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS authentication group alias name."
+              ::= { zxr10RadiusAuthenGroupEntry 2 }
+              
+    zxr10RadiusAuthenServerProtType OBJECT-TYPE
+              SYNTAX  RadiusProtType
+              MAX-ACCESS  read-only
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS authentication protocol type."
+              ::= { zxr10RadiusAuthenGroupEntry 3 }
+
+    zxr10RadiusAuthenServerRetransmit OBJECT-TYPE
+              SYNTAX  Integer32 (1..255)
+              MAX-ACCESS  read-only
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS authentication Group max retries."
+              ::= { zxr10RadiusAuthenGroupEntry 4 }
+
+    zxr10RadiusAuthenServerTimeout OBJECT-TYPE
+              SYNTAX  Integer32 (1..255)
+              MAX-ACCESS  read-only
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS authentication Group timeout."
+              ::= { zxr10RadiusAuthenGroupEntry 5 }
+
+--******************************************************
+-- the RADIUS authentication group server table--obsolete
+--******************************************************
+    zxr10RadiusAuthenServerTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10RadiusAuthenServerEntry
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "A table containing RADIUS authentication group server information."
+              ::= { zxr10RADIUS 2 }
+
+    zxr10RadiusAuthenServerEntry OBJECT-TYPE
+              SYNTAX  Zxr10RadiusAuthenServerEntry
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "Information about RADIUS authentication group server."
+              INDEX   { 
+                          zxr10RadiusAuthenServerGroupID,zxr10RadiusAuthenServerID
+                      }
+              ::= { zxr10RadiusAuthenServerTable 1 }
+
+    Zxr10RadiusAuthenServerEntry ::=
+              SEQUENCE {
+                  zxr10RadiusAuthenServerGroupID
+                      Integer32,
+                  zxr10RadiusAuthenServerID
+                      Integer32,
+                  zxr10RadiusAuthenServerIfMaster
+                      RadiusSvrMaster,
+                  zxr10RadiusAuthenServerIPAddress
+                      IpAddress,
+                  zxr10RadiusAuthenServerPort
+                      Integer32,
+                  zxr10RadiusAuthenServerKey
+                      DisplayString,
+                  zxr10RadiusAuthenServerEncryptKey
+                      DisplayString,
+                  zxr10RadiusAuthenServerRowStatus
+                      RowStatus
+              }
+
+    zxr10RadiusAuthenServerGroupID OBJECT-TYPE
+              SYNTAX  Integer32 
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS authentication group number."
+              ::= { zxr10RadiusAuthenServerEntry 1 }
+              
+    zxr10RadiusAuthenServerID OBJECT-TYPE
+              SYNTAX  Integer32 (1..4)
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS authentication group server number."
+              ::= { zxr10RadiusAuthenServerEntry 2 }
+              
+    zxr10RadiusAuthenServerIfMaster OBJECT-TYPE
+              SYNTAX  RadiusSvrMaster
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS authentication group server if master server."
+              ::= { zxr10RadiusAuthenServerEntry 3 }
+
+    zxr10RadiusAuthenServerIPAddress OBJECT-TYPE
+              SYNTAX  IpAddress
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS authentication group server IP Address."
+              ::= { zxr10RadiusAuthenServerEntry 4 }
+
+    zxr10RadiusAuthenServerPort OBJECT-TYPE
+              SYNTAX  Integer32 (1025..65535)
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS authentication group server port number."
+              ::= { zxr10RadiusAuthenServerEntry 5 }
+              
+    zxr10RadiusAuthenServerKey OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(1..31))
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS authentication group server key."
+              ::= { zxr10RadiusAuthenServerEntry 6 }
+
+    zxr10RadiusAuthenServerEncryptKey OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(64))
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS authentication group server encrypted key."
+              ::= { zxr10RadiusAuthenServerEntry 7 }
+
+    zxr10RadiusAuthenServerRowStatus OBJECT-TYPE
+              SYNTAX  RowStatus
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "This object allows entries to be created and deleted
+                       in the zxr10RadiusAuthenServerTable."
+              ::= { zxr10RadiusAuthenServerEntry 100 }
+
+--******************************************************
+-- the RADIUS accounting group table--obsolete
+--******************************************************
+    zxr10RadiusAccountGroupTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10RadiusAccountGroupEntry
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "A table containing RADIUS accounting group information."
+              ::= { zxr10RADIUS 3 }
+
+    zxr10RadiusAccountGroupEntry OBJECT-TYPE
+              SYNTAX  Zxr10RadiusAccountGroupEntry
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "Information about RADIUS accounting group."
+              INDEX   { 
+                          zxr10RadiusAccountGroupID
+                      }
+              ::= { zxr10RadiusAccountGroupTable 1 }
+
+    Zxr10RadiusAccountGroupEntry ::=
+              SEQUENCE {
+                  zxr10RadiusAccountGroupID
+                      Integer32,
+                  zxr10RadiusAccountGroupName
+                      DisplayString,
+                  zxr10RadiusAccountServerProtType
+                      RadiusProtType,
+                  zxr10RadiusAccountServerRetransmit
+                      Integer32,
+                  zxr10RadiusAccountServerTimeout
+                      Integer32
+              }
+
+    zxr10RadiusAccountGroupID OBJECT-TYPE
+              SYNTAX  Integer32 
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS accounting group number."
+              ::= { zxr10RadiusAccountGroupEntry 1 }
+              
+    zxr10RadiusAccountGroupName OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(1..31))
+              MAX-ACCESS  read-only
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS accounting group alias name."
+              ::= { zxr10RadiusAccountGroupEntry 2 }
+              
+    zxr10RadiusAccountServerProtType OBJECT-TYPE
+              SYNTAX  RadiusProtType
+              MAX-ACCESS  read-only
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS accounting protocol type."
+              ::= { zxr10RadiusAccountGroupEntry 3 }
+
+    zxr10RadiusAccountServerRetransmit OBJECT-TYPE
+              SYNTAX  Integer32 (1..255)
+              MAX-ACCESS  read-only
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS accounting Group max retries."
+              ::= { zxr10RadiusAccountGroupEntry 4 }
+
+    zxr10RadiusAccountServerTimeout OBJECT-TYPE
+              SYNTAX  Integer32 (1..255)
+              MAX-ACCESS  read-only
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS accounting Group timeout."
+              ::= { zxr10RadiusAccountGroupEntry 5 }
+
+--******************************************************
+-- the RADIUS accounting group server table--obsolete
+--******************************************************
+    zxr10RadiusAccountServerTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10RadiusAccountServerEntry
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "A table containing RADIUS accounting group server information."
+              ::= { zxr10RADIUS 4 }
+
+    zxr10RadiusAccountServerEntry OBJECT-TYPE
+              SYNTAX  Zxr10RadiusAccountServerEntry
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "Information about RADIUS accounting group server."
+              INDEX   { 
+                          zxr10RadiusAccountServerGroupID,zxr10RadiusAccountServerID
+                      }
+              ::= { zxr10RadiusAccountServerTable 1 }
+
+    Zxr10RadiusAccountServerEntry ::=
+              SEQUENCE {
+                  zxr10RadiusAccountServerGroupID
+                      Integer32,
+                  zxr10RadiusAccountServerID
+                      Integer32,
+                  zxr10RadiusAccountServerIfMaster
+                      RadiusSvrMaster,
+                  zxr10RadiusAccountServerIPAddress
+                      IpAddress,
+                  zxr10RadiusAccountServerPort
+                      Integer32,
+                  zxr10RadiusAccountServerKey
+                      DisplayString,
+                  zxr10RadiusAccountServerEncryptKey
+                      DisplayString,
+                  zxr10RadiusAccountServerRowStatus
+                      RowStatus
+              }
+
+    zxr10RadiusAccountServerGroupID OBJECT-TYPE
+              SYNTAX  Integer32
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS accounting group number."
+              ::= { zxr10RadiusAccountServerEntry 1 }
+              
+    zxr10RadiusAccountServerID OBJECT-TYPE
+              SYNTAX  Integer32 (1..4)
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS accounting group server number."
+              ::= { zxr10RadiusAccountServerEntry 2 }
+              
+    zxr10RadiusAccountServerIfMaster OBJECT-TYPE
+              SYNTAX  RadiusSvrMaster
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS accounting group server if master server."
+              ::= { zxr10RadiusAccountServerEntry 3 }
+
+    zxr10RadiusAccountServerIPAddress OBJECT-TYPE
+              SYNTAX  IpAddress
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS accounting group server IP Address."
+              ::= { zxr10RadiusAccountServerEntry 4 }
+
+    zxr10RadiusAccountServerPort OBJECT-TYPE
+              SYNTAX  Integer32 (1025..65535)
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS accounting group server port number."
+              ::= { zxr10RadiusAccountServerEntry 5 }
+              
+    zxr10RadiusAccountServerKey OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(1..31))
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS accounting group server key."
+              ::= { zxr10RadiusAccountServerEntry 6 }
+
+    zxr10RadiusAccountServerEncryptKey OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(64))
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "The RADIUS accounting group server encrypted key."
+              ::= { zxr10RadiusAccountServerEntry 7 }
+
+    zxr10RadiusAccountServerRowStatus OBJECT-TYPE
+              SYNTAX  RowStatus
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "This object allows entries to be created and deleted
+                       in the zxr10RadiusAccountServerTable."
+              ::= { zxr10RadiusAccountServerEntry 100 }
+
+--******************************************************
+-- the RADIUS authentication group table--current
+--******************************************************
+    zxr10RadAuthenGroupTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10RadAuthenGroupEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing radius authentication group information."
+              ::= { zxr10RADIUS 5 }
+
+     zxr10RadAuthenGroupEntry OBJECT-TYPE
+              SYNTAX  Zxr10RadAuthenGroupEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information about radius authentication group."
+              INDEX   { 
+                          zxr10RadAuthenGroupName
+                      }
+              ::= { zxr10RadAuthenGroupTable 1 }
+
+     Zxr10RadAuthenGroupEntry ::=
+              SEQUENCE {
+                  zxr10RadAuthenGroupName
+                      DisplayString,
+                  zxr10RadAuthenServerProtType
+                      RadiusProtType,
+                  zxr10RadAuthenServerRetransmit
+                      Integer32,
+                  zxr10RadAuthenServerTimeout
+                      Integer32,
+                  zxr10RadAuthenAlgorithm
+                      INTEGER
+              }
+
+     zxr10RadAuthenGroupName OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(1..31))
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication group name."
+              ::= { zxr10RadAuthenGroupEntry 1 }
+
+     zxr10RadAuthenServerProtType OBJECT-TYPE
+              SYNTAX  RadiusProtType
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication protocol type."
+              ::= { zxr10RadAuthenGroupEntry 2 }
+
+     zxr10RadAuthenServerRetransmit OBJECT-TYPE
+              SYNTAX  Integer32 (1..255)
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication Group max retries."
+              ::= { zxr10RadAuthenGroupEntry 3 }
+
+    zxr10RadAuthenServerTimeout OBJECT-TYPE
+              SYNTAX  Integer32 (1..255)
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication Group timeout."
+              ::= { zxr10RadAuthenGroupEntry 4 }
+
+    zxr10RadAuthenAlgorithm OBJECT-TYPE
+                SYNTAX     INTEGER{
+                           first(1),
+                           roundRobin(2),
+                           rolloverOnReject(3)   
+                           }
+                MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION   "The RADIUS authentication group algorithm."
+                DEFVAL { first }
+                ::= { zxr10RadAuthenGroupEntry 5 }
+
+--******************************************************
+-- the RADIUS authentication group server table--current
+--******************************************************
+    zxr10RadAuthenServerTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10RadAuthenServerEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing RADIUS authentication group server information."
+              ::= { zxr10RADIUS 6 }
+
+     zxr10RadAuthenServerEntry OBJECT-TYPE
+              SYNTAX  Zxr10RadAuthenServerEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information about RADIUS authentication group server."
+              INDEX   { 
+                          zxr10RadAuthenServerGroupName,zxr10RadAuthenServerID
+                      }
+              ::= { zxr10RadAuthenServerTable 1 }
+
+     Zxr10RadAuthenServerEntry ::=
+              SEQUENCE {
+                  zxr10RadAuthenServerGroupName
+                      DisplayString,
+                  zxr10RadAuthenServerID
+                      Integer32,
+                  zxr10RadAuthenServerIfMaster
+                      RadiusSvrMaster,
+                  zxr10RadAuthenServerIPAddress
+                      IpAddress,
+                  zxr10RadAuthenServerPort
+                      Integer32,
+                  zxr10RadAuthenServerKey
+                      DisplayString,
+                  zxr10RadAuthenServerEncryptKey
+                      DisplayString,
+                  zxr10RadAuthenServerLongKey
+                      DisplayString,
+                  zxr10RadAuthenServerEncryptLongKey
+                      DisplayString,
+                  zxr10RadAuthenServerRowStatus
+                      RowStatus
+              }
+
+     zxr10RadAuthenServerGroupName OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(1..31)) 
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication group name."
+              ::= { zxr10RadAuthenServerEntry 1 }
+
+     zxr10RadAuthenServerID OBJECT-TYPE
+              SYNTAX  Integer32 (1..16)
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication group server number."
+              ::= { zxr10RadAuthenServerEntry 2 }
+
+     zxr10RadAuthenServerIfMaster OBJECT-TYPE
+              SYNTAX  RadiusSvrMaster
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication group server if master server."
+              ::= { zxr10RadAuthenServerEntry 3 }
+
+     zxr10RadAuthenServerIPAddress OBJECT-TYPE
+              SYNTAX  IpAddress
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication group server IP Address."
+              ::= { zxr10RadAuthenServerEntry 4 }
+
+      zxr10RadAuthenServerPort OBJECT-TYPE
+              SYNTAX  Integer32 (1025..65535)
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication group server port number."
+              ::= { zxr10RadAuthenServerEntry 5 }
+
+      zxr10RadAuthenServerKey OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(1..31))
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication group server key."
+              ::= { zxr10RadAuthenServerEntry 6 }
+
+      zxr10RadAuthenServerEncryptKey OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(64))
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication group server encrypted key."
+              ::= { zxr10RadAuthenServerEntry 7 }
+
+      zxr10RadAuthenServerLongKey OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(1..128))
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication group server longKey."
+              ::= { zxr10RadAuthenServerEntry 8}
+                             
+      zxr10RadAuthenServerEncryptLongKey OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(172))
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication group server encrypted longKey."
+              ::= { zxr10RadAuthenServerEntry 9 }
+                             
+      zxr10RadAuthenServerRowStatus OBJECT-TYPE
+              SYNTAX  RowStatus
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "This object allows entries to be created and deleted
+              in the zxr10RadAuthenServerTable."
+              ::= { zxr10RadAuthenServerEntry 100 }
+
+--******************************************************
+-- the RADIUS accounting group table--current
+--******************************************************
+    zxr10RadAccountGroupTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10RadAccountGroupEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing RADIUS accounting group information."
+              ::= { zxr10RADIUS 7 }
+
+     zxr10RadAccountGroupEntry OBJECT-TYPE
+              SYNTAX  Zxr10RadAccountGroupEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information about RADIUS accounting group."
+              INDEX   { 
+                          zxr10RadAccountGroupName
+                      }
+              ::= { zxr10RadAccountGroupTable 1 }
+
+     Zxr10RadAccountGroupEntry ::=
+              SEQUENCE {
+                  zxr10RadAccountGroupName
+                      DisplayString,
+                  zxr10RadAccountServerProtType
+                      RadiusProtType,
+                  zxr10RadAccountServerRetransmit
+                      Integer32,
+                  zxr10RadAccountServerTimeout
+                      Integer32
+              }
+
+     zxr10RadAccountGroupName OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(1..31))
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS accounting group name."
+              ::= { zxr10RadAccountGroupEntry 1 }
+
+     zxr10RadAccountServerProtType OBJECT-TYPE
+              SYNTAX  RadiusProtType
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS accounting protocol type."
+              ::= { zxr10RadAccountGroupEntry 2 }
+
+     zxr10RadAccountServerRetransmit OBJECT-TYPE
+              SYNTAX  Integer32 (1..255)
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS accounting Group max retries."
+              ::= { zxr10RadAccountGroupEntry 3 }
+
+     zxr10RadAccountServerTimeout OBJECT-TYPE
+              SYNTAX  Integer32 (1..255)
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS accounting Group timeout."
+              ::= { zxr10RadAccountGroupEntry 4 }
+
+--******************************************************
+-- the RADIUS accounting group server table--current
+--******************************************************
+    zxr10RadAccountServerTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10RadAccountServerEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing RADIUS accounting group server information."
+              ::= { zxr10RADIUS 8 }
+
+     zxr10RadAccountServerEntry OBJECT-TYPE
+              SYNTAX  Zxr10RadAccountServerEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information about RADIUS accounting group server."
+              INDEX   { 
+                          zxr10RadAccountServerGroupName,zxr10RadAccountServerID
+                      }
+              ::= { zxr10RadAccountServerTable 1 }
+
+     Zxr10RadAccountServerEntry ::=
+              SEQUENCE {
+                  zxr10RadAccountServerGroupName
+                      DisplayString,
+                  zxr10RadAccountServerID
+                      Integer32,
+                  zxr10RadAccountServerIfMaster
+                      RadiusSvrMaster,
+                  zxr10RadAccountServerIPAddress
+                      IpAddress,
+                  zxr10RadAccountServerPort
+                      Integer32,
+                  zxr10RadAccountServerKey
+                      DisplayString,
+                  zxr10RadAccountServerEncryptKey
+                      DisplayString,
+                  zxr10RadAccountServerLongKey
+                      DisplayString,
+                  zxr10RadAccountServerEncryptLongKey
+                      DisplayString,
+                  zxr10RadAccountServerRowStatus
+                      RowStatus
+              }
+
+     zxr10RadAccountServerGroupName OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(1..31))
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS accounting group name."
+              ::= { zxr10RadAccountServerEntry 1 }
+
+     zxr10RadAccountServerID OBJECT-TYPE
+              SYNTAX  Integer32 (1..16)
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS accounting group server number."
+              ::= { zxr10RadAccountServerEntry 2 }
+
+     zxr10RadAccountServerIfMaster OBJECT-TYPE
+              SYNTAX  RadiusSvrMaster
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS accounting group server if master server."
+              ::= { zxr10RadAccountServerEntry 3 }
+
+     zxr10RadAccountServerIPAddress OBJECT-TYPE
+              SYNTAX  IpAddress
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS accounting group server IP Address."
+              ::= { zxr10RadAccountServerEntry 4 }
+
+      zxr10RadAccountServerPort OBJECT-TYPE
+              SYNTAX  Integer32 (1025..65535)
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS accounting group server port number."
+              ::= { zxr10RadAccountServerEntry 5 }
+
+      zxr10RadAccountServerKey OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(1..31))
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS accounting group server key."
+              ::= { zxr10RadAccountServerEntry 6 }
+
+      zxr10RadAccountServerEncryptKey OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(64))
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS accounting group server encrypted key."
+              ::= { zxr10RadAccountServerEntry 7 }
+
+      zxr10RadAccountServerLongKey OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(1..128))
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS accounting group server longKey."
+              ::= { zxr10RadAccountServerEntry 8 }
+
+      zxr10RadAccountServerEncryptLongKey OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(172))
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS accounting group server encrypted longKey."
+              ::= { zxr10RadAccountServerEntry 9 }
+
+      zxr10RadAccountServerRowStatus OBJECT-TYPE
+              SYNTAX  RowStatus
+              MAX-ACCESS  read-create
+              STATUS  current
+              DESCRIPTION
+                      "This object allows entries to be created and deleted
+              in the zxr10RadAccountServerTable."
+              ::= { zxr10RadAccountServerEntry 100 }
+
+--******************************************************
+-- the RADIUS authentication group server statistic data
+--******************************************************
+    zxr10RadiusAuthSvrStatDataTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10RadiusAuthSvrStatDataEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing RADIUS authentication group 
+                      server statistic data information."
+              ::= { zxr10RADIUS 9 }
+
+    zxr10RadiusAuthSvrStatDataEntry OBJECT-TYPE
+              SYNTAX  Zxr10RadiusAuthSvrStatDataEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information about RADIUS authentication group 
+                       server statistic data."
+              INDEX   { 
+                          zxr10RadiusStatAuthSvrGroupName,
+                          zxr10RadiusStatAuthSvrID
+                      }
+              ::= { zxr10RadiusAuthSvrStatDataTable 1 }
+
+    Zxr10RadiusAuthSvrStatDataEntry ::=
+              SEQUENCE {
+                  zxr10RadiusStatAuthSvrGroupName
+                      DisplayString,
+                  zxr10RadiusStatAuthSvrID
+                      Integer32,   
+                  zxr10RadiusStatAuthSvrIPAddr
+                      IpAddress,    
+                  zxr10RadiusStatAuthAccessRequest
+                      Counter32,
+                  zxr10RadiusStatAuthAccessRetrMis
+                      Counter32,
+                  zxr10RadiusStatAuthAccessAccepts
+                      Counter32,
+                  zxr10RadiusStatAuthAccessRejects
+                      Counter32,
+                  zxr10RadiusStatAuthAccessChallge
+                      Counter32,
+                  zxr10RadiusStatAuthMalfResponses
+                      Counter32,
+                  zxr10RadiusStatAuthBadAuthens
+                      Counter32, 
+                  zxr10RadiusStatAuthPendRequests
+                      Counter32,    
+                  zxr10RadiusStatAuthTimeouts
+                      Counter32, 
+                  zxr10RadiusStatAuthUnknownTypes
+                      Counter32,
+                  zxr10RadiusStatAuthpacketsDrops
+                      Counter32   
+  }
+
+    zxr10RadiusStatAuthSvrGroupName OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(1..31))
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication group number."
+              ::= { zxr10RadiusAuthSvrStatDataEntry 1 }
+              
+    zxr10RadiusStatAuthSvrID OBJECT-TYPE
+              SYNTAX  Integer32 (1..16)
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication group server number."
+              ::= { zxr10RadiusAuthSvrStatDataEntry 2 }
+              
+   zxr10RadiusStatAuthSvrIPAddr OBJECT-TYPE
+              SYNTAX  IpAddress
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication group server IP Adress."
+              ::= { zxr10RadiusAuthSvrStatDataEntry 3 }  
+              
+    zxr10RadiusStatAuthAccessRequest OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of RADIUS Access-Request packets sent
+                       to this server.This does not include retransmissions."
+              ::= { zxr10RadiusAuthSvrStatDataEntry 4 }
+
+    zxr10RadiusStatAuthAccessRetrMis OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of RADIUS Access-Request packets 
+                      retransmitted to this RADIUS authentication."
+              ::= { zxr10RadiusAuthSvrStatDataEntry 5 }
+
+    zxr10RadiusStatAuthAccessAccepts OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of RADIUS Access-Accept packets
+                      (valid or invalid) received from this server."
+              ::= { zxr10RadiusAuthSvrStatDataEntry 6 }
+              
+    zxr10RadiusStatAuthAccessRejects OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of RADIUS Access-Reject packets
+                      (valid or invalid) received from this server."
+              ::= { zxr10RadiusAuthSvrStatDataEntry 7 }
+
+    zxr10RadiusStatAuthAccessChallge OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of RADIUS Access-Challenge packets
+                      (valid or invalid) received from this server."
+              ::= { zxr10RadiusAuthSvrStatDataEntry 8 }
+
+    zxr10RadiusStatAuthMalfResponses OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of malformed RADIUS Access-Response 
+                      packets received from this server.Malformed packets
+                      include packets with an invalid length. Bad 
+                      authenticators or signature attributes or unknown 
+                      types are not included as malformed access responses."
+              ::= { zxr10RadiusAuthSvrStatDataEntry 9 } 
+
+    zxr10RadiusStatAuthBadAuthens OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of RADIUS Access-Response packets
+                     containing invalid authenticators or Signature
+                      attributes received from this server."
+              ::= { zxr10RadiusAuthSvrStatDataEntry 10 }
+
+    zxr10RadiusStatAuthPendRequests OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of RADIUS Access-Request packets
+                    destined for this server that have not yet timed out
+                    or received a response. This variable is incremented
+                    when an Access-Request is sent and decremented due to
+                     receipt of an Acess-Accept, Access-Reject or
+                    Access-Challenge, a timeout or retransmission."
+              ::= { zxr10RadiusAuthSvrStatDataEntry 11 }
+
+    zxr10RadiusStatAuthTimeouts OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of authentication timeouts to this server.
+                        After a timeout the client may retry to the same
+                        server, send to a different server, or
+                        give up. A retry to the same server is counted as a
+                        retransmit as well as a timeout. A send to a different
+                        server is counted as a Request as well as a timeout."
+              ::= { zxr10RadiusAuthSvrStatDataEntry 12 }
+              
+    zxr10RadiusStatAuthUnknownTypes OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of RADIUS packets of unknown type which
+                      were received from this server on the authentication port."
+              ::= { zxr10RadiusAuthSvrStatDataEntry 13 } 
+
+     zxr10RadiusStatAuthpacketsDrops OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of RADIUS packets of which were
+                      received from this server on the authentication port
+                      and dropped for some other reason."
+              ::= { zxr10RadiusAuthSvrStatDataEntry 14 } 
+
+--******************************************************
+-- the RADIUS accounting group server statistic data
+--******************************************************
+    zxr10RadiusAccSvrStatDataTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10RadiusAccSvrStatDataEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing RADIUS accounting group 
+                      server statistic data information."
+              ::= { zxr10RADIUS 10 }
+
+    zxr10RadiusAccSvrStatDataEntry OBJECT-TYPE
+              SYNTAX  Zxr10RadiusAccSvrStatDataEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information about RADIUS accounting group server
+                      statistic data."
+              INDEX   { 
+                          zxr10RadiusStatAccSvrGroupName,
+                          zxr10RadiusStatAccSvrID
+                      }
+              ::= { zxr10RadiusAccSvrStatDataTable 1 }
+
+    Zxr10RadiusAccSvrStatDataEntry ::=
+              SEQUENCE {
+                  zxr10RadiusStatAccSvrGroupName
+                      DisplayString,
+                  zxr10RadiusStatAccSvrID
+                      Integer32,  
+                  zxr10RadiusStatAccSvrIPAddr
+                      IpAddress,    
+                  zxr10RadiusStatAccClientRequest
+                      Counter32,
+                  zxr10RadiusStatAccClientRetraMis
+                      Counter32,
+                  zxr10RadiusStatAccClientResponse
+                      Counter32,
+                  zxr10RadiusStatAccCltMalfRespses
+                      Counter32,
+                  zxr10RadiusStatAccClientBadAuths
+                      Counter32, 
+                  zxr10RadiusStatAccClientPendReqt
+                      Counter32,  
+                  zxr10RadiusStatAccClientTimeouts
+                      Counter32, 
+                  zxr10RadiusStatAccClientUnknown
+                      Counter32,
+                  zxr10RadiusStatAccClientPktDrops
+                      Counter32 
+  }
+
+    zxr10RadiusStatAccSvrGroupName OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(1..31))
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS accounting group number."
+              ::= { zxr10RadiusAccSvrStatDataEntry 1 }
+              
+    zxr10RadiusStatAccSvrID OBJECT-TYPE
+              SYNTAX  Integer32 (1..16)
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS accounting group server number."
+              ::= { zxr10RadiusAccSvrStatDataEntry 2 }    
+              
+    zxr10RadiusStatAccSvrIPAddr OBJECT-TYPE
+              SYNTAX  IpAddress
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication group server IP Adress."
+              ::= { zxr10RadiusAccSvrStatDataEntry 3 }  
+              
+    zxr10RadiusStatAccClientRequest OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of RADIUS Accounting-Request packets
+                     sent. This does not include retransmissions."
+              ::= { zxr10RadiusAccSvrStatDataEntry 4 }
+
+    zxr10RadiusStatAccClientRetraMis OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of RADIUS Accounting-Request packets
+                      retransmitted to this RADIUS accounting server.
+                      Retransmissions include retries where the
+                      Identifier and Acct-Delay have been updated, as
+                      well as those in which they remain the same.."
+              ::= { zxr10RadiusAccSvrStatDataEntry 5 }
+
+    zxr10RadiusStatAccClientResponse OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of RADIUS packets received on the
+                       accounting port from this server."
+              ::= { zxr10RadiusAccSvrStatDataEntry 6 }
+              
+    zxr10RadiusStatAccCltMalfRespses OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of malformed RADIUS Accounting-Response
+                       packets received from this server. Malformed packets
+                       include packets with an invalid length. Bad
+                       authenticators and unknown types are not included as
+                       malformed accounting responses."
+              ::= { zxr10RadiusAccSvrStatDataEntry 7 }
+
+    zxr10RadiusStatAccClientBadAuths OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of RADIUS Accounting-Response
+                       packets which contained invalid authenticators
+                       received from this server."
+              ::= { zxr10RadiusAccSvrStatDataEntry 8 }
+
+    zxr10RadiusStatAccClientPendReqt OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of RADIUS Accounting-Request packets
+                       sent to this server that have not yet timed out or
+                       received a response. This variable is incremented 
+                       when an Accounting-Request is sent and decremented
+                       due to receipt of an Accounting-Response, a timeout
+                       or a retransmission."
+              ::= { zxr10RadiusAccSvrStatDataEntry 9 } 
+
+    zxr10RadiusStatAccClientTimeouts OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of accounting timeouts to this server.
+                     After a timeout the client may retry to the same
+                     server, send to a different server, or give up.
+                     A retry to the same server is counted as a
+                     retransmit as well as a timeout. A send to a different
+                     server is counted as an Accounting-Request as well as
+                     a timeout."
+              ::= { zxr10RadiusAccSvrStatDataEntry 10 }
+
+    zxr10RadiusStatAccClientUnknown OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of RADIUS packets of unknown type which
+                      were received from this server on the accounting 
+                      port.."
+              ::= { zxr10RadiusAccSvrStatDataEntry 11 } 
+
+    zxr10RadiusStatAccClientPktDrops OBJECT-TYPE
+              SYNTAX  Counter32
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The number of RADIUS packets which were received from
+                    this server on the accounting port and dropped for some
+                    other reason.."
+               ::= { zxr10RadiusAccSvrStatDataEntry 12 } 
+
+ --*******************************************************************
+-- the RADIUS authentication group nas-port-id-format table--current
+--********************************************************************
+    zxr10RadAuthenNasPortIdTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10RadAuthenNasPortIdEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing RADIUS authentication group nas-port-id-format information."
+              ::= { zxr10RADIUS 11 }
+
+     zxr10RadAuthenNasPortIdEntry OBJECT-TYPE
+              SYNTAX  Zxr10RadAuthenNasPortIdEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information about RADIUS authentication group nas-port-id-format."
+              INDEX   { 
+                          zxr10RadAuthenGrpName
+                      }
+              ::= { zxr10RadAuthenNasPortIdTable 1 }
+
+     Zxr10RadAuthenNasPortIdEntry ::=
+              SEQUENCE {
+                  zxr10RadAuthenGrpName
+                      DisplayString,
+                  zxr10RadAuthenNasPortIdFormat
+                      INTEGER,
+                  zxr10RadAuthenUDText
+                      DisplayString, 
+                  zxr10RadAuthenUDSlot
+                      TruthValue, 
+                  zxr10RadAuthenUDPort
+                      TruthValue, 
+                  zxr10RadAuthenUDSubSlot
+                      TruthValue,
+                  zxr10RadAuthenUDVlan
+                      TruthValue,
+                  zxr10RadAuthenUD2ndVlan
+                      TruthValue,
+                  zxr10RadAuthenUDVlanInvalid
+                      TruthValue,
+                  zxr10RadAuthenUD2ndVlanInvalid
+                      TruthValue  
+                }
+
+     zxr10RadAuthenGrpName OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(1..31))
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS authentication group name."
+              ::= { zxr10RadAuthenNasPortIdEntry 1 }
+
+        zxr10RadAuthenNasPortIdFormat OBJECT-TYPE
+                SYNTAX        INTEGER{
+                           chinaTel(1),
+                           chinaUnicom(2),
+                           class1(3),
+                           class2(4),
+                           class3(5),
+                           class4(6),
+                           userDefined(7),
+                           class5(8),
+                           class6(9),
+                           class7(10),
+                           keepAgentCircuitId(11),
+                           class8(12),
+                           chinaTelKeepRemoteInfo(13),   
+                           locationAndOption82(14)
+                           }
+                MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION   "The RADIUS authentication group NPIF type."
+                DEFVAL { chinaTel }
+                ::= { zxr10RadAuthenNasPortIdEntry 2 }
+
+        zxr10RadAuthenUDText OBJECT-TYPE
+                SYNTAX  DisplayString (SIZE(1..88))
+                MAX-ACCESS  read-only
+                STATUS  current
+                DESCRIPTION   "The RADIUS authentication group NPIF user-defined string."
+                ::= { zxr10RadAuthenNasPortIdEntry 3 }
+ 
+        zxr10RadAuthenUDSlot OBJECT-TYPE
+                SYNTAX        TruthValue 
+                MAX-ACCESS    read-only
+                STATUS        current    
+                DESCRIPTION   "The RADIUS authentication group NPIF slot." 
+                DEFVAL { false }
+                ::= { zxr10RadAuthenNasPortIdEntry 4 } 
+
+        zxr10RadAuthenUDPort OBJECT-TYPE
+                SYNTAX        TruthValue 
+                MAX-ACCESS    read-only
+                STATUS        current    
+                DESCRIPTION   "The RADIUS authentication group NPIF port." 
+                DEFVAL { false }
+                ::= { zxr10RadAuthenNasPortIdEntry 5 } 
+
+        zxr10RadAuthenUDSubSlot OBJECT-TYPE
+                SYNTAX        TruthValue 
+                MAX-ACCESS    read-only
+                STATUS        current    
+                DESCRIPTION   "The RADIUS authentication group NPIF sub-slot." 
+                DEFVAL { false }
+                ::= { zxr10RadAuthenNasPortIdEntry 6 } 
+
+        zxr10RadAuthenUDVlan OBJECT-TYPE
+                SYNTAX        TruthValue 
+                MAX-ACCESS    read-only
+                STATUS        current    
+                DESCRIPTION   "The RADIUS authentication group NPIF vlan." 
+                DEFVAL { false }
+                ::= { zxr10RadAuthenNasPortIdEntry 7 } 
+
+        zxr10RadAuthenUD2ndVlan OBJECT-TYPE
+                SYNTAX        TruthValue 
+                MAX-ACCESS    read-only
+                STATUS        current    
+                DESCRIPTION   "The RADIUS authentication group NPIF second-vlan." 
+                DEFVAL { false }
+                ::= { zxr10RadAuthenNasPortIdEntry 8 } 
+
+        zxr10RadAuthenUDVlanInvalid OBJECT-TYPE
+                SYNTAX        TruthValue 
+                MAX-ACCESS    read-only
+                STATUS        current    
+                DESCRIPTION   "The RADIUS authentication group NPIF vlan-invalid." 
+                DEFVAL { false }
+                ::= { zxr10RadAuthenNasPortIdEntry 9 } 
+
+        zxr10RadAuthenUD2ndVlanInvalid OBJECT-TYPE
+                SYNTAX        TruthValue 
+                MAX-ACCESS    read-only
+                STATUS        current    
+                DESCRIPTION   "The RADIUS authentication group NPIF second-vlan-invalid." 
+                DEFVAL { false }
+                ::= { zxr10RadAuthenNasPortIdEntry 10 } 
+
+        
+
+--*******************************************************************
+-- the RADIUS accounting group nas-port-id-format table--current
+--********************************************************************
+    zxr10RadAccountNasPortIdTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10RadAccountNasPortIdEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing RADIUS accounting group nas-port-id-format information."
+              ::= { zxr10RADIUS 12 }
+
+     zxr10RadAccountNasPortIdEntry OBJECT-TYPE
+              SYNTAX  Zxr10RadAccountNasPortIdEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information about RADIUS accounting group nas-port-id-format."
+              INDEX   { 
+                          zxr10RadAccountGrpName
+                      }
+              ::= { zxr10RadAccountNasPortIdTable 1 }
+
+     Zxr10RadAccountNasPortIdEntry ::=
+              SEQUENCE {
+                  zxr10RadAccountGrpName
+                      DisplayString,
+                  zxr10RadAccountNasPortIdFormat
+                      INTEGER,
+                  zxr10RadAccountUDText
+                      DisplayString, 
+                  zxr10RadAccountUDSlot
+                      TruthValue, 
+                  zxr10RadAccountUDPort
+                      TruthValue, 
+                  zxr10RadAccountUDSubSlot
+                      TruthValue,
+                  zxr10RadAccountUDVlan
+                      TruthValue,
+                  zxr10RadAccountUD2ndVlan
+                      TruthValue,
+                  zxr10RadAccountUDVlanInvalid
+                      TruthValue,
+                  zxr10RadAccountUD2ndVlanInvalid
+                      TruthValue
+                }
+
+        zxr10RadAccountGrpName OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(1..31))
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The RADIUS accounting group name."
+              ::= { zxr10RadAccountNasPortIdEntry 1 }
+
+        zxr10RadAccountNasPortIdFormat OBJECT-TYPE
+                SYNTAX        INTEGER{
+                           chinaTel(1),
+                           chinaUnicom(2),
+                           class1(3),
+                           class2(4),
+                           class3(5),
+                           class4(6),
+                           userDefined(7),
+                           class5(8),
+                           class6(9),
+                           class7(10),
+                           keepAgentCircuitId(11),
+                           class8(12),
+                           chinaTelKeepRemoteInfo(13),
+                           locationAndOption82(14)   
+                           }
+                MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION   "The RADIUS accounting group NPIF type."
+                DEFVAL { chinaTel }
+                ::= { zxr10RadAccountNasPortIdEntry 2 }
+
+        zxr10RadAccountUDText OBJECT-TYPE
+                SYNTAX  DisplayString (SIZE(1..88))
+                MAX-ACCESS  read-only
+                STATUS  current
+                DESCRIPTION   "The RADIUS accounting group NPIF user-defined string."
+                ::= { zxr10RadAccountNasPortIdEntry 3 }
+ 
+        zxr10RadAccountUDSlot OBJECT-TYPE
+                SYNTAX        TruthValue 
+                MAX-ACCESS    read-only
+                STATUS        current    
+                DESCRIPTION   "The RADIUS accounting group NPIF slot." 
+                DEFVAL { false }
+                ::= { zxr10RadAccountNasPortIdEntry 4 } 
+
+        zxr10RadAccountUDPort OBJECT-TYPE
+                SYNTAX        TruthValue 
+                MAX-ACCESS    read-only
+                STATUS        current    
+                DESCRIPTION   "The RADIUS accounting group NPIF port." 
+                DEFVAL { false }
+                ::= { zxr10RadAccountNasPortIdEntry 5 } 
+
+        zxr10RadAccountUDSubSlot OBJECT-TYPE
+                SYNTAX        TruthValue 
+                MAX-ACCESS    read-only
+                STATUS        current    
+                DESCRIPTION   "The RADIUS accounting group NPIF sub-slot." 
+                DEFVAL { false }
+                ::= { zxr10RadAccountNasPortIdEntry 6 } 
+
+        zxr10RadAccountUDVlan OBJECT-TYPE
+                SYNTAX        TruthValue 
+                MAX-ACCESS    read-only
+                STATUS        current    
+                DESCRIPTION   "The RADIUS accounting group NPIF vlan." 
+                DEFVAL { false }
+                ::= { zxr10RadAccountNasPortIdEntry 7 } 
+
+        zxr10RadAccountUD2ndVlan OBJECT-TYPE
+                SYNTAX        TruthValue 
+                MAX-ACCESS    read-only
+                STATUS        current    
+                DESCRIPTION   "The RADIUS accounting group NPIF second-vlan." 
+                DEFVAL { false }
+                ::= { zxr10RadAccountNasPortIdEntry 8 } 
+
+        zxr10RadAccountUDVlanInvalid OBJECT-TYPE
+                SYNTAX        TruthValue 
+                MAX-ACCESS    read-only
+                STATUS        current    
+                DESCRIPTION   "The RADIUS accounting group NPIF vlan-invalid." 
+                DEFVAL { false }
+                ::= { zxr10RadAccountNasPortIdEntry 9 } 
+
+        zxr10RadAccountUD2ndVlanInvalid OBJECT-TYPE
+                SYNTAX        TruthValue 
+                MAX-ACCESS    read-only
+                STATUS        current    
+                DESCRIPTION   "The RADIUS accounting group NPIF second-vlan-invalid." 
+                DEFVAL { false }
+                ::= { zxr10RadAccountNasPortIdEntry 10 } 
+
+
+
+  END

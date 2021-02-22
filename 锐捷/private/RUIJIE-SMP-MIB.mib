@@ -1,0 +1,757 @@
+-- *****************************************************************
+-- RUIJIE-SMP-MIB.mib:  Ruijie SMP MIB file
+--
+-- Sept 2004, Chenxin
+--
+-- Copyright (c) 2004 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-SMP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        NOTIFICATION-TYPE,
+        Unsigned32,
+        Integer32,
+        Gauge32,
+        IpAddress
+                FROM SNMPv2-SMI
+        RowStatus,
+        DisplayString,
+        MacAddress,
+        TruthValue
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        IfIndex,
+        ConfigStatus
+                FROM RUIJIE-TC
+        ruijieMgmt
+                FROM RUIJIE-SMI
+        Community
+        	FROM RUIJIE-SNMP-AGENT-MIB
+        VlanId
+                FROM Q-BRIDGE-MIB        				
+	InetAddressType,
+	InetAddress
+		FROM INET-ADDRESS-MIB;
+
+ruijieSMPMIB MODULE-IDENTITY
+        LAST-UPDATED "200409090000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines the MIB security case requires. At present, this MIB could only be accessed by 
+                the specified SMP Server." 
+        REVISION      "200409090000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 39}
+
+ruijieSMPMIBObjects OBJECT IDENTIFIER ::= { ruijieSMPMIB 1 }
+
+--
+--  user management
+--
+
+ruijieSMPServer OBJECT-TYPE
+		SYNTAX IpAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "IP addresses for the SMP Server."  
+    ::= { ruijieSMPMIBObjects 1 }
+    
+ruijieSMPServerKey OBJECT-TYPE
+		SYNTAX Community
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Keys for the SMP Server." 
+    ::= { ruijieSMPMIBObjects 2 }    
+    
+ruijieSMPEventSendSlice OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "The minimum interval of sending SU security event. The variable value must be less 
+             than the one defined by ruijieSMPHICheckInterval."
+    ::= { ruijieSMPMIBObjects 3 }    
+    
+ruijieSMPPolicyDelete OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS      current    
+    DESCRIPTION
+            "This variable value:
+             0: No action is required; other values:Delete all policy information."
+    ::= { ruijieSMPMIBObjects 4 }  
+        
+ruijieSMPPolicyChecksum OBJECT-TYPE
+    SYNTAX OCTET STRING(SIZE(16))
+    MAX-ACCESS read-only
+    STATUS      current    
+    DESCRIPTION
+            "The checksum information set on the current SMP policy table."  
+    ::= { ruijieSMPMIBObjects 5 }     
+
+ruijieSMPPolicyTimeout OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-write
+    STATUS      current    
+    DESCRIPTION
+            "Timeout time of SMP policy."  
+    ::= { ruijieSMPMIBObjects 6 }    
+    
+ruijieSMPPolicyGroupTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieSMPPolicyGroupEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+              "Security policy group."  
+    ::= { ruijieSMPMIBObjects 9}
+
+ruijieSMPPolicyGroupEntry OBJECT-TYPE
+        SYNTAX  RuijieSMPPolicyGroupEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+              "SMP policy group." 
+        INDEX   {ruijieSMPPolicyGroupIndex}
+    ::= { ruijieSMPPolicyGroupTable 1 }
+ 
+    RuijieSMPPolicyGroupEntry ::=
+        SEQUENCE {
+                ruijieSMPPolicyGroupIndex
+                       Unsigned32,        
+                ruijieSMPPolicyGroupCount
+                       Unsigned32,
+                ruijieSMPPolicyGroupChecksum
+                       OCTET STRING(SIZE(16)),           
+                ruijieSMPPolicyGroupStatus
+                       RowStatus
+      }
+
+ruijieSMPPolicyGroupIndex OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "Policy group index."
+    ::= { ruijieSMPPolicyGroupEntry 1 }
+
+ruijieSMPPolicyGroupCount OBJECT-TYPE
+        SYNTAX       Unsigned32
+        MAX-ACCESS   read-create
+        STATUS       current
+        DESCRIPTION
+            "Policy count in the policy group." 
+    ::= { ruijieSMPPolicyGroupEntry 2 }
+    
+ruijieSMPPolicyGroupChecksum OBJECT-TYPE
+        SYNTAX OCTET STRING(SIZE(16))
+        MAX-ACCESS   read-create
+        STATUS       current
+        DESCRIPTION
+            "The sole identification in the policy group."  
+    ::= { ruijieSMPPolicyGroupEntry 3 }
+
+ruijieSMPPolicyGroupStatus OBJECT-TYPE
+        SYNTAX       RowStatus
+        MAX-ACCESS   read-create
+        STATUS       current
+        DESCRIPTION
+            "The status of this conceptual row."
+    ::= { ruijieSMPPolicyGroupEntry 4 }
+    
+ruijieSMPPolicyTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieSMPPolicyEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+              "Security policy table." 
+    ::= { ruijieSMPMIBObjects 8}
+
+ruijieSMPPolicyEntry OBJECT-TYPE
+        SYNTAX  RuijieSMPPolicyEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+              "SMP policy table."  
+        INDEX   {ruijieSMPGroupIndex,ruijieSMPPolicyIndex}
+    ::= { ruijieSMPPolicyTable 1 }
+
+    RuijieSMPPolicyEntry ::=
+        SEQUENCE {
+                ruijieSMPGroupIndex
+                       Unsigned32,
+                ruijieSMPPolicyIndex
+                       Unsigned32,        
+                ruijieSMPPolicyStatus
+                       ConfigStatus,
+                ruijieSMPPolicyNumber
+                       Unsigned32,
+                ruijieSMPPolicyInstallPort
+                       IfIndex,           
+                ruijieSMPPolicyType
+                       INTEGER,  
+                ruijieSMPPolicyContent
+                       OCTET STRING,
+                ruijieSMPPolicyMask
+                       OCTET STRING,
+                ruijieSMPPolicyName
+                       DisplayString
+      }
+
+ruijieSMPGroupIndex OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The index of the policy group which the current policy is in." 
+    ::= { ruijieSMPPolicyEntry 1 }
+
+ruijieSMPPolicyIndex OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The policy index." 
+    ::= { ruijieSMPPolicyEntry 2 }
+
+ruijieSMPPolicyStatus OBJECT-TYPE
+        SYNTAX       ConfigStatus
+        MAX-ACCESS   read-write
+        STATUS       current
+        DESCRIPTION
+            "Entry state fields. For the detailed information, pls refer to RUIJIE-TC.mib."
+    ::= { ruijieSMPPolicyEntry 3 }
+  
+ruijieSMPPolicyNumber OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The policy sequence number."  
+    ::= { ruijieSMPPolicyEntry 4 }
+    
+ruijieSMPPolicyInstallPort OBJECT-TYPE
+        SYNTAX  IfIndex
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The index of port installed the policy." 
+    ::= { ruijieSMPPolicyEntry 5 }
+    
+ruijieSMPPolicyType OBJECT-TYPE
+        SYNTAX INTEGER{
+        	hi-isolate(1),
+        	isolate(2),
+        	blocked(3),
+        	addrBind(4)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The action of policy template. Hi-isolate application failure can be detected by HI only.
+            isolate: isolation action; blocked: blocking action; addrBind: address-binding action. "
+        ::= { ruijieSMPPolicyEntry 6 }
+        
+ruijieSMPPolicyContent OBJECT-TYPE
+        SYNTAX OCTET STRING(SIZE(80))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Content(80 bytes) of policy template."  
+        ::= { ruijieSMPPolicyEntry 7 }
+        
+ruijieSMPPolicyMask OBJECT-TYPE
+        SYNTAX OCTET STRING(SIZE(80))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Mask information(80 bytes) of policy template." 
+        ::= { ruijieSMPPolicyEntry 8 }    
+        
+ruijieSMPPolicyName OBJECT-TYPE
+        SYNTAX       DisplayString(SIZE (0..32))
+        MAX-ACCESS   read-write
+        STATUS       current
+        DESCRIPTION
+            "Policy name fields."  
+    ::= { ruijieSMPPolicyEntry 9 }
+    
+ruijieSMPFrameRelayTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieSMPFrameRelayEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+              "SMP message forward table." 
+    ::= { ruijieSMPMIBObjects 7}
+
+ruijieSMPFrameRelayEntry OBJECT-TYPE
+        SYNTAX  RuijieSMPFrameRelayEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+              "SMP message forward table."  
+        INDEX   {ruijieSMPFrameRelayIndex}
+    ::= { ruijieSMPFrameRelayTable 1 }
+
+    RuijieSMPFrameRelayEntry ::=
+        SEQUENCE {
+                ruijieSMPFrameRelayIndex
+                       Unsigned32,        
+                ruijieSMPFrameRelayContent
+                       OCTET STRING,
+                ruijieSMPFrameRelayLength
+                       Unsigned32,           
+                ruijieSMPFrameRelayDestPort
+                		   IfIndex,
+                ruijieSMPFrameRelayDestVlan
+                		   VlanId                                       		   
+      }
+
+ruijieSMPFrameRelayIndex OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "SMP message forward table index."   
+    ::= { ruijieSMPFrameRelayEntry 1 }
+    
+ruijieSMPFrameRelayContent OBJECT-TYPE
+        SYNTAX OCTET STRING(SIZE(0..1024))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "SMP message content with maximal 1024 bytes." 
+    ::= { ruijieSMPFrameRelayEntry 2 }
+    
+ruijieSMPFrameRelayLength OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-write
+    STATUS      current    
+    DESCRIPTION
+            "SMP message length."  
+    ::= { ruijieSMPFrameRelayEntry 3 } 
+
+ruijieSMPFrameRelayDestPort OBJECT-TYPE
+        SYNTAX  IfIndex
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The index of destination port SMP messages are sent to." 
+    ::= { ruijieSMPFrameRelayEntry 4 }
+    
+ruijieSMPFrameRelayDestVlan OBJECT-TYPE
+        SYNTAX  VlanId
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The VLAN ID of destination port SMP messages are sent to." 
+    ::= { ruijieSMPFrameRelayEntry 5 }    
+
+
+-- EG log
+ruijieEGMIBObjects OBJECT IDENTIFIER ::= { ruijieSMPMIB 2 }
+
+-- authenticated user info   
+ruijieEGUserTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieEGUserEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A table that contains generic information about every user that is authenticated."
+    ::= { ruijieEGMIBObjects 1 }
+
+ruijieEGUserEntry OBJECT-TYPE
+    SYNTAX  RuijieEGUserEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The entry of authenticated user table."
+    INDEX   { ruijieEGUserIpAddrType,ruijieEGUserIpAddr }
+    ::= { ruijieEGUserTable 1 }
+
+RuijieEGUserEntry ::=
+    SEQUENCE {
+	ruijieEGUserIpAddrType	InetAddressType,
+	ruijieEGUserIpAddr	InetAddress,
+	ruijieEGUserId		OCTET STRING,
+	ruijieEGUserName	OCTET STRING,
+	ruijieEGUserGroupName	OCTET STRING,
+	ruijieEGUserMac		MacAddress,
+	ruijieEGNasIp		InetAddress,
+	ruijieEGNasPort		Gauge32,
+	ruijieEGGatewayIp	InetAddress,
+	ruijieEGVlanId		Gauge32,
+	ruijieEGLoginTime	OCTET STRING,
+	ruijieEGLogoutTime	OCTET STRING,
+	ruijieEGMessageType	Gauge32,
+	ruijieEGUserStatus	RowStatus
+    }
+
+ruijieEGUserIpAddrType OBJECT-TYPE
+    SYNTAX  InetAddressType
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The IP address type of the user."
+    ::= { ruijieEGUserEntry 1 }
+
+ruijieEGUserIpAddr OBJECT-TYPE
+    SYNTAX  InetAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The IP address of the user."
+    ::= { ruijieEGUserEntry 2 }
+
+ruijieEGUserId OBJECT-TYPE
+    SYNTAX  OCTET STRING(SIZE(0..256))
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+            "The Id of User."
+    ::= { ruijieEGUserEntry 3 }
+
+ruijieEGUserName OBJECT-TYPE
+    SYNTAX  OCTET STRING(SIZE(0..256))
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+            "The Truename of User."
+    ::= { ruijieEGUserEntry 4 }
+
+ruijieEGUserGroupName OBJECT-TYPE
+    SYNTAX  OCTET STRING(SIZE(0..256))
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+            "The group name of User."
+    ::= { ruijieEGUserEntry 5 }
+       
+ruijieEGUserMac OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+            "The MAC Address of User."
+    ::= { ruijieEGUserEntry 6 }
+       
+ruijieEGNasIp OBJECT-TYPE
+    SYNTAX  InetAddress
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+            "The Ip Address of 1x Nas."
+    ::= { ruijieEGUserEntry 7 }
+       
+ruijieEGNasPort OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+            "The user port of 1x Nas."
+    ::= { ruijieEGUserEntry 8 }
+       
+ruijieEGGatewayIp OBJECT-TYPE
+    SYNTAX  InetAddress
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+            "The ip address of gateway."
+    ::= { ruijieEGUserEntry 9 }
+       
+ruijieEGVlanId OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+            "The vlan id of user."
+    ::= { ruijieEGUserEntry 10 }
+       
+ruijieEGLoginTime OBJECT-TYPE
+    SYNTAX  OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+            "The login time of user. for example: 2010-07-12 12:35:56"
+    ::= { ruijieEGUserEntry 11 }
+       
+ruijieEGLogoutTime OBJECT-TYPE
+    SYNTAX  OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+            "The logout time of user. for example: 2010-07-12 12:35:56"
+    ::= { ruijieEGUserEntry 12 }
+
+ruijieEGMessageType OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The online(1)/offline(2) message type of the user."
+   ::= { ruijieEGUserEntry 13 }        
+
+ruijieEGUserStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The status of this row, by which new entries may be
+            created, or old entries deleted from this table."
+   ::= { ruijieEGUserEntry 14 }        
+
+ruijieEGUserDelete OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS      current    
+    DESCRIPTION
+            "This variable value:
+             0: No action is required; other values:Delete all ruijieEGUser information."
+    ::= { ruijieEGMIBObjects 2 }  
+        
+
+-- As the given port in SMP Server, this node will not be present in MIB. 
+  ruijieSMPTraps      OBJECT IDENTIFIER ::= { ruijieSMPMIB 65535}
+        
+  ruijieSMPSwitchIP OBJECT-TYPE
+          SYNTAX IpAddress
+          MAX-ACCESS accessible-for-notify
+          STATUS current
+          DESCRIPTION
+            "IP addresses for the switch sending the Trap." 
+          ::= { ruijieSMPTraps 1 }          
+        
+  ruijieSMPSwitchInterfaceID OBJECT-TYPE
+          SYNTAX IfIndex
+          MAX-ACCESS accessible-for-notify
+          STATUS current
+          DESCRIPTION
+            "The interface receiving the messages to be forwarded." 
+          ::= { ruijieSMPTraps 2 }    
+  
+  ruijieSMPSwitchInterfaceVLANID OBJECT-TYPE
+          SYNTAX VlanId
+          MAX-ACCESS accessible-for-notify
+          STATUS current
+          DESCRIPTION
+            "The VLAN ID of the switch interface receiving the messages to be forwarded."
+          ::= { ruijieSMPTraps 3 }  
+
+  ruijieSMPFrameContentLength OBJECT-TYPE
+          SYNTAX Unsigned32
+          MAX-ACCESS accessible-for-notify
+          STATUS current
+          DESCRIPTION
+            "The encapsulated message length, which can not exceed 1024." 
+          ::= { ruijieSMPTraps 4 }      
+        
+  ruijieSMPFrameContent OBJECT-TYPE
+          SYNTAX OCTET STRING(SIZE(0..1024))
+          MAX-ACCESS accessible-for-notify
+          STATUS current
+          DESCRIPTION
+            "The encapsulated message whose length can not exceed 1024." 
+          ::= { ruijieSMPTraps 5 }      
+        
+  ruijieSMPFrameRelayTrap NOTIFICATION-TYPE
+      OBJECTS  {ruijieSMPSwitchIP,ruijieSMPSwitchInterfaceID,ruijieSMPSwitchInterfaceVLANID,
+      			  ruijieSMPFrameContentLength,ruijieSMPFrameContent}
+      STATUS  current
+      DESCRIPTION
+              "Trap message includes: IP address for the specified received message, 
+               port receiving the message, message length and message content." 
+      ::= { ruijieSMPTraps 6 }
+
+
+  ruijieSMPArpAttackSubnetIP OBJECT-TYPE
+          SYNTAX OCTET STRING(SIZE(0..40))
+          MAX-ACCESS accessible-for-notify
+          STATUS current
+          DESCRIPTION
+            "IP addresses for all subnets of SVI where the attack source locates." 
+          ::= { ruijieSMPTraps 7 }          
+        
+  ruijieSMPArpAttackSubnetIPNum OBJECT-TYPE
+          SYNTAX Integer32
+          MAX-ACCESS accessible-for-notify
+          STATUS current
+          DESCRIPTION
+            "Subnet IP address number." 
+          ::= { ruijieSMPTraps 8 }          
+
+  ruijieSMPArpAttackInterfaceSlot OBJECT-TYPE
+          SYNTAX Integer32
+          MAX-ACCESS accessible-for-notify
+          STATUS current
+          DESCRIPTION
+            "The slot number for the device connecting the attack source." 
+          ::= { ruijieSMPTraps 9 }    
+  
+  ruijieSMPArpAttackInterfacePort OBJECT-TYPE
+          SYNTAX Integer32
+          MAX-ACCESS accessible-for-notify
+          STATUS current
+          DESCRIPTION
+            "The interface number for the device connecting the attack source." 
+          ::= { ruijieSMPTraps 10}  
+
+  ruijieSMPArpAttackInterfaceVlanID OBJECT-TYPE
+          SYNTAX VlanId
+          MAX-ACCESS accessible-for-notify
+          STATUS current
+          DESCRIPTION
+            "The VLAN ID of VLAN where the attack source locates."
+          ::= { ruijieSMPTraps 11 }      
+        
+  ruijieSMPArpAttackFrameContent OBJECT-TYPE
+          SYNTAX OCTET STRING(SIZE(0..64))
+          MAX-ACCESS accessible-for-notify
+          STATUS current
+          DESCRIPTION
+            "The ARP messages sent from the attack source." 
+          ::= { ruijieSMPTraps 12 }      
+
+  ruijieSMPArpAttackStatus OBJECT-TYPE
+          SYNTAX TruthValue
+          MAX-ACCESS accessible-for-notify
+          STATUS current
+          DESCRIPTION
+            "Show whether the device is attacked by the attack source or not.
+             true: attack occurred; false: attack has been removed." 
+          ::= { ruijieSMPTraps 13 }
+
+  ruijieSMPArpAttackCriticalStatus OBJECT-TYPE
+          SYNTAX INTEGER{
+             critical(1),          -- Slight ARP attack, infulencing normal operation of the network 
+                                   -- and advertising the SMP Server. 
+             emergencies(2)        -- Severe ARP attack, leading to network crash. System blocks this 
+                                   -- attack automatically and advertise the SMP Server. 
+          }
+          MAX-ACCESS accessible-for-notify
+          STATUS current
+          DESCRIPTION
+            "The severity level of device attack by attack source: 
+             critical(1),          -- Slight ARP attack, infulencing normal operation of the network
+                                      and advertising the SMP Server. 
+             emergencies(2)        -- Severe ARP attack, leading to network crash. System blocks this
+                                      attack automatically and advertise the SMP Server. "
+          ::= { ruijieSMPTraps 14 }
+
+  ruijieSMPArpAttackMac OBJECT-TYPE
+          SYNTAX MacAddress
+          MAX-ACCESS accessible-for-notify
+          STATUS current
+          DESCRIPTION
+            "MAC address for the device connecting the attack source." 
+          ::= { ruijieSMPTraps 15 }      
+
+  ruijieSMPArpAttackInterfaceIndex OBJECT-TYPE
+          SYNTAX Integer32
+          MAX-ACCESS accessible-for-notify
+          STATUS current
+          DESCRIPTION
+            "The interface index for the device connecting the attack source." 
+          ::= { ruijieSMPTraps 16 }      
+        
+  ruijieSMPArpAttackTrap NOTIFICATION-TYPE
+      OBJECTS  {ruijieSMPArpAttackSubnetIP, ruijieSMPArpAttackSubnetIPNum, ruijieSMPArpAttackInterfaceSlot,
+               ruijieSMPArpAttackInterfacePort, ruijieSMPArpAttackInterfaceVlanID, ruijieSMPArpAttackFrameContent,
+               ruijieSMPArpAttackStatus, ruijieSMPArpAttackCriticalStatus, ruijieSMPArpAttackMac, 
+               ruijieSMPArpAttackInterfaceIndex}
+      STATUS  current
+      DESCRIPTION
+              "Trap message includes: 
+                  IP addresses for all subnets of SVI where the attack source locates,
+                  Subnet IP address number,
+                  Slot number the attack source attacks,
+                  Port number the attack source attacks,
+                  VLAN ID of the VLAN the attack source belongs to,
+                  ARP message(64 bytes),
+                  Advertisement of attack occurrance and removal,
+                  MAC address for the device connecting the attack source,
+                  Interface index for the device connecting the attack source."
+      ::= { ruijieSMPTraps 17 }        
+
+ruijieSMPMIBConformance OBJECT IDENTIFIER ::= { ruijieSMPMIB 3 }
+ruijieSMPMIBCompliances OBJECT IDENTIFIER ::= { ruijieSMPMIBConformance 1 }
+ruijieSMPMIBGroups      OBJECT IDENTIFIER ::= { ruijieSMPMIBConformance 2 }
+
+-- compliance statements
+ruijieDeviceMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie SMP MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieSMPServerMibGroup,
+                                   ruijieSMPClientMibGroup,
+                                   ruijieSMPPolicyMibGroup,
+                                   ruijieSMPFrameRelayMibGroup}
+        ::= { ruijieSMPMIBCompliances 1 }
+        
+ruijieSMPServerMibGroup    OBJECT-GROUP
+    OBJECTS {
+    					ruijieSMPServer,
+    					ruijieSMPServerKey
+            }
+    STATUS  current
+    DESCRIPTION
+            "Collection of SMP Server information." 
+    ::= { ruijieSMPMIBGroups 1 }
+    
+ruijieSMPClientMibGroup    OBJECT-GROUP
+    OBJECTS {
+    					ruijieSMPEventSendSlice
+            }
+    STATUS  current
+    DESCRIPTION
+            "Collection of restricted information of SMP Client management." 
+    ::= { ruijieSMPMIBGroups 2 }    
+    
+ruijieSMPPolicyMibGroup    OBJECT-GROUP
+    OBJECTS {
+    					ruijieSMPPolicyDelete,
+    					ruijieSMPPolicyChecksum,
+              ruijieSMPPolicyIndex,
+              ruijieSMPPolicyStatus,
+              ruijieSMPPolicyInstallPort,
+              ruijieSMPPolicyType,
+              ruijieSMPPolicyContent,
+              ruijieSMPPolicyMask,
+              ruijieSMPPolicyName
+            }
+    STATUS  current
+    DESCRIPTION
+            "Policy information collection." 
+    ::= { ruijieSMPMIBGroups 3 }       
+    
+ruijieSMPFrameRelayMibGroup    OBJECT-GROUP
+    OBJECTS {
+              ruijieSMPFrameRelayIndex,
+              ruijieSMPFrameRelayContent,
+              ruijieSMPFrameRelayLength,
+              ruijieSMPFrameRelayDestPort,
+              ruijieSMPFrameRelayDestVlan
+            }
+    STATUS  current
+    DESCRIPTION
+            "Information collection of message forward table." 
+    ::= { ruijieSMPMIBGroups 4 }         
+
+
+END

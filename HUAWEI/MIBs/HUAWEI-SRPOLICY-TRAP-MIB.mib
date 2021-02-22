@@ -1,0 +1,391 @@
+-- ===========================================================================
+-- Copyright(C) 2020 by HUAWEI TECHNOLOGIES. All rights reserved.
+-- Description: HUAWEI-SRPOLICY-TRAP-MIB
+-- Version: V1.06
+-- History:
+--             Created by d00442952 2018-12-24
+-- Reference:   Module(HUAWEI-SRPOLICY-TRAP-MIB) Extracted from RFCXXXX.TXT,from XXXX to XXXXX.Obsoletes: 1850
+-- =====================================================================================================
+
+   HUAWEI-SRPOLICY-TRAP-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+       MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, IpAddress, Integer32, Unsigned32
+                    FROM SNMPv2-SMI
+       MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+                    FROM SNMPv2-CONF
+       hwDatacomm            
+                    FROM HUAWEI-MIB;
+                    
+     hwSrPolicyTrap MODULE-IDENTITY
+
+          LAST-UPDATED "202003090000Z" -- Mar 9, 2020 00:00:00 EST
+          ORGANIZATION 
+            "Huawei Technologies Co.,Ltd."
+          CONTACT-INFO 
+            "Huawei Industrial Base
+            Bantian, Longgang
+            Shenzhen 518129
+            People's Republic of China
+            Website: http://www.huawei.com
+            Email: support@huawei.com"
+
+          DESCRIPTION
+             "The MIB module to describe traps for the SRPOLICY."
+
+            REVISION "202003090000Z"
+            DESCRIPTION "V1.06 Modify the type of  hwSrPolicyColor." 
+
+            REVISION "201910140000Z"
+            DESCRIPTION "V1.05 Added two values (srMplsTePolicy and srMplsTePolicySegmentList) for hwSrPolicyResourceType." 
+
+            REVISION "201908310000Z"
+            DESCRIPTION "V1.04 Modify the value of hwSrPolicyResourceType value."      
+
+            REVISION "201908300000Z"
+            DESCRIPTION "V1.03 Added hwSrPolicyResourceThresholdExceed, hwSrPolicyResourceThresholdExceedClear
+                           hwSrPolicyResourceTotalCountExceed, hwSrPolicyResourceTotalCountExceedClear."             
+
+            REVISION "201908120000Z"
+            DESCRIPTION "V1.02 Added hwSrPolicyDown and hwSrPolicyDownClear MIB."            
+            
+            REVISION "201908010000Z"
+            DESCRIPTION "V1.01 Added hwSrPolicyBsidConflict and hwSrPolicyBsidConflictClear MIB."
+             
+            REVISION "201812240000Z"
+             DESCRIPTION "V1.00 Added the hwSrPolicyTrap MIB."
+          ::= { hwDatacomm 359}
+
+   --  Trap Support Objects
+
+   --  The following are support objects for the SR Policy traps.
+
+     hwSrPolicyTrapControl OBJECT IDENTIFIER ::= { hwSrPolicyTrap 1 }
+     hwSrPolicyTraps OBJECT IDENTIFIER ::= { hwSrPolicyTrap 2 }
+          
+     hwSrPolicyEndpoint OBJECT-TYPE
+          SYNTAX OCTET STRING (SIZE (0..255))
+          MAX-ACCESS   accessible-for-notify
+          STATUS       current
+          DESCRIPTION
+             "The destination IP address of the SR Policy."
+          ::= { hwSrPolicyTrapControl 1}    
+
+     hwSrPolicyColor OBJECT-TYPE
+         SYNTAX       Unsigned32
+         MAX-ACCESS   accessible-for-notify
+         STATUS       current
+         DESCRIPTION
+            "The color value of the SR Policy." 
+         ::= { hwSrPolicyTrapControl 2 }      
+
+     hwSrPolicyStatus OBJECT-TYPE
+         SYNTAX OCTET STRING (SIZE (0..31))
+         MAX-ACCESS   accessible-for-notify
+         STATUS       current
+         DESCRIPTION
+            "The status of the SR Policy." 
+         ::= { hwSrPolicyTrapControl 3 }     
+         
+     hwSrPolicyDownReason OBJECT-TYPE
+         SYNTAX OCTET STRING (SIZE (0..31))
+         MAX-ACCESS   accessible-for-notify
+         STATUS       current
+         DESCRIPTION
+            "The down reason of the SR Policy." 
+         ::= { hwSrPolicyTrapControl 4 }     
+
+     hwSrPolicyBsid OBJECT-TYPE
+          SYNTAX OCTET STRING (SIZE (0..255))
+          MAX-ACCESS   accessible-for-notify
+          STATUS       current
+          DESCRIPTION
+             "The binding SID of the SR Policy."
+          ::= { hwSrPolicyTrapControl 5}             
+
+     hwSrPolicyBsidFailReason OBJECT-TYPE
+         SYNTAX OCTET STRING (SIZE (0..255))
+         MAX-ACCESS   accessible-for-notify
+         STATUS       current
+         DESCRIPTION
+            "The binding SID allocation failure reason of the SR Policy." 
+         ::= { hwSrPolicyTrapControl 6 }               
+
+     hwSrPolicyConflictState OBJECT-TYPE
+         SYNTAX       INTEGER { inConflict (1),
+                                conflictResolved (2)
+                            }
+         MAX-ACCESS   accessible-for-notify
+         STATUS       current
+         DESCRIPTION
+          "Conflict state indicates the current conflict state."
+          ::= { hwSrPolicyTrapControl 7 } 
+     hwSrPolicyResourceType OBJECT-TYPE
+         SYNTAX  INTEGER
+             {
+             srv6TePolicy(0),
+             srv6TePolicySegmentList(1),
+             srMplsTePolicy(3),
+             srMplsTePolicySegmentList(4),
+             unknown(100)
+             }
+         MAX-ACCESS     accessible-for-notify
+         STATUS           current
+         DESCRIPTION
+             "The value of this object identifies that the number of MPLS resources has exceeded the threshold or the maximum number.
+             Options:
+             1.srv6TePolicy(0)         -Indicates that the resource is SRv6 TE Policy.
+             2.srv6TePolicySegmentList(1)         -Indicates that the resource is segment list of SRv6 TE Policy.
+             3.srMplsTePolicy(3)         -Indicates that the resource is SR-MPLS TE Policy.
+             4.srMplsTePolicySegmentList(4)         -Indicates that the resource is segment list of SR-MPLS TE Policy.		 
+             5.unknown(100)   -Indicates that the resource type is unknown. "
+         ::= { hwSrPolicyTrapControl 8 }  
+
+     hwResourceCurrentCount OBJECT-TYPE
+         SYNTAX  Unsigned32
+         MAX-ACCESS     accessible-for-notify
+         STATUS         current
+         DESCRIPTION
+             "The value of this object identifies the curren count of SR Policy resource."
+         ::= { hwSrPolicyTrapControl 9 }
+         
+     hwResourceThresholdUpperLimit OBJECT-TYPE
+         SYNTAX  Unsigned32
+         MAX-ACCESS     accessible-for-notify
+         STATUS         current
+         DESCRIPTION
+             "The value of this object identifies the upper threshold value of SR Policy resource."
+         ::= { hwSrPolicyTrapControl 10 }
+
+     hwResourceThresholdLowerLimit OBJECT-TYPE
+         SYNTAX  Unsigned32
+         MAX-ACCESS     accessible-for-notify
+         STATUS         current
+         DESCRIPTION
+             "The value of this object identifies the lower threshold value of SR Policy resource."
+         ::= { hwSrPolicyTrapControl 11 }
+
+     hwResourceTotalCount OBJECT-TYPE
+         SYNTAX  Unsigned32
+         MAX-ACCESS     accessible-for-notify
+         STATUS         current
+         DESCRIPTION
+             "The value of this object identifies the total permit count of SR Policy resource."
+         ::= { hwSrPolicyTrapControl 12 }
+          
+   --  Traps
+         
+     hwSrPolicyStatusChange NOTIFICATION-TYPE
+          OBJECTS { 
+             hwSrPolicyEndpoint,
+             hwSrPolicyColor,
+             hwSrPolicyStatus,
+             hwSrPolicyDownReason
+             }
+          STATUS       current
+          DESCRIPTION
+             "An hwSrPolicyStatusChange trap signifies that a SRTE Policy Status 
+             is detected."
+          ::= { hwSrPolicyTraps 1 }
+
+     hwSrPolicyBsidConflict NOTIFICATION-TYPE
+          OBJECTS { 
+             hwSrPolicyEndpoint,
+             hwSrPolicyColor,
+             hwSrPolicyBsid,
+             hwSrPolicyBsidFailReason,
+             hwSrPolicyConflictState
+             }
+          STATUS       current
+          DESCRIPTION
+             "A hwSrPolicyBsidConflict trap signifies that allocating a binding SID
+             to an SR Policy fails."
+          ::= { hwSrPolicyTraps 2 }          
+
+     hwSrPolicyBsidConflictClear NOTIFICATION-TYPE
+          OBJECTS { 
+             hwSrPolicyEndpoint,
+             hwSrPolicyColor,
+             hwSrPolicyBsid,
+             hwSrPolicyBsidFailReason,
+             hwSrPolicyConflictState
+             }
+          STATUS       current
+          DESCRIPTION
+             "A hwSrPolicyBsidConflictClear trap signifies that the binding SID allocation 
+             failure is resolved."
+          ::= { hwSrPolicyTraps 3 }             
+
+     hwSrPolicyDown NOTIFICATION-TYPE
+          OBJECTS { 
+             hwSrPolicyEndpoint,
+             hwSrPolicyColor,
+             hwSrPolicyDownReason
+             }
+          STATUS       current
+          DESCRIPTION
+             " This notification indicates that the status of SR Policy changes to down."
+          ::= { hwSrPolicyTraps 4 }
+
+     hwSrPolicyDownClear NOTIFICATION-TYPE
+          OBJECTS { 
+             hwSrPolicyEndpoint,
+             hwSrPolicyColor
+             }
+          STATUS       current
+          DESCRIPTION
+             " This notification indicates that the down alarm of SR Policy was cleared."
+          ::= { hwSrPolicyTraps 5 }
+          
+     hwSrPolicyResourceThresholdExceed  NOTIFICATION-TYPE
+            OBJECTS { hwSrPolicyResourceType, hwResourceCurrentCount, hwResourceThresholdUpperLimit, hwResourceThresholdLowerLimit, hwResourceTotalCount }
+            STATUS current
+            DESCRIPTION 
+               "This object indicates that SR Policy resource count has exceeded the threshold."
+            ::= { hwSrPolicyTraps 6 }
+            
+     hwSrPolicyResourceThresholdExceedClear  NOTIFICATION-TYPE
+            OBJECTS { hwSrPolicyResourceType, hwResourceCurrentCount, hwResourceThresholdUpperLimit, hwResourceThresholdLowerLimit, hwResourceTotalCount }
+            STATUS current
+            DESCRIPTION 
+               "This object indicates that SR Policy resource count has resumed from exceeding the threshold."
+            ::= { hwSrPolicyTraps 7 }
+
+     hwSrPolicyResourceTotalCountExceed  NOTIFICATION-TYPE
+            OBJECTS { hwSrPolicyResourceType, hwResourceCurrentCount, hwResourceTotalCount }
+            STATUS current
+            DESCRIPTION 
+               "This object indicates that SR Policy resource count has reached the total count."
+            ::= { hwSrPolicyTraps 8 }   
+
+     hwSrPolicyResourceTotalCountExceedClear NOTIFICATION-TYPE
+            OBJECTS { hwSrPolicyResourceType, hwResourceCurrentCount, hwResourceTotalCount }
+            STATUS current
+            DESCRIPTION
+                "This object indicates that SR Policy resource count has resumed from reaching the total count." 
+            ::= { hwSrPolicyTraps 9 }
+   hwSrPolicyTrapConformance OBJECT IDENTIFIER ::= { hwSrPolicyTrap 3 }
+   hwSrPolicyTrapGroups      OBJECT IDENTIFIER ::= { hwSrPolicyTrapConformance 1 }
+   hwSrPolicyTrapCompliances OBJECT IDENTIFIER ::= { hwSrPolicyTrapConformance 2 }
+
+   --  compliance statements
+
+   hwSrPolicyTrapCompliance MODULE-COMPLIANCE
+        STATUS       obsolete
+        DESCRIPTION
+           "The compliance statement."
+        MODULE       -- this module
+        MANDATORY-GROUPS { hwSrPolicyTrapControlGroup }
+
+        GROUP       hwSrPolicyTrapControlGroup
+        DESCRIPTION
+           "This group is optional but recommended for all HUAWEI SRPolicy systems."
+        ::= { hwSrPolicyTrapCompliances 1 }
+           
+   hwSrPolicyTrapCompliance2 MODULE-COMPLIANCE
+        STATUS       current
+        DESCRIPTION
+           "The compliance statement."
+        MODULE       -- this module
+        MANDATORY-GROUPS { hwSrPolicyTrapControlGroup, hwSrPolicyTrapEventGroup }
+        OBJECT       hwSrPolicyEndpoint
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwSrPolicyColor
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwSrPolicyStatus
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwSrPolicyDownReason
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwSrPolicyBsid
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwSrPolicyBsidFailReason
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications." 
+        OBJECT       hwSrPolicyConflictState
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+    OBJECT       hwSrPolicyResourceType
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwResourceCurrentCount
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwResourceThresholdUpperLimit
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwResourceThresholdLowerLimit
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwResourceTotalCount
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."             
+        ::= { hwSrPolicyTrapCompliances 2 }
+
+   --  units of conformance
+
+     hwSrPolicyTrapControlGroup    OBJECT-GROUP
+          OBJECTS {hwSrPolicyEndpoint,
+                    hwSrPolicyColor,
+                    hwSrPolicyStatus,
+                    hwSrPolicyDownReason,
+                    hwSrPolicyBsid,
+                    hwSrPolicyBsidFailReason,
+                    hwSrPolicyConflictState,
+                    hwSrPolicyResourceType,
+                    hwResourceCurrentCount,
+                    hwResourceThresholdUpperLimit,
+                    hwResourceThresholdLowerLimit,
+                    hwResourceTotalCount}
+          STATUS       current
+          DESCRIPTION
+             "These objects are required to control traps from HUAWEI SR systems."
+          ::= { hwSrPolicyTrapGroups 1 }
+
+     hwSrPolicyTrapEventGroup       NOTIFICATION-GROUP
+          NOTIFICATIONS {
+             hwSrPolicyStatusChange,
+             hwSrPolicyBsidConflict,
+             hwSrPolicyBsidConflictClear,
+             hwSrPolicyDown,
+             hwSrPolicyDownClear,
+             hwSrPolicyResourceThresholdExceed,
+             hwSrPolicyResourceThresholdExceedClear,
+             hwSrPolicyResourceTotalCountExceed,
+             hwSrPolicyResourceTotalCountExceedClear
+             }
+          STATUS        current
+          DESCRIPTION
+             "A grouping of SRTE Policy trap events, as specified
+             in NOTIFICATION-TYPE constructs."
+          ::= { hwSrPolicyTrapGroups 2 }
+
+   END

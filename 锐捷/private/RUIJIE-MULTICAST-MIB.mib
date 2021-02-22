@@ -1,0 +1,885 @@
+-- *****************************************************************
+-- RUIJIE-MULTICAST-MIB.mib:  Ruijie Multicast MIB file
+--
+-- January 2003, zhenggao
+--
+-- Copyright (c) 2003 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+
+
+RUIJIE-MULTICAST-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Counter64,
+    Counter32,
+    Integer32,
+    Unsigned32,
+    IpAddress,
+    TimeTicks
+        FROM SNMPv2-SMI
+    RowStatus,
+    DisplayString,
+    TruthValue
+        FROM SNMPv2-TC
+    ruijieMgmt
+        FROM RUIJIE-SMI
+    InterfaceIndex
+        FROM IF-MIB
+    VlanId
+        FROM Q-BRIDGE-MIB
+    IfIndex
+        FROM RUIJIE-TC
+    IANAipMRouteProtocol
+        FROM IANA-RTPROTO-MIB
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP
+        FROM SNMPv2-CONF;
+ 
+ruijieMultMIB MODULE-IDENTITY
+    LAST-UPDATED "200301200000Z"
+    ORGANIZATION "Ruijie Networks Co.,Ltd."
+    CONTACT-INFO
+        "
+        Tel: 4008-111-000
+        
+        E-mail: service@ruijie.com.cn"
+    DESCRIPTION
+        "This module defines ruijie multicast mibs."
+    REVISION      "200301200000Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { ruijieMgmt 28}
+
+ruijieMultMIBObjects OBJECT IDENTIFIER ::= { ruijieMultMIB 1 }
+        
+ruijieIpMRouteInterfaceTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijieIpMRouteInterfaceEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table containing multicast routing
+         information specific to interfaces."
+    ::= { ruijieMultMIBObjects 1 }
+
+ruijieIpMRouteInterfaceEntry OBJECT-TYPE
+    SYNTAX     RuijieIpMRouteInterfaceEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) containing the multicast routing
+         information for a particular interface."
+    INDEX      { ruijieIpMRouteInterfaceIfIndex }
+    ::= { ruijieIpMRouteInterfaceTable 1 }
+
+RuijieIpMRouteInterfaceEntry ::= SEQUENCE {
+    ruijieIpMRouteInterfaceIfIndex          InterfaceIndex,
+    ruijieIpMRouteInterfaceTtl              Integer32,
+    ruijieIpMRouteInterfaceProtocol         IANAipMRouteProtocol,
+    ruijieIpMRouteInterfaceRateLimit        Integer32,
+    ruijieIpMRouteInterfaceInMcastOctets    Counter32,
+    ruijieIpMRouteInterfaceOutMcastOctets   Counter32,
+    ruijieIpMRouteInterfaceHCInMcastOctets  Counter64,
+    ruijieIpMRouteInterfaceHCOutMcastOctets Counter64,
+    ruijieIpMRouteBoundaryAclName           DisplayString
+    }
+
+ruijieIpMRouteInterfaceIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The ifIndex value of the interface for which this entry
+         contains information."
+    ::= { ruijieIpMRouteInterfaceEntry 1 }
+
+ruijieIpMRouteInterfaceTtl OBJECT-TYPE
+    SYNTAX     Integer32 (0..255)
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "The datagram TTL threshold for the interface. Any IP
+         multicast datagrams with a TTL less than this threshold will
+         not be forwarded out the interface. The default value of 0
+         means all multicast packets are forwarded out the
+         interface."
+    DEFVAL     { 0 }
+    ::= { ruijieIpMRouteInterfaceEntry 2 }
+
+ruijieIpMRouteInterfaceProtocol OBJECT-TYPE
+    SYNTAX     IANAipMRouteProtocol
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The routing protocol running on this interface."
+    ::= { ruijieIpMRouteInterfaceEntry 3 }
+
+ruijieIpMRouteInterfaceRateLimit OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "The rate-limit, in kilobits per second, of forwarded
+         multicast traffic on the interface.  A rate-limit of 0
+         indicates that no rate limiting is done."
+    DEFVAL     { 0 }
+    ::= { ruijieIpMRouteInterfaceEntry 4 }
+
+ruijieIpMRouteInterfaceInMcastOctets OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets of multicast packets that have arrived
+         on the interface, including framing characters.  This object
+         is similar to ifInOctets in the Interfaces MIB, except that
+         only multicast packets are counted."
+    ::= { ruijieIpMRouteInterfaceEntry 5 }
+
+ruijieIpMRouteInterfaceOutMcastOctets OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets of multicast packets that have been
+         sent on the interface."
+    ::= { ruijieIpMRouteInterfaceEntry 6 }
+
+ruijieIpMRouteInterfaceHCInMcastOctets OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets of multicast packets that have arrived
+         on the interface, including framing characters.  This object
+         is a 64-bit version of ipMRouteInterfaceInMcastOctets.  It
+         is similar to ifHCInOctets in the Interfaces MIB, except
+         that only multicast packets are counted."
+    ::= { ruijieIpMRouteInterfaceEntry 7 }
+
+ruijieIpMRouteInterfaceHCOutMcastOctets OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The number of octets of multicast packets that have been
+         sent on the interface.  This object is a 64-bit version of
+         ipMRouteInterfaceOutMcastOctets."
+    ::= { ruijieIpMRouteInterfaceEntry 8 }
+
+ruijieIpMRouteBoundaryAclName   OBJECT-TYPE
+    SYNTAX     DisplayString
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION      
+        "The name of an access list."
+    ::= { ruijieIpMRouteInterfaceEntry 9 }
+    
+ruijieIpRpfTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijieIpRpfEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table listing the router's scoped
+         multicast address boundaries."
+    ::= { ruijieMultMIBObjects 2 }  
+    
+ruijieIpRpfEntry OBJECT-TYPE
+    SYNTAX     RuijieIpRpfEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) in the starIpRpfTable
+         representing a scoped boundary."
+    INDEX      { ruijieIpRpfSourceAddress}
+    ::= { ruijieIpRpfTable 1 }
+RuijieIpRpfEntry ::= SEQUENCE {
+    ruijieIpRpfSourceAddress                 IpAddress,
+    ruijieIpRpfInterface                     InterfaceIndex,
+    ruijieIpRpfNeighborAddress               IpAddress,
+    ruijieIpRpfRouteAddress                  IpAddress,
+    ruijieIpRpfRouteMask                     IpAddress,
+    ruijieIpRpfType                          INTEGER
+    }
+
+ruijieIpRpfSourceAddress OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "source address that this information concerns."
+    ::= { ruijieIpRpfEntry 1 }
+
+ruijieIpRpfInterface   OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "For the given source, interface from which the 
+         router expects to get packets."
+    ::= { ruijieIpRpfEntry 2 }
+    
+ruijieIpRpfNeighborAddress OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "For given source, neighbor from which the router expects to get
+         packets."
+    ::= { ruijieIpRpfEntry 3 }
+
+ruijieIpRpfRouteAddress OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Route address and mask that matched against this source."
+    ::= { ruijieIpRpfEntry 4 }
+    
+ruijieIpRpfRouteMask OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Route address and mask that matched against this source."
+    ::= { ruijieIpRpfEntry 5 }
+
+ruijieIpRpfType    OBJECT-TYPE
+    SYNTAX     INTEGER{unicast(1),dvmrp(2)}
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Routing table from which this route was obtained, either unicast,
+         or  DVMRP mroutes."
+    ::= { ruijieIpRpfEntry 6 }
+
+ruijieMPingTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijieMPingEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "generate multicast traffic in the lab to test the multicast 
+         tree since it pings all members of the group, and all members
+         respond."
+    ::= { ruijieMultMIBObjects 3 }  
+    
+ruijieMPingEntry OBJECT-TYPE
+    SYNTAX     RuijieMPingEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) in the starMPingTable."
+    INDEX      { ruijieMPingIndex ,ruijieMPingGroupAddress ,ruijieMPingGroupMember}
+    ::= { ruijieMPingTable 1 }
+    
+RuijieMPingEntry ::= SEQUENCE {
+    ruijieMPingIndex                          Integer32,
+    ruijieMPingGroupAddress                   IpAddress,
+    ruijieMPingGroupMember                    IpAddress,
+    ruijieMPingResponseTime                   TimeTicks,
+    ruijieMPingDataLength                     Unsigned32,
+    ruijieMPingTimeOuts                       Unsigned32,       
+    ruijieMPingCompleted                      TruthValue,
+    ruijieMPingEntryStauts                    RowStatus    
+    }
+    
+ruijieMPingIndex OBJECT-TYPE
+    SYNTAX Integer32(1..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Object which specifies a unique entry in the
+         ruijiePingTable.  A management station wishing
+         to initiate a ping operation should use a
+         pseudo-random value for this object when creating
+         or modifying an instance of a ruijiePingEntry.
+         The RowStatus semantics of the ruijiePingEntryStatus
+         object will prevent access conflicts."
+    ::= { ruijieMPingEntry 1 }
+        
+ruijieMPingGroupAddress OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The address of group."
+    ::= { ruijieMPingEntry 2 }
+
+ruijieMPingGroupMember OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The address of Member."
+    ::= { ruijieMPingEntry 3 }
+
+ruijieMPingResponseTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The response time of member."
+    ::= { ruijieMPingEntry 4 }
+
+ruijieMPingDataLength OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Pinged ICMP echo datagram's data length."
+    DEFVAL { 1500 }
+    ::= { ruijieMPingEntry 5 }
+
+ruijieMPingTimeOuts OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION 
+        "Ping but no echo from required address, the time last
+         for time out, in milliseconds."
+    DEFVAL { 1000 }
+    ::= { ruijieMPingEntry 6 }
+
+ruijieMPingCompleted OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "While the ping process has completed the value of this field
+         will be true(1), else false(2)."
+    ::= { ruijieMPingEntry 7 }
+    
+ruijieMPingEntryStauts OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "entry status for this list."
+    ::= { ruijieMPingEntry 8 }
+
+ruijieIpMRouteTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijieIpMRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table containing multicast routing
+         information for IP datagrams sent by particular sources to
+         the IP multicast groups known to this router."
+    ::= { ruijieMultMIBObjects 4 }
+
+ruijieIpMRouteEntry OBJECT-TYPE
+    SYNTAX     RuijieIpMRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) containing the multicast routing
+         information for IP datagrams from a particular source and
+         addressed to a particular IP multicast group address.
+         Discontinuities in counters in this entry can be detected by
+         observing the value of ipMRouteUpTime."
+    INDEX      { ruijieIpMRouteGroup,
+                 ruijieIpMRouteSource,
+                 ruijieIpMRouteSourceMask}
+    ::= { ruijieIpMRouteTable 1 }
+
+RuijieIpMRouteEntry ::= SEQUENCE {
+    ruijieIpMRouteGroup                 IpAddress,
+    ruijieIpMRouteSource                IpAddress,
+    ruijieIpMRouteSourceMask            IpAddress,
+    ruijieIpMRouteRP                    IpAddress,
+    ruijieIpMRoutePruneFlag             TruthValue,
+    ruijieIpMRouteSparseFlag            TruthValue,
+    ruijieIpMRouteConnectedFlag         TruthValue,
+    ruijieIpMRouteLocalFlag             TruthValue,
+    ruijieIpMRouteRegisterFlag          TruthValue,
+    ruijieIpMRouteRpFlag                TruthValue,
+    ruijieIpMRouteSptFlag               TruthValue,
+    ruijieIpMRouteInLimit               Integer32,
+    ruijieIpMRouteLifeAvg               Integer32,
+    ruijieIpMrouteGroupPktsCount        Integer32,
+    ruijieIpMrouteSouceCount            Integer32,
+    ruijieIpMrouteRpPkts                Integer32,
+    ruijieIpMrouteRpPktsPerSec          Integer32,
+    ruijieIpMrouteRpAvgPktsSize         Integer32,
+    ruijieIpMrouteRpKilobitsPerSec      Integer32,
+    ruijieIpMrouteSoucePkts             Integer32,
+    ruijieIpMrouteSoucePktsPerSec       Integer32,
+    ruijieIpMrouteSouceAvgPktsSize      Integer32,
+    ruijieIpMrouteSouceKilobitsPerSec   Integer32
+    }
+
+ruijieIpMRouteGroup OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The address of group."
+    ::= { ruijieIpMRouteEntry 1 }  
+
+ruijieIpMRouteSource OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The address of Souce."
+    ::= { ruijieIpMRouteEntry 2 }
+
+ruijieIpMRouteSourceMask OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The Mask of Souce address."
+    ::= { ruijieIpMRouteEntry 3 }
+
+ruijieIpMRouteRP OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The address of RP Route."
+    ::= { ruijieIpMRouteEntry 4 }
+
+ruijieIpMRoutePruneFlag OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Boolean, indicates whether this route is pruned. A pruned
+         route is one that has an empty outgoing interface list or
+         all interfaces are in Pruned state. A multicast packet
+         that matches a pruned route doesn't get forwarded."
+    ::= { ruijieIpMRouteEntry 5 }
+
+ruijieIpMRouteSparseFlag OBJECT-TYPE
+    SYNTAX     TruthValue   
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Boolean, indicating PIM multicast routing protocol
+         sparse-mode (versus dense-mode).  In sparse-mode, packets
+         are forwarded only out interfaces that have been joined.
+         In dense-mode, they are forwarded out all interfaces that
+         have not been pruned."
+    ::= { ruijieIpMRouteEntry 6 }
+ 
+ruijieIpMRouteConnectedFlag OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Boolean, indicating whether there is a directly connected
+         member for a group attached to the router."
+    ::= { ruijieIpMRouteEntry 7 }
+
+ruijieIpMRouteLocalFlag OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Boolean, indicating whether local system is a member of a
+         group on any interface."
+    ::= { ruijieIpMRouteEntry 8 }
+
+ruijieIpMRouteRegisterFlag OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Boolean, indicates whether to send registers for the
+         entry. A first hop router directly connected to a
+         multicast source host, as well as a border router on the
+         boundary of two domains running different multicast
+         routing protocols, encapsulates packets to be sent on the
+         shared tree. This is done until the RP sends Joins back to
+         this router."
+    ::= { ruijieIpMRouteEntry 9 }
+
+ruijieIpMRouteRpFlag OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Boolean, indicating whether there is a Prune state for
+         this source along the shared tree."
+    ::= { ruijieIpMRouteEntry 10 }
+ 
+ruijieIpMRouteSptFlag OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Boolean, indicating whether data is being received on the
+         SPT tree, ie the Shortest Path Tree."
+    ::= { ruijieIpMRouteEntry 11 }
+
+ruijieIpMRouteInLimit OBJECT-TYPE
+    SYNTAX     Integer32 (0..2147483647)
+    UNITS      "Kbits/second"
+    MAX-ACCESS read-only
+    STATUS     obsolete
+    DESCRIPTION
+        "Incoming interface's limit for rate limiting data
+         traffic, in Kbps. "
+    ::= { ruijieIpMRouteEntry 12 }
+
+ruijieIpMRouteLifeAvg  OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The average of data traffic."
+    ::= { ruijieIpMRouteEntry 13 }
+
+ruijieIpMrouteGroupPktsCount  OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The count of group packets."
+    ::= { ruijieIpMRouteEntry 14 }
+
+ruijieIpMrouteSouceCount  OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The count of souce."
+    ::= { ruijieIpMRouteEntry 15 }
+
+ruijieIpMrouteRpPkts  OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The packets count of Rp-Tree ."
+    ::= { ruijieIpMRouteEntry 16 }
+
+ruijieIpMrouteRpPktsPerSec  OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The packets count which Rp-Tree send in one second."
+    ::= { ruijieIpMRouteEntry 17 }
+
+ruijieIpMrouteRpAvgPktsSize  OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The average packets size which Rp-Tree send ."
+    ::= { ruijieIpMRouteEntry 18 }
+
+ruijieIpMrouteRpKilobitsPerSec   OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Kilobits of Rp-Tree send in one second ."
+    ::= { ruijieIpMRouteEntry 19 }
+
+ruijieIpMrouteSoucePkts  OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The packets count of souce ."
+    ::= { ruijieIpMRouteEntry 20 }
+
+ruijieIpMrouteSoucePktsPerSec  OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The packets count which souce send in one second."
+    ::= { ruijieIpMRouteEntry 21 }
+
+ruijieIpMrouteSouceAvgPktsSize  OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The average packets size which souce send ."
+    ::= { ruijieIpMRouteEntry 22 }
+
+ruijieIpMrouteSouceKilobitsPerSec   OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Kilobits of Souce send in one second ."
+    ::= { ruijieIpMRouteEntry 23 }  
+
+--
+--mrinfo table
+--
+ruijieMrinfoTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijieMrinfoEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table containing multicast routing
+         information for PIM neighbor."
+    ::= { ruijieMultMIBObjects 5 }
+
+ruijieMrinfoEntry OBJECT-TYPE
+    SYNTAX     RuijieMrinfoEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) of starMrinfoTable."
+    INDEX      { ruijieMrinfoIfAddress}
+    ::= { ruijieMrinfoTable 1 }
+
+RuijieMrinfoEntry ::= SEQUENCE {
+    ruijieMrinfoIfAddress        IpAddress,     
+    ruijieMrinfoNeighbor       IpAddress,
+    ruijieMrinfoTtlThreshold   Integer32,
+    ruijieMrinfoMetricOffset   Integer32,
+    ruijieMrinfoQuerier        TruthValue,
+    ruijieMrinfoDown           TruthValue,
+    ruijieMrinfoLeaf           TruthValue
+    }    
+ 
+ruijieMrinfoIfAddress  OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The address of Interface Router to request."
+    ::= { ruijieMrinfoEntry 1 }
+
+ruijieMrinfoNeighbor  OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The address of Interface neighbor,if there is no neigbor then 
+         return 0.0.0.0."
+    ::= { ruijieMrinfoEntry 2 }
+
+ruijieMrinfoTtlThreshold  OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The datagram TTL threshold for the interface. Any IP
+         multicast datagrams with a TTL less than this threshold will
+         not be forwarded out the interface. The default value of 0
+         means all multicast packets are forwarded out the
+         interface."
+    ::= { ruijieMrinfoEntry 3 }
+
+ruijieMrinfoMetricOffset  OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Value added to the metric of a DVMRP route advertised in 
+         a report message."
+    ::= { ruijieMrinfoEntry 4 }
+    
+ruijieMrinfoQuerier  OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "If this interface is querier then the value of this field
+         will be true(1), else false(2)."
+    ::= { ruijieMrinfoEntry 5 }
+    
+ruijieMrinfoDown  OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "If this interface is down then the value of this field
+         will be true(1), else false(2)."
+    ::= { ruijieMrinfoEntry 6 }
+
+ruijieMrinfoLeaf  OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "If locoal switch  is leaf switch  then the value of this field
+         will be true(1), else false(2)."
+    ::= { ruijieMrinfoEntry 7 }
+    
+--
+--multicast vlan id Table
+--
+ruijieMultVidTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijieMultVidEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table containing multicast routing
+         vlan id for interface."
+    ::= { ruijieMultMIBObjects 6 }
+
+ruijieMultVidEntry OBJECT-TYPE
+    SYNTAX     RuijieMultVidEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) of ruijieMultVidTable."
+    INDEX      { ruijieMultInterfaceIfIndex }
+    ::= { ruijieMultVidTable 1 }
+
+RuijieMultVidEntry ::= SEQUENCE {
+    ruijieMultInterfaceIfIndex        IfIndex,  
+    ruijieMultVlan                    VlanId                
+    }    
+ 
+ruijieMultInterfaceIfIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            " "
+        ::= { ruijieMultVidEntry 1 } 
+
+ruijieMultVlan  OBJECT-TYPE
+    SYNTAX     VlanId    
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "The value indicate the VID of the vlan which that this port 
+         belong to. This field is effective for only trunk port.The 
+         default value indicate the VID of the native vlan of that 
+         this port."
+    ::= { ruijieMultVidEntry 2 }
+
+-- units of conformance
+
+ruijieMultMIBConformance OBJECT IDENTIFIER ::= { ruijieMultMIB 2 }
+ruijieMultMIBCompliances OBJECT IDENTIFIER ::= { ruijieMultMIBConformance 1 }
+ruijieMultMIBGroups      OBJECT IDENTIFIER ::= { ruijieMultMIBConformance 2 }
+
+-- compliance statements
+ruijieMultMIBCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for entities which implement
+         the Ruijie MULTICAST MIB"
+    MODULE  -- this module
+    MANDATORY-GROUPS {
+        ruijieIpMRouteInterfaceMIBGroup,    
+        ruijieIpRpfMIBGroup,
+        ruijieMPingMIBGroup,
+        ruijieIpMRouteMIBGroup,
+        ruijieMrinfoMIBGroup,
+        ruijieMultVidMIBGroup
+        }
+    ::= { ruijieMultMIBCompliances 1 }
+
+-- conformance information
+
+ruijieIpMRouteInterfaceMIBGroup OBJECT-GROUP
+    OBJECTS {
+--    ruijieIpMRouteInterfaceIfIndex,
+    ruijieIpMRouteInterfaceTtl,
+    ruijieIpMRouteInterfaceProtocol,
+    ruijieIpMRouteInterfaceRateLimit,
+    ruijieIpMRouteInterfaceInMcastOctets,
+    ruijieIpMRouteInterfaceOutMcastOctets,
+    ruijieIpMRouteInterfaceHCInMcastOctets,
+    ruijieIpMRouteInterfaceHCOutMcastOctets,
+    ruijieIpMRouteBoundaryAclName
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of IP multicast route interface managment."
+    ::= { ruijieMultMIBGroups 1 }
+
+ruijieIpRpfMIBGroup OBJECT-GROUP
+    OBJECTS {
+--    ruijieIpRpfSourceAddress,
+    ruijieIpRpfInterface,
+    ruijieIpRpfNeighborAddress,
+    ruijieIpRpfRouteAddress,
+    ruijieIpRpfRouteMask,
+    ruijieIpRpfType
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of IP RPF managment."
+    ::= { ruijieMultMIBGroups 2 }
+
+ruijieMPingMIBGroup OBJECT-GROUP
+    OBJECTS {
+--    ruijieMPingIndex,
+--    ruijieMPingGroupAddress,
+--    ruijieMPingGroupMember,
+    ruijieMPingResponseTime,
+    ruijieMPingDataLength,
+    ruijieMPingTimeOuts,       
+    ruijieMPingCompleted,
+    ruijieMPingEntryStauts    
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of multicast ping managment."
+    ::= { ruijieMultMIBGroups 3 }
+
+ruijieIpMRouteMIBGroup OBJECT-GROUP
+    OBJECTS {
+--    ruijieIpMRouteGroup,
+--    ruijieIpMRouteSource,
+--    ruijieIpMRouteSourceMask,
+    ruijieIpMRouteRP,
+    ruijieIpMRoutePruneFlag,
+    ruijieIpMRouteSparseFlag,
+    ruijieIpMRouteConnectedFlag,
+    ruijieIpMRouteLocalFlag,
+    ruijieIpMRouteRegisterFlag,
+    ruijieIpMRouteRpFlag,
+    ruijieIpMRouteSptFlag,
+    ruijieIpMRouteInLimit,
+    ruijieIpMRouteLifeAvg,
+    ruijieIpMrouteGroupPktsCount,
+    ruijieIpMrouteSouceCount,
+    ruijieIpMrouteRpPkts,
+    ruijieIpMrouteRpPktsPerSec,
+    ruijieIpMrouteRpAvgPktsSize,
+    ruijieIpMrouteRpKilobitsPerSec,
+    ruijieIpMrouteSoucePkts,
+    ruijieIpMrouteSoucePktsPerSec,
+    ruijieIpMrouteSouceAvgPktsSize,
+    ruijieIpMrouteSouceKilobitsPerSec
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of IP multicast route managment."
+    ::= { ruijieMultMIBGroups 4 }
+
+ruijieMrinfoMIBGroup OBJECT-GROUP
+    OBJECTS {
+--    ruijieMrinfoIfAddress,
+    ruijieMrinfoNeighbor,
+    ruijieMrinfoTtlThreshold,
+    ruijieMrinfoMetricOffset,
+    ruijieMrinfoQuerier,
+    ruijieMrinfoDown,
+    ruijieMrinfoLeaf
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of multicast information"
+    ::= { ruijieMultMIBGroups 5 } 
+
+ruijieMultVidMIBGroup OBJECT-GROUP
+    OBJECTS {
+--    ruijieMultInterfaceIfIndex,
+    ruijieMultVlan      
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of multicast vid information"
+    ::= { ruijieMultMIBGroups 6 }            
+END
+

@@ -1,0 +1,1389 @@
+-- *******************************************************************
+-- RUIJIE-CAPWAP-MOBILITY-MIB.mib : Ruijie MOBILITY MIB file
+-- January 2009, shenyongjian
+--
+-- Copyright (c) 2009 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- *******************************************************************
+--
+RUIJIE-CAPWAP-MOBILITY-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        IpAddress,
+        OBJECT-TYPE,
+        MODULE-IDENTITY,
+        Counter32
+                FROM SNMPv2-SMI
+        MacAddress,
+        DisplayString,
+        RowStatus
+                FROM SNMPv2-TC
+        Ipv6Address
+                FROM IPV6-TC
+        InetAddressType,
+        InetAddress
+                FROM INET-ADDRESS-MIB
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieMobilityMIB MODULE-IDENTITY
+    LAST-UPDATED "200909180000Z"
+    ORGANIZATION "Ruijie Networks Co.,Ltd."
+    CONTACT-INFO
+        "
+    Tel: 4008-111-000
+
+    E-mail: service@ruijie.com.cn"
+    DESCRIPTION
+        "This module defines roam mobility mibs."
+    REVISION      "200909180000Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { ruijieMgmt 64}
+
+
+--*****************define the roam mobility nodes********************
+ruijieMobilityMIBObjects OBJECT IDENTIFIER   ::= {ruijieMobilityMIB 1}
+ruijieMobility           OBJECT IDENTIFIER   ::= {ruijieMobilityMIBObjects 1}
+ruijieMobilityIf         OBJECT IDENTIFIER   ::= {ruijieMobilityMIBObjects 2}
+ruijieMobilityTrap       OBJECT IDENTIFIER   ::= {ruijieMobilityMIBObjects 3}
+
+--********************************************************************
+--                                                                  **
+--                       MOBILITY GROUP MIB                         **
+--                                                                  **
+--********************************************************************
+
+--*********1.Roam Mobility Group Entry***************
+ruijieMobilityEntryTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieMobilityEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+         "Creat the roam mobility group"
+    ::= {ruijieMobility 1}
+
+ruijieMobilityEntry OBJECT-TYPE
+    SYNTAX RuijieMobilityEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+         "The entry of roam mobility group table"
+    INDEX  { ruijieRoamGroupId }
+    ::= { ruijieMobilityEntryTable 1 }
+
+RuijieMobilityEntry ::=
+    SEQUENCE {
+        ruijieRoamGroupId                    INTEGER,
+        ruijieRoamGroupName                  DisplayString,
+        ruijieRoamGroupMyAddress             IpAddress,
+        ruijieRoamGroupMcEnable              INTEGER,
+        ruijieRoamGroupMcAddress             IpAddress,
+        ruijieRoamGroupKeepaliveCount        INTEGER,
+        ruijieRoamGroupKeepaliveInterval     INTEGER,
+        ruijieRoamGroupIsFast                INTEGER,
+        ruijieRoamGroupCreateStatus          RowStatus,
+        ruijieRoamGroupMyAddressIPv6         Ipv6Address
+    }
+
+--The group id of roam mobility group
+ruijieRoamGroupId OBJECT-TYPE
+     SYNTAX  INTEGER (0..8)
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The group id of roam mobility group"
+     ::= { ruijieMobilityEntry 1 }
+
+--The group name of roam mobility group
+ruijieRoamGroupName OBJECT-TYPE
+     SYNTAX  DisplayString
+     MAX-ACCESS read-create
+     STATUS current
+     DESCRIPTION
+              "The group name of roam mobility group"
+     ::= { ruijieMobilityEntry 2 }
+
+--The group ipv4 address of roam mobility group
+ruijieRoamGroupMyAddress OBJECT-TYPE
+     SYNTAX  IpAddress
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The group local ipv4 address of roam mobility group"
+     ::= { ruijieMobilityEntry 3 }
+
+--The flag whether the roam mobility group mc is enable
+ruijieRoamGroupMcEnable OBJECT-TYPE
+     SYNTAX  INTEGER
+     MAX-ACCESS read-create
+     STATUS current
+     DESCRIPTION
+              "The flag whether the roam mobility group mc is enable"
+     ::= { ruijieMobilityEntry 4 }
+
+--The multicast addr of roam mobility group
+ruijieRoamGroupMcAddress OBJECT-TYPE
+     SYNTAX  IpAddress
+     MAX-ACCESS read-create
+     STATUS current
+     DESCRIPTION
+             "The multicast addr of roam mobility group"
+     ::= { ruijieMobilityEntry 5 }
+
+--The keepalive count of roam mobility group
+ruijieRoamGroupKeepaliveCount OBJECT-TYPE
+     SYNTAX  INTEGER (2..30)
+     MAX-ACCESS read-create
+     STATUS current
+     DESCRIPTION
+              "The keepalive count of roam mobility group"
+     ::= { ruijieMobilityEntry 6 }
+
+--The keepalive interval of roam mobility group
+ruijieRoamGroupKeepaliveInterval OBJECT-TYPE
+     SYNTAX  INTEGER (1..30)
+     MAX-ACCESS read-create
+     STATUS current
+     DESCRIPTION
+              "The keepalive interval in seconds of roam mobility group"
+     ::= { ruijieMobilityEntry 7 }
+
+--The flag whether the roam mobility group run in fast roaming mode
+ruijieRoamGroupIsFast OBJECT-TYPE
+     SYNTAX  INTEGER
+     MAX-ACCESS read-create
+     STATUS current
+     DESCRIPTION
+              "The flag whether the roam mobility group run in fast roaming mode"
+     ::= {ruijieMobilityEntry 8 }
+
+--This object indicate the creat or delete of the table
+ruijieRoamGroupCreateStatus OBJECT-TYPE
+    SYNTAX   RowStatus
+    MAX-ACCESS read-create
+    STATUS   current
+    DESCRIPTION
+           "This object indicate the creat or delete of the Mobility table"
+    ::= { ruijieMobilityEntry 9 }
+
+--The group ipv6 address of roam mobility group
+ruijieRoamGroupMyAddressIPv6 OBJECT-TYPE
+     SYNTAX  Ipv6Address
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The group local ipv6 address of roam mobility group"
+     ::= { ruijieMobilityEntry 10 }
+
+--*********2.Roam Mobility Member Entry***************
+ruijieMobilityMemberEntryTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieMobilityMemberEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+         "Creat the roam mobility group member"
+    ::= {ruijieMobility 2}
+
+ruijieMobilityMemberEntry OBJECT-TYPE
+    SYNTAX RuijieMobilityMemberEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+         "The entry of roam mobility member"
+    INDEX  { ruijieRoamMemberGroupId, ruijieRoamMemberPeerAddress }
+    ::= { ruijieMobilityMemberEntryTable 1 }
+
+RuijieMobilityMemberEntry ::=
+    SEQUENCE {
+        ruijieRoamMemberGroupId               INTEGER,
+        ruijieRoamMemberPeerAddress           IpAddress,
+        ruijieRoamMemberIsList                INTEGER,
+        ruijieRoamMemberDataChannelIsOK       INTEGER,
+        ruijieRoamMemberDataChannelFailTimes  INTEGER,
+        ruijieRoamMemberDTLSIsClient          INTEGER,
+        ruijieRoamMemberDTLSIsOK              INTEGER,
+        ruijieRoamMemberCreateStatus          RowStatus
+    }
+
+--The group id of roam mobility group member
+ruijieRoamMemberGroupId OBJECT-TYPE
+     SYNTAX  INTEGER (0..8)
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The group id of roam mobility group"
+     ::= { ruijieMobilityMemberEntry 1 }
+
+--The peer ipv4 address of roam mobility group member
+ruijieRoamMemberPeerAddress OBJECT-TYPE
+     SYNTAX  IpAddress
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The peer ipv4 address of roam mobility group member"
+     ::= { ruijieMobilityMemberEntry 2 }
+
+--The flag whether roam mobility group member in roam list
+ruijieRoamMemberIsList OBJECT-TYPE
+ SYNTAX  INTEGER (0..1)
+     MAX-ACCESS read-create
+     STATUS current
+     DESCRIPTION
+             "The flag whether roam mobility group member in roam list"
+     ::= { ruijieMobilityMemberEntry 3 }
+
+--The flag whether the data channel of roam mobility group member is ok
+ruijieRoamMemberDataChannelIsOK OBJECT-TYPE
+     SYNTAX  INTEGER (0..1)
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The flag whether the data channel of roam mobility group member is ok"
+     ::= { ruijieMobilityMemberEntry 4 }
+
+--The Fail times of the data channel of roam mobility group member
+ruijieRoamMemberDataChannelFailTimes OBJECT-TYPE
+     SYNTAX  INTEGER
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The Fail times of the data channel of roam mobility group member"
+     ::= { ruijieMobilityMemberEntry 5 }
+
+--The flag whether the roam group member is client
+ruijieRoamMemberDTLSIsClient OBJECT-TYPE
+     SYNTAX  INTEGER
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The flag whether the roam mobility group member is client"
+     ::= { ruijieMobilityMemberEntry 6 }
+
+--The flag whether the roam group member dtls is ok
+ruijieRoamMemberDTLSIsOK OBJECT-TYPE
+     SYNTAX  INTEGER (0..1)
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The flag whether the roam mobility group member dtls is ok"
+     ::= { ruijieMobilityMemberEntry 7 }
+
+--This object indicate the creat or delete of the table
+ruijieRoamMemberCreateStatus OBJECT-TYPE
+     SYNTAX   RowStatus
+     MAX-ACCESS read-create
+     STATUS   current
+     DESCRIPTION
+           "This object indicate the creat or delete of the Mobility table"
+     ::= { ruijieMobilityMemberEntry 8 }
+
+--*********3.creat the AP control entry***************
+ruijieAPCtrlCreatEntryTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RuijieAPCtrlCreatEntry
+   MAX-ACCESS not-accessible
+   STATUS current
+   DESCRIPTION
+          "Creat the AP control block"
+   ::= {ruijieMobility 3}
+
+ruijieAPCtrlCreatEntry OBJECT-TYPE
+   SYNTAX RuijieAPCtrlCreatEntry
+   MAX-ACCESS not-accessible
+   STATUS current
+   DESCRIPTION
+          "The entry of the AP control block"
+   INDEX { ruijieAPName }
+   ::= { ruijieAPCtrlCreatEntryTable 1}
+
+RuijieAPCtrlCreatEntry ::=
+    SEQUENCE {
+        ruijieAPName                DisplayString,
+        ruijiePriority              INTEGER,
+        ruijiePrimaryACIP           IpAddress,
+        ruijiePrimaryACName         DisplayString,
+        ruijieSecondaryACIP         IpAddress,
+        ruijieSecondaryACName       DisplayString,
+        ruijieTertiaryACIP          IpAddress,
+        ruijieTertiaryACName        DisplayString,
+        ruijieAPCtrlCreatStatus     RowStatus
+    }
+
+--The AP control block name
+ruijieAPName OBJECT-TYPE
+     SYNTAX DisplayString
+     MAX-ACCESS not-accessible
+     STATUS current
+     DESCRIPTION
+             "The name of the AP control block"
+     ::= { ruijieAPCtrlCreatEntry 1}
+
+--The priority of AP control block
+ruijiePriority OBJECT-TYPE
+    SYNTAX INTEGER (1..4)
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The priority of AP control block"
+    ::= { ruijieAPCtrlCreatEntry 2 }
+
+--The primary AC  ip of AP control block
+ruijiePrimaryACIP OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The primary AC IP of AP control block"
+    ::= { ruijieAPCtrlCreatEntry 3 }
+
+--The primary AC Name of AP control block
+ruijiePrimaryACName OBJECT-TYPE
+     SYNTAX  DisplayString
+     MAX-ACCESS read-create
+     STATUS current
+     DESCRIPTION
+              "The primary AC Name of AP control block"
+     ::= { ruijieAPCtrlCreatEntry 4 }
+
+--The secondary AC  ip of AP control block
+ruijieSecondaryACIP OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The secondary AC IP of AP control block"
+    ::= { ruijieAPCtrlCreatEntry 5 }
+
+--The secondary AC Name of AP control block
+ruijieSecondaryACName OBJECT-TYPE
+     SYNTAX  DisplayString
+     MAX-ACCESS read-create
+     STATUS current
+     DESCRIPTION
+              "The secondary AC Name of AP control block"
+     ::= { ruijieAPCtrlCreatEntry 6 }
+
+--The tertiary AC  ip of AP control block
+ruijieTertiaryACIP OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The tertiary AC IP of AP control block"
+    ::= { ruijieAPCtrlCreatEntry 7 }
+
+--The tertiary AC Name of AP control block
+ruijieTertiaryACName OBJECT-TYPE
+     SYNTAX  DisplayString
+     MAX-ACCESS read-create
+     STATUS current
+     DESCRIPTION
+              "The tertiary AC Name of AP control block"
+     ::= { ruijieAPCtrlCreatEntry 8 }
+
+--The object indicates the creat or delete of the AP control table
+ruijieAPCtrlCreatStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+           "The flag of the AP control table"
+    ::= {ruijieAPCtrlCreatEntry 9}
+
+
+--*********5.creat the Wlan control entry***************
+ruijieWLANCtrlCreatEntryTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RuijieWLANCtrlCreatEntry
+   MAX-ACCESS not-accessible
+   STATUS current
+   DESCRIPTION
+          "Creat the WLAN control block"
+   ::= {ruijieMobility 4}
+
+ruijieWLANCtrlCreatEntry OBJECT-TYPE
+   SYNTAX RuijieWLANCtrlCreatEntry
+   MAX-ACCESS not-accessible
+   STATUS current
+   DESCRIPTION
+          "The entry of the WLAN group control block"
+   INDEX { ruijieWLANID }
+   ::= { ruijieWLANCtrlCreatEntryTable 1}
+
+RuijieWLANCtrlCreatEntry ::=
+    SEQUENCE {
+         ruijieWLANID              INTEGER,
+         ruijieAnchorACIPaddr      IpAddress,
+         ruijieWLANCtrlCreatStatus RowStatus,
+         ruijieAnchorACIPaddrIPv6  Ipv6Address
+    }
+
+--the name of WLAN
+ruijieWLANID OBJECT-TYPE
+     SYNTAX INTEGER
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The name of the wlan"
+     ::= { ruijieWLANCtrlCreatEntry 1 }
+
+--the anchor ac ipv4 address of wlan
+ruijieAnchorACIPaddr OBJECT-TYPE
+     SYNTAX IpAddress
+     MAX-ACCESS read-create
+     STATUS current
+     DESCRIPTION
+             "The anchor ac ip address of wlan"
+     ::= { ruijieWLANCtrlCreatEntry 2 }
+
+--the object indicate creat or delete of the WLAN control table
+ruijieWLANCtrlCreatStatus  OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+           "the object indicate creat or delete of the WLAN control table"
+    ::= { ruijieWLANCtrlCreatEntry 3 }
+
+--the anchor ac ipv6 address of wlan
+ruijieAnchorACIPaddrIPv6 OBJECT-TYPE
+     SYNTAX Ipv6Address
+     MAX-ACCESS read-create
+     STATUS current
+     DESCRIPTION
+             "The anchor ac ipv6 address of wlan"
+     ::= { ruijieWLANCtrlCreatEntry 4 }
+
+--***************simple param***************
+--6 ping the other AC in the mobility
+ruijieMobilityACPing OBJECT-TYPE
+     SYNTAX IpAddress
+     MAX-ACCESS read-write
+     STATUS current
+     DESCRIPTION
+              "Ping the other AC in the mobility"
+     ::= {ruijieMobility 5}
+
+--7 Handoff Requests Received of Global Mobility Statistics
+ruijieGlobalHandoffRequestsReceived OBJECT-TYPE
+      SYNTAX INTEGER
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+               "Handoff requests received of global mobility statistics"
+      ::= {ruijieMobility 6}
+
+--8 Handoff End Requests Received
+ruijieGlobalHandoffEndRequestsReceived OBJECT-TYPE
+     SYNTAX INTEGER
+     MAX-ACCESS read-write
+     STATUS current
+     DESCRIPTION
+             "Handoff end requests received"
+     ::= {ruijieMobility 7}
+
+--9 State Transitions Disabllowed
+ruijieGlobalStateTransitionsDisabled OBJECT-TYPE
+     SYNTAX INTEGER
+     MAX-ACCESS read-write
+     STATUS current
+     DESCRIPTION
+             "State transitions Disallowed"
+     ::= {ruijieMobility 8}
+
+--10 Resource Unavailable
+ruijieGlobalResourceUnavailable OBJECT-TYPE
+     SYNTAX INTEGER
+     MAX-ACCESS read-write
+     STATUS current
+     DESCRIPTION
+            "Resource Unavailable"
+     ::= {ruijieMobility 9}
+
+--11 Handoff Requests Ignored
+ruijieRespondeHandoffRequestIgnored OBJECT-TYPE
+      SYNTAX INTEGER
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Handoff Requests Ignored"
+      ::= {ruijieMobility 10}
+
+--12 Ping Pong Handoff Requests Dropped
+ruijieRespondePingPongHandoffRequestsDropped OBJECT-TYPE
+      SYNTAX INTEGER
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Ping Pong handoff Requests Dropped"
+      ::= {ruijieMobility 11}
+
+--13 Handoff Requests Drooped
+ruijieRespondeHandoffRequestsDroped OBJECT-TYPE
+      SYNTAX INTEGER
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Handoff Requests Droped"
+      ::= {ruijieMobility 12}
+
+--14 Handoff Requests Denied
+ruijieRespondeHandoffRequestsDenied OBJECT-TYPE
+      SYNTAX INTEGER
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Handoff Requests Denied"
+      ::= {ruijieMobility 13}
+
+--15 Client Handoff as local
+ruijieRespondeClientHandoffasLocal OBJECT-TYPE
+      SYNTAX INTEGER
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Client Handoff as local"
+      ::= {ruijieMobility 14}
+
+--16 Client Handoff as Foreign
+ruijieRespondeClientHandoffasForeign OBJECT-TYPE
+      SYNTAX INTEGER
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Client Handoff as Foreign"
+      ::= {ruijieMobility 15}
+
+--17 Anchor Requests Received
+ruijieRespondeAnchorRequestsReceived OBJECT-TYPE
+      SYNTAX INTEGER
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Anchor Requests Received"
+      ::= {ruijieMobility 16}
+
+--18 Anchor Requests Denied
+ruijieRespondeAnchorRequestDenied OBJECT-TYPE
+      SYNTAX INTEGER
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Anchor Requests Denied"
+      ::= {ruijieMobility 17}
+
+--19 Anchor Transferred
+ruijieRespondeAnchorTransferred OBJECT-TYPE
+      SYNTAX INTEGER
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Anchor Transferred"
+      ::= {ruijieMobility 18}
+
+--20 Handoff Requests Sent
+ruijieInitHandoffRequestsSent OBJECT-TYPE
+      SYNTAX INTEGER
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Handoff Requests Sent"
+      ::= {ruijieMobility 19}
+
+--21 Handoff Replies Received
+ruijieInitHandoffReplyReceived OBJECT-TYPE
+      SYNTAX INTEGER
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Handoff Replies Received"
+      ::= {ruijieMobility 20}
+
+--22 Handoff as local reveived
+ruijieInitHandoffasLocalReceived OBJECT-TYPE
+      SYNTAX INTEGER
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+             "Handoff as local received"
+      ::= {ruijieMobility 21}
+
+--23 Handoff as Foreign Received
+ruijieInitHandoffasForeignReceived OBJECT-TYPE
+       SYNTAX INTEGER
+       MAX-ACCESS read-write
+       STATUS current
+       DESCRIPTION
+              "Handoff as Foreign Received"
+       ::= {ruijieMobility 22}
+
+--24 Handoff Denys Received
+ruijieInitHandoffDenyReceived OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+              "Handoff Denys Received"
+        ::= {ruijieMobility 23}
+
+--25 Anchor Request Sent
+ruijieInitAnchorRequestSent OBJECT-TYPE
+         SYNTAX INTEGER
+         MAX-ACCESS read-write
+         STATUS current
+         DESCRIPTION
+                "Anchor Request Sent"
+         ::= {ruijieMobility 24}
+
+--26 Anchor Deny Received
+ruijieInitAnchorDenyReceived OBJECT-TYPE
+         SYNTAX INTEGER
+         MAX-ACCESS read-write
+         STATUS current
+         DESCRIPTION
+                "Anchor Deny Received"
+         ::= {ruijieMobility 25}
+
+--27 AP priority enable
+ruijieAPPriorityEnable OBJECT-TYPE
+         SYNTAX INTEGER
+         MAX-ACCESS read-write
+         STATUS current
+         DESCRIPTION
+                "AP priority enable"
+         ::= {ruijieMobility 26}
+
+--28 The primary backup ac ip of ALL AP control block
+ruijiePrimaryBackUpACIP OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The primary backup AC IP of ALL AP control block"
+    ::= { ruijieMobility 27 }
+
+--29 The primary backup ac name of ALL AP control block
+ruijiePrimaryBackUpACName OBJECT-TYPE
+     SYNTAX  DisplayString
+     MAX-ACCESS read-create
+     STATUS current
+     DESCRIPTION
+              "The primary backup ac name of ALL AP control block"
+     ::= { ruijieMobility 28 }
+
+--30 The secondary backup ac ip of ALL AP control block
+ruijieSecondaryBackUpACIP OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The secondary backup AC IP of ALL AP control block"
+    ::= { ruijieMobility 29 }
+
+--31 The secondary backup ac name of ALL AP control block
+ruijieSecondaryBackUpACName OBJECT-TYPE
+     SYNTAX  DisplayString
+     MAX-ACCESS read-create
+     STATUS current
+     DESCRIPTION
+              "The secondary backup ac name of ALL AP control block"
+     ::= { ruijieMobility 30 }
+
+--32 The teriary backup ac ip of ALL AP control block
+ruijieTeriaryBackUpACip OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The teriary backup AC IP of ALL AP control block"
+    ::= { ruijieMobility 31 }
+
+--33 The teriary backup ac name of ALL AP control block
+ruijieTeriaryBackUpACName OBJECT-TYPE
+     SYNTAX  DisplayString
+     MAX-ACCESS read-create
+     STATUS current
+     DESCRIPTION
+              "The teriary backup ac name of ALL AP control block"
+     ::= { ruijieMobility 32 }
+
+--34 The roaming successful times which in the same control domain (local roam)
+ruijieACIntraRoam OBJECT-TYPE
+     SYNTAX  Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The roaming successful times which in the same control domain"
+     ::= { ruijieMobility 33 }
+
+--35 The roaming out successful times which in the different control domain (inter ac roam)
+ruijieACInterRoamIn OBJECT-TYPE
+     SYNTAX  Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The roaming in successful times which in the different control domain"
+     ::= { ruijieMobility 34 }
+
+--36 The roaming in successful times which in the different control domain (inter ac roam)
+ruijieACInterRoamOut OBJECT-TYPE
+     SYNTAX  Counter32
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The roaming out successful times which in the different control domain"
+     ::= { ruijieMobility 35 }
+
+--37 ping the other IPv6 member in the mobility group
+ruijieMobilityACPingIPv6 OBJECT-TYPE
+     SYNTAX Ipv6Address
+     MAX-ACCESS read-write
+     STATUS current
+     DESCRIPTION
+              "Ping the other IPv6 AC in the mobility"
+     ::= {ruijieMobility 36}
+
+--*********38.Roam Mobility Member Entry***************
+ruijieMobilityIPv6MemberEntryTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieMobilityIPv6MemberEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+         "Creat the roam mobility group member"
+    ::= {ruijieMobility 37}
+
+ruijieMobilityIPv6MemberEntry OBJECT-TYPE
+    SYNTAX RuijieMobilityIPv6MemberEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+         "The entry of roam mobility member"
+    INDEX  { ruijieRoamIPv6MemberGroupId, ruijieRoamIPv6MemberPeerAddress }
+    ::= { ruijieMobilityIPv6MemberEntryTable 1 }
+
+RuijieMobilityIPv6MemberEntry ::=
+    SEQUENCE {
+        ruijieRoamIPv6MemberGroupId                 INTEGER,
+        ruijieRoamIPv6MemberPeerAddress             Ipv6Address,
+        ruijieRoamIPv6MemberIsList                  INTEGER,
+        ruijieRoamIPv6MemberDataChannelIsOK         INTEGER,
+        ruijieRoamIPv6MemberDataChannelFailTimes    INTEGER,
+        ruijieRoamIPv6MemberDTLSIsClient            INTEGER,
+        ruijieRoamIPv6MemberDTLSIsOK                INTEGER,
+        ruijieRoamIPv6MemberCreateStatus            RowStatus
+    }
+
+--The group id of roam mobility group member
+ruijieRoamIPv6MemberGroupId OBJECT-TYPE
+     SYNTAX  INTEGER (0..8)
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The group id of roam mobility group"
+     ::= { ruijieMobilityIPv6MemberEntry 1 }
+
+--The peer ipv4 address of roam mobility group member
+ruijieRoamIPv6MemberPeerAddress OBJECT-TYPE
+     SYNTAX  Ipv6Address
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The peer ipv4 address of roam mobility group member"
+     ::= { ruijieMobilityIPv6MemberEntry 2 }
+
+--The flag whether roam mobility group member in roam list
+ruijieRoamIPv6MemberIsList OBJECT-TYPE
+ SYNTAX  INTEGER (0..1)
+     MAX-ACCESS read-create
+     STATUS current
+     DESCRIPTION
+             "The flag whether roam mobility group member in roam list"
+     ::= { ruijieMobilityIPv6MemberEntry 3 }
+
+--The flag whether the data channel of roam mobility group member is ok
+ruijieRoamIPv6MemberDataChannelIsOK OBJECT-TYPE
+     SYNTAX  INTEGER (0..1)
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The flag whether the data channel of roam mobility group member is ok"
+     ::= { ruijieMobilityIPv6MemberEntry 4 }
+
+--The Fail times of the data channel of roam mobility group member
+ruijieRoamIPv6MemberDataChannelFailTimes OBJECT-TYPE
+     SYNTAX  INTEGER
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The Fail times of the data channel of roam mobility group member"
+     ::= { ruijieMobilityIPv6MemberEntry 5 }
+
+--The flag whether the roam group member is client
+ruijieRoamIPv6MemberDTLSIsClient OBJECT-TYPE
+     SYNTAX  INTEGER
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The flag whether the roam mobility group member is client"
+     ::= { ruijieMobilityIPv6MemberEntry 6 }
+
+--The flag whether the roam group member dtls is ok
+ruijieRoamIPv6MemberDTLSIsOK OBJECT-TYPE
+     SYNTAX  INTEGER (0..1)
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The flag whether the roam mobility group member dtls is ok"
+     ::= { ruijieMobilityIPv6MemberEntry 7 }
+
+--This object indicate the creat or delete of the table
+ruijieRoamIPv6MemberCreateStatus OBJECT-TYPE
+     SYNTAX   RowStatus
+     MAX-ACCESS read-create
+     STATUS   current
+     DESCRIPTION
+           "This object indicate the creat or delete of the Mobility table"
+     ::= { ruijieMobilityIPv6MemberEntry 8 }
+
+--*********39.Roam Mobility User***************
+ruijieMobilityUserEntryTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieMobilityUserEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+         "Show the mobility user"
+    ::= {ruijieMobility 38}
+
+ruijieMobilityUserEntry OBJECT-TYPE
+    SYNTAX RuijieMobilityUserEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+         "The entry of mobility user"
+    INDEX  { ruijieRoamUserMac }
+    ::= { ruijieMobilityUserEntryTable 1 }
+
+RuijieMobilityUserEntry ::=
+    SEQUENCE {
+        ruijieRoamUserMac                           MacAddress,
+        ruijieRoamUserRoamType                      INTEGER,
+        ruijieRoamUserRoamOutAcAddressType          InetAddressType,
+        ruijieRoamUserRoamOutAcAddress              InetAddress,
+        ruijieRoamUserRoamInAcAddressType           InetAddressType,
+        ruijieRoamUserRoamInAcAddress               InetAddress,
+        ruijieRoamUserRoamOutApMac                  MacAddress,
+        ruijieRoamUserRoamInApMac                   MacAddress,
+        ruijieRoamUserRoamOutVid                    INTEGER,
+        ruijieRoamUserRoamInVid                     INTEGER
+    }
+
+--The STA MAC of mobility user entry
+ruijieRoamUserMac OBJECT-TYPE
+     SYNTAX  MacAddress
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The STA MAC of mobility user entry"
+     ::= { ruijieMobilityUserEntry 1 }
+     
+--The Roam Type of mobility user entry
+ruijieRoamUserRoamType OBJECT-TYPE
+     SYNTAX  INTEGER
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The Roam Type of mobility user entry"
+     ::= { ruijieMobilityUserEntry 2 }
+     
+--The RO-AC Address Type of mobility user entry
+ruijieRoamUserRoamOutAcAddressType OBJECT-TYPE
+     SYNTAX  InetAddressType
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The RO-AC Address Type of mobility user entry"
+     ::= { ruijieMobilityUserEntry 3 }
+     
+--The RO-AC Address of mobility user entry
+ruijieRoamUserRoamOutAcAddress OBJECT-TYPE
+     SYNTAX  InetAddress
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The RO-AC Address of mobility user entry"
+     ::= { ruijieMobilityUserEntry 4 }
+    
+--The RI-AC Address Type of mobility user entry
+ruijieRoamUserRoamInAcAddressType OBJECT-TYPE
+     SYNTAX  InetAddressType
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The RI-AC Address Type of mobility user entry"
+     ::= { ruijieMobilityUserEntry 5 }
+     
+--The RI-AC Address of mobility user entry
+ruijieRoamUserRoamInAcAddress OBJECT-TYPE
+     SYNTAX  InetAddress
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The RI-AC Address of mobility user entry"
+     ::= { ruijieMobilityUserEntry 6 }
+
+--The RO-AP MAC of mobility user entry
+ruijieRoamUserRoamOutApMac OBJECT-TYPE
+     SYNTAX  MacAddress
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The RO-AP MAC of mobility user entry"
+     ::= { ruijieMobilityUserEntry 7 }
+     
+--The RI-AP MAC of mobility user entry
+ruijieRoamUserRoamInApMac OBJECT-TYPE
+     SYNTAX  MacAddress
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The RI-AP MAC of mobility user entry"
+     ::= { ruijieMobilityUserEntry 8 }
+    
+--The RO-VLAN of mobility user entry
+ruijieRoamUserRoamOutVid OBJECT-TYPE
+     SYNTAX  INTEGER
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The RO-VLAN of mobility user entry"
+     ::= { ruijieMobilityUserEntry 9 }
+     
+--The RI-VLAN of mobility user entry
+ruijieRoamUserRoamInVid OBJECT-TYPE
+     SYNTAX  INTEGER
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The RI-VLAN of mobility user entry"
+     ::= { ruijieMobilityUserEntry 10 }
+     
+--*********40.Roam Mobility Track Entry***************
+ruijieMobilityTrackEntryTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieMobilityTrackEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+         "Show the roam track of user"
+    ::= {ruijieMobility 39}
+
+ruijieMobilityTrackEntry OBJECT-TYPE
+    SYNTAX RuijieMobilityTrackEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+         "The entry of roam mobility track"
+    INDEX  { ruijieRoamTrackStaMac, ruijieRoamTrackId }
+    ::= { ruijieMobilityTrackEntryTable 1 }
+
+RuijieMobilityTrackEntry ::=
+    SEQUENCE {
+        ruijieRoamTrackStaMac                       MacAddress,
+        ruijieRoamTrackId                           INTEGER,
+        ruijieRoamTrackAcAddressType                InetAddressType,
+        ruijieRoamTrackAcAddress                    InetAddress,
+        ruijieRoamTrackApMac                        MacAddress,
+        ruijieRoamTrackRadioId                      INTEGER,
+        ruijieRoamTrackStaIp                        IpAddress,
+        ruijieRoamTrackStaIpv6                      Ipv6Address,
+        ruijieRoamTrackStaOnlineTime                INTEGER
+    }
+
+--The STA MAC of roam mobility track entry
+ruijieRoamTrackStaMac OBJECT-TYPE
+     SYNTAX  MacAddress
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The STA MAC of roam mobility track entry"
+     ::= { ruijieMobilityTrackEntry 1 }
+
+--The TrackId of roam mobility track entry
+ruijieRoamTrackId OBJECT-TYPE
+     SYNTAX  INTEGER
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The TrackId of roam mobility track entry"
+     ::= { ruijieMobilityTrackEntry 2 }
+
+--The AC Address Type of roam mobility track entry
+ruijieRoamTrackAcAddressType OBJECT-TYPE
+     SYNTAX  InetAddressType
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The AC Address Type of roam mobility track entry"
+     ::= { ruijieMobilityTrackEntry 3 }
+
+--The AC Address of roam mobility track entry
+ruijieRoamTrackAcAddress OBJECT-TYPE
+     SYNTAX  InetAddress
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The AC Address Type of roam mobility track entry"
+     ::= { ruijieMobilityTrackEntry 4 }
+     
+--The AP Mac of roam mobility track entry
+ruijieRoamTrackApMac OBJECT-TYPE
+     SYNTAX  MacAddress
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+              "The AP Mac of roam mobility track entry"
+     ::= { ruijieMobilityTrackEntry 5 }
+
+--The RadioId of roam mobility track entry
+ruijieRoamTrackRadioId OBJECT-TYPE
+     SYNTAX  INTEGER
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The RadioId of roam mobility track entry"
+     ::= { ruijieMobilityTrackEntry 6 }
+
+--The STA IPv4 Address of roam mobility track entry
+ruijieRoamTrackStaIp OBJECT-TYPE
+     SYNTAX  IpAddress
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The STA IPv4 Address of roam mobility track entry"
+     ::= { ruijieMobilityTrackEntry 7 }
+
+--The STA IPv6 Address of roam mobility track entry
+ruijieRoamTrackStaIpv6 OBJECT-TYPE
+     SYNTAX  Ipv6Address
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The STA IPv6 Address of roam mobility track entry"
+     ::= { ruijieMobilityTrackEntry 8 }
+     
+--The STA online time of roam mobility track entry
+ruijieRoamTrackStaOnlineTime OBJECT-TYPE
+     SYNTAX  INTEGER
+     MAX-ACCESS read-only
+     STATUS current
+     DESCRIPTION
+             "The STA online time of roam mobility track entry"
+     ::= { ruijieMobilityTrackEntry 9 }
+
+ruijieMobilityMIBCompliances OBJECT IDENTIFIER ::={ruijieMobilityIf 1}
+ruijieMobilityMIBGroups      OBJECT IDENTIFIER ::={ruijieMobilityIf 2}
+
+--compliance statements
+ruijieMobilityMIBCompliance MODULE-COMPLIANCE
+      STATUS current
+      DESCRIPTION
+               "The compliance statement for entities which implement the CAPWAP MOBILITY MIB"
+      MODULE -- this module
+             MANDATORY-GROUPS{ ruijieMobilityMIBGroup
+             }
+      ::= { ruijieMobilityMIBCompliances 1}
+
+--units of conformance
+ruijieMobilityMIBGroup OBJECT-GROUP
+      OBJECTS {
+--ROAM GROUP
+        ruijieRoamGroupName,
+        ruijieRoamGroupMyAddress,
+        ruijieRoamGroupMcEnable,
+        ruijieRoamGroupMcAddress,
+        ruijieRoamGroupKeepaliveCount,
+        ruijieRoamGroupKeepaliveInterval,
+        ruijieRoamGroupIsFast,
+        ruijieRoamGroupCreateStatus,
+--ROAM MEMBER
+        ruijieRoamMemberIsList,
+        ruijieRoamMemberDataChannelIsOK,
+        ruijieRoamMemberDataChannelFailTimes,
+        ruijieRoamMemberDTLSIsClient,
+        ruijieRoamMemberDTLSIsOK,
+        ruijieRoamMemberCreateStatus,
+--AP  MEMBER
+        ruijiePriority,
+        ruijiePrimaryACIP,
+        ruijiePrimaryACName,
+        ruijieSecondaryACIP,
+        ruijieSecondaryACName,
+        ruijieTertiaryACIP,
+        ruijieTertiaryACName,
+        ruijieAPCtrlCreatStatus,
+--WLAN MEMBER
+        ruijieAnchorACIPaddr,
+        ruijieWLANCtrlCreatStatus,
+--Mobility staticstic
+        ruijieGlobalHandoffRequestsReceived,
+        ruijieGlobalHandoffEndRequestsReceived,
+        ruijieGlobalStateTransitionsDisabled,
+        ruijieGlobalResourceUnavailable,
+        ruijieRespondeHandoffRequestIgnored,
+        ruijieRespondePingPongHandoffRequestsDropped,
+        ruijieRespondeHandoffRequestsDroped,
+        ruijieRespondeHandoffRequestsDenied,
+        ruijieRespondeClientHandoffasLocal,
+        ruijieRespondeClientHandoffasForeign,
+        ruijieRespondeAnchorRequestsReceived,
+        ruijieRespondeAnchorRequestDenied,
+        ruijieRespondeAnchorTransferred,
+        ruijieInitHandoffRequestsSent,
+        ruijieInitHandoffReplyReceived,
+        ruijieInitHandoffasLocalReceived,
+        ruijieInitHandoffasForeignReceived,
+        ruijieInitHandoffDenyReceived,
+        ruijieInitAnchorRequestSent,
+        ruijieInitAnchorDenyReceived,
+        ruijieAPPriorityEnable,
+        ruijiePrimaryBackUpACIP,
+        ruijiePrimaryBackUpACName,
+        ruijieSecondaryBackUpACIP,
+        ruijieSecondaryBackUpACName,
+        ruijieTeriaryBackUpACip,
+        ruijieTeriaryBackUpACName,
+        ruijieACIntraRoam,
+        ruijieACInterRoamIn,
+        ruijieACInterRoamOut,
+        ruijieMobilityACPingIPv6,
+--ROAM IPv6 Member
+        ruijieRoamIPv6MemberGroupId,
+        ruijieRoamIPv6MemberPeerAddress,
+        ruijieRoamIPv6MemberIsList,
+        ruijieRoamIPv6MemberDataChannelIsOK,
+        ruijieRoamIPv6MemberDataChannelFailTimes,
+        ruijieRoamIPv6MemberDTLSIsClient,
+        ruijieRoamIPv6MemberDTLSIsOK,
+        ruijieRoamIPv6MemberCreateStatus,
+--ROAM User Entry
+        ruijieRoamUserMac,
+        ruijieRoamUserRoamType,
+        ruijieRoamUserRoamOutAcAddressType,
+        ruijieRoamUserRoamOutAcAddress,
+        ruijieRoamUserRoamInAcAddressType,
+        ruijieRoamUserRoamInAcAddress,
+        ruijieRoamUserRoamOutApMac,
+        ruijieRoamUserRoamInApMac,
+        ruijieRoamUserRoamOutVid,
+        ruijieRoamUserRoamInVid,
+--ROAM Track Entry
+        ruijieRoamTrackStaMac,
+        ruijieRoamTrackId,
+        ruijieRoamTrackAcAddressType,
+        ruijieRoamTrackAcAddress,
+        ruijieRoamTrackApMac,
+        ruijieRoamTrackRadioId,
+        ruijieRoamTrackStaIp,
+        ruijieRoamTrackStaIpv6,
+        ruijieRoamTrackStaOnlineTime
+      }
+      STATUS current
+      DESCRIPTION
+               "A collection of objects providing mobility configure."
+      ::= {ruijieMobilityMIBGroups 1 }
+
+
+ruijieMobilityTrapSta       OBJECT IDENTIFIER ::= { ruijieMobilityTrap 1 }
+ruijieMobilityTrapStaIf     OBJECT IDENTIFIER ::= { ruijieMobilityTrap 2 }
+
+-- ****************************************
+--
+--               Notify nodes
+--
+-- ****************************************
+ruijieMobilityNotifyApMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the unique identifier of a WTP."
+    ::= { ruijieMobilityTrapSta 1 }
+
+ruijieMobilityNotifyStaMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the unique identifier of a STA."
+    ::= { ruijieMobilityTrapSta 2 }
+
+ruijieMobilityNotifyApIp OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the Ip address of a WTP."
+    ::= { ruijieMobilityTrapSta 3 }
+
+ruijieMobilityNotifyStaIp OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the Ip of a STA."
+    ::= { ruijieMobilityTrapSta 4 }
+
+ruijieMobilityNotifyStaOperType OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the STA operation, 1-del,2-add,3-roaming,4-ipupdate,5-ipv6update"
+    ::= { ruijieMobilityTrapSta 5 }
+
+ruijieMobilityNotifyStaApRadioId OBJECT-TYPE
+    SYNTAX      INTEGER(1..2)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the radio id which STA attach."
+    ::= { ruijieMobilityTrapSta 6 }
+
+ruijieMobilityNotifyStaApRadioType OBJECT-TYPE
+    SYNTAX      INTEGER (1..2)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+              "1--802.11b
+               2--802.11a"
+    ::= { ruijieMobilityTrapSta 7 }
+
+ruijieMobilityNotifyStaVlanId OBJECT-TYPE
+    SYNTAX      INTEGER (1..4094)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+              "Vlan Id the sta belongs to"
+    ::= { ruijieMobilityTrapSta 8 }
+
+ruijieMobilityNotifyStaWlanId OBJECT-TYPE
+    SYNTAX      INTEGER (1..4095)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+              "Wlan Id the sta belongs to"
+    ::= { ruijieMobilityTrapSta 9 }
+
+ruijieMobilityNotifyStaIpv6 OBJECT-TYPE
+    SYNTAX      Ipv6Address
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+              "Sta ipv6 address."
+    ::= { ruijieMobilityTrapSta 10 }
+
+ruijieMobilityNotifyStaAssoAuthMode  OBJECT-TYPE
+    SYNTAX  INTEGER {
+        open(0),
+        wep(1),
+        dot1x-wep(2),
+        dot1x-wpa(3),
+        dot1x-wpa2(4),
+        mab(5),
+        psk-wpa(6),
+        psk-wpa2(7),
+        wapi(8)
+    }
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "The Sta associate authentication mode."
+    ::= { ruijieMobilityTrapSta 11}
+
+ruijieMobilityNotifyStaNetAuthMode  OBJECT-TYPE
+    SYNTAX  INTEGER {
+        open(0),
+        web(1)
+    }
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "The Sta's authentication mode after associated."
+    ::= { ruijieMobilityTrapSta 12}
+
+ruijieMobilityNotifyStaSsid  OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "The wlan ssid with the sta associated."
+    ::= { ruijieMobilityTrapSta 13}
+
+ruijieMobilityNotifyStaLinkRate  OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "The link rate with the sta associated, unit: 1kbps."
+    ::= { ruijieMobilityTrapSta 14}
+
+ruijieMobilityNotifyStaCurChan  OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "The Sta current use channel after associated."
+    ::= { ruijieMobilityTrapSta 15}
+
+ruijieMobilityNotifyStaClientType  OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "The Sta's type."
+    ::= { ruijieMobilityTrapSta 16}
+
+ruijieMobilityNotifyStaRssi OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "The Sta's RSSI."
+    ::= { ruijieMobilityTrapSta 17}
+
+ruijieMobilityNotifyStaReason OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "The Sta's down reason."
+    ::= { ruijieMobilityTrapSta 18}
+
+ruijieMobilityNotifyStaOper NOTIFICATION-TYPE
+    OBJECTS     {
+                  ruijieMobilityNotifyApMac,
+                  ruijieMobilityNotifyStaMac,
+                  ruijieMobilityNotifyApIp,
+                  ruijieMobilityNotifyStaIp,
+                  ruijieMobilityNotifyStaOperType,
+                  ruijieMobilityNotifyStaApRadioId,
+                  ruijieMobilityNotifyStaApRadioType,
+                  ruijieMobilityNotifyStaVlanId,
+                  ruijieMobilityNotifyStaWlanId,
+                  ruijieMobilityNotifyStaIpv6,
+                  ruijieMobilityNotifyStaAssoAuthMode,
+                  ruijieMobilityNotifyStaNetAuthMode,
+                  ruijieMobilityNotifyStaSsid,
+                  ruijieMobilityNotifyStaLinkRate,
+                  ruijieMobilityNotifyStaCurChan,
+                  ruijieMobilityNotifyStaClientType,
+                  ruijieMobilityNotifyStaRssi,
+                  ruijieMobilityNotifyStaReason
+                }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent by the AC when a sta enter or quit or ip update."
+    ::= { ruijieMobilityTrapStaIf 1 }
+
+END

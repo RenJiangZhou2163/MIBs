@@ -1,0 +1,566 @@
+-- *****************************************************************
+-- RUIJIE-SECURITY-MIB.mib:  Ruijie Security MIB file
+--
+-- March 2002, Wuzg
+--
+-- Copyright (c) 2002 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-SECURITY-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        NOTIFICATION-TYPE,
+        Integer32,
+        IpAddress,
+        Unsigned32
+                FROM SNMPv2-SMI
+        TruthValue,
+        RowStatus,
+        MacAddress
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ConfigStatus,
+        IfIndex
+                FROM RUIJIE-TC
+        ifIndex        
+                FROM IF-MIB
+        EnabledStatus 
+                FROM P-BRIDGE-MIB
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieSecurityMIB MODULE-IDENTITY
+        LAST-UPDATED "200203200000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie security mibs."
+        REVISION      "200203200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 6}
+
+ruijieSecurityMIBObjects OBJECT IDENTIFIER ::= { ruijieSecurityMIB 1 }
+
+ruijieUserManagementObjects OBJECT IDENTIFIER ::= { ruijieSecurityMIBObjects 1 }
+
+ruijieSecurityAddressObjects OBJECT IDENTIFIER ::= { ruijieSecurityMIBObjects 2 }
+
+ruijiePortSecrrityObjects OBJECT IDENTIFIER ::= { ruijieSecurityMIBObjects 3 }
+
+--
+--  user management
+--
+
+ruijieEnableSnmpAgent OBJECT-TYPE
+    SYNTAX      EnabledStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Enabled indicate that user can manage switch by snmp agent,
+             disabled indicate that user can't manage switch by snmp agent."
+    ::= { ruijieUserManagementObjects 1 }
+    
+ruijieEnableWeb OBJECT-TYPE
+    SYNTAX      EnabledStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Enabled indicate that user can manage switch by web,
+             disabled indicate that user can't manage switch by web."
+    ::= { ruijieUserManagementObjects 2 }    
+    
+ruijieEnableTelnet OBJECT-TYPE
+    SYNTAX      EnabledStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Enabled indicate that user can manage switch by telnet,
+             disabled indicate that user can't manage switch by telnet."
+    ::= { ruijieUserManagementObjects 3 }    
+
+--TelnetHostIpTable
+ruijieTelnetHostIpTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieTelnetHostIpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+              "The table of telnet client's IP address, only these hostes can access the telnet server."
+    ::= { ruijieUserManagementObjects 4 }
+
+ruijieTelnetHostIpEntry OBJECT-TYPE
+        SYNTAX  RuijieTelnetHostIpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+              "The entry of telnet host IP address table."
+        INDEX   { ruijieTelnetHostIpAddress}
+    ::= { ruijieTelnetHostIpTable 1 }
+
+    RuijieTelnetHostIpEntry ::=
+        SEQUENCE {
+                ruijieTelnetHostIpAddress
+                       IpAddress,
+                ruijieTelnetHostIpEnable
+                       INTEGER         
+      }
+
+ruijieTelnetHostIpAddress OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The telnet client's IP address, Only these hostes can access the telnet server"
+        ::= { ruijieTelnetHostIpEntry 1 }
+
+ruijieTelnetHostIpEnable OBJECT-TYPE
+        SYNTAX  INTEGER{                   
+                   enable(1), 
+                   disable(2)
+                   }
+        MAX-ACCESS   read-write
+        STATUS       current
+        DESCRIPTION
+            "The telnet client's IP address enable state"
+    ::= { ruijieTelnetHostIpEntry 2 }
+    
+--WebHostIpTable
+ruijieWebHostIpTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieWebHostIpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+              "The table of web client's IP address, only these hostes can access the web server."
+    ::= { ruijieUserManagementObjects 5 }
+
+ruijieWebHostIpEntry OBJECT-TYPE
+        SYNTAX  RuijieWebHostIpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+              "The entry of web host IP address table."
+        INDEX   { ruijieWebHostIpAddress}
+    ::= { ruijieWebHostIpTable 1 }
+
+    RuijieWebHostIpEntry ::=
+        SEQUENCE {
+                ruijieWebHostIpAddress
+                       IpAddress,
+                ruijieWebHostIpEnable
+                       INTEGER         
+      }
+
+ruijieWebHostIpAddress OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The web client's IP address, Only these hostes can access the web server"
+        ::= { ruijieWebHostIpEntry 1 }
+
+ruijieWebHostIpEnable OBJECT-TYPE
+        SYNTAX  INTEGER{                   
+                   enable(1), 
+                   disable(2)
+                   }
+        MAX-ACCESS   read-write
+        STATUS       current
+        DESCRIPTION
+            "The web client's IP address enable state"
+    ::= { ruijieWebHostIpEntry 2 }
+
+-- security address 
+
+ruijieSecurityAddressTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieSecurityAddressEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+              "The table of security address."
+    ::= { ruijieSecurityAddressObjects 1 }
+
+ruijieSecurityAddressEntry OBJECT-TYPE
+        SYNTAX  RuijieSecurityAddressEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+              "The entry of Security address table."
+        INDEX   { ruijieSecurityAddressFdbId,
+              ruijieSecurityAddressAddress,
+              ruijieSecurityAddressPort,
+              ruijieSecurityAddressIpAddr}
+    ::= { ruijieSecurityAddressTable 1 }
+
+    RuijieSecurityAddressEntry ::=
+        SEQUENCE {
+                ruijieSecurityAddressFdbId
+                       Unsigned32,
+                ruijieSecurityAddressAddress
+                       MacAddress,
+                ruijieSecurityAddressPort
+                       IfIndex,  
+                ruijieSecurityAddressIpAddr
+                       IpAddress,
+                ruijieSecurityAddressIfBindIp
+                       TruthValue,        
+                ruijieSecurityAddressRemainAge
+                       Integer32,   
+                ruijieSecurityAddressType
+                       INTEGER,         
+                ruijieSecurityAddressStatus
+                       RowStatus                       
+      }
+
+ruijieSecurityAddressFdbId OBJECT-TYPE
+        SYNTAX       Unsigned32
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "The VID of vlan which the security address blongs to."
+    ::= { ruijieSecurityAddressEntry 1 }
+    
+ruijieSecurityAddressAddress OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+              "The MAC address of the security address."
+    ::= { ruijieSecurityAddressEntry 2 }
+
+ruijieSecurityAddressPort OBJECT-TYPE
+        SYNTAX       IfIndex
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "The interface which the security address blongs to."
+    ::= { ruijieSecurityAddressEntry 3 }
+    
+ruijieSecurityAddressIpAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The IP address which the security address bind.It's meaning only when 
+            ruijieSecurityAddressIfBindIp is true."
+        ::= { ruijieSecurityAddressEntry 4 }
+        
+ruijieSecurityAddressIfBindIp OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "this object offer the means whether security address will bind IP."
+        ::= { ruijieSecurityAddressEntry 5 }
+        
+ruijieSecurityAddressRemainAge OBJECT-TYPE
+        SYNTAX       Integer32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The remain age of the security address, in units of minute."
+    ::= { ruijieSecurityAddressEntry 6 }
+
+ruijieSecurityAddressType OBJECT-TYPE
+        SYNTAX  INTEGER{                   
+                   secureConfigured(1), 
+                   dynamicLearn(2)
+                   }
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The type of the security address"
+    ::= { ruijieSecurityAddressEntry 7 }
+                
+ruijieSecurityAddressStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "entry status of this entry. and the means in this enviraments can
+            reffer to the text-convention definition of the RowStatus."
+    ::= { ruijieSecurityAddressEntry 8 }
+
+
+--Address Bind Table
+ruijieBindAddressTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieBindAddressEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+		"IP-MAC bind table. The source MAC address must be bound when the switch receives the frame with
+		 source IP address defined in this table. Otherwise, the frame will be discarded."
+    ::= { ruijieSecurityAddressObjects 2 }
+
+ruijieBindAddressEntry OBJECT-TYPE
+        SYNTAX  RuijieBindAddressEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+              "The entry of Bind address table."
+        INDEX   { ruijieBindAddressIpAddr}
+    ::= { ruijieBindAddressTable 1 }
+
+    RuijieBindAddressEntry ::=
+        SEQUENCE {
+                ruijieBindAddressIpAddr
+                       IpAddress,
+                ruijieBindMacAddress
+                       MacAddress,
+                ruijieBindAddressStatus
+                       ConfigStatus                       
+      }
+ruijieBindAddressIpAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The IP address which the security address bind.It's meaning only when 
+            ruijieBindAddressIfBindIp is true."
+        ::= { ruijieBindAddressEntry 1 }
+    
+ruijieBindMacAddress OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+              "The MAC address of the security address."
+    ::= { ruijieBindAddressEntry 2 }    
+                
+ruijieBindAddressStatus OBJECT-TYPE
+        SYNTAX ConfigStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "entry status. Setting this value to 'invalid' will remove this entry"
+    ::= { ruijieBindAddressEntry 3 }
+
+-- port security
+ruijiePortSecurityTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijiePortSecurityEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of port security configuration objects."
+        ::= { ruijiePortSecrrityObjects 1 }
+    
+ruijiePortSecurityEntry OBJECT-TYPE
+        SYNTAX RuijiePortSecurityEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains port security configurations."
+        INDEX { ruijiePortSecurityPortIndex }
+        ::= { ruijiePortSecurityTable 1 }
+    
+RuijiePortSecurityEntry ::=
+        SEQUENCE {
+        ruijiePortSecurityPortIndex IfIndex,
+        ruijiePortSecurityStatus EnabledStatus,
+        ruijiePortSecurViolationType INTEGER,        
+        ruijiePortSecurityAddrNum Integer32,
+        ruijiePortSecurityAddrAge Integer32,
+        ruijiePortStaticSecurAddrIfAge EnabledStatus,
+        ruijiePortSecurityAddressCurrentNum Integer32, 
+        ruijiePortStaticSecurAddrCurrentNum Integer32,
+        ruijiePortSecurityIpDistrMode INTEGER
+        }
+
+ruijiePortSecurityPortIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            ""
+        ::= { ruijiePortSecurityEntry 1 }
+            
+ruijiePortSecurityStatus OBJECT-TYPE
+        SYNTAX EnabledStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            ""
+        DEFVAL { disabled }         
+        ::= { ruijiePortSecurityEntry 2 }
+
+ruijiePortSecurViolationType OBJECT-TYPE
+        SYNTAX INTEGER {
+            violation-protect(1),
+            violation-restrict(2),
+            violation-shutdown(3)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "this object define 3 grades of port security:
+            violation-protect(1):
+                normal security grade, indicate that when the a datagram received on a
+                port with illegal MAC address will be discarded but not send trap, 
+                legal and illegal MAC to a port security is 
+                defined by per port's security below.
+            violation-restrict(2):
+                normal security grade, indicate that when the a datagram received on a
+                port with illegal MAC address will be discarded and send trap, legal and illegal MAC
+                to a port security is defined by per port's security below.
+            violation-shutdown(3):
+                strict security grade, indicate that when the a datagram received on a
+                port with illegal MAC address, the port will be disabled for the violation
+                of the port's security and send trap."
+        DEFVAL { violation-protect }         
+        ::= { ruijiePortSecurityEntry 3 }
+            
+ruijiePortSecurityAddrNum OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This value means the address number threshold of this port. A new address want to 
+            add to the port address will be refused when address num exceed this value. 
+            This value is valid when ruijiePortSecurityStatus is 'disabled'"
+        ::= { ruijiePortSecurityEntry 4 }    
+
+ruijiePortSecurityAddrAge OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Aging time in units of minute of security address of interface"
+        ::= { ruijiePortSecurityEntry 5 }    
+        
+ruijiePortStaticSecurAddrIfAge OBJECT-TYPE
+        SYNTAX EnabledStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object offer the means whether enable static configured security address 
+             aging."
+        ::= { ruijiePortSecurityEntry 6 }
+        
+ruijiePortSecurityAddressCurrentNum OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+              "Current number of the security address of interface."
+        ::= { ruijiePortSecurityEntry 7 }
+        
+ruijiePortStaticSecurAddrCurrentNum OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+              "Current number of the static configured security address of interface."
+        ::= { ruijiePortSecurityEntry 8 }
+
+ruijiePortSecurityIpDistrMode OBJECT-TYPE
+        SYNTAX INTEGER{
+            static(1),                     --only Static IP Distribute enabled
+            dynamic(2),                 --only Dynamic IP Distribute enabled
+            staticAndDynamic(3),     --both Static and Dynamic IP Distribute enable
+            unSpecified(4)              --not specified
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "IP Distrute Mode
+             (0:Static-only mode, 
+              1:Dynamic-only mode, 
+              2:Dynamic and Static mode, 
+              3:Unspecified mode)"
+        ::= { ruijiePortSecurityEntry 9 }
+
+ruijieSecurityTraps      OBJECT IDENTIFIER ::= { ruijieSecurityMIB 2 }
+
+portSecurityViolate NOTIFICATION-TYPE
+    OBJECTS    {ifIndex}
+    STATUS  current
+    DESCRIPTION
+            "the mac lock violate trap indicates that if you
+             have set the threshold number of learned addresses
+             from a port, and their comes a new address from the
+             port, but the addresses for the port is already 
+             full."
+    ::= { ruijieSecurityTraps 1 }        
+
+ruijieSecurityMIBConformance OBJECT IDENTIFIER ::= { ruijieSecurityMIB 3 }
+ruijieSecurityMIBCompliances OBJECT IDENTIFIER ::= { ruijieSecurityMIBConformance 1 }
+ruijieSecurityMIBGroups      OBJECT IDENTIFIER ::= { ruijieSecurityMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieSecurityMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie Security MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieUserManageMIBGroup,
+                                   ruijieSecurityAddressMIBGroup,
+                                   ruijiePortSecurityMIBGroup
+                 }
+        ::= { ruijieSecurityMIBCompliances 1 }
+                
+-- units of conformance
+
+ruijieUserManageMIBGroup OBJECT-GROUP
+        OBJECTS {
+           ruijieEnableSnmpAgent,
+           ruijieEnableWeb,
+           ruijieEnableTelnet
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing status snmp and web and telnet
+                 management agent to a Ruijie agent."
+        ::= { ruijieSecurityMIBGroups 1 }         
+        
+ruijieSecurityAddressMIBGroup OBJECT-GROUP
+        OBJECTS {
+--                ruijieSecurityAddressFdbId,
+--                ruijieSecurityAddressAddress,
+--                ruijieSecurityAddressPort,
+--                ruijieSecurityAddressIpAddr,
+                ruijieSecurityAddressIfBindIp,        
+                ruijieSecurityAddressRemainAge, 
+                ruijieSecurityAddressType,    
+                ruijieSecurityAddressStatus,
+--                ruijieBindAddressIpAddr,
+                ruijieBindMacAddress,
+                ruijieBindAddressStatus            
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing security address to a
+                Ruijie agent."
+        ::= { ruijieSecurityMIBGroups 2 }                         
+        
+ruijiePortSecurityMIBGroup OBJECT-GROUP
+        OBJECTS {
+              ruijiePortSecurityPortIndex,
+              ruijiePortSecurityStatus,
+              ruijiePortSecurViolationType,
+              ruijiePortSecurityAddrNum,
+              ruijiePortSecurityAddrAge,
+              ruijiePortStaticSecurAddrIfAge,
+              ruijiePortSecurityAddressCurrentNum, 
+              ruijiePortStaticSecurAddrCurrentNum,
+              ruijiePortSecurityIpDistrMode
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing port security to a
+                Ruijie agent."
+        ::= { ruijieSecurityMIBGroups 3 }                                 
+                
+END

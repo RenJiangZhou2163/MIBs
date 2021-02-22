@@ -1,0 +1,240 @@
+-- ===================================================================
+-- Copyright (C) 2017 by HUAWEI TECHNOLOGIES. All rights reserved.
+-- Description: The MIB is designed to get the datastore information of the user management module.
+-- Reference:Huawei Enterprise MIB
+-- Version: V1.03
+-- ===================================================================
+
+	HUAWEI-SECURITY-UM-MIB DEFINITIONS ::= BEGIN
+ 				
+		IMPORTS
+			enterprises			
+				FROM RFC1155-SMI			
+			OBJECT-GROUP, NOTIFICATION-GROUP			
+				FROM SNMPv2-CONF			
+			IpAddress, Integer32, Unsigned32, Counter64, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE			
+				FROM SNMPv2-SMI				
+	        RowStatus, TruthValue, DisplayString,PhysAddress,TEXTUAL-CONVENTION,TimeStamp  
+                FROM SNMPv2-TC;
+				
+-- 1.3.6.1.4.1.2011.6.122.79
+		hwUm MODULE-IDENTITY 
+		LAST-UPDATED "201709212040Z"		-- September 21, 2017 at 20:40 GMT
+		ORGANIZATION 
+			"Huawei Technologies Co.,Ltd."
+		CONTACT-INFO 
+			"Huawei Industrial Base
+				Bantian, Longgang
+				Shenzhen 518129
+				People's Republic of China
+				Website: http://www.huawei.com
+				Email: support@huawei.com"
+				
+		DESCRIPTION 
+			"V1.03, add hwUmADSSOAgentOnline, hwUmADSSOAgentOffline, hwUmADSSOAgentIP, hwUmADSSOAgentMAC "
+		REVISION "201709212040Z"		-- September 21, 2017 at 20:40 GMT
+		
+		DESCRIPTION 
+			"V1.02, add hwUmRadiusSpeedOfStartPackets, hwUmRadiusTotalOfStartPackets, hwUmRadiusSpeedOfStopPackets, hwUmRadiusTotalOfStopPackets, hwUmRadiusSpeedOfUpdatePackets, hwUmRadiusTotalOfUpdatePackets"
+		REVISION "201708071140Z"		-- August 7, 2017 at 11:40 GMT	
+		
+		DESCRIPTION 
+			"The HUAWEI-SECURITY-UM-MIB contains objects to manage the firewall function of UM module."
+		REVISION "201701101615Z"		-- January 10, 2017 at 16:15 GMT		
+		
+		DESCRIPTION 
+			"The HUAWEI-SECURITY-UM-MIB contains objects to manage the firewall function of UM module."
+		REVISION "201611071408Z"		-- November 7, 2016 at 14:09 GMT   	
+		
+		DESCRIPTION 
+			"V1.00, completed the first draft."
+		::= { hwSecurity 79 }
+
+--
+-- Node definitions
+--
+	    -- 1.3.6.1.4.1.2011
+		huawei OBJECT IDENTIFIER ::= { enterprises 2011 }
+		
+		-- 1.3.6.1.4.1.2011.6
+		huaweiUtility OBJECT IDENTIFIER ::= { huawei 6 }
+
+		
+		-- 1.3.6.1.4.1.2011.6.122
+		hwSecurity OBJECT IDENTIFIER ::= { huaweiUtility 122 }
+
+	    
+		-- 1.3.6.1.4.1.2011.6.122.79.1
+		hwUmNotification OBJECT IDENTIFIER ::= { hwUm 1 }
+		
+		
+		-- 1.3.6.1.4.1.2011.6.122.79.1.1
+		hwUmTrapObjects OBJECT IDENTIFIER ::= { hwUmNotification 1 }
+		
+		
+		-- 1.3.6.1.4.1.2011.6.122.79.1.1.1
+		hwUmOnlineUserUsageCurrent OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"Current proportion of online users."
+			::= { hwUmTrapObjects 1 }
+			
+			
+		-- 1.3.6.1.4.1.2011.6.122.79.1.1.2
+		hwUmOnlineUserUsageThreshold OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"Threshold proportion of online user."
+			::= { hwUmTrapObjects 2 }
+
+			
+		-- 1.3.6.1.4.1.2011.6.122.79.1.1.3
+		hwUmADSSOAgentIP OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"IP address of AD SSO Agent."
+			::= { hwUmTrapObjects 3 }
+			
+			
+		-- 1.3.6.1.4.1.2011.6.122.79.1.1.4
+		hwUmADSSOAgentMAC OBJECT-TYPE
+			SYNTAX PhysAddress
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"MAC address of AD SSO Agent."
+			::= { hwUmTrapObjects 4 }
+	
+	
+		-- 1.3.6.1.4.1.2011.6.122.79.1.2
+		hwUmTraps OBJECT IDENTIFIER ::= { hwUmNotification 2 }
+		
+		
+		-- 1.3.6.1.4.1.2011.6.122.79.1.2.1
+		hwUmTrapOnlineUserOverThreshold NOTIFICATION-TYPE
+			OBJECTS { hwUmOnlineUserUsageCurrent, hwUmOnlineUserUsageThreshold }
+			STATUS current
+			DESCRIPTION 
+				"
+				This OID indicates that the online user of following authentication exceeded the upper threshold. Mode of authentication for an online user:
+				Authentication Exemption (bidirectional IP/MAC+user binding);
+				Local Authentication;
+				AD Server Authentication;
+				LDAP Server Authentication;
+				HWTACACS Server Authentication;
+				RADIUS Server Authentication;
+				SSO Authentication;
+				SMS Authentication.
+				"
+			::= { hwUmTraps 1 }
+			
+			
+		-- 1.3.6.1.4.1.2011.6.122.79.1.2.2
+		hwUmTrapOnlineUserOverThresholdRecover NOTIFICATION-TYPE
+			OBJECTS { hwUmOnlineUserUsageCurrent, hwUmOnlineUserUsageThreshold }
+			STATUS current
+			DESCRIPTION 
+				"The online user fell below the upper threshold."
+			::= { hwUmTraps 2 }
+		
+		-- 1.3.6.1.4.1.2011.6.122.79.1.2.3
+		hwUmTrapDatabaseFileCorrupted NOTIFICATION-TYPE			
+			STATUS current
+			DESCRIPTION 
+				"The database file is corrupted."
+			::= { hwUmTraps 3 }
+
+		-- 1.3.6.1.4.1.2011.6.122.79.1.2.4
+		hwUmADSSOAgentOnline NOTIFICATION-TYPE
+		    OBJECTS { hwUmADSSOAgentIP, hwUmADSSOAgentMAC }			
+			STATUS current
+			DESCRIPTION 
+				"The AD SSO Agent is connected to the NGFW."
+			::= { hwUmTraps 4 }
+  
+  		-- 1.3.6.1.4.1.2011.6.122.79.1.2.5
+		hwUmADSSOAgentOffline NOTIFICATION-TYPE
+			OBJECTS { hwUmADSSOAgentIP, hwUmADSSOAgentMAC }			
+			STATUS current
+			DESCRIPTION 
+				"The AD SSO Agent is disconnected to the NGFW."
+			::= { hwUmTraps 5 }
+			
+		-- 1.3.6.1.4.1.2011.6.122.79.2
+		hwUmRadiusObjects OBJECT IDENTIFIER ::= { hwUm 2 }
+	
+--  ===============================================
+-- hwUmRadiusObjects.
+-- ===============================================
+--  1.3.6.1.4.1.2011.6.122.79.2.1
+		-- 1.3.6.1.4.1.2011.6.122.79.2.1
+		hwUmRadiusSpeedOfStartPackets OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The Processing Speed of Start-Packets."
+			::= { hwUmRadiusObjects 1 }
+
+		
+--  1.3.6.1.4.1.2011.6.122.79.2.2
+		-- 1.3.6.1.4.1.2011.6.122.79.2.2
+		hwUmRadiusTotalOfStartPackets OBJECT-TYPE
+			SYNTAX Counter64
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Total Radius Start-Packets."
+			::= { hwUmRadiusObjects 2 }
+
+		
+--  1.3.6.1.4.1.2011.6.122.79.2.3
+		-- 1.3.6.1.4.1.2011.6.122.79.2.3
+		hwUmRadiusSpeedOfStopPackets OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The Processing Speed of Stop-Packets."
+			::= { hwUmRadiusObjects 3 }
+		
+--  1.3.6.1.4.1.2011.6.122.79.2.4
+		-- 1.3.6.1.4.1.2011.6.122.79.2.4
+		hwUmRadiusTotalOfStopPackets OBJECT-TYPE
+			SYNTAX Counter64
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Total Radius Stop-Packets."
+			::= { hwUmRadiusObjects 4 }
+
+--  1.3.6.1.4.1.2011.6.122.79.2.5
+		-- 1.3.6.1.4.1.2011.6.122.79.2.5
+		hwUmRadiusSpeedOfUpdatePackets OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The Processing Speed of Update-Packets."
+			::= { hwUmRadiusObjects 5 }
+		
+--  1.3.6.1.4.1.2011.6.122.79.2.6
+		-- 1.3.6.1.4.1.2011.6.122.79.2.6
+		hwUmRadiusTotalOfUpdatePackets OBJECT-TYPE
+			SYNTAX Counter64
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Total Radius Update-Packets ."
+			::= { hwUmRadiusObjects 6 }	
+	
+	END
+--
+-- HUAWEI-SECURITY-UM-MIB.mib
+--

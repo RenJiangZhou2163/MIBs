@@ -1,0 +1,840 @@
+--  ************************************************
+--  $Id: samgr.mib 8 2010-05-17 guojun $
+--
+--  samgr.mib: samgr MIB file
+--  
+--  MAR. 2010, GuoJun
+--   
+--  Copyright(c) 2005 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+
+ZXR10-SAMGR-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Integer32,
+    Unsigned32
+        FROM SNMPv2-SMI
+
+    DisplayString
+        FROM SNMPv2-TC  
+    enterprises
+        FROM SNMPv2-SMI
+       
+    IpAddress
+        FROM SNMPv2-SMI;
+
+
+zxr10samgrMIB MODULE-IDENTITY
+    LAST-UPDATED    "201507210900Z"
+    ORGANIZATION    "ZTE Corporation"
+    CONTACT-INFO
+        "ZTE Corporation 
+         Nanjing Institute of ZTE Corporation
+         
+         No.68 Zijinghua Rd. Yuhuatai District, Nanjing, China
+         
+         Tel: +86-25-52870000"
+
+    DESCRIPTION
+        "ZXROS SMI MIB"
+    REVISION        "201507210900Z"
+    DESCRIPTION
+    "add:   zxr10samgrTrackObjectIfStateType"
+
+    REVISION        "201403110900Z"
+    DESCRIPTION
+    "add:   zxr10samgrTrackGroupUpDelayTime"
+
+    REVISION        "201307031100Z"
+    DESCRIPTION 
+    "modify: in the IMPORTS section, RFC1155-SMI was 
+             replaced by SNMPv2-SMI;
+     modify: delete hyphen in the labels;
+     modify: DisplayString definition was replace by
+             the IMPORTS section.
+     modify: delete the IMPORTS of TruthValue
+     modify: zxr10samgrTrackObjectPingDetectGroupNO"
+
+    REVISION        "201303180900Z"
+    DESCRIPTION
+    "add:   zxr10samgrTrackObjectTransStatus"
+    
+    REVISION        "201003220000Z" 
+    DESCRIPTION
+    "This mib defines management information objects for SAMGR"
+    ::= { zxr10 130 }
+
+
+-- Top level components of this MIB module.
+zte                     OBJECT IDENTIFIER ::= { enterprises 3902 }
+
+zxr10                   OBJECT IDENTIFIER ::= { zte 3 }
+
+
+
+--  ******************************************************
+--                SAMGR Track Group Table
+--  ****************************************************** 
+
+    zxr10samgrTrackGroupTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10samgrTrackGroupEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Samgr track group config information table."
+        ::= { zxr10samgrMIB 1 }
+
+    zxr10samgrTrackGroupEntry  OBJECT-TYPE
+        SYNTAX  Zxr10samgrTrackGroupEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Samgr track group config information entry."
+        INDEX  { zxr10samgrTrackGroupName }
+        ::= { zxr10samgrTrackGroupTable 1 }
+
+    Zxr10samgrTrackGroupEntry ::=
+        SEQUENCE {
+            zxr10samgrTrackGroupName
+                DisplayString,
+            zxr10samgrTrackGroupPolicy
+                Integer32,
+            zxr10samgrTrackGroupMemberNumber
+                Integer32,
+            zxr10samgrTrackGroupIfHasUsedByApp
+                INTEGER,
+            zxr10samgrTrackGroupStatus
+                INTEGER,
+            zxr10samgrTrackGroupPolicyIfDefault
+                INTEGER,
+            zxr10samgrTrackGroupUpDelayTime
+                Integer32
+    }
+
+    zxr10samgrTrackGroupName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Samgr track-group name."
+        ::= { zxr10samgrTrackGroupEntry 1 }
+
+    zxr10samgrTrackGroupPolicy  OBJECT-TYPE
+        SYNTAX  Integer32 ( 1..10 )
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Track group policy."
+        ::= { zxr10samgrTrackGroupEntry 2 }
+
+    zxr10samgrTrackGroupMemberNumber  OBJECT-TYPE
+        SYNTAX  Integer32 ( 1..10 )
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The total track object number in track-group."
+        ::= { zxr10samgrTrackGroupEntry 3 }
+
+    zxr10samgrTrackGroupIfHasUsedByApp  OBJECT-TYPE
+        SYNTAX  INTEGER { 
+                             no(0),
+                             yes(1)
+                        } 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "When this value is 1,this track-group has been used."
+        ::= { zxr10samgrTrackGroupEntry 4 }
+
+    zxr10samgrTrackGroupStatus  OBJECT-TYPE
+        SYNTAX  INTEGER {
+                            unknown(0),
+                            up(1),
+                            down(2)
+                        }
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            " Track-group state."
+        ::= { zxr10samgrTrackGroupEntry 5 }
+
+    zxr10samgrTrackGroupPolicyIfDefault  OBJECT-TYPE
+        SYNTAX  INTEGER {
+                             false(0),
+                             true(1)
+                        } 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            " The flag that show group policy default."
+        ::= { zxr10samgrTrackGroupEntry 6 }
+
+    zxr10samgrTrackGroupUpDelayTime  OBJECT-TYPE
+        SYNTAX  Integer32 ( 0..600 )
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            " Track-group delay up time."
+        ::= { zxr10samgrTrackGroupEntry 7 }
+
+--  ******************************************************
+--                Track Object Table
+--  ******************************************************
+
+    zxr10samgrTrackObjectTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10samgrTrackObjectEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Track object config information table."
+        ::= { zxr10samgrMIB 2 }
+
+    zxr10samgrTrackObjectEntry  OBJECT-TYPE
+        SYNTAX  Zxr10samgrTrackObjectEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Track object config information entry."
+        INDEX  { zxr10samgrTrackObjectName }
+        ::= { zxr10samgrTrackObjectTable 1 }
+
+    Zxr10samgrTrackObjectEntry ::=
+        SEQUENCE {
+            zxr10samgrTrackObjectName 
+                DisplayString,
+            zxr10samgrTrackObjectDetectType
+                INTEGER,
+            zxr10samgrTrackObjectCfmMd
+                Integer32,
+            zxr10samgrTrackObjectCfmMa
+                Integer32,
+            zxr10samgrTrackObjectCfmLocalMep
+                Integer32,
+            zxr10samgrTrackObjectCfmRemoteMep
+                Integer32,
+            zxr10samgrTrackObjectEfmInterfaceName
+                DisplayString,
+            zxr10samgrTrackObjectPingDetectGroupNO
+                Integer32,
+            zxr10samgrTrackObjectMplsOamTunnelID
+                Integer32,
+            zxr10samgrTrackObjectMplsOamIngressID
+                IpAddress,
+            zxr10samgrTrackObjectMplsOamEgressID
+                IpAddress,
+            zxr10samgrTrackObjectLinkBfdLocalIPv4Address
+                IpAddress,
+            zxr10samgrTrackObjectLinkBfdRemoteIPv4Address
+                IpAddress,
+            zxr10samgrTrackObjectLinkBfdOutInterfaceName
+                DisplayString,
+            zxr10samgrTrackObjectPeerBfdLocalIPv4Address
+                IpAddress,
+            zxr10samgrTrackObjectPeerBfdRemoteIPv4Address
+                IpAddress,
+            zxr10samgrTrackObjectBfdVrfName
+                DisplayString,
+            zxr10samgrTrackObjectLdpBfdFecIPv4Address
+                IpAddress,
+            zxr10samgrTrackObjectLdpBfdMaskLength
+                Integer32,
+            zxr10samgrTrackObjectRsvpBfdTunnelID
+                Integer32,
+            zxr10samgrTrackObjectPwBfdVcID
+                Unsigned32,
+            zxr10samgrTrackObjectPwBfdPeerID
+                IpAddress,
+            zxr10samgrTrackObjectPwBfdPwType
+                INTEGER,
+            zxr10samgrTrackObjectBfdPktMinTxInterval
+                Integer32,
+            zxr10samgrTrackObjectBfdPktMinRxInterval
+                Integer32,
+            zxr10samgrTrackObjectBfdMultiplier
+                Integer32,
+            zxr10samgrTrackObjectPwVcID
+                Unsigned32,
+            zxr10samgrTrackObjectPwPeerID
+                IpAddress,
+            zxr10samgrTrackObjectPwType
+                INTEGER,
+            zxr10samgrTrackObjectVrrpInterfaceName
+                DisplayString,
+            zxr10samgrTrackObjectVrrpGroupID
+                Integer32,
+            zxr10samgrTrackObjectIfHasUsedByApp
+                INTEGER,
+            zxr10samgrTrackObjectStatus
+                INTEGER,
+            zxr10samgrTrackObjectSqaInstanceID
+                Integer32,
+            zxr10samgrTrackObjectStateChgNum
+                Unsigned32,
+            zxr10samgrTrackObjectLastStateChgTime
+                DisplayString,
+            zxr10samgrTrackObjectL2BfdSessionName
+                DisplayString,
+            zxr10samgrTrackObjectBfdSessionName
+                DisplayString,
+            zxr10samgrTrackObjectPwName
+                DisplayString,
+            zxr10samgrTrackObjectTpOamMeg
+                Unsigned32,
+            zxr10samgrTrackObjectInterfaceName
+               DisplayString,
+            zxr10samgrTrackObjectTransStatus
+                INTEGER,
+            zxr10samgrTrackObjectIfStateType
+                INTEGER
+    }
+
+    zxr10samgrTrackObjectName  OBJECT-TYPE
+        SYNTAX  DisplayString 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Track name."
+        ::= { zxr10samgrTrackObjectEntry 1 }
+
+    zxr10samgrTrackObjectDetectType  OBJECT-TYPE
+        SYNTAX  INTEGER  {
+                            cfm(1),
+                            efm(2), 
+                            pingDetect(3),
+                            sqa(4),
+                            mplsOam(5),
+                            linkBfd(6),
+                            peerBfd(7),
+                            ldpBfd(8),
+                            rsvpBfd(9),
+                            pwBfd(10),
+                            pw(11),
+                            vrrp(12),
+                            l2Bfd(13),
+                            bfdSession(14),
+                            tpOam(15),
+                            interface(16)
+                         }
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Detect type."
+        ::= { zxr10samgrTrackObjectEntry 2 }
+
+    zxr10samgrTrackObjectCfmMd  OBJECT-TYPE
+        SYNTAX  Integer32 ( 1..65535 )
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "MD of CFM."
+        ::= { zxr10samgrTrackObjectEntry 3 }
+
+    zxr10samgrTrackObjectCfmMa  OBJECT-TYPE
+        SYNTAX  Integer32 ( 1..65535 )
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "MA of CFM."
+        ::= { zxr10samgrTrackObjectEntry 4 }
+
+    zxr10samgrTrackObjectCfmLocalMep  OBJECT-TYPE
+        SYNTAX  Integer32 ( 1..8191 )
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "Local MEP ID of CFM."
+        ::= { zxr10samgrTrackObjectEntry 5 }
+
+    zxr10samgrTrackObjectCfmRemoteMep  OBJECT-TYPE
+        SYNTAX  Integer32 ( 1..8191 )
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Remote MEP ID of CFM."
+        ::= { zxr10samgrTrackObjectEntry 6 }
+
+    zxr10samgrTrackObjectEfmInterfaceName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Interface name of EFM."
+        ::= { zxr10samgrTrackObjectEntry 7 }
+
+    zxr10samgrTrackObjectPingDetectGroupNO  OBJECT-TYPE
+        SYNTAX  Integer32( 1..1000 )
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Ping-detect group ID.
+            The range of this parameter depend on the device."
+        ::= { zxr10samgrTrackObjectEntry 8 }
+
+    zxr10samgrTrackObjectMplsOamTunnelID  OBJECT-TYPE
+        SYNTAX  Integer32 ( 1..64511 )
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Mpls-oam tunnel ID.
+            The range of this parameter depend on the device."
+        ::= { zxr10samgrTrackObjectEntry 9 }
+
+    zxr10samgrTrackObjectMplsOamIngressID  OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Mpls-oam ingress ID."
+        ::= { zxr10samgrTrackObjectEntry 10 }
+
+    zxr10samgrTrackObjectMplsOamEgressID  OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "Mpls-oam egress ID."
+        ::= { zxr10samgrTrackObjectEntry 11 }
+
+    zxr10samgrTrackObjectLinkBfdLocalIPv4Address  OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "Link BFD local IPv4 address."
+        ::= { zxr10samgrTrackObjectEntry 12 }
+        
+    zxr10samgrTrackObjectLinkBfdRemoteIPv4Address  OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "Link BFD remote IPv4 address."
+        ::= { zxr10samgrTrackObjectEntry 13 }
+
+    zxr10samgrTrackObjectLinkBfdOutInterfaceName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "Link BFD out-interface name."
+        ::= { zxr10samgrTrackObjectEntry 14 }
+        
+    zxr10samgrTrackObjectPeerBfdLocalIPv4Address  OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "Peer BFD local IPv4 address."
+        ::= { zxr10samgrTrackObjectEntry 15 }
+
+    zxr10samgrTrackObjectPeerBfdRemoteIPv4Address  OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "Peer BFD remote IPv4 address."
+        ::= { zxr10samgrTrackObjectEntry 16 }
+
+    zxr10samgrTrackObjectBfdVrfName  OBJECT-TYPE
+        SYNTAX  DisplayString 
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "vrf name."
+        ::= { zxr10samgrTrackObjectEntry 17 }
+
+    zxr10samgrTrackObjectLdpBfdFecIPv4Address  OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "Ldp BFD FEC IPv4 address."
+        ::= { zxr10samgrTrackObjectEntry 18 }
+
+    zxr10samgrTrackObjectLdpBfdMaskLength  OBJECT-TYPE
+        SYNTAX  Integer32 ( 0..32 )
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "Ldp BFD prefix length."
+        ::= { zxr10samgrTrackObjectEntry 19 }
+
+    zxr10samgrTrackObjectRsvpBfdTunnelID  OBJECT-TYPE
+        SYNTAX  Integer32 ( 1..16000 )
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "RSVP BFD tunnel ID."
+        ::= { zxr10samgrTrackObjectEntry 20 }
+
+    zxr10samgrTrackObjectPwBfdVcID  OBJECT-TYPE
+        SYNTAX  Unsigned32 ( 1..4294967295 )
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "PW BFD vc ID."
+        ::= { zxr10samgrTrackObjectEntry 21 }
+
+    zxr10samgrTrackObjectPwBfdPeerID  OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "PW BFD peer ID."
+        ::= { zxr10samgrTrackObjectEntry 22 }
+
+    zxr10samgrTrackObjectPwBfdPwType  OBJECT-TYPE
+        SYNTAX  INTEGER   {     
+                              unknown(0),
+                              frDlciMartini(1),
+                              atmAal5(2),
+                              atmCell(3),
+                              etherVlan(4),
+                              ether(5),
+                              hdlc(6),
+                              ppp(7),
+                              cem(8),
+                              atmVcc(9),
+                              atmVpc(10),
+                              ip(11),
+                              frPort(15), 
+                              ceop(16),
+                              e1(17),
+                              t1(18),
+                              e3(19),
+                              t3(20),
+                              cesopsnBasic(21),
+                              aal1(22),
+                              cesopsnCas(23),
+                              aal2(24),
+                              frDlci(25)
+                          }
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "PW type."
+        ::= { zxr10samgrTrackObjectEntry 23 }
+
+    zxr10samgrTrackObjectBfdPktMinTxInterval  OBJECT-TYPE
+        SYNTAX  Integer32 ( 10..990 )
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "BFD packets tx interval in milliseconds."
+        ::= { zxr10samgrTrackObjectEntry 24 }
+
+    zxr10samgrTrackObjectBfdPktMinRxInterval  OBJECT-TYPE
+        SYNTAX  Integer32 ( 10..990 )
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "BFD packets min rx in milliseconds."
+        ::= { zxr10samgrTrackObjectEntry 25 }
+
+    zxr10samgrTrackObjectBfdMultiplier  OBJECT-TYPE
+        SYNTAX  Integer32 ( 3..50 )
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "BFD detect multiplier."
+        ::= { zxr10samgrTrackObjectEntry 26 }
+
+    zxr10samgrTrackObjectPwVcID  OBJECT-TYPE
+        SYNTAX  Unsigned32 ( 1..4294967295 )
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "PW vc ID."
+        ::= { zxr10samgrTrackObjectEntry 27 }
+
+    zxr10samgrTrackObjectPwPeerID  OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "PW peer ID."
+        ::= { zxr10samgrTrackObjectEntry 28 }
+
+    zxr10samgrTrackObjectPwType  OBJECT-TYPE
+        SYNTAX  INTEGER   {     
+                              unknown(0),
+                              frDhciMartini(1),
+                              atmAal5(2),
+                              atmCell(3),
+                              etherVlan(4),
+                              ether(5),
+                              dhlc(6),
+                              ppp(7),
+                              cem(8),
+                              atmVcc(9),
+                              atmVpc(10),
+                              ip(11),
+                              frPort(15), 
+                              ceop(16),
+                              e1(17),
+                              t1(18),
+                              e3(19),
+                              t3(20),
+                              cesopsnBasic(21),
+                              aal1(22),
+                              cesopsnCas(23),
+                              aal2(24),
+                              frDlci(25)
+                          }
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "PW type."
+        ::= { zxr10samgrTrackObjectEntry 29 }
+
+    zxr10samgrTrackObjectVrrpInterfaceName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "VRRP interface name."
+        ::= { zxr10samgrTrackObjectEntry 30 }
+
+    zxr10samgrTrackObjectVrrpGroupID  OBJECT-TYPE
+        SYNTAX  Integer32 ( 1..255 )
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "VRRP group ID."
+        ::= { zxr10samgrTrackObjectEntry 31 }
+
+    zxr10samgrTrackObjectIfHasUsedByApp  OBJECT-TYPE
+        SYNTAX  INTEGER { 
+                            no(0),
+                            yes(1)
+                        } 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "When this value is 1, this track has been used."
+        ::= { zxr10samgrTrackObjectEntry 32 }
+
+    zxr10samgrTrackObjectStatus  OBJECT-TYPE
+        SYNTAX  INTEGER { 
+                            unknown(0),
+                            up(1),
+                            localDown(2),
+                            transDown(3),
+                            adminDown(4),
+                            localSd(5),
+                            transSd(6)
+                        } 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Track state."
+        ::= { zxr10samgrTrackObjectEntry 33 }
+        
+    zxr10samgrTrackObjectSqaInstanceID  OBJECT-TYPE
+        SYNTAX  Integer32 ( 1..150 )
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "SQA instance ID."
+        ::= { zxr10samgrTrackObjectEntry 34 }
+        
+    zxr10samgrTrackObjectStateChgNum  OBJECT-TYPE
+        SYNTAX  Unsigned32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Track object state change number."
+        ::= { zxr10samgrTrackObjectEntry 35 }
+        
+    zxr10samgrTrackObjectLastStateChgTime  OBJECT-TYPE
+        SYNTAX  DisplayString 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Track object state last change time."
+        ::= { zxr10samgrTrackObjectEntry 36 }
+                       
+    zxr10samgrTrackObjectL2BfdSessionName  OBJECT-TYPE
+        SYNTAX  DisplayString 
+        MAX-ACCESS  read-only 
+        STATUS  obsolete
+        DESCRIPTION
+            "L2 BFD session name."
+        ::= { zxr10samgrTrackObjectEntry 37 }
+                       
+    zxr10samgrTrackObjectBfdSessionName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "BFD session name."
+        ::= { zxr10samgrTrackObjectEntry 38 }
+    zxr10samgrTrackObjectPwName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "PW name."
+        ::= { zxr10samgrTrackObjectEntry 39 } 
+    zxr10samgrTrackObjectTpOamMeg  OBJECT-TYPE
+        SYNTAX  Unsigned32 ( 1..65535 ) 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "TP-oam meg."
+        ::= { zxr10samgrTrackObjectEntry 40 }
+    zxr10samgrTrackObjectInterfaceName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Interface name."
+        ::= { zxr10samgrTrackObjectEntry 41 }
+    zxr10samgrTrackObjectTransStatus  OBJECT-TYPE
+        SYNTAX  INTEGER { 
+                            transOk(1),                            
+                            transDown(2),
+                            transSd(3)
+                        } 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Track trans state."
+        ::= { zxr10samgrTrackObjectEntry 42 }
+    zxr10samgrTrackObjectIfStateType  OBJECT-TYPE
+        SYNTAX  INTEGER { 
+                            layer2(1),                            
+                            layer3(2)
+                        } 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Interface protocol status type."
+        ::= { zxr10samgrTrackObjectEntry 43 }
+--  ******************************************************
+--                samgr Binding Table
+--  ****************************************************** 
+
+    zxr10samgrBindTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10samgrBindEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Samgr bind information table."
+        ::= { zxr10samgrMIB 3 }
+
+    zxr10samgrBindEntry  OBJECT-TYPE
+        SYNTAX  Zxr10samgrBindEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Samgr bind information entry."
+        INDEX  { zxr10samgrBindPassiveName }
+        ::= { zxr10samgrBindTable 1 }
+
+    Zxr10samgrBindEntry ::=
+        SEQUENCE {
+            zxr10samgrBindPassiveName 
+                DisplayString,
+            zxr10samgrBindActiveName
+                DisplayString,
+            zxr10samgrBindActiveIsTrackObjectOrGroup
+                INTEGER
+    }
+
+    zxr10samgrBindPassiveName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Track object which accept state change."
+        ::= { zxr10samgrBindEntry 1 }
+
+    zxr10samgrBindActiveName  OBJECT-TYPE
+        SYNTAX  DisplayString 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Track object or track-group which transfer state change."
+        ::= { zxr10samgrBindEntry 2 }
+
+    zxr10samgrBindActiveIsTrackObjectOrGroup  OBJECT-TYPE
+        SYNTAX  INTEGER {
+                             trackObject(1),
+                             trackGroup(2)
+                        }
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Track type."
+        ::= { zxr10samgrBindEntry 3 }
+
+
+--  ******************************************************
+--                samgr group member Table
+--  ****************************************************** 
+
+    zxr10samgrGroupMemberTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10samgrGroupMemberEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Samgr track-group member information table."
+        ::= { zxr10samgrMIB 4 }
+
+    zxr10samgrGroupMemberEntry  OBJECT-TYPE
+        SYNTAX  Zxr10samgrGroupMemberEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Samgr track-group member information entry."
+        INDEX  { zxr10samgrGroupMemberGroupName, zxr10samgrGroupMemberTrackName }
+        ::= { zxr10samgrGroupMemberTable 1 }
+
+    Zxr10samgrGroupMemberEntry ::=
+        SEQUENCE {
+            zxr10samgrGroupMemberGroupName 
+                DisplayString,
+            zxr10samgrGroupMemberTrackName
+                DisplayString,
+            zxr10samgrGroupMemberStatus
+                INTEGER
+    }
+
+    zxr10samgrGroupMemberGroupName  OBJECT-TYPE
+        SYNTAX  DisplayString 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "The track group name."
+        ::= { zxr10samgrGroupMemberEntry 1 }
+
+    zxr10samgrGroupMemberTrackName  OBJECT-TYPE
+        SYNTAX     DisplayString 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "The track name attach to this group."
+        ::= { zxr10samgrGroupMemberEntry 2 }
+
+    zxr10samgrGroupMemberStatus  OBJECT-TYPE
+        SYNTAX  INTEGER {    
+                            unknown(0),
+                            up(1),
+                            localDown(2),
+                            transDown(3),
+                            adminDown(4),
+                            localSd(5),
+                            transSd(6)
+                        }
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Track state."
+        ::= { zxr10samgrGroupMemberEntry 3 }
+
+END

@@ -1,0 +1,241 @@
+ZXR10-LLDP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32, Counter32, Unsigned32, enterprises
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION,  TruthValue
+        FROM SNMPv2-TC
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF;
+
+zxr10LldpMIB MODULE-IDENTITY
+    LAST-UPDATED "201511200000Z"
+    ORGANIZATION "ZTE Corporation"
+    CONTACT-INFO
+        "       Geng chunjing
+         Tel : +86-25-52870000
+         E-Mail: geng.chunjing@zte.com.cn
+         "
+    DESCRIPTION
+        "The MIB module to describe part of LLDP protocol data.
+         Include some new variable in 802.1AB-2009 compared with
+         802.1AB-2005 and some private variable used when the
+         protocol is completed."
+
+    REVISION "201511200000Z"--2015-11-20 00:00
+    DESCRIPTION
+        "Modify the value range of lldpPortMaxNeighbor and lldpMaxNeighbor."
+
+    REVISION "201311110000Z"--2013-11-11 00:00
+    DESCRIPTION
+        "Modify the DESCRIPTION of lldpPortTransparentEnable.
+         Add the description of using"
+    REVISION "201306250000Z"--2013-6-25 00:00
+    DESCRIPTION
+        "Modify the SYNTAX of lldpV2TxCreditMax.
+         From Unsigned32(1..100) to Unsigned32(1..10)."
+    REVISION "201304100000Z"--2013-4-10 00:00
+    DESCRIPTION
+        "Add object lldpGlbAdminStatus."
+
+    REVISION "201304010000Z"--2013-4-1 00:00
+    DESCRIPTION
+        "Initial version of this MIB module."
+
+    ::= { zxr10RosngMIB 504 }
+
+    zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+    zxr10 OBJECT IDENTIFIER ::= { zte 3 }
+    zxr10RosngMIB OBJECT IDENTIFIER ::= { zxr10 6000}
+
+    zxr10LldpGlobalObjects   OBJECT IDENTIFIER ::= { zxr10LldpMIB 1 }
+    zxr10LldpObjects         OBJECT IDENTIFIER ::= { zxr10LldpMIB 2 }
+    zxr10LldpNotifications   OBJECT IDENTIFIER ::= { zxr10LldpMIB 3 }
+    zxr10LldpConformance      OBJECT IDENTIFIER ::= { zxr10LldpMIB 4 }
+
+--=======================================================================
+--1. zxr10LldpGlobalObjects 
+--=======================================================================  
+lldpV2MessageFastTx OBJECT-TYPE
+    SYNTAX Unsigned32(1..3600)
+    UNITS "seconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+            "The interval at which LLDP frames are transmitted on
+            behalf of this LLDP agent during fast transmission period
+            (e.g. when a new neighbor is detected).
+            The default value for lldpV2MessageFastTx object is
+            1 second.
+            The value of this object is restored from non-volatile
+            storage after a re-initialization of the management system."
+REFERENCE
+            "9.2.5.5 802.1AB-2009"
+    DEFVAL { 1 }
+    ::= { zxr10LldpGlobalObjects 1 }
+
+lldpV2TxCreditMax OBJECT-TYPE
+    SYNTAX Unsigned32(1..10)
+    UNITS "PDUs"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+         "The maximum number of consecutive LLDPDUs that can be
+         transmitted at any time.
+         The default value for lldpV2TxCreditMax object is 5 PDUs.
+         The value of this object is restored from non-volatile
+         storage after a re-initialization of the management system."
+REFERENCE
+         "9.2.5.17 802.1AB-2009"
+    DEFVAL { 5 }
+    ::= { zxr10LldpGlobalObjects 2 }
+
+lldpV2TxFastInit OBJECT-TYPE
+    SYNTAX Unsigned32(1..8)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+            "The initial value used to initialize the txFast variable
+            which determines the number of transmissions that are
+            made in fast transmission mode.
+            The default value for lldpV2TxFastInit object is 4.
+            The value of this object is restored from non-volatile
+            storage after a re-initialization of the management system."
+REFERENCE
+            "9.2.5.19 802.1AB-2009"
+    DEFVAL { 4 }
+    ::= { zxr10LldpGlobalObjects 3 }
+    
+lldpMaxNeighbor OBJECT-TYPE
+    SYNTAX Unsigned32(1..2000)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+            "The Max number of the neighbor to save. 
+            The default value for lldpMaxNeighbor object is configured by 
+            performance parameter of different projects."
+REFERENCE
+        "10.3.4 802.1AB-2005"
+    DEFVAL { 128 }
+    ::= { zxr10LldpGlobalObjects 4 }
+
+lldpGlbAdminStatus  OBJECT-TYPE 
+    SYNTAX INTEGER { 
+       txOnly(1), 
+       rxOnly(2),
+       txAndRx(3),
+       disabled(4)
+    }
+    MAX-ACCESS read-write 
+    STATUS     current 
+    DESCRIPTION 
+            "The administratively desired status of the local LLDP agent.
+
+            If the associated lldpGlbAdminStatus object has a
+            value of 'txOnly(1)', then LLDP agent can transmit LLDP
+            frames on all ports and it will not store any information
+            about the remote systems connected.
+         
+            If the associated lldpGlbAdminStatus object has a
+            value of 'rxOnly(2)', then the LLDP agent can receive,
+            but it will not transmit LLDP frames on all ports.
+
+            If the associated lldpGlbAdminStatus object has a
+            value of 'txAndRx(3)', then the LLDP agent can transmit
+            and receive LLDP frames on all ports.
+
+            If the associated lldpGlbAdminStatus object has a
+            value of 'disabled(4)', then LLDP agent will not transmit or
+            receive LLDP frames on all ports. If there is remote systems
+            information which is received and stored, before lldpGlbAdminStatus
+            becomes disabled, then the information will naturally age out."
+
+    DEFVAL  { txAndRx }    
+   ::= { zxr10LldpGlobalObjects 5 } 
+
+--=======================================================================
+--2. zxr10LldpPortCfgTable 
+--=======================================================================    
+zxr10LldpPortCfgTable
+ OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Zxr10LldpPortCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "The table that controls LLDP private config on individual
+       ports.
+       "
+    REFERENCE
+       "802.1Qau clause 32.2.4"
+    ::= { zxr10LldpObjects 1 }
+  
+zxr10LldpPortCfgEntry
+ OBJECT-TYPE
+    SYNTAX      Zxr10LldpPortCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "Part of LLDP configuration information for a particular port.
+       This configuration parameter controls the maxnum neighbor the port
+       can save and whether or not the received.
+       "
+    INDEX { lldpPortCfgPortIndex }
+    ::= { zxr10LldpPortCfgTable 1 }
+  
+    Zxr10LldpPortCfgEntry ::=
+    SEQUENCE {
+               lldpPortCfgPortIndex             Unsigned32,
+               lldpPortMaxNeighbor              Unsigned32,
+               lldpPortTransparentEnable        INTEGER
+          }
+lldpPortCfgPortIndex   OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The index value used to identify the port component
+            (contained in the local chassis with the LLDP agent)
+            associated with this entry.
+
+            The value of this object is used as a port index to the
+            zxr10LldpPortCfgTable."
+    ::= { zxr10LldpPortCfgEntry 1 }
+
+lldpPortMaxNeighbor OBJECT-TYPE
+    SYNTAX Unsigned32(1..50)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+            "The Max number of the neighbor is configured by 
+            performance parameter of different projects.
+            The default value for lldpPortMaxNeighbor object is 8."
+REFERENCE
+            "10.3.4 802.1AB-2005"
+    DEFVAL { 8 }
+    ::= { zxr10LldpPortCfgEntry 2 }
+    
+lldpPortTransparentEnable OBJECT-TYPE 
+    SYNTAX INTEGER { 
+       enable(1), 
+       disable(2)
+    }
+    MAX-ACCESS read-write 
+    STATUS     current 
+    DESCRIPTION 
+            "The lldpPortTransparentEnable controls, on a per
+            port basis, whether or not the received packets are fowarded.
+            The value true(1) means that the port will foward the 
+            received packets; the value disable(2) means that the port 
+            will not foward the received packets. It is used in the 
+            area of switch, not in the area of router. It is reserved for
+            compatibility."
+    DEFVAL  { disable }    
+   ::= { zxr10LldpPortCfgEntry 3 } 
+
+--=======================================================================
+--3. zxr10LldpNotifications 
+--=======================================================================
+--=======================================================================
+--4. zxr10LldpNotifications 
+--======================================================================= 
+END

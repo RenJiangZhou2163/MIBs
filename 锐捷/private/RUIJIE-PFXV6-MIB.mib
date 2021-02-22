@@ -1,0 +1,293 @@
+-- *****************************************************************
+-- RUIJIE-PFXV6-MIB.mib:  Ruijie PFXv6 MIB file
+--
+--  2015.01.13, huangguohua@ruijie.com.cn
+--
+-- Copyright (c) 2002 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-PFXV6-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        IpAddress,
+        Integer32,
+        Counter32
+                FROM SNMPv2-SMI
+        RowStatus,
+        DisplayString,
+        PhysAddress
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        IfIndex
+                FROM RUIJIE-TC        
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijiePFXv6MIB MODULE-IDENTITY
+        LAST-UPDATED "201501130000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie pfxv6 mibs."
+        REVISION      "201501130000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 134}
+
+ruijiePFXv6MIBObjects OBJECT IDENTIFIER ::= { ruijiePFXv6MIB 1 }
+
+
+ -- IPv6 local pool table
+   
+ ruijiePFXv6Table OBJECT-TYPE
+     SYNTAX  SEQUENCE OF RuijiePFXv6Entry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+             "The IPv6 local pool statistics."
+     ::= { ruijiePFXv6MIBObjects 1 }
+
+ ruijiePFXv6Entry OBJECT-TYPE
+     SYNTAX  RuijiePFXv6Entry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+             "Each pool entry statistics."
+     INDEX   { ruijiePFXv6Name }
+     ::= { ruijiePFXv6Table 1 }
+
+ RuijiePFXv6Entry ::=
+     SEQUENCE {
+         ruijiePFXv6Name
+             DisplayString,
+         ruijiePFXv6Total
+             Integer32,
+         ruijiePFXv6Rejects
+             Integer32,
+         ruijiePFXv6Accepts
+             Integer32,
+         ruijiePFXv6Frees
+             Integer32,
+         ruijiePFXv6Userate
+             INTEGER
+     }
+		
+ ruijiePFXv6Name OBJECT-TYPE
+     SYNTAX  DisplayString (SIZE (0..32))
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "The pool name."
+     ::= { ruijiePFXv6Entry 1 }
+
+ ruijiePFXv6Total OBJECT-TYPE
+     SYNTAX  Integer32
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "The total prefix number of pool."
+     ::= { ruijiePFXv6Entry 2 }
+	 
+ ruijiePFXv6Rejects OBJECT-TYPE
+     SYNTAX  Integer32
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "Rejects number of pool."
+     ::= { ruijiePFXv6Entry 3 }
+
+ ruijiePFXv6Accepts OBJECT-TYPE
+     SYNTAX  Integer32
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "Accepts number of pool."
+     ::= { ruijiePFXv6Entry 4 }
+	 
+ ruijiePFXv6Frees OBJECT-TYPE
+     SYNTAX  Integer32
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "Frees number of pool."
+     ::= { ruijiePFXv6Entry 5 }
+	 
+ ruijiePFXv6Userate OBJECT-TYPE
+     SYNTAX  INTEGER (0..100)
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "Use rate of pool."
+     ::= { ruijiePFXv6Entry 6 }
+	    
+                
+ --  Interface configure pool for SLAAC 
+   
+ ruijiePFXv6IfTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF RuijiePFXv6IfEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+             "Interface configure pool for SLAAC."
+     ::= { ruijiePFXv6MIBObjects 2 }
+
+ ruijiePFXv6IfEntry OBJECT-TYPE
+     SYNTAX  RuijiePFXv6IfEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+             "Each pool entry statistics"
+     INDEX   { ruijiePFXv6IfIfIndex}
+     ::= { ruijiePFXv6IfTable 1 }
+
+ RuijiePFXv6IfEntry ::=
+     SEQUENCE {
+         ruijiePFXv6IfIfIndex
+             IfIndex,
+         ruijiePFXv6IfName
+             DisplayString,
+         ruijiePFXv6IfTotal
+             Integer32,
+         ruijiePFXv6IfRejects
+             Integer32,
+         ruijiePFXv6IfAccepts
+             Integer32,
+         ruijiePFXv6IfFrees
+             Integer32,
+         ruijiePFXv6IfUserate
+             INTEGER
+     }
+
+ ruijiePFXv6IfIfIndex OBJECT-TYPE
+     SYNTAX  IfIndex
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "The interface on which this entry's equivalence
+             is effective.  The interface identified by a
+             particular value of this index is the same
+             interface as identified by the same value of
+             ifIndex."
+     ::= { ruijiePFXv6IfEntry 1 }
+                  
+ ruijiePFXv6IfName OBJECT-TYPE
+     SYNTAX  DisplayString (SIZE (0..32))
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "The pool name."
+     ::= { ruijiePFXv6IfEntry 2 }
+
+ ruijiePFXv6IfTotal OBJECT-TYPE
+     SYNTAX  Integer32
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "The total prefix number of pool."
+     ::= { ruijiePFXv6IfEntry 3 }
+	 
+ ruijiePFXv6IfRejects OBJECT-TYPE
+     SYNTAX  Integer32
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "Rejects number of pool."
+     ::= { ruijiePFXv6IfEntry 4 }
+
+ ruijiePFXv6IfAccepts OBJECT-TYPE
+     SYNTAX  Integer32
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "Accepts number of pool."
+     ::= { ruijiePFXv6IfEntry 5 }
+	 
+ ruijiePFXv6IfFrees OBJECT-TYPE
+     SYNTAX  Integer32
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "Frees number of pool."
+     ::= { ruijiePFXv6IfEntry 6 }
+
+ ruijiePFXv6IfUserate OBJECT-TYPE
+     SYNTAX  INTEGER (0..100)
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "Use rate of pool."
+     ::= { ruijiePFXv6IfEntry 7 }
+	 
+ --  Counter for PFXv6
+
+ ruijieSlaacRequestNumber OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of SLAAC request this system have"
+       ::= { ruijiePFXv6MIBObjects 3 }        
+
+ ruijieSlaacRequestSuccessNumber OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Success Number of SLAAC request this system have"
+        ::= { ruijiePFXv6MIBObjects 4 }        
+         
+ruijiePFXv6MIBConformance OBJECT IDENTIFIER ::= { ruijiePFXv6MIB 2 }
+ruijiePFXv6MIBCompliances OBJECT IDENTIFIER ::= { ruijiePFXv6MIBConformance 1 }
+ruijiePFXv6MIBGroups      OBJECT IDENTIFIER ::= { ruijiePFXv6MIBConformance 2 }
+
+
+-- compliance statements
+
+ruijiePFXv6MIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie PFXv6 MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijiePFXv6MIBGroup
+                 }        
+        ::= { ruijiePFXv6MIBCompliances 1 }
+                
+-- units of conformance
+
+ruijiePFXv6MIBGroup OBJECT-GROUP
+        OBJECTS {
+         ruijiePFXv6Name,
+         ruijiePFXv6Total,
+         ruijiePFXv6Rejects,
+         ruijiePFXv6Accepts,
+         ruijiePFXv6Frees,
+		 ruijiePFXv6Userate,
+         ruijiePFXv6IfIfIndex,
+         ruijiePFXv6IfName,
+         ruijiePFXv6IfTotal,
+         ruijiePFXv6IfRejects,
+         ruijiePFXv6IfAccepts,
+         ruijiePFXv6IfFrees,
+		 ruijiePFXv6IfUserate,
+         ruijieSlaacRequestNumber,
+         ruijieSlaacRequestSuccessNumber
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing pfxv6 management and
+                opertion to a Ruijie agent."
+        ::= { ruijiePFXv6MIBGroups 1 } 
+  
+END

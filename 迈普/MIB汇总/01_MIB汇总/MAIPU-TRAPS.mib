@@ -1,0 +1,465 @@
+-- ***************************************************************************
+-- MAIPU-TRAPS.mib:  Maipu Trap Object Identifier Assignments
+--
+-- June 2001, Maipu Network Management Team
+-- Copyright(c) 1999-2001 by Maipu Data Communication, Inc.
+-- 
+-- ***************************************************************************
+
+-- ***************************************************************************
+-- The Traps show some information to the network-manager to tell abnormal
+-- 
+-- The structure as following:
+--
+-- sysUpTime
+-- snmpTrapOID
+-- mpTrapClass
+-- mpTrapDescr
+-- <something else that to describe the trap>
+-- snmpTrapEnterprise
+-- 
+-- ***************************************************************************
+
+MAIPU-TRAPS DEFINITIONS ::= BEGIN
+
+IMPORTS
+	NOTIFICATION-TYPE	FROM SNMPv2-SMI
+	mpTrapObject		FROM MAIPU-SMI
+	sysIfName           FROM MAIPU-YSS-MIB
+	taskDescr			FROM VxWorksMem-MIB;
+
+mpTrap	OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"Private trap properties."
+	::= { mpTrapObject 1 }
+	
+mpTrapClass	OBJECT-TYPE
+	SYNTAX	INTEGER {
+--				critical(1),
+--				major(2),
+--				minor(3),
+--				information(4),
+--				warning(5)
+				emergencies(1),
+				alerts(2),
+				critical(3),
+				errors(4),
+				warnings(5),
+				notifications(6),
+				informational(7),
+				debugging(8)
+					}
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"The class of the Traps."
+	::= { mpTrap 1 }	
+	
+mpTrapDescr	OBJECT-TYPE
+	SYNTAX	DisplayString
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"Describe the reason of the trap."
+	::= { mpTrap 2 }
+	
+mpTrapType	OBJECT-TYPE
+	SYNTAX	INTEGER {
+				system(1),
+				interface(2),
+				other(3)
+					}
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"The type of each trap,show the category."
+	::= { mpTrap 3 }
+	
+mpTraps	OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"All the successor object identifiers of maipu.traps are the 
+		same as those of maipu.products, which represent the source
+		device type of traps. When maipu Agent send out traps, it 
+		should set the 'enterprise' field to an OID which indicates the 
+		device type, so that when a NMS receive the trap, it could 
+		lookup such field to identify different device.
+       
+       		For example: 'Specific' = 1 in a trap package may represent 
+       		different meaning in different kinds of device, if 'enterprise' 
+       		= 1.3.6.1.4.1.5651.2.6.1, then NMS could know that it is sent 
+       		from a MP9400, so the trap means 'Modem card power-on'."
+	::= { mpTrapObject 2 }
+
+mpSnmpUp	NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+        "The SNMP Agent is up."
+    ::= { mpTraps 1 }
+
+mpSnmpDown	NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+        "The SNMP Agent is down."
+    ::= { mpTraps 2 }
+
+mpSysDown	NOTIFICATION-TYPE
+	STATUS	current
+	DESCRIPTION
+		"The system is down."
+	::= { mpTraps 3 }
+	
+mpTaskError NOTIFICATION-TYPE
+	OBJECTS { taskDescr }
+    STATUS  current
+    DESCRIPTION
+        "A task error that generate a trap and show some information to
+         describe this error."
+    ::= { mpTraps 4 }
+
+mpConfig	NOTIFICATION-TYPE
+	STATUS	current
+	DESCRIPTION
+		"A config trap when user config the product."
+	::= { mpTraps 5 }
+	
+mpCopy		NOTIFICATION-TYPE
+	STATUS	current
+	DESCRIPTION
+		"A copy trap when user copy files from/to the product."
+	::= { mpTraps 6 }
+
+mpRmon		NOTIFICATION-TYPE
+	STATUS	current
+	DESCRIPTION
+		"A RMON trap when rmon value over or below the threshold."
+	::= { mpTraps 7 }
+	
+mpIpAddrCol	NOTIFICATION-TYPE
+--	OBJECTS	{ }
+	STATUS	current
+	DESCRIPTION
+		"A IP address collision trap."
+	::= { mpTraps 8 }
+
+mpMacAddrCol	NOTIFICATION-TYPE
+	STATUS	current
+	DESCRIPTION
+		"A MAC address collision trap."
+	::= { mpTraps 9 }
+
+mpSysEvent	NOTIFICATION-TYPE
+	STATUS	current
+	DESCRIPTION
+		"A system event trap."
+	::= { mpTraps 10 }
+
+-- *************
+-- ipphone
+
+mpGKReg NOTIFICATION-TYPE
+	OBJECTS { gkTerminalID }
+    STATUS  current
+    DESCRIPTION
+        "Device regists to IPPhoneNet GateKeeper."
+    ::= { mpTraps 11 }
+
+mpGKUnreg NOTIFICATION-TYPE
+	OBJECTS { gkTerminalID }
+    STATUS  current
+    DESCRIPTION
+        "Device unregists to IPPhoneNet GateKeeper."
+    ::= { mpTraps 12 }
+    
+mpPhoneBusy NOTIFICATION-TYPE
+	STATUS  current
+    DESCRIPTION
+        "Phone is busy."
+    ::= { mpTraps 13 }
+
+mpPhoneNotBusy NOTIFICATION-TYPE
+	STATUS  current
+    DESCRIPTION
+        "Phone is not busy."
+    ::= { mpTraps 14 }
+    
+-- *************
+-- cluster
+
+mpMemAdd NOTIFICATION-TYPE
+	OBJECTS { cmpCommandMac }
+    STATUS  current
+    DESCRIPTION
+        "Cluster has a new member."
+    ::= { mpTraps 15 }
+
+mpMemDel NOTIFICATION-TYPE
+	OBJECTS { cmpCommandMac }
+    STATUS  current
+    DESCRIPTION
+        "Cluster lose a member."
+    ::= { mpTraps 16 }
+
+-- ****************************
+--  system hardware error
+
+mpEthUp NOTIFICATION-TYPE
+	OBJECTS { sysIfName }
+	STATUS  current
+    DESCRIPTION
+        "Ethernet interface up."
+    ::= { mpTraps 17 }
+
+
+mpEthDown NOTIFICATION-TYPE
+	OBJECTS { sysIfName }
+	STATUS  current
+    DESCRIPTION
+        "Ethernet interface down."
+    ::= { mpTraps 18 }
+
+
+mpEthDrop NOTIFICATION-TYPE
+	OBJECTS { sysIfName }
+	STATUS  current
+    DESCRIPTION
+        "Ethernet interface packet drop."
+    ::= { mpTraps 19 }
+
+
+mpEthError NOTIFICATION-TYPE
+	OBJECTS { sysIfName }
+	STATUS  current
+    DESCRIPTION
+        "Ethernet interface receive packet error."
+    ::= { mpTraps 20 }
+
+
+mpEncCardNotFound NOTIFICATION-TYPE
+	STATUS  current
+    DESCRIPTION
+        "Encrypt card not found."
+    ::= { mpTraps 21 }
+
+mpEncCardError NOTIFICATION-TYPE
+	STATUS  current
+    DESCRIPTION
+        "Encrypt card work error."
+    ::= { mpTraps 22 }
+
+mpFlashMountError NOTIFICATION-TYPE
+	STATUS  current
+    DESCRIPTION
+        "Compact flash mount error."
+    ::= { mpTraps 23 }
+
+
+mpFlashReadError NOTIFICATION-TYPE
+	STATUS  current
+    DESCRIPTION
+        "Compact flash read error."
+    ::= { mpTraps 24 }
+
+
+mpFlashWriteError NOTIFICATION-TYPE
+	STATUS  current
+    DESCRIPTION
+        "Compact flash write error."
+    ::= { mpTraps 25 }
+
+
+mpConnAlarm NOTIFICATION-TYPE
+   STATUS  current
+   DESCRIPTION
+   	"防火墙并发连接数报警"
+   ::= { mpTraps 26 }
+
+
+-- ****************************
+--  ipsec traps
+
+mpikeTunnelStart NOTIFICATION-TYPE
+   OBJECTS {
+             mpikeTunLocalAddr,
+             mpikeTunRemoteAddr,
+             mpikeTunLifeTime
+           }
+   STATUS  current
+   DESCRIPTION
+      "This notification is generated when an IPsec Phase-1
+       IKE Tunnel becomes active."
+   ::= { mpTraps 27 }
+
+mpikeTunnelStop NOTIFICATION-TYPE
+   OBJECTS {
+             mpikeTunLocalAddr,
+             mpikeTunRemoteAddr,
+--             mpikeTunHistTermReason,
+             mpikeTunActiveTime
+           }
+   STATUS  current
+   DESCRIPTION
+      "This notification is generated when an IPsec Phase-1
+       IKE Tunnel becomes inactive."
+   ::= { mpTraps 28 }
+
+mpikeNoSa NOTIFICATION-TYPE
+   STATUS  current
+   DESCRIPTION
+      "This notification is generated when the IKE entity
+     recieves an ISAKMP PDU  with a reference to a non-existent
+     cookie."
+   ::= { mpTraps 29 }
+
+mpipSecTunnelStart NOTIFICATION-TYPE
+   OBJECTS {
+	     mpipSecTunLocalAddr,
+             mpipSecTunRemoteAddr,
+             mpipSecTunLifeTime,
+           }
+   STATUS  current
+   DESCRIPTION
+      "This notification is generated when an IPsec Phase-2
+       Tunnel becomes active."
+    ::= { mpTraps 30 }
+
+mpipSecTunnelStop NOTIFICATION-TYPE
+   OBJECTS {
+  	     mpipSecTunLocalAddr,
+	     mpipSecTunRemoteAddr,
+--             mpipSecTunHistTermReason,
+             mpipSecTunActiveTime
+           }
+   STATUS  current
+   DESCRIPTION
+      "This notification is generated when an IPsec Phase-2
+       Tunnel becomes inactive."
+   ::= { mpTraps 31 }
+
+mpipSecSetUpFailure NOTIFICATION-TYPE
+   OBJECTS {
+             mpikeTunLocalAddr,
+             mpikeTunRemoteAddr
+           }
+   STATUS  current
+   DESCRIPTION
+      "This notification is generated when the setup for
+       an IPsec Phase-2 Tunnel fails."
+   ::= { mpTraps 32 }
+
+mpipSecEarlyTunTerm NOTIFICATION-TYPE
+   OBJECTS {
+             mpipSecTunLocalAddr,
+	     mpipSecTunRemoteAddr,
+             mpipSecTunActiveTime,
+           }
+   STATUS  current
+   DESCRIPTION
+      "This notification is generated when an an IPsec Phase-2
+       Tunnel is terminated earily or before expected."
+   ::= { mpTraps 33 }
+
+mpipSecNoSa NOTIFICATION-TYPE
+   STATUS  current
+   DESCRIPTION
+      "This notification is generated when the managed entity
+       receives an IPsec packet with a non-existent SPI."
+   ::= { mpTraps 34 }
+   
+   
+mpSecTraps	OBJECT-IDENTITY
+	STATUS	current
+	DESCRIPTION
+		"All the successor object identifiers of maipu.secure product traps
+		are the same as those of maipu.products, which represent the source
+		device type of traps. When maipu Agent send out traps, it 
+		should set the 'enterprise' field to an OID which indicates the 
+		device type, so that when a NMS receive the trap, it could 
+		lookup such field to identify different device."
+	::= { mpTraps 50 }
+	
+mpVirusDetect	NOTIFICATION-TYPE
+	STATUS	current
+	DESCRIPTION
+		"交换机病毒告警Trap"             
+	::= { mpTraps 51 }
+   
+mpConfigFileChanged NOTIFICATION-TYPE      --2008.6.3 分配人：吴飞，申请人：吴小文
+	OBJECTS { mpDevCfgVersion }
+	STATUS  current
+	DESCRIPTION
+		"A configFileChanged trap signifies that the current configuration 
+		file was changed. This trap has an object ‘mpDevCfgVersion’ which 
+		gives the current version of the configuration file."                                         
+	::= { mpTraps 52 }
+   
+mpL2MulticastChange NOTIFICATION-TYPE			--2008.6.3 分配人：吴飞，申请人：王强
+	OBJECTS { vlanIndex, macAddr, oldEgressPortListFmtStr, newEgressPortListFmtStr, changeType } 
+	STATUS  current
+  DESCRIPTION 
+  "L2 multicast change trap notification. vlanIndex is the VLAN ID of L2 
+  multicast entry. macAddr is the MAC address. oldEgressPortListFmtStr is 
+  the string of old egress port list, such as ’port 0/0-0/3’, and it is 
+  valid for EgressPortListChange and Delete type. newEgressPortListFmtStr is the 
+  new egress port list, such as ’port 0/0-0/4’, and it is valid for Create 
+  and EgressPortListChange type. changeType is change type for the trap 
+  notification, with three types: Create, Delete, EgressPortListChange." 
+  	::= { mpTraps 53 }
+   
+mpDAITraps         OBJECT-IDENTITY    --2008.6.3 分配人：吴飞，申请人：张华洪
+	STATUS	current
+	DESCRIPTION
+		"Subtree for DAI Traps."
+	::= { mpTraps 54 }   
+   
+mpShutDownCauseTrap OBJECT-IDENTITY
+  OBJECTS{ifIndex, ifDesc, Module, ShutDownCauseInfo }
+    STATUS current
+    DESCRIPTION
+       "The cause of shut down one port"
+    ::= { mpTraps 55 }   
+   
+mpPortSecTraps         OBJECT-IDENTITY    --2008.6.13 分配人：吴飞，申请人：胥攀
+	STATUS	current
+	DESCRIPTION
+		"Subtree for Port Sec Traps."
+	::= { mpTraps 56 } 
+   
+mpAttackDetect         OBJECT-IDENTITY    --2008.6.18 分配人：吴飞，申请人：罗俊鑫， 攻击检测
+	STATUS	current
+	DESCRIPTION
+		"Subtree for AttackDetect."
+	::= { mpTraps 57 }    
+	
+mpTemperatureDetect        OBJECT-IDENTITY    --2008.6.25 分配人：吴飞，申请人：吴小文， 温度检测告警
+	STATUS	current
+	DESCRIPTION
+		"Subtree for Temperature Detect."
+	::= { mpTraps 58 }  
+	
+mp3I3ODetect         OBJECT-IDENTITY    --2008.6.25 分配人：吴飞，申请人：吴小文， 3I3O告警
+	STATUS	current
+	DESCRIPTION
+		"Subtree for 3I3O Detect."
+	::= { mpTraps 59 }  
+	
+mpTimeReboot         OBJECT-IDENTITY    --2008.6.25 分配人：吴飞，申请人：吴小文， 定时重启告警
+	STATUS	current
+	DESCRIPTION
+		"Subtree for time reboot."
+	::= { mpTraps 60 }  		
+	
+mpPortStorm         OBJECT-IDENTITY    --2008.6.26 分配人：吴飞，申请人：张华洪， 端口风暴相关告警
+	STATUS	current
+	DESCRIPTION
+		"Subtree for port storm."
+	::= { mpTraps 61 }  		
+	
+mpSLA         OBJECT-IDENTITY    --2008.9.11 分配人：吴飞，申请人：申 杰， SLA
+	STATUS	current
+	DESCRIPTION
+		"Subtree for SLA."
+	::= { mpTraps 62 }	
+END
+ 

@@ -1,0 +1,285 @@
+--  ******************************************************
+--  $Id: ZXR10-URPF-MIB.mib
+--
+--  ZXR10-URPF-MIB
+--  
+--  Mar. 2013, Qian Yi 
+--   
+--  Copyright(c) 2010 by ZTE Corporaton
+--  All rights reservered  
+--  ******************************************************
+
+ZXR10-URPF-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Integer32, Unsigned32, Counter32,enterprises, IpAddress 
+        FROM SNMPv2-SMI
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF
+    DisplayString, MacAddress, TEXTUAL-CONVENTION, RowStatus                           
+        FROM SNMPv2-TC
+    zxr10, zxr10RosngMIB
+        FROM ZXR10-SMI;
+
+zxr10URPFMIB MODULE-IDENTITY  
+    LAST-UPDATED "201406161600Z" 
+    ORGANIZATION "ZTE Corporation" 
+    CONTACT-INFO  
+        "       Hu Jun               
+        Tel:    +86-25-52870000           
+        E-Mail: hu.jun11@zte.com.cn " 
+    DESCRIPTION
+        "The MIB module to describe the URPF protocol. " 
+    REVISION "201406161600Z"  
+    DESCRIPTION 
+        "Modify: change syntax of IntfIndex to Unsigned32." 
+    REVISION "201402101600Z"  
+    DESCRIPTION 
+        "Modify: delete rowStatus." 
+    REVISION "201303071400Z"  
+    DESCRIPTION 
+        "add:   zxr10URPFMIB
+        Initial version of this MIB module."
+    ::= { zxr10RosngMIB 601 }
+
+-------------------------------------------------------------------------------     
+-------------------------------------------------------------------------------
+-- Groups in the ZXR10-URPF-MIB MIB Module
+-------------------------------------------------------------------------------
+-- Following objects are defined.
+   
+zxr10URPFGlobalObjects  OBJECT IDENTIFIER ::= { zxr10URPFMIB 1}
+zxr10URPFObjects        OBJECT IDENTIFIER ::= { zxr10URPFMIB 2}
+zxr10URPFNotifications  OBJECT IDENTIFIER ::= { zxr10URPFMIB 3}
+zxr10URPFConformance    OBJECT IDENTIFIER ::= { zxr10URPFMIB 4}
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+-- Textual conventions
+--------------------------------------------------------------
+--The follow part defined some data types which will be used in this mib file later
+--
+--null
+URPFValidOrNot ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            "valid = 1,invalid = 2."
+    SYNTAX       INTEGER{valid(1),invalid(2)}
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+--Table Define
+--------------------------------------------------------------
+--------------------------------------------------------------
+--zxr10URPFIPv4Table
+--------------------------------------------------------------
+zxr10URPFIPv4Table  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Zxr10URPFIPv4Entry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "IPv4 URPF Table"
+    ::= { zxr10URPFObjects 1 }
+
+zxr10URPFIPv4Entry  OBJECT-TYPE
+    SYNTAX  Zxr10URPFIPv4Entry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "IPv4 URPF"
+    INDEX  { zxr10URPFIPv4IntfName}
+    ::= { zxr10URPFIPv4Table 1 }
+    
+Zxr10URPFIPv4Entry ::=SEQUENCE {
+        zxr10URPFIPv4IntfName                  DisplayString,            
+        zxr10URPFIPv4IntfIndex                 Unsigned32,
+        zxr10URPFIPv4BEx                       URPFValidOrNot,
+        zxr10URPFIPv4BAny                      URPFValidOrNot,
+        zxr10URPFIPv4BACLName                  URPFValidOrNot,         
+        zxr10URPFIPv4ACLName                   DisplayString,
+        zxr10URPFIPv4IgnoreDefaultRoute        URPFValidOrNot,
+        zxr10URPFIPv4BUnicast                  URPFValidOrNot
+}
+       
+zxr10URPFIPv4IntfName  OBJECT-TYPE
+    SYNTAX   DisplayString(SIZE(0..31))
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Name of interface"
+    ::= { zxr10URPFIPv4Entry 1 } 
+        
+zxr10URPFIPv4IntfIndex  OBJECT-TYPE
+    SYNTAX   Unsigned32(1..4294967295)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "Index of interface"
+    ::= { zxr10URPFIPv4Entry 2 }    
+
+zxr10URPFIPv4BEx  OBJECT-TYPE
+    SYNTAX   URPFValidOrNot
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "Strict mode"
+    ::= { zxr10URPFIPv4Entry 3 }    
+
+zxr10URPFIPv4BAny  OBJECT-TYPE
+    SYNTAX   URPFValidOrNot
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "Loose mode"
+    ::= { zxr10URPFIPv4Entry 4 }    
+
+zxr10URPFIPv4BACLName  OBJECT-TYPE
+    SYNTAX   URPFValidOrNot
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "Configure ACL name or not"
+    ::= { zxr10URPFIPv4Entry 5 } 
+    
+zxr10URPFIPv4ACLName  OBJECT-TYPE 
+    SYNTAX   DisplayString(SIZE(0..31))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "ACL name"
+    ::= { zxr10URPFIPv4Entry 6 } 
+  
+zxr10URPFIPv4IgnoreDefaultRoute  OBJECT-TYPE
+    SYNTAX   URPFValidOrNot
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "Ignore default route"
+    ::= { zxr10URPFIPv4Entry 7 }  
+
+zxr10URPFIPv4BUnicast  OBJECT-TYPE
+    SYNTAX   URPFValidOrNot
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "Unicast"
+    ::= { zxr10URPFIPv4Entry 8 }  
+          
+
+
+
+--------------------------------------------------------------
+--zxr10URPFIPv6Table
+--------------------------------------------------------------
+zxr10URPFIPv6Table  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Zxr10URPFIPv6Entry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "IPv6 URPF Table"
+    ::= { zxr10URPFObjects 2 }
+
+zxr10URPFIPv6Entry  OBJECT-TYPE
+    SYNTAX  Zxr10URPFIPv6Entry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "IPv6 URPF"
+    INDEX  { zxr10URPFIPv6IntfName}
+    ::= { zxr10URPFIPv6Table 1 }
+    
+Zxr10URPFIPv6Entry ::=SEQUENCE {
+        zxr10URPFIPv6IntfName                  DisplayString,            
+        zxr10URPFIPv6IntfIndex                 Unsigned32,
+        zxr10URPFIPv6BEx                       URPFValidOrNot,
+        zxr10URPFIPv6BAny                      URPFValidOrNot,
+        zxr10URPFIPv6BACLName                  URPFValidOrNot,         
+        zxr10URPFIPv6ACLName                   DisplayString,
+        zxr10URPFIPv6IgnoreDefaultRoute        URPFValidOrNot,
+        zxr10URPFIPv6BUnicast                  URPFValidOrNot
+}
+       
+zxr10URPFIPv6IntfName  OBJECT-TYPE
+    SYNTAX   DisplayString(SIZE(0..31))
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Name of interface"
+    ::= { zxr10URPFIPv6Entry 1 } 
+        
+zxr10URPFIPv6IntfIndex  OBJECT-TYPE
+    SYNTAX   Unsigned32(1..4294967295)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "Index of interface"
+    ::= { zxr10URPFIPv6Entry 2 }    
+
+zxr10URPFIPv6BEx  OBJECT-TYPE
+    SYNTAX   URPFValidOrNot
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "Strict mode"
+    ::= { zxr10URPFIPv6Entry 3 }    
+
+zxr10URPFIPv6BAny  OBJECT-TYPE
+    SYNTAX   URPFValidOrNot
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "Loose mode"
+    ::= { zxr10URPFIPv6Entry 4 }    
+
+zxr10URPFIPv6BACLName  OBJECT-TYPE
+    SYNTAX   URPFValidOrNot
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "Configure ACL name or not"
+    ::= { zxr10URPFIPv6Entry 5 } 
+    
+zxr10URPFIPv6ACLName  OBJECT-TYPE 
+    SYNTAX   DisplayString(SIZE(0..31))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "ACL name"
+    ::= { zxr10URPFIPv6Entry 6 } 
+  
+zxr10URPFIPv6IgnoreDefaultRoute  OBJECT-TYPE
+    SYNTAX   URPFValidOrNot
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "Ignore default route"
+    ::= { zxr10URPFIPv6Entry 7 }  
+
+zxr10URPFIPv6BUnicast  OBJECT-TYPE
+    SYNTAX   URPFValidOrNot
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "Unicast"
+    ::= { zxr10URPFIPv6Entry 8 }  
+          
+ 
+ 
+END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+                        

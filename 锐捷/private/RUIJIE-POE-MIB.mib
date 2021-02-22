@@ -1,0 +1,166 @@
+-- *****************************************************************
+-- RUIJIE-POE-MIB.mib:  Ruijie POE MIB file
+--
+-- Feb 2012, Hedong
+--
+-- Copyright (c) 2012 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-POE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        NOTIFICATION-TYPE,
+        Integer32,
+        OBJECT-TYPE
+                FROM SNMPv2-SMI
+			  TruthValue
+			    			FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijiePoeMIB MODULE-IDENTITY
+        LAST-UPDATED "201202140000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie poe mibs."
+        REVISION      "201202140000Z"
+        DESCRIPTION
+                "Add a table about poe."
+        REVISION      "201202140000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 110 }
+
+ruijiePoeConfigMIBObjects OBJECT IDENTIFIER ::= { ruijiePoeMIB 1 }
+
+ruijieIfPoeTable OBJECT-TYPE
+        SYNTAX 			SEQUENCE OF RuijieIfPoeEntry
+        MAX-ACCESS 	not-accessible
+        STATUS 			current
+        DESCRIPTION
+            " "
+        ::= { ruijiePoeConfigMIBObjects 1 }
+
+-- 6.1 配置信息		6.1.2 接口配置		表A.8 接口POE配置
+   
+ruijieIfPoeEntry OBJECT-TYPE
+        SYNTAX 			RuijieIfPoeEntry
+        MAX-ACCESS 	not-accessible
+        STATUS 			current
+        DESCRIPTION
+            " "
+        INDEX { ifPoeIndex }
+        ::= { ruijieIfPoeTable 1 }
+
+RuijieIfPoeEntry ::=
+        SEQUENCE {
+            ifPoeIndex 			Integer32,
+            ifIsPoe 				TruthValue,
+            ifPoeEnable 		INTEGER,
+            ifPoePwrStatus 	INTEGER,
+            ifPoeMaxPwrSet 	Integer32,
+            ifPoePriority 	INTEGER,
+						ifPoeConsumingPwr	Integer32
+        }
+       
+ifPoeIndex OBJECT-TYPE
+        SYNTAX 			Integer32 (1..2147483647)
+        MAX-ACCESS 	read-only
+        STATUS 			current
+        DESCRIPTION
+            " "
+        ::= { ruijieIfPoeEntry 1 }
+   
+ifIsPoe OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " "
+        ::= { ruijieIfPoeEntry 2 }
+           
+ifPoeEnable OBJECT-TYPE
+        SYNTAX INTEGER {
+            enabled(1),
+            disabled(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            " "
+        ::= { ruijieIfPoeEntry 3 }
+    
+ifPoePwrStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+            on(1),
+            off(2)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " "
+        ::= { ruijieIfPoeEntry 4 }
+                     
+ifPoeMaxPwrSet OBJECT-TYPE
+        SYNTAX Integer32 (1..2147483647)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            " "
+        ::= { ruijieIfPoeEntry 5 }                      
+
+ifPoePriority OBJECT-TYPE
+				SYNTAX INTEGER   {
+               critical(1),
+               high(2),
+               low(3)
+	     	}
+        MAX-ACCESS read-write
+        STATUS  current
+        DESCRIPTION
+              " "
+        ::= { ruijieIfPoeEntry 6 }
+
+-- 6.2 性能信息		6.2.2 接口性能信息		表A.16 接口性能统计
+
+ifPoeConsumingPwr OBJECT-TYPE
+				SYNTAX 			Integer32
+        MAX-ACCESS 	read-only
+        STATUS  		current
+        DESCRIPTION
+              " "
+        ::= { ruijieIfPoeEntry 7 }
+        
+-- Notification
+ruijiePoeTraps OBJECT IDENTIFIER ::= { ruijiePoeMIB 2 }
+
+-- 6.3 告警及通告		表A.17 交换机系统告警及通告
+
+ifPoePowerOffTrap NOTIFICATION-TYPE
+    OBJECTS { ifPoeIndex }
+    STATUS  current
+    DESCRIPTION
+            " " 
+    ::= { ruijiePoeTraps 1 }  
+
+ifPoePowerOnTrap NOTIFICATION-TYPE
+    OBJECTS { ifPoeIndex }
+    STATUS  current
+    DESCRIPTION
+            " " 
+    ::= { ruijiePoeTraps 2 }  
+
+END

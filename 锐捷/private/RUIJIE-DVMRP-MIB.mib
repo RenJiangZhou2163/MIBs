@@ -1,0 +1,648 @@
+-- *****************************************************************
+-- RUIJIE-DVMRP-MIB.mib:  ruijie Dvmrp MIB file
+--
+-- January 2003, zhenggao
+--
+-- Copyright (c) 2003 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+
+
+RUIJIE-DVMRPINTEROPERABILITY-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY,
+        NOTIFICATION-TYPE,
+        OBJECT-TYPE,
+        Integer32,
+        Unsigned32,
+        IpAddress,
+        TimeTicks
+             FROM SNMPv2-SMI
+        RowStatus,
+        DisplayString
+             FROM SNMPv2-TC
+        InterfaceIndex
+             FROM IF-MIB
+        EnabledStatus 
+             FROM P-BRIDGE-MIB
+        ruijieMgmt
+             FROM RUIJIE-SMI
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP,
+        NOTIFICATION-GROUP
+             FROM SNMPv2-CONF;
+ 
+ruijieDvmrpMIB MODULE-IDENTITY
+    LAST-UPDATED "200301200000Z"
+    ORGANIZATION "Ruijie Networks Co.,Ltd."
+    CONTACT-INFO
+        " 
+        Tel: 4008-111-000 
+         
+        E-mail: service@ruijie.com.cn"
+    DESCRIPTION
+        "This module defines ruijie dvmrp mibs."
+    REVISION      "200301200000Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { ruijieMgmt 29}
+
+ruijieDvmrpMIBObjects OBJECT IDENTIFIER ::= { ruijieDvmrpMIB 1 }
+
+ruijieDvmrpGroup OBJECT IDENTIFIER  ::= {  ruijieDvmrpMIBObjects 1 }
+
+ruijieDvmrpRouteLimit      OBJECT-TYPE
+    SYNTAX      Unsigned32(0..2147483647)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+             "Number of DVMRP routes that can be advertised."
+    DEFVAL{7000}
+    ::= { ruijieDvmrpGroup 1 }
+
+ruijieDvmrpRoutehogNotification   OBJECT-TYPE
+    SYNTAX      Unsigned32(1..2147483647)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Number of routes allowed before a syslog message 
+         is triggered."
+    DEFVAL{10000}
+    ::= { ruijieDvmrpGroup 2 }
+   
+  --
+  --  The ruijie-DVMRP Interface Table
+  --
+ruijieDvmrpInterfaceTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijieDvmrpInterfaceEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table listing the interfaces on
+         which Dvmrp is enabled."
+    ::= {  ruijieDvmrpMIBObjects 2 }
+  
+ruijieDvmrpInterfaceEntry OBJECT-TYPE
+    SYNTAX     RuijieDvmrpInterfaceEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) representing an
+         interface on which Dvmrp is enabled."
+    INDEX      { ruijieDvmrpInterfaceIfIndex }
+    ::= { ruijieDvmrpInterfaceTable 1 }
+
+             
+RuijieDvmrpInterfaceEntry ::= SEQUENCE {
+    ruijieDvmrpInterfaceIfIndex		            InterfaceIndex,                                                                      
+    ruijieDvmrpInterfaceDefaultInformation       INTEGER,-- 0-default 1-originate£¬2-only
+    ruijieDvmrpInterfaceUnicastRoutingStatus     EnabledStatus, 
+    ruijieDvmrpInterfaceRejectNonPrunersStatus   EnabledStatus,      
+    ruijieDvmrpInterfaceAutoSummaryStatus        EnabledStatus,
+    ruijieDvmrpInterfaceRtsRec                   Integer32,
+    ruijieDvmrpInterfacePoisonReverseRtsRec      Integer32,
+    ruijieDvmrpInterfaceUniRtAdvertised          Integer32,
+    ruijieDvmrpInterfaceDvmrpRtAdvertised        Integer32
+    }
+
+ruijieDvmrpInterfaceIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The ifIndex value of this Dvmrp interface."
+    ::= { ruijieDvmrpInterfaceEntry 1 }
+
+ruijieDvmrpInterfaceDefaultInformation     OBJECT-TYPE   
+    SYNTAX     INTEGER{default(0),originate(1),only(2)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "originate means Other routes more specific 
+         than 0.0.0.0 may be advertised,only means 
+         No DVMRP routes other than 0.0.0.0 are 
+         advertised.Default means Disable the command."
+    DEFVAL{0}
+    ::= { ruijieDvmrpInterfaceEntry 2 }
+
+ruijieDvmrpInterfaceUnicastRoutingStatus  OBJECT-TYPE   
+    SYNTAX     EnabledStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable DVMRP unicast routing (to send and receive DVMRP routes).
+         This feature is disabled by default."
+    DEFVAL{disabled}
+    ::= { ruijieDvmrpInterfaceEntry 3 }
+
+ruijieDvmrpInterfaceRejectNonPrunersStatus  OBJECT-TYPE   
+    SYNTAX     EnabledStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Prevent peering with nonpruning DVMRP neighbors."
+    DEFVAL{disabled}
+    ::= { ruijieDvmrpInterfaceEntry 4 }
+
+ruijieDvmrpInterfaceAutoSummaryStatus  OBJECT-TYPE
+    SYNTAX      EnabledStatus
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Disable or Enabled DVMRP autosummarization."
+    DEFVAL{enabled}
+    ::= { ruijieDvmrpInterfaceEntry 5 }
+
+ruijieDvmrpInterfaceRtsRec  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of received Dvmrp Routes."
+    ::= { ruijieDvmrpInterfaceEntry 6 }
+
+ruijieDvmrpInterfacePoisonReverseRtsRec  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of received poison-reverse Routes."
+    ::= { ruijieDvmrpInterfaceEntry 7}
+
+ruijieDvmrpInterfaceUniRtAdvertised  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of Advertised unicast Routes."
+    ::= { ruijieDvmrpInterfaceEntry 8}
+
+ruijieDvmrpInterfaceDvmrpRtAdvertised  OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of Advertised dvmrp Routes."
+    ::= { ruijieDvmrpInterfaceEntry 9}
+
+--
+--metric-offset Table
+--
+
+ruijieDvmrpMetricOffsetTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijieDvmrpMetricOffsetEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table listing the MetricOffset on
+         which Dvmrp is enabled."
+    ::= {  ruijieDvmrpMIBObjects 3 }
+  
+ruijieDvmrpMetricOffsetEntry OBJECT-TYPE
+    SYNTAX     RuijieDvmrpMetricOffsetEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) representing an
+         MetricOffset on which Dvmrp is enabled."
+    INDEX      { ruijieDvmrpMetricOffsetIfIndex,ruijieDvmrpMetricOffsetInOrOut }
+    ::= { ruijieDvmrpMetricOffsetTable 1 }
+              
+RuijieDvmrpMetricOffsetEntry ::= SEQUENCE {
+    ruijieDvmrpMetricOffsetIfIndex	    InterfaceIndex,
+    ruijieDvmrpMetricOffsetInOrOut       INTEGER,
+    ruijieDvmrpMetricOffsetIncrement     Integer32  --(1-31)
+    }
+    
+ruijieDvmrpMetricOffsetIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The ifIndex value of this Dvmrp interface."
+    ::= { ruijieDvmrpMetricOffsetEntry 1 }
+
+ruijieDvmrpMetricOffsetInOrOut  OBJECT-TYPE
+    SYNTAX      INTEGER{in(1),out(2)}
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "in means Specifies that the increment value is added to
+         incoming DVMRP reports and is reported in mrinfo replies.
+         out means Specifies that the increment value is added to
+         outgoing DVMRP reports for routes from the DVMRP routing
+         table."
+    ::= { ruijieDvmrpMetricOffsetEntry 2}
+
+ruijieDvmrpMetricOffsetIncrement  OBJECT-TYPE
+    SYNTAX      Integer32(0..31)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Value added to the metric of a DVMRP route advertised in 
+         a report message,the default increment value for incoming 
+         routes is 1,the range is 1 to 31; and the default for outgoing 
+         routes is 0,the range is 0 to 31."
+    DEFVAL{1}
+    ::= { ruijieDvmrpMetricOffsetEntry 3 }
+  
+--
+--Summary Table
+--
+ruijieDvmrpSummaryTable     OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijieDvmrpSummaryEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table listing the Summary on
+         which Dvmrp is enabled."
+    ::= {  ruijieDvmrpMIBObjects 4 }
+  
+ruijieDvmrpSummaryEntry OBJECT-TYPE
+    SYNTAX     RuijieDvmrpSummaryEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) representing 
+         Summary enabled."
+    INDEX      { ruijieDvmrpIfIndex, ruijieDvmrpSummaryAddress,
+                 ruijieDvmrpSummaryMask }
+    ::= { ruijieDvmrpSummaryTable 1 }
+              
+RuijieDvmrpSummaryEntry ::= SEQUENCE {      
+    ruijieDvmrpIfIndex                  InterfaceIndex, 
+    ruijieDvmrpSummaryAddress           IpAddress,
+    ruijieDvmrpSummaryMask              IpAddress,
+    ruijieDvmrpSummaryMetric            Integer32,--(1-32) 
+    ruijieDvmrpSummaryStatus            RowStatus          
+    }
+    
+ruijieDvmrpIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The ifIndex value of this Dvmrp interface."
+    ::= { ruijieDvmrpSummaryEntry 1 }
+    
+ruijieDvmrpSummaryAddress   OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Summary IP address that is advertised instead of 
+         the more specific route."
+    ::= { ruijieDvmrpSummaryEntry 2 }
+
+ruijieDvmrpSummaryMask    OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Mask on the summary IP address."
+    ::= { ruijieDvmrpSummaryEntry 3 }
+
+ruijieDvmrpSummaryMetric  OBJECT-TYPE
+    SYNTAX      Integer32(1..32)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Metric that is advertised with the summary address."
+    DEFVAL{1}
+    ::= { ruijieDvmrpSummaryEntry 4 }
+
+ruijieDvmrpSummaryStatus OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "The status of this entry.  Creating the entry enables PIM
+         on the interface; destroying the entry disables PIM on the
+         interface."
+    ::= { ruijieDvmrpSummaryEntry 5 }
+
+--
+--Metric Table
+--
+ruijieDvmrpMetricTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijieDvmrpMetricEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table listing the interfaces on
+         which Dvmrp is enabled."
+    ::= {  ruijieDvmrpMIBObjects 5 }
+  
+ruijieDvmrpMetricEntry OBJECT-TYPE
+    SYNTAX     RuijieDvmrpMetricEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) of ruijieDvmrpMetricTable."
+    INDEX      {ruijieDvmrpMetricIfIndex,ruijieDvmrpMetric,
+                ruijieDvmrpMetricProtocolId}
+    ::= { ruijieDvmrpMetricTable 1 }
+
+RuijieDvmrpMetricEntry ::= SEQUENCE {
+    ruijieDvmrpMetricIfIndex		               InterfaceIndex,            
+    ruijieDvmrpMetric                            Integer32,--£¨0-32£©
+    ruijieDvmrpMetricListAclName                 DisplayString,
+    ruijieDvmrpMetricProtocolId                  INTEGER,
+    ruijieDvmrpMetricStatus                      RowStatus
+    }
+
+ruijieDvmrpMetricIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The ifIndex value of this Dvmrp interface."
+    ::= { ruijieDvmrpMetricEntry 1 }
+    
+ruijieDvmrpMetric      OBJECT-TYPE
+    SYNTAX     Integer32(0..32)
+    MAX-ACCESS  not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Metric associated with a set of destinations for 
+         DVMRP reports.  A value of 0 means that the route 
+         is not advertised. A value of 32 is equivalent to 
+         infinity (unreachable)."
+    ::= { ruijieDvmrpMetricEntry 2 }
+
+ruijieDvmrpMetricListAclName   OBJECT-TYPE
+    SYNTAX     DisplayString
+    MAX-ACCESS  read-create
+    STATUS     current
+    DESCRIPTION
+        "The name of an access list,only the multicast destinations that
+         match the access list are reported with the configured metric."
+   ::= { ruijieDvmrpMetricEntry 3 }
+   
+ruijieDvmrpMetricProtocolId       OBJECT-TYPE
+    SYNTAX     INTEGER{ default(0),ospf(1), rip(2), static(3),dvmrp(4) }
+    MAX-ACCESS  not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The number of Protocol Id,only routes learned by the specified 
+         routing protocol are advertised in DVMRP report messages."
+    DEFVAL {0}
+    ::= { ruijieDvmrpMetricEntry 4 }
+
+ruijieDvmrpMetricStatus    OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "The status of this entry.  Creating the entry enables Dvmrp Metric; 
+         destroying the entry disables Dvmrp Metric."
+    ::= { ruijieDvmrpMetricEntry 5}
+ 
+ruijieDvmrpRouteTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijieDvmrpRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table listing the interfaces on
+         which Dvmrp is enabled."
+    ::= {  ruijieDvmrpMIBObjects 6}
+  
+ruijieDvmrpRouteEntry OBJECT-TYPE
+    SYNTAX     RuijieDvmrpRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) of ruijieDvmrpRouteTable."
+    INDEX      { ruijieDvmrpRouteIpAddress,ruijieDvmrpRouteInterface  }
+    ::= { ruijieDvmrpRouteTable 1 }
+
+RuijieDvmrpRouteEntry ::= SEQUENCE {
+    ruijieDvmrpRouteIpAddress        IpAddress,
+    ruijieDvmrpRouteInterface        InterfaceIndex,
+    ruijieDvmrpRouteDistance         Integer32,
+    ruijieDvmrpRouteMetric           Integer32,
+    ruijieDvmrpRouteUptime           TimeTicks,
+    ruijieDvmrpRouteExpires          TimeTicks,
+    ruijieDvmrpRouteNextHopAddress   IpAddress,
+    ruijieDvmrpRouteNextHopInterface InterfaceIndex,
+    ruijieDvmrpRouteStatus           EnabledStatus
+    }
+
+ruijieDvmrpRouteIpAddress  OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Clears the longest matched route."         
+    ::= {  ruijieDvmrpRouteEntry 1 }
+
+ruijieDvmrpRouteInterface  OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The interface number of Dvmrp Route."
+    ::= {  ruijieDvmrpRouteEntry 2 }
+
+ruijieDvmrpRouteDistance  OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "For distance, enter the administrative distance to the
+         destination. By default, the administrative distance for DVMRP
+         routes is 0 and take precedence over unicast routing table routes. If
+         you have two paths to a source, one through unicast routing (using
+         PIM as the multicast routing protocol) and another using DVMRP,
+         and if you want to use the PIM path, increase the administrative
+         distance for DVMRP routes. The range is 0 to 255."
+    ::= {  ruijieDvmrpRouteEntry 3 }
+
+ruijieDvmrpRouteMetric  OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Metric associated with a set of destinations for 
+         DVMRP reports.  A value of 0 means that the route 
+         is not advertised. A value of 32 is equivalent to 
+         infinity (unreachable)."
+    ::= {  ruijieDvmrpRouteEntry 4 }
+
+ruijieDvmrpRouteUptime  OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "How long (in hours, minutes, and seconds) that the route has been in
+         the DVMRP routing table."
+    ::= {  ruijieDvmrpRouteEntry 5 }
+
+ruijieDvmrpRouteExpires  OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "How long (in hours, minutes, and seconds) until the entry is removed
+         from the DVMRP routing table."
+    ::= {  ruijieDvmrpRouteEntry 6 }
+
+ruijieDvmrpRouteNextHopAddress  OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The address of next hop."
+    ::= {  ruijieDvmrpRouteEntry 7 }
+
+ruijieDvmrpRouteNextHopInterface  OBJECT-TYPE
+      SYNTAX     InterfaceIndex
+      MAX-ACCESS read-only
+      STATUS     current
+      DESCRIPTION
+         "The ifindex of next hop."
+      ::= {  ruijieDvmrpRouteEntry 8 }
+
+ruijieDvmrpRouteStatus OBJECT-TYPE
+    SYNTAX     EnabledStatus
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "The status of this entry.  only be used to 
+         destroy the entry disables Dvmrp Route,the
+         satuss of enabled will destroy all entry and
+         disabled only destroy one entry associate with
+         ruijieDvmrpRouteIpAddress and ruijieDvmrpRouteInterface."
+    ::= { ruijieDvmrpRouteEntry 9 }
+
+--
+-- Notification 
+--
+ruijieDvmrpTraps  OBJECT IDENTIFIER ::= { ruijieDvmrpMIBObjects 7 }
+ruijieDvmrpRouteInformation NOTIFICATION-TYPE   
+    STATUS             current
+    DESCRIPTION
+        "A ruijieDvmrpRouteInformation trap signifies the
+        Number of routes is more than The limit of 
+        ruijieDvmrpRoutehogNotification in one minute,
+        then the trap should be generated."
+    ::= { ruijieDvmrpTraps 1 }
+
+
+-- units of conformance
+
+ruijieDvmrpMIBConformance OBJECT IDENTIFIER ::= { ruijieDvmrpMIB 2 }
+ruijieDvmrpMIBCompliances OBJECT IDENTIFIER ::= { ruijieDvmrpMIBConformance 1 }
+ruijieDvmrpMIBGroups      OBJECT IDENTIFIER ::= { ruijieDvmrpMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieDvmrpMIBCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for entities which implement
+         the Ruijie DVMRP MIB"
+    MODULE  -- this module
+    MANDATORY-GROUPS {
+        ruijieDvmrpBaseMIBGroup,    
+        ruijieDvmrpInterfaceMIBGroup,
+        ruijieDvmrpMetricOffsetMIBGroup,
+        ruijieDvmrpSummaryMIBGroup,
+        ruijieDvmrpMetricMIBGroup,
+        ruijieDvmrpRouteMIBGroup,
+        ruijieDvmrpRouteTrapGroup
+        }
+    ::= { ruijieDvmrpMIBCompliances 1 }
+                
+-- conformance information
+
+ruijieDvmrpBaseMIBGroup OBJECT-GROUP
+    OBJECTS {
+    ruijieDvmrpRouteLimit,
+    ruijieDvmrpRoutehogNotification
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of general objects providing DVMRP managment."
+    ::= { ruijieDvmrpMIBGroups 1 }
+
+ruijieDvmrpInterfaceMIBGroup OBJECT-GROUP
+    OBJECTS {
+    ruijieDvmrpInterfaceDefaultInformation,
+    ruijieDvmrpInterfaceUnicastRoutingStatus, 
+    ruijieDvmrpInterfaceRejectNonPrunersStatus,      
+    ruijieDvmrpInterfaceAutoSummaryStatus,
+    ruijieDvmrpInterfaceRtsRec,
+    ruijieDvmrpInterfacePoisonReverseRtsRec,
+    ruijieDvmrpInterfaceUniRtAdvertised,
+    ruijieDvmrpInterfaceDvmrpRtAdvertised
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of DVMRP interface managment."
+    ::= { ruijieDvmrpMIBGroups 2 }
+    
+ruijieDvmrpMetricOffsetMIBGroup OBJECT-GROUP
+    OBJECTS {
+    ruijieDvmrpMetricOffsetIncrement
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of DVMRP metric offset objects."
+    ::= { ruijieDvmrpMIBGroups 3 }
+    
+ruijieDvmrpSummaryMIBGroup OBJECT-GROUP
+    OBJECTS {
+    ruijieDvmrpSummaryMetric, 
+    ruijieDvmrpSummaryStatus   
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of DVMRP summary objects."
+    ::= { ruijieDvmrpMIBGroups 4 }
+ 
+ruijieDvmrpMetricMIBGroup OBJECT-GROUP
+    OBJECTS {
+    ruijieDvmrpMetricListAclName,
+    ruijieDvmrpMetricStatus
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of DVMRP metric objects."
+    ::= { ruijieDvmrpMIBGroups 5 }
+    
+ruijieDvmrpRouteMIBGroup OBJECT-GROUP
+    OBJECTS {
+    ruijieDvmrpRouteDistance,
+    ruijieDvmrpRouteMetric,
+    ruijieDvmrpRouteUptime,
+    ruijieDvmrpRouteExpires,
+    ruijieDvmrpRouteNextHopAddress,
+    ruijieDvmrpRouteNextHopInterface,
+    ruijieDvmrpRouteStatus
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of DVMRP route objects."
+    ::= { ruijieDvmrpMIBGroups 6 }                
+
+ruijieDvmrpRouteTrapGroup NOTIFICATION-GROUP
+    NOTIFICATIONS {
+        ruijieDvmrpRouteInformation
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of DVMRP route traps."
+    ::= { ruijieDvmrpMIBGroups 7 } 
+END
+
+
+
+
+    
+    
+               
+                                                 

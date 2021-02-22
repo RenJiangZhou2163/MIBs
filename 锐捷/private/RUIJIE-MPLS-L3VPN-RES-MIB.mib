@@ -1,0 +1,157 @@
+-- **********************************************************************
+-- RUIJIE-MPLS-L3VPN-RES-MIB.mib: Ruijie Mpls L3vpn Resource Statics MIB file
+--
+-- March 2013, WangMeng
+--
+-- Copyright (c) 2013 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+--
+-- **********************************************************************
+
+RUIJIE-MPLS-L3VPN-RES-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+   MODULE-IDENTITY,
+   OBJECT-TYPE,
+   Integer32
+      FROM SNMPv2-SMI                                     -- [RFC2578]
+   MODULE-COMPLIANCE, OBJECT-GROUP
+      FROM SNMPv2-CONF                                    -- [RFC2580]
+   RowStatus, StorageType, DisplayString
+      FROM SNMPv2-TC                                      -- [RFC2579]
+   InetAddress, InetAddressType
+      FROM INET-ADDRESS-MIB                               -- [RFC4001]
+   mplsL3VpnVrfName
+      FROM MPLS-L3VPN-STD-MIB
+   bgp4PathAttrIpAddrPrefix,
+   bgp4PathAttrIpAddrPrefixLen,
+   bgp4PathAttrPeer
+      FROM BGP4-MIB
+   ruijieMgmt
+      FROM RUIJIE-SMI;
+
+-- **********************************************************************
+-- * MODULE IDENTITY
+-- **********************************************************************
+ruijiemplsL3VpnResMIB MODULE-IDENTITY
+   LAST-UPDATED "201302210000Z"
+   ORGANIZATION "Ruijie Networks Co.,Ltd."
+   CONTACT-INFO
+                "Tel: 4008-111-000
+                E-mail: service@ruijie.com.cn"                  
+   DESCRIPTION
+        "This MIB contains managed object definitions for the
+         neighbors' parameters of the
+         Layer-3 Multiprotocol Label Switching Virtual
+         Private Networks.
+
+        Copyright (C) The Internet Society (2006).  This
+        version of this MIB module is part of RFC4382; see
+        the RFC itself for full legal notices."
+  -- Revision history.
+  REVISION
+      "201302210000Z"
+   DESCRIPTION
+      "Initial version.  Published as RFC 4382."
+   ::= { ruijieMgmt 123 }
+
+ruijiemplsL3VpnResMIBObjects OBJECT IDENTIFIER ::= {ruijiemplsL3VpnResMIB 1}
+
+-- **********************************************************************
+-- * ruijiemplsL3VpnResTable table
+-- **********************************************************************
+ruijiemplsL3VpnResTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF RuijiemplsL3VpnResEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+       "This table specifies import/export RT resources on
+        VRF and the RT/RD resource in VPNV4 route.
+        Entries in this table define the map for VRF and 
+		VPNV4 neighbor."
+    ::= { ruijiemplsL3VpnResMIBObjects 1 }
+
+ruijiemplsL3VpnResEntry  OBJECT-TYPE
+    SYNTAX        RuijiemplsL3VpnResEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+       "An entry in this table is created by an LSR for
+        every VRF capable of supporting MPLS L3VPN.  The
+        indexing provides an ordering of VRFs name and
+		VPNV4 neighber address"
+    INDEX       { ruijiemplsL3VpnResPeAddr,
+                  ruijiemplsL3VpnResVrfName}
+    ::= { ruijiemplsL3VpnResTable 1 }
+
+RuijiemplsL3VpnResEntry ::= SEQUENCE {
+    ruijiemplsL3VpnResPeAddr        InetAddress,
+    ruijiemplsL3VpnResVrfName      	DisplayString,
+    ruijiemplsL3VpnResRtCollect     DisplayString,
+    ruijiemplsL3VpnResRdCollect     DisplayString,
+    ruijiemplsL3VpnResIntfAddr      InetAddress,
+    ruijiemplsL3VpnResImptRt        DisplayString,
+	ruijiemplsL3VpnResExptRt        DisplayString
+}
+
+ruijiemplsL3VpnResPeAddr OBJECT-TYPE
+          SYNTAX InetAddress
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "This attribute shall specify the remote address of
+                the bgp neighbor in Layer-3 Multiprotocol Label
+                Switching Virtual Private Networks. "
+           ::= { ruijiemplsL3VpnResEntry 1 }
+
+ruijiemplsL3VpnResVrfName OBJECT-TYPE
+          SYNTAX DisplayString
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "This attribute shall specify the name of VPN instance. "
+           ::= { ruijiemplsL3VpnResEntry 2 }
+
+ruijiemplsL3VpnResRtCollect OBJECT-TYPE
+          SYNTAX DisplayString
+          MAX-ACCESS read-write
+          STATUS current
+          DESCRIPTION
+              "This attribute shall specify RT collection in route which learned from VPNV4 neighbor. "
+           ::= { ruijiemplsL3VpnResEntry 3 }
+
+ruijiemplsL3VpnResRdCollect OBJECT-TYPE
+          SYNTAX DisplayString
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "This attribute shall specify RD collection in route which learned from VPNV4 neighbor. "
+           ::= { ruijiemplsL3VpnResEntry 4 }
+
+ruijiemplsL3VpnResIntfAddr OBJECT-TYPE
+          SYNTAX        InetAddress
+          MAX-ACCESS    read-only
+          STATUS        current
+          DESCRIPTION
+              "This attribute shall specify the local address which used to connect VPNV4 neighbor¡£"
+          ::= { ruijiemplsL3VpnResEntry 5 }
+
+ruijiemplsL3VpnResImptRt OBJECT-TYPE
+          SYNTAX     DisplayString
+          MAX-ACCESS read-only
+          STATUS     current
+          DESCRIPTION 
+              "This attribute shall specify import RT configured on VPN instance."
+          ::= { ruijiemplsL3VpnResEntry 6 }
+
+ruijiemplsL3VpnResExptRt OBJECT-TYPE
+          SYNTAX     DisplayString
+          MAX-ACCESS read-only
+          STATUS     current
+          DESCRIPTION
+              "This attribute shall specify export RT configured on VPN instance."
+          ::= { ruijiemplsL3VpnResEntry 7 }
+-- **********************************************************************
+-- * End of ruijiemplsL3VpnResTable table
+-- **********************************************************************
+
+END

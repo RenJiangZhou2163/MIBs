@@ -1,0 +1,526 @@
+-- ****************************************************************
+-- Ruijie NAT Configuration and Statistics MIB
+--   
+-- MAR 2015, zhaoguoqiang
+--   
+-- Copyright (c) 2014 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+--   
+-- ****************************************************************
+
+
+-- Start module
+RUIJIE-ROUTER-NAT-MIB DEFINITIONS ::= BEGIN
+
+-- Start external defined node
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Integer32,
+    Counter32,
+    Gauge32,
+    Unsigned32,
+    Counter64,
+    IpAddress
+        FROM SNMPv2-SMI
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP
+        FROM SNMPv2-CONF
+    TEXTUAL-CONVENTION,
+    DisplayString,
+    MacAddress,
+    RowStatus,
+    TruthValue
+        FROM SNMPv2-TC
+    InterfaceIndex
+        FROM IF-MIB
+    ruijieMgmt
+        FROM RUIJIE-SMI;
+-- End external defined node
+
+
+-- Start root node
+ruijieNatMIB MODULE-IDENTITY
+        LAST-UPDATED "201503020000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                "E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie nat mibs."
+
+        REVISION    "201503020000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 136}                    
+        
+        RuijieNatType ::= TEXTUAL-CONVENTION
+          STATUS  current
+          DESCRIPTION
+             "inside outside application."
+          SYNTAX INTEGER {
+                     inside(1),
+                     outside(2),
+                     application(3)
+                         }
+        
+        RuijieNatSrcDstType ::= TEXTUAL-CONVENTION
+          STATUS  current
+          DESCRIPTION
+             "source or destination."
+          SYNTAX INTEGER {
+                     source(1),
+                     destination(2)
+                         }  
+                                         
+        RuijieNatTcpUdpType ::= TEXTUAL-CONVENTION
+          STATUS  current
+          DESCRIPTION
+             "tcp udp or all."
+          SYNTAX INTEGER {
+                     tcp(1),
+                     udp(2),
+                     all(3)
+                         }  
+                         
+       RuijieNatPoolAddressntmskprefixFlag ::=  TEXTUAL-CONVENTION
+          STATUS  current
+          DESCRIPTION
+             "netmask or prefix-length."
+          SYNTAX INTEGER {
+                     netmask(1),
+                     prefix-length(2)
+                         } 
+                                      
+-- End root node
+  
+        ruijieNatMIBObjects OBJECT IDENTIFIER ::= { ruijieNatMIB 1 } 
+     -- WIFI MIB    
+
+
+-- Node definitions
+        ruijieNatSettingObjects OBJECT IDENTIFIER ::= { ruijieNatMIBObjects  1 } 
+        ruijieNatPoolAddressObjects OBJECT IDENTIFIER ::= { ruijieNatMIBObjects  2 }
+        ruijieNatInterfaceObjects OBJECT IDENTIFIER ::= { ruijieNatMIBObjects 3 }
+        
+ 
+-- Start NatSetting objects       
+        ruijieNatSettingTable OBJECT-TYPE  
+            SYNTAX SEQUENCE OF RuijieNatSettingEntry
+            MAX-ACCESS            not-accessible
+            STATUS                current
+            DESCRIPTION
+                "setting nat rule"
+            ::= { ruijieNatSettingObjects 1 }
+                
+        ruijieNatSettingEntry OBJECT-TYPE
+            SYNTAX RuijieNatSettingEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "the router setting nat rule entry."
+            INDEX { ruijieNatSettingIndex }
+            ::= { ruijieNatSettingTable 1 } 
+        
+        RuijieNatSettingEntry::=
+            SEQUENCE { 
+            	  ruijieNatSettingIndex
+            		Integer32,
+            		ruijieNatSettingisno
+            		Integer32,
+            		ruijieNatSettingtype
+            		RuijieNatType,
+            		ruijieNatSettingsrcdst
+            		RuijieNatSrcDstType,
+            		ruijieNatSettingacltype
+            		Integer32,
+            		ruijieNatSettingaclnumber
+            		Integer32,
+            		ruijieNatSettingaclname
+            		DisplayString,
+            		ruijieNatSettingstaticrule
+            		Integer32,
+            		ruijieNatSettingproto
+            		RuijieNatTcpUdpType,
+            		ruijieNatSettinginlocalip
+            		IpAddress,
+            		ruijieNatSettinginglobalip
+            		IpAddress,
+            		ruijieNatSettingnetmask
+            		IpAddress,
+            		ruijieNatSettinglocalport
+            		Integer32,
+            		ruijieNatSettingglobalport
+            		Integer32,
+            		ruijieNatSettingmatchinterface
+            		Integer32,
+            		ruijieNatSettingpermisinside
+            		Integer32,
+            		ruijieNatSettinginterface
+            		Integer32,
+                ruijieNatSettingpool
+            		DisplayString,
+            		ruijieNatSettingdstchange
+            		IpAddress,
+            		ruijieNatSettingsrcchange
+            		IpAddress
+             }                
+        
+        ruijieNatSettingIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "nat setting index."
+            ::= { ruijieNatSettingEntry 1 }
+            
+        ruijieNatSettingisno OBJECT-TYPE
+            SYNTAX Integer32(0..1)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting del rule."
+            ::= { ruijieNatSettingEntry 2 }    
+            
+        ruijieNatSettingtype OBJECT-TYPE
+            SYNTAX RuijieNatType
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting inside outside application."
+            ::= { ruijieNatSettingEntry 3 }
+        
+        ruijieNatSettingsrcdst OBJECT-TYPE
+            SYNTAX RuijieNatSrcDstType
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting src or dst choice."
+            ::= { ruijieNatSettingEntry 4 }
+            
+        ruijieNatSettingacltype OBJECT-TYPE
+            SYNTAX Integer32(0..1)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting acl type."
+            ::= { ruijieNatSettingEntry 5 }
+            
+        ruijieNatSettingaclnumber OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting acl number."
+            ::= { ruijieNatSettingEntry 6 }
+            
+        ruijieNatSettingaclname OBJECT-TYPE
+            SYNTAX  DisplayString(SIZE (1..255))
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting acl name."
+            ::= { ruijieNatSettingEntry 7 }
+        
+        ruijieNatSettingstaticrule OBJECT-TYPE
+            SYNTAX Integer32(0..1)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting static rule flag."
+            ::= { ruijieNatSettingEntry 8 }
+            
+        ruijieNatSettingproto OBJECT-TYPE
+            SYNTAX RuijieNatTcpUdpType
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting static protocal."
+            ::= { ruijieNatSettingEntry 9 }
+            
+				ruijieNatSettinginlocalip OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting static Inside local IP address."
+            ::= { ruijieNatSettingEntry 10 }
+            
+        ruijieNatSettinginglobalip OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting static Inside global IP address."
+            ::= { ruijieNatSettingEntry 11 }
+            
+         ruijieNatSettingnetmask OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting static netmask."
+            ::= { ruijieNatSettingEntry 12 }
+        
+        ruijieNatSettinglocalport OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting static local port."
+            ::= { ruijieNatSettingEntry 13 }
+            
+        ruijieNatSettingglobalport OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting static global port."
+            ::= { ruijieNatSettingEntry 14 }
+        
+        ruijieNatSettingmatchinterface OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting static match interface."
+            ::= { ruijieNatSettingEntry 15 }
+        
+        ruijieNatSettingpermisinside OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting permis-inside."
+            ::= { ruijieNatSettingEntry 16 }
+        
+        ruijieNatSettinginterface OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting interface."
+            ::= { ruijieNatSettingEntry 17 }
+        
+        ruijieNatSettingpool OBJECT-TYPE
+            SYNTAX DisplayString(SIZE (1..255))
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting pool name."
+            ::= { ruijieNatSettingEntry 18 } 
+            
+        ruijieNatSettingdstchange OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting change to dst ip."
+            ::= { ruijieNatSettingEntry 19 }
+            
+        ruijieNatSettingsrcchange OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat setting change to src ip."
+            ::= { ruijieNatSettingEntry 20 }
+        
+--end NatSetting objects
+
+--start NatPoolAddress objects
+				ruijieNatPoolAddressTable OBJECT-TYPE  
+            SYNTAX SEQUENCE OF RuijieNatPoolAddressEntry
+            MAX-ACCESS            not-accessible
+            STATUS                current
+            DESCRIPTION
+                "nat configure address pool address"
+            ::= { ruijieNatPoolAddressObjects 1 }
+                
+        ruijieNatPoolAddressEntry OBJECT-TYPE
+            SYNTAX RuijieNatPoolAddressEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "nat configure address pool address entry."
+            INDEX { ruijieNatPoolAddressIndex }
+            ::= { ruijieNatPoolAddressTable 1 } 
+        
+        RuijieNatPoolAddressEntry::=
+            SEQUENCE { 
+            	  ruijieNatPoolAddressIndex
+            		Integer32,
+            		ruijieNatPoolAddressisno
+            		Integer32,
+            		ruijieNatPoolAddressname
+            		DisplayString,
+            		ruijieNatPoolAddressntmskprefix
+            		RuijieNatPoolAddressntmskprefixFlag,
+            		ruijieNatPoolAddressnetmask
+            		IpAddress,
+            		ruijieNatPoolAddressprefixlength
+            		Integer32,
+            		ruijieNatPoolAddressstartip
+            		IpAddress,
+            		ruijieNatPoolAddressendip
+            		IpAddress,
+            		ruijieNatPoolAddressstartinterface
+            		Integer32,
+            		ruijieNatPoolAddressendinterface
+            		Integer32,
+            		ruijieNatPoolAddresstype
+            		Integer32
+            	--rotary	
+             }    
+
+					ruijieNatPoolAddressIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "nat pool index."
+            ::= { ruijieNatPoolAddressEntry 1 }
+            
+          ruijieNatPoolAddressisno OBJECT-TYPE
+            SYNTAX Integer32(0..1)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat pool Address del rule."
+            ::= { ruijieNatPoolAddressEntry 2 }
+          
+          ruijieNatPoolAddressname OBJECT-TYPE
+            SYNTAX DisplayString(SIZE (1..255))
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat pool name."
+            ::= { ruijieNatPoolAddressEntry 3 }
+          
+         ruijieNatPoolAddressntmskprefix OBJECT-TYPE
+         		SYNTAX RuijieNatPoolAddressntmskprefixFlag
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat pool prefix flag .( netmask or prefix)."
+            ::= { ruijieNatPoolAddressEntry 4 }
+         
+         ruijieNatPoolAddressnetmask OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat pool netmask."
+            ::= { ruijieNatPoolAddressEntry 5 }
+            
+         ruijieNatPoolAddressprefixlength OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat pool prefix length."
+            ::= { ruijieNatPoolAddressEntry 6 }    
+          
+          ruijieNatPoolAddressstartip OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat pool start ip."
+            ::= { ruijieNatPoolAddressEntry 7 }
+            
+          ruijieNatPoolAddressendip OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat pool end ip."
+            ::= { ruijieNatPoolAddressEntry 8 }
+          
+          ruijieNatPoolAddressstartinterface OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat pool address start interface."
+            ::= { ruijieNatPoolAddressEntry 9 }
+            
+          ruijieNatPoolAddressendinterface OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat pool address end interface."
+            ::= { ruijieNatPoolAddressEntry 10 }
+            
+          ruijieNatPoolAddresstype OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat pool type."
+            ::= { ruijieNatPoolAddressEntry 11 }
+          
+          
+            
+--end NatPoolAddress objects
+
+
+--start NatInterface objects
+				ruijieNatInterfaceTable OBJECT-TYPE  
+            SYNTAX SEQUENCE OF RuijieNatInterfaceEntry
+            MAX-ACCESS            not-accessible
+            STATUS                current
+            DESCRIPTION
+                "nat interface configure"
+            ::= { ruijieNatInterfaceObjects 1 }
+                
+        ruijieNatInterfaceEntry OBJECT-TYPE
+            SYNTAX RuijieNatInterfaceEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "nat interface configure entry."
+            INDEX { ruijieNatInterfaceIndex }
+            ::= { ruijieNatInterfaceTable 1 } 
+        
+        RuijieNatInterfaceEntry::=
+            SEQUENCE { 
+            	  ruijieNatInterfaceIndex
+            		Integer32,
+            		ruijieNatInterfaceisno
+            		Integer32,
+            		ruijieNatInterfacedirector
+            		Integer32
+             }    
+
+					ruijieNatInterfaceIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "nat interface index."
+            ::= { ruijieNatInterfaceEntry 1 }
+            
+          ruijieNatInterfaceisno OBJECT-TYPE
+            SYNTAX Integer32(0..1)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "nat interface del rule."
+            ::= { ruijieNatInterfaceEntry 2 }
+            
+          ruijieNatInterfacedirector OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "nat set interface director."
+            ::= { ruijieNatInterfaceEntry 3 }
+            
+             
+--end NatInterface objects     
+
+-- End Nat associate objects         
+END
+-- End module
+

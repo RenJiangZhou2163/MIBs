@@ -1,0 +1,489 @@
+--  ************************************************
+--  $Id: zxr10ping.mib 8 2005-07-28 12:17:08Z zhanglh $
+--
+--  zxr10ping.mib: ZXR10 Ping MIB file
+--
+--  Mar. 2008, Cailei 153843
+--
+--  Copyright(c) 2008 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+
+ZXR10-TELNET-MIB DEFINITIONS ::= BEGIN
+    
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,NOTIFICATION-TYPE,
+    Unsigned32, 
+    Integer32,
+    enterprises
+        FROM SNMPv2-SMI
+    DisplayString
+        FROM SNMPv2-TC
+    InetAddress, InetAddressType
+        FROM INET-ADDRESS-MIB;
+
+    zxr10protocol  MODULE-IDENTITY
+        LAST-UPDATED "201507210000Z"
+        ORGANIZATION "ZTE Corporation."
+        CONTACT-INFO
+               "Chen Wenbo
+               Tel: 675166      
+               E-Mail: chen.wenbo@zte.com.cn    
+               "
+        DESCRIPTION 
+                "" 
+--  Modify REVISION & DESCRIPTION below:
+        REVISION "201507210000Z"
+        DESCRIPTION 
+                "Add zxr10TelnetAclFilterTable and zxr10TelnetACLFilter"
+
+        REVISION "201503230000Z"
+        DESCRIPTION 
+                "Modify the range of zxr10StyMaxLinkNumber 
+                 and zxr10StyMaxSourceConnectNumber"
+                
+        REVISION "201503030000Z"
+        DESCRIPTION 
+                "Modify DESCRIPTION of node: zxr10StyStat,zxr10StyName,
+                 zxr10StyUser,zxr10StyHosts,zxr10StyLocation,
+                 zxr10StyDSCP,zxr10StyMaxSourceConnectNumber,
+                 Modify the value range of zxr10StyDSCP,
+                 zxr10StyMaxSourceConnectNumber,
+                 Modify the default value of zxr10StyServerState" 
+
+        REVISION "201407020000Z"
+        DESCRIPTION 
+                "
+                Add leaf node:zxr10StyMaxSourceConnectNumber
+                " 
+        
+        REVISION "201406160000Z"
+        DESCRIPTION 
+                "Modify the max length of zxr10StyUser and staticUserName,
+                 Delete the default vaule of zxr10StyDSCP,
+                 Modify the max value of zxr10StyDSCP" 
+
+        REVISION "201306250000Z"
+        DESCRIPTION 
+                "
+                Modify UNITS of zxr10StyConMaxOnlineTime,zxr10StyConMaxIdle,
+                zxr10StyMaxIdle,zxr10StyMaxOnlineTime, zxr10StyIdle
+                " 
+
+        REVISION "201303270000Z"
+        DESCRIPTION
+                "Add:zxr10StyConMaxIdle
+                     zxr10StyConMaxOnlineTime
+                     zxr10StyIpv4Acl
+                     zxr10StyIpv6Acl,
+                     zxr10StyMaxLinkNumber
+                     zxr10StyServerState
+                     zxr10StyListenPort
+                     zxr10StyDSCP
+                     zxr10StyTerminalLength
+                 "
+
+        REVISION "200905200000Z"
+        DESCRIPTION
+                "TELNET"               
+            
+        ::= { zxr10 101 }
+            
+--  Telnet table
+    zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+    zxr10 OBJECT IDENTIFIER ::= { zte 3}
+    zxr10Telnet OBJECT IDENTIFIER ::= { zxr10protocol 7}
+    zxr10TelnetGlobalObjects OBJECT IDENTIFIER ::={zxr10Telnet 10}
+        
+        
+--  Max idle time in minutes    
+    zxr10StyMaxIdle OBJECT-TYPE
+        SYNTAX    Unsigned32(0..1000)
+        UNITS    "minutes"
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "Maximum telnet idle time in minutes.
+            Distinguish project,support performance parameter. "
+        DEFVAL     {120}
+        ::= { zxr10Telnet 1 }
+
+ --  Max online time in minutes 
+    zxr10StyMaxOnlineTime OBJECT-TYPE 
+        SYNTAX   Unsigned32(0..10000)
+        UNITS    "minutes"
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "Maximum telnet online time in minutes.
+            Distinguish project,support performance parameter. "
+        DEFVAL     {1440}
+        ::= { zxr10Telnet 2 }         
+
+--  Information table
+    zxr10StyCommonTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10StyCommonEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Information table. "
+        ::= { zxr10Telnet 4 }  
+        
+    zxr10StyCommonEntry  OBJECT-TYPE
+        SYNTAX  Zxr10StyCommonEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Information table entry. "
+        INDEX  { zxr10StyName }
+        ::= { zxr10StyCommonTable 1 }
+
+    Zxr10StyCommonEntry ::=
+        SEQUENCE {  
+            zxr10StyStat
+                Unsigned32,
+            zxr10StyName
+                DisplayString,
+            zxr10StyUser
+                DisplayString,
+            zxr10StyHosts
+                DisplayString,
+            zxr10StyLocation
+                DisplayString,
+            zxr10StyIdle
+                Unsigned32,
+            zxr10StyLoginTime
+                DisplayString,
+            zxr10StyTerminalLength
+                Unsigned32
+    }
+
+    zxr10StyStat  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..1)
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "Sty status, 0: offline, 1: online. "
+        ::= { zxr10StyCommonEntry 1 }
+
+    zxr10StyName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..15))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The name composed by line number, 
+             terminal type and terminal number."
+        ::= { zxr10StyCommonEntry 2 }
+
+    zxr10StyUser OBJECT-TYPE
+        SYNTAX  DisplayString(SIZE(1..65))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Username."
+        ::= { zxr10StyCommonEntry 3 }
+
+    zxr10StyHosts OBJECT-TYPE
+        SYNTAX  DisplayString(SIZE(1..45))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Remote server IP address. "
+        ::= { zxr10StyCommonEntry 5 }
+
+
+    zxr10StyLocation OBJECT-TYPE
+        SYNTAX  DisplayString(SIZE(1..45))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Client IP address. "
+        ::= { zxr10StyCommonEntry 6 }
+
+
+    zxr10StyIdle OBJECT-TYPE
+        SYNTAX    Unsigned32(0..1000)
+        UNITS     "minutes"   
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Idle time in minutes. "
+        ::= { zxr10StyCommonEntry 7 }
+
+    zxr10StyLoginTime OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..255))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Login time. "
+        ::= { zxr10StyCommonEntry 8 }
+    zxr10StyTerminalLength OBJECT-TYPE
+        SYNTAX    Unsigned32(0..512)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of lines on screen. "
+        DEFVAL     {24}
+        ::= { zxr10StyCommonEntry 9 }
+
+ 
+ --  User table 
+staticUserTable OBJECT-TYPE  
+        SYNTAX  SEQUENCE OF StaticUserEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A list of static user entries. "  
+        ::= { zxr10Telnet 5 }
+
+staticUserEntry OBJECT-TYPE
+        SYNTAX  StaticUserEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing management information applicable to 
+            a particular static user."
+        INDEX  { staticUserName }     
+        ::= { staticUserTable 1 } 
+        
+StaticUserEntry ::=
+     SEQUENCE {
+         staticUserName
+             DisplayString,
+         staticUserPrivilege
+             Integer32
+         } 
+         
+staticUserName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..65))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Local user name."
+        ::= { staticUserEntry 1 }
+        
+staticUserPrivilege OBJECT-TYPE
+        SYNTAX   Integer32(0..15)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Local privilege."
+        ::= { staticUserEntry 2 }
+        
+--  Max Con idle time in minutes    
+    zxr10StyConMaxIdle OBJECT-TYPE
+        SYNTAX    Unsigned32(0..1000)
+        UNITS     "minutes"
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Maximum console idle time in minutes.
+            Distinguish project,support performance parameter. "
+        DEFVAL     {30}
+        ::= { zxr10TelnetGlobalObjects 1 }
+
+ --  Max Con online time in minutes 
+    zxr10StyConMaxOnlineTime OBJECT-TYPE 
+        SYNTAX   Unsigned32(0..10000)
+        UNITS    "minutes"
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Maximum console online time in minutes.
+            Distinguish project,support performance parameter. "
+        DEFVAL     {1440}
+        ::= { zxr10TelnetGlobalObjects 2 } 
+        
+ --  IPv4 ACL    
+    zxr10StyIpv4Acl OBJECT-TYPE
+        SYNTAX    DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPv4 ACL for Filtering telnet connections. "
+        ::= { zxr10TelnetGlobalObjects 3 }
+
+ --  IPv6 ACL 
+    zxr10StyIpv6Acl OBJECT-TYPE 
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPv6 ACL for Filtering telnet connections. "
+        ::= { zxr10TelnetGlobalObjects 4 } 
+        
+ --  Max links number    
+    zxr10StyMaxLinkNumber OBJECT-TYPE
+        SYNTAX    Unsigned32(1..32)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            " Maximum number of telnet links. "
+        DEFVAL     {15}    
+        ::= { zxr10TelnetGlobalObjects 5 }
+
+ --  Telnet server state 
+    zxr10StyServerState OBJECT-TYPE 
+        SYNTAX    INTEGER {
+                            disable(1),
+                            enable(2)  
+                           }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Telnet server state(enable(2),disable(1)). "
+        DEFVAL     {enable}
+        ::= { zxr10TelnetGlobalObjects 6 } 
+        
+--  Telnet server listening port    
+    zxr10StyListenPort OBJECT-TYPE
+        SYNTAX    Unsigned32(23|49152..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Telnet listening port when telnet server is enable. "
+        DEFVAL     {23}
+        ::= { zxr10TelnetGlobalObjects 7 }
+
+ --  Telnet DSCP 
+    zxr10StyDSCP OBJECT-TYPE 
+        SYNTAX   Unsigned32(0..63|255)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The value of telnet DSCP, 255 is invalid value."
+        ::= { zxr10TelnetGlobalObjects 8 } 
+
+        
+ --  Max Source Connection
+    zxr10StyMaxSourceConnectNumber OBJECT-TYPE
+        SYNTAX    Unsigned32(0|1..32)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            " Maximum number of telnet links which connect from the same IP,
+              0 is invalid value."
+        ::= { zxr10TelnetGlobalObjects 9 }
+
+ --  table
+    zxr10TelnetAclFilterTable OBJECT-TYPE  
+        SYNTAX SEQUENCE OF Zxr10TelnetAclFilterEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            " Telnet ACL filter table."  
+        ::= { zxr10Telnet 6 }
+
+    zxr10TelnetAclFilterEntry OBJECT-TYPE
+        SYNTAX      Zxr10TelnetAclFilterEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            " Telnet ACL filter entry."
+        INDEX  { zxr10TelnetAclIndex }     
+        ::= { zxr10TelnetAclFilterTable 1 } 
+        
+    Zxr10TelnetAclFilterEntry ::=
+        SEQUENCE {
+            zxr10TelnetAclIndex             Unsigned32,
+            zxr10TelnetAclAppType           INTEGER,
+            zxr10TelnetProtocolType         INTEGER,
+            zxr10TelnetAddressType          InetAddressType,
+            zxr10TelnetSrcIPAddress         InetAddress,
+            zxr10TelnetSrcPort              Unsigned32,
+            zxr10TelnetDestIPAddress        InetAddress,
+            zxr10TelnetDestPort             Unsigned32
+         }
+    
+    zxr10TelnetAclIndex OBJECT-TYPE
+        SYNTAX      Unsigned32(0..65535)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "ACL trap index."
+        ::= { zxr10TelnetAclFilterEntry 1 }
+
+    zxr10TelnetAclAppType OBJECT-TYPE
+        SYNTAX  INTEGER {
+                            telnet(1)
+                        }
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "The app type of ACL filter (telnet(1))."
+        ::= { zxr10TelnetAclFilterEntry 2 }
+
+    zxr10TelnetProtocolType OBJECT-TYPE
+        SYNTAX  INTEGER {
+                            tcp(1),
+                            udp(2)
+                        }
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "Protocol type (tcp(1),udp(2))."
+        ::= { zxr10TelnetAclFilterEntry 3 }
+
+    zxr10TelnetAddressType OBJECT-TYPE
+        SYNTAX      InetAddressType
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "The address type of source IP and destination IP."
+        ::= { zxr10TelnetAclFilterEntry 4 }
+
+    zxr10TelnetSrcIPAddress OBJECT-TYPE
+        SYNTAX      InetAddress
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "Source IPv4 or IPv6 address."
+        ::= { zxr10TelnetAclFilterEntry 5 }
+        
+    zxr10TelnetSrcPort OBJECT-TYPE
+        SYNTAX      Unsigned32(0..65535)
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "Source port number."
+        ::= { zxr10TelnetAclFilterEntry 6 }
+
+    zxr10TelnetDestIPAddress OBJECT-TYPE
+        SYNTAX      InetAddress
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "Destination IPv4 or IPv6 address."
+        ::= { zxr10TelnetAclFilterEntry 7 }
+
+    zxr10TelnetDestPort OBJECT-TYPE
+        SYNTAX      Unsigned32(0..65535)
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "Destination port number."
+        ::= { zxr10TelnetAclFilterEntry 8 }
+
+
+zxr10TelnetNotifications  OBJECT IDENTIFIER ::= { zxr10Telnet 11 }
+    
+zxr10TelnetACLFilter NOTIFICATION-TYPE
+        OBJECTS
+        {
+            zxr10TelnetAclAppType,
+            zxr10TelnetProtocolType,
+            zxr10TelnetAddressType,
+            zxr10TelnetSrcIPAddress,
+            zxr10TelnetSrcPort,
+            zxr10TelnetDestIPAddress,
+            zxr10TelnetDestPort
+        }
+        STATUS      current
+        DESCRIPTION
+            "A notification is sent when login fail because of ACL filter,
+             included the app type,protocol type,source address,source port,
+             destination address,destination port,address type."
+        ::= { zxr10TelnetNotifications 1 }
+
+  END

@@ -1,0 +1,309 @@
+--  =================================================================
+-- Copyright (C) 2014 by  HUAWEI TECHNOLOGIES. All rights reserved
+-- 
+-- Description:
+-- Reference:
+-- Version: V1.01
+-- History:
+-- shaoyu,2009-03-12,<contents>
+-- =================================================================
+
+    HUAWEI-SECURITY-DSLITE-MIB DEFINITIONS ::= BEGIN
+ 
+        IMPORTS
+	    enterprises			
+		FROM RFC1155-SMI
+            OBJECT-GROUP            
+                FROM SNMPv2-CONF            
+            Gauge32, NOTIFICATION-TYPE, Integer32, Counter64, OBJECT-TYPE, MODULE-IDENTITY            
+                FROM SNMPv2-SMI            
+            TruthValue            
+                FROM SNMPv2-TC;
+    
+    
+    hwSecDsliteMibObjects MODULE-IDENTITY
+       LAST-UPDATED "201408190000Z" 
+       ORGANIZATION "Huawei Technologies Co.,Ltd."
+       CONTACT-INFO 
+                   "Huawei Industrial Base
+                    Bantian, Longgang
+                    Shenzhen 518129
+                    People's Republic of China
+                    Website: http://www.huawei.com
+                    Email: support@huawei.com
+                   "
+       DESCRIPTION
+           "The MIB module is for entities implementing the access node
+            side of the Access Node Control Protocol (ANCP).
+
+            Copyright (C) The IETF Trust (2008).  The initial version of
+            this MIB module was published in RFC yyyy; for full legal
+            notices see the RFC itself."
+-- RFC Ed.: replace yyyy with actual RFC number & remove this note
+       
+       --  Revision history
+
+       REVISION    "201408190000Z"
+       DESCRIPTION "V1.01, modified the module identity."
+
+       REVISION    "200903120000Z"
+       DESCRIPTION "V1.00, initial version."
+       
+-- RFC Ed.: replace yyyy with actual RFC number & remove this note
+       ::= { hwSecurity 47 }
+-- The value xxx to be assigned by IANA.
+    
+
+--
+-- Node definitions
+--                       
+ 	-- 1.3.6.1.4.1.2011
+	huawei OBJECT IDENTIFIER ::= { enterprises 2011 }
+        
+        -- 1.3.6.1.4.1.2011.6
+        huaweiUtility OBJECT IDENTIFIER ::= { huawei 6 }
+        
+        -- 1.3.6.1.4.1.2011.6.122
+        hwSecurity OBJECT IDENTIFIER ::= { huaweiUtility 122 }          
+        
+        -- 1.3.6.1.4.1.2011.6.122.47
+        -- hwSecDsliteMibObjects OBJECT IDENTIFIER ::= { hwSecurity 47 }
+   
+       	-- 1.3.6.1.4.1.2011.6.122.47.1                          
+    	hwSecDsliteTrapsObjests OBJECT IDENTIFIER ::= { hwSecDsliteMibObjects 1 } 
+    	
+    	-- 1.3.6.1.4.1.2011.6.122.47.1.1 	//ipv6 address      
+    	hwSecDsliteCpeAddress OBJECT-TYPE
+        	SYNTAX OCTET STRING (SIZE (0..46))        	
+        	MAX-ACCESS accessible-for-notify
+        	STATUS current
+        	DESCRIPTION
+            		"ipv6 address of cpe."
+        	::= { hwSecDsliteTrapsObjests 1 } 
+        	
+        	
+        -- 1.3.6.1.4.1.2011.6.122.47.1.2 	//session number      
+    	hwSecDsliteSessionNumber OBJECT-TYPE
+        	SYNTAX Gauge32 (0..3000000)        	
+        	MAX-ACCESS accessible-for-notify
+        	STATUS current
+        	DESCRIPTION
+            		"session or port number of cpe."
+        	::= { hwSecDsliteTrapsObjests 2 } 	
+        	
+        	
+        -- 1.3.6.1.4.1.2011.6.122.47.1.3  	//tunnel-id     
+    	hwSecDsliteTunnelID OBJECT-TYPE        	
+        	SYNTAX Gauge32 (0..64)
+        	MAX-ACCESS accessible-for-notify
+        	STATUS current
+        	DESCRIPTION
+            		"The dslite tunnel id."
+        	::= { hwSecDsliteTrapsObjests 3 }
+        	
+       
+       -- 1.3.6.1.4.1.2011.6.122.47.1.4 	//threshold number     
+    	hwSecDsliteThresholdNum OBJECT-TYPE
+        	SYNTAX Gauge32 (0..3000000)        	
+        	MAX-ACCESS accessible-for-notify
+        	STATUS current
+        	DESCRIPTION
+            		"threshold of dslite alarm."
+        	::= { hwSecDsliteTrapsObjests 4 }
+        	        	     
+    	
+        -- 1.3.6.1.4.1.2011.6.122.47.1.5	//slot 		
+       	hwSecDsliteTrapSlot OBJECT-TYPE
+        	SYNTAX Gauge32 (1..16)
+        	MAX-ACCESS accessible-for-notify
+        	STATUS current
+        	DESCRIPTION
+            		"The slot number."
+        	::= { hwSecDsliteTrapsObjests 5 }     
+        
+        -- 1.3.6.1.4.1.2011.6.122.47.1.6	//cpu        
+    	hwSecDsliteTrapCPU OBJECT-TYPE
+        	SYNTAX Gauge32 (0..3) 
+        	MAX-ACCESS accessible-for-notify
+       	 	STATUS current
+        	DESCRIPTION
+            		"The CPU number."
+        	::= { hwSecDsliteTrapsObjests 6 }                 
+        
+   	
+        -- 1.3.6.1.4.1.2011.6.122.47.2                          
+    	hwSecDsliteTraps OBJECT IDENTIFIER ::= { hwSecDsliteMibObjects 2 }   	 
+                		                                
+        hwSecDsliteCpeTcpSessionOverThreshold NOTIFICATION-TYPE
+		OBJECTS { 
+			  hwSecDsliteCpeAddress,
+			  hwSecDsliteSessionNumber,
+			  hwSecDsliteTunnelID,
+			  hwSecDsliteThresholdNum,
+			  hwSecDsliteTrapSlot,
+			  hwSecDsliteTrapCPU  
+		        }
+		STATUS     current
+		DESCRIPTION
+		    "The Tcp Session-number of CPE exceeds threshold."
+		::= { hwSecDsliteTraps 1 } 
+		
+	hwSecDsliteCpeUdpSessionOverThreshold NOTIFICATION-TYPE
+		OBJECTS { 
+			  hwSecDsliteCpeAddress,
+			  hwSecDsliteSessionNumber,
+			  hwSecDsliteTunnelID,
+			  hwSecDsliteThresholdNum,
+			  hwSecDsliteTrapSlot,
+			  hwSecDsliteTrapCPU  
+		        }
+		STATUS     current
+		DESCRIPTION
+		    "The Udp Session-number of CPE exceeds threshold."
+		::= { hwSecDsliteTraps 2 }
+		
+	hwSecDsliteCpeTotalSessionOverThreshold NOTIFICATION-TYPE
+		OBJECTS { 
+			  hwSecDsliteCpeAddress,
+			  hwSecDsliteSessionNumber,
+			  hwSecDsliteTunnelID,
+			  hwSecDsliteThresholdNum,
+			  hwSecDsliteTrapSlot,
+			  hwSecDsliteTrapCPU  
+		        }
+		STATUS     current
+		DESCRIPTION
+		    "The Total Session-number of CPE exceeds threshold."
+		::= { hwSecDsliteTraps 3 }
+		
+	hwSecDsliteCpeTcpPortOverThreshold NOTIFICATION-TYPE
+		OBJECTS { 
+			  hwSecDsliteCpeAddress,
+			  hwSecDsliteSessionNumber,
+			  hwSecDsliteTunnelID,
+			  hwSecDsliteThresholdNum,
+			  hwSecDsliteTrapSlot,
+			  hwSecDsliteTrapCPU  
+		        }
+		STATUS     current
+		DESCRIPTION
+		    "The Tcp Port-number of CPE exceeds threshold."
+		::= { hwSecDsliteTraps 4 }
+		
+	hwSecDsliteCpeUdpPortOverThreshold NOTIFICATION-TYPE
+		OBJECTS { 
+			  hwSecDsliteCpeAddress,
+			  hwSecDsliteSessionNumber,
+			  hwSecDsliteTunnelID,
+			  hwSecDsliteThresholdNum,
+			  hwSecDsliteTrapSlot,
+			  hwSecDsliteTrapCPU  
+		        }
+		STATUS     current
+		DESCRIPTION
+		    "The Udp Port-number of CPE exceeds threshold."
+		::= { hwSecDsliteTraps 5 }
+		
+	hwSecDsliteCpeTotalPortOverThreshold NOTIFICATION-TYPE
+		OBJECTS { 
+			  hwSecDsliteCpeAddress,
+			  hwSecDsliteSessionNumber,
+			  hwSecDsliteTunnelID,
+			  hwSecDsliteThresholdNum,
+			  hwSecDsliteTrapSlot,
+			  hwSecDsliteTrapCPU  
+		        }
+		STATUS     current
+		DESCRIPTION
+		    "The Total Port-number of CPE exceeds threshold."
+		::= { hwSecDsliteTraps 6 }
+		
+	hwSecDsliteCpeTcpSessionLessThreshold NOTIFICATION-TYPE
+		OBJECTS { 
+			  hwSecDsliteCpeAddress,
+			  hwSecDsliteSessionNumber,
+			  hwSecDsliteTunnelID,
+			  hwSecDsliteThresholdNum,
+			  hwSecDsliteTrapSlot,
+			  hwSecDsliteTrapCPU  
+		        }
+		STATUS     current
+		DESCRIPTION
+		    "The Tcp Session-number of CPE descends threshold."
+		::= { hwSecDsliteTraps 7 } 
+		
+	hwSecDsliteCpeUdpSessionLessThreshold NOTIFICATION-TYPE
+		OBJECTS { 
+			  hwSecDsliteCpeAddress,
+			  hwSecDsliteSessionNumber,
+			  hwSecDsliteTunnelID,
+			  hwSecDsliteThresholdNum,
+			  hwSecDsliteTrapSlot,
+			  hwSecDsliteTrapCPU  
+		        }
+		STATUS     current
+		DESCRIPTION
+		    "The Udp Session-number of CPE descends threshold."
+		::= { hwSecDsliteTraps 8 }
+		
+	hwSecDsliteCpeTotalSessionLessThreshold NOTIFICATION-TYPE
+		OBJECTS { 
+			  hwSecDsliteCpeAddress,
+			  hwSecDsliteSessionNumber,
+			  hwSecDsliteTunnelID,
+			  hwSecDsliteThresholdNum,
+			  hwSecDsliteTrapSlot,
+			  hwSecDsliteTrapCPU  
+		        }
+		STATUS     current
+		DESCRIPTION
+		    "The Total Session-number of CPE descends threshold."
+		::= { hwSecDsliteTraps 9 }
+		
+	hwSecDsliteCpeTcpPortLessThreshold NOTIFICATION-TYPE
+		OBJECTS { 
+			  hwSecDsliteCpeAddress,
+			  hwSecDsliteSessionNumber,
+			  hwSecDsliteTunnelID,
+			  hwSecDsliteThresholdNum,
+			  hwSecDsliteTrapSlot,
+			  hwSecDsliteTrapCPU  
+		        }
+		STATUS     current
+		DESCRIPTION
+		    "The Tcp Port-number of CPE descends threshold."
+		::= { hwSecDsliteTraps 10 }
+		
+	hwSecDsliteCpeUdpPortLessThreshold NOTIFICATION-TYPE
+		OBJECTS { 
+			  hwSecDsliteCpeAddress,
+			  hwSecDsliteSessionNumber,
+			  hwSecDsliteTunnelID,
+			  hwSecDsliteThresholdNum,
+			  hwSecDsliteTrapSlot,
+			  hwSecDsliteTrapCPU  
+		        }
+		STATUS     current
+		DESCRIPTION
+		    "The Udp Port-number of CPE descends threshold."
+		::= { hwSecDsliteTraps 11 }
+		
+	hwSecDsliteCpeTotalPortLessThreshold NOTIFICATION-TYPE
+		OBJECTS { 
+			  hwSecDsliteCpeAddress,
+			  hwSecDsliteSessionNumber,
+			  hwSecDsliteTunnelID,
+			  hwSecDsliteThresholdNum,
+			  hwSecDsliteTrapSlot,
+			  hwSecDsliteTrapCPU  
+		        }
+		STATUS     current
+		DESCRIPTION
+		    "The Total Port-number of CPE descends threshold."
+		::= { hwSecDsliteTraps 12 }
+         
+    END
+
+--
+-- HUAWEI-SECSTAT-MIB.mib
+--

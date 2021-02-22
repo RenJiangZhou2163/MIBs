@@ -1,0 +1,171 @@
+-- *****************************************************************
+-- RUIJIE-ANTI-ARPCHEAT-MIB.mib:  Ruijie Anti Arpcheat MIB file
+--
+-- January 2007, LinYanMin
+--
+-- Copyright (c) 2007 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+
+RUIJIE-ANTI-ARPCHEAT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32,
+        IpAddress
+                FROM SNMPv2-SMI
+        MacAddress
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        IfIndex
+                FROM RUIJIE-TC 
+        VlanId
+                FROM Q-BRIDGE-MIB
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+ 
+ruijieAntiArpcheatMIB MODULE-IDENTITY
+        LAST-UPDATED "200701290000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie anti arpcheat mibs."
+        REVISION      "200701290000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 41}
+
+ruijieAntiArpcheatMIBObjects OBJECT IDENTIFIER ::= { ruijieAntiArpcheatMIB 1 }
+
+--
+--  user management
+--
+
+ruijieTrustedArpDelete OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS      current    
+    DESCRIPTION
+            "Setting the variable value to zero refers to delete all the trusted ARP and L2 interface bindings. 
+      Setting any variable values other than zero refers to no action taken."      
+    ::= { ruijieAntiArpcheatMIBObjects 1 }  
+
+
+ruijieTrustedArpTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieTrustedArpEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "It is used to set the trusted ARP and lists of trusted ARP and L2 interface bindings."
+   ::= { ruijieAntiArpcheatMIBObjects 2 }  
+
+ruijieTrustedArpEntry OBJECT-TYPE
+    SYNTAX  RuijieTrustedArpEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Lists of the trusted ARP and L2 interface bindins."
+    INDEX   { trustedArpIfIndex,
+              trustedArpIp }
+    
+    ::= { ruijieTrustedArpTable 1 }
+
+RuijieTrustedArpEntry ::=
+    SEQUENCE {
+            trustedArpIfIndex
+                     IfIndex,
+	          trustedArpIp
+                     IpAddress,
+            trustedArpMediaPhysAddress
+                     MacAddress,
+            trustedArpVlan
+	                   VlanId,
+            trustedArpOperationType
+                     Integer32
+    }
+
+trustedArpIfIndex OBJECT-TYPE
+    SYNTAX  IfIndex
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The interface that is correspondent with the trusted ARP."
+    ::= { ruijieTrustedArpEntry 1 }
+
+trustedArpIp OBJECT-TYPE
+     SYNTAX  IpAddress
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+             "The IP address that is correspondent with the trusted ARP."
+     ::= { ruijieTrustedArpEntry 2 }
+
+trustedArpMediaPhysAddress OBJECT-TYPE
+     SYNTAX  MacAddress
+     MAX-ACCESS  read-write
+     STATUS  current
+     DESCRIPTION
+              "The MAC address that is correspondent with the trusted ARP."          
+     ::= { ruijieTrustedArpEntry 3 }	     
+
+trustedArpVlan OBJECT-TYPE
+        SYNTAX  VlanId
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The VLAN ID to which the interface that is correspondent with the trusted ARP belongs."
+    ::= { ruijieTrustedArpEntry 4 }    
+
+trustedArpOperationType OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS      current    
+    DESCRIPTION
+             "Setting the variable value to zero refers to delete the binding of trusted ARP and L2 interface. 
+      Setting the variable value to 1 refers to add the binding of trusted ARP and L2 interface. Setting any 
+      values other than 0 and 1 refers to no action taken." 
+    ::= { ruijieTrustedArpEntry 5 }  
+
+-- compliance statements
+         
+ruijieAntiArpcheatMIBConformance OBJECT IDENTIFIER ::= { ruijieAntiArpcheatMIB 2 }
+ruijieAntiArpcheatMIBCompliances OBJECT IDENTIFIER ::= { ruijieAntiArpcheatMIBConformance 1 }
+ruijieAntiArpcheatMIBGroups      OBJECT IDENTIFIER ::= { ruijieAntiArpcheatMIBConformance 2 }
+
+ruijieAntiArpcheatMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie Anti Arpcheat MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieAntiArpcheatMIBGroup
+                 }
+                       
+        ::= { ruijieAntiArpcheatMIBCompliances 1 }
+                
+-- units of conformance
+
+ruijieAntiArpcheatMIBGroup OBJECT-GROUP
+        OBJECTS {
+         ruijieTrustedArpDelete,
+	       trustedArpIfIndex,
+	       trustedArpIp,
+         trustedArpMediaPhysAddress,
+         trustedArpVlan,
+         trustedArpOperationType
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing anti arpcheat management and
+                opertion to a Ruijie agent."
+        ::= { ruijieAntiArpcheatMIBGroups 1 } 
+
+END

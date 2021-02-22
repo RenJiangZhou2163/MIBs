@@ -1,0 +1,638 @@
+--  ************************************************
+--  $Id: zxr10-VXLAN-MIB.mib 8 2013-11-05 12:17:08Z xiaguibin $
+--
+--  ZXR10-VXLAN-MIB.mib: ZXR10 VXLAN MIB file
+--
+--  Mar. 2014, Yan Zhihong
+--   
+--  Copyright(c) 2014 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+ZXR10-VXLAN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Unsigned32,
+    IpAddress,
+    enterprises
+       FROM SNMPv2-SMI
+    MacAddress,
+    DisplayString 
+       FROM SNMPv2-TC
+    Ipv6Address       FROM IPV6-TC
+    
+    zxr10RosngMIB     FROM ZXR10-SMI;
+    
+    zxr10VxlanMIB MODULE-IDENTITY
+        LAST-UPDATED "201608161500Z"  -- 2016-08-16 15:00 
+        ORGANIZATION "ZTE Corporation"
+        CONTACT-INFO
+           "
+            Name:  Yan zhihong
+            Tel:   +86-25-52870000
+            Email: yan.zhihong@zte.com.cn
+           "
+        DESCRIPTION
+            "The MIB module to describe VXLAN table information." 
+
+        REVISION "201608161500Z"      
+        DESCRIPTION
+        "   add : 
+            zxr10MapL2InterfaceIngressTagAsPayload
+            obsolete:
+            zxr10MapL2InterfaceVlanId
+        "
+
+        REVISION "201601141314Z"      
+        DESCRIPTION
+        "   add : 
+            zxr10VtepMulticastV4Table,
+            zxr10VtepMulticastV6Table,
+            zxr10VxlanDescription,
+            zxr10VxlanUnknowUnicast,
+            zxr10VxlanFilterVrrp
+            obsolete:
+            zxr10VxlanMulticastTable
+        "
+        
+        REVISION "201409161314Z"      
+        DESCRIPTION   "Initial version of this MIB module"
+        ::= { zxr10RosngMIB  509 } 
+
+    --=======================================================================
+    --groups in the ZXR10-VXLAN-MIB
+    --======================================================================= 
+    zxr10VxlanGlobalObjects   OBJECT IDENTIFIER ::= { zxr10VxlanMIB 1 }
+    zxr10VxlanObjects         OBJECT IDENTIFIER ::= { zxr10VxlanMIB 2 }  
+    zxr10VxlanNotifications   OBJECT IDENTIFIER ::= { zxr10VxlanMIB 3 }
+    zxr10VxlanConformance     OBJECT IDENTIFIER ::= { zxr10VxlanMIB 4 } 
+     
+    --=======================================================================
+    --1. zxr10VxlanGlobalObjects group
+    --======================================================================= 
+    --vxlan global table
+    zxr10VxlanGlobalEnable   OBJECT-TYPE
+        SYNTAX  INTEGER{
+            enable(1),
+            disable(2)
+        }
+        MAX-ACCESS    read-only
+        STATUS        current        
+        DESCRIPTION   "Configuration of global VXLAN."
+        DEFVAL        {disable} 
+        ::=  { zxr10VxlanGlobalObjects 1 }
+
+    --=======================================================================
+    --2. zxr10VxlanObjects group
+    --======================================================================= 
+    --vxlan  table 
+    zxr10VxlanTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10VxlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VXLAN information table."
+        ::= { zxr10VxlanObjects 1 }
+        
+    zxr10VxlanEntry   OBJECT-TYPE
+        SYNTAX  Zxr10VxlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VXLAN table entry."
+        INDEX  { 
+                 zxr10VxlanId
+               }
+        ::= { zxr10VxlanTable 1 }
+        
+    Zxr10VxlanEntry ::=
+        SEQUENCE {
+            zxr10VxlanId
+                Unsigned32, 
+            zxr10VxlanMapType
+                INTEGER,
+            zxr10VxlanDescription
+                DisplayString,
+            zxr10VxlanUnknowUnicast
+                INTEGER,
+            zxr10VxlanFilterVrrp
+                INTEGER
+            }
+            
+    zxr10VxlanId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The VXLAN ID."
+        ::= { zxr10VxlanEntry 1}
+    
+    zxr10VxlanMapType OBJECT-TYPE
+        SYNTAX  INTEGER{
+            vlan1to1(1),
+            vlan1ton(2),
+            l3Interface(3),
+            mac(4),
+            l2Interface(5)
+            
+        }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The map type of VXLAN."
+        DEFVAL     {vlan1to1}
+        ::= { zxr10VxlanEntry 2 } 
+    
+    zxr10VxlanDescription OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..64))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The description of VXLAN."
+        ::= { zxr10VxlanEntry 3 }        
+        
+    zxr10VxlanUnknowUnicast OBJECT-TYPE
+        SYNTAX  INTEGER{
+            enableDrop(1),
+            disableDrop(2)           
+        }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The unknow unicast policy of VXLAN."
+        DEFVAL     {enableDrop}
+        ::= { zxr10VxlanEntry 4 } 
+
+    zxr10VxlanFilterVrrp OBJECT-TYPE
+        SYNTAX  INTEGER{
+            enableFilter(1),
+            disableFilter(2)           
+        }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VRRP filter policy of VXLAN."
+        DEFVAL     {enableFilter}
+        ::= { zxr10VxlanEntry 5 }        
+    --vxlan map vlan table 
+    zxr10VxlanMapVlanTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10VxlanMapVlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VXLAN mapping VLAN information table."
+        ::= { zxr10VxlanObjects 2 }
+        
+    zxr10VxlanMapVlanEntry   OBJECT-TYPE
+        SYNTAX  Zxr10VxlanMapVlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VXLAN mapping VLAN entry."
+        INDEX  { zxr10MapVlanVxlanId,
+                 zxr10MapVlanVlanId
+               }
+        ::= { zxr10VxlanMapVlanTable 1 }
+        
+    Zxr10VxlanMapVlanEntry ::=
+        SEQUENCE {
+            zxr10MapVlanVxlanId
+                Unsigned32, 
+            zxr10MapVlanVlanId
+                Unsigned32
+            }  
+            
+    zxr10MapVlanVxlanId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The VXLAN ID of mapping VLAN table."
+        ::= { zxr10VxlanMapVlanEntry 1}
+    
+    zxr10MapVlanVlanId OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN ID of mapping VLAN table."
+        ::= { zxr10VxlanMapVlanEntry 2 } 
+    
+    --vxlan map l2interface table 
+    zxr10VxlanMapL2InterfaceTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10VxlanMapL2InterfaceEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VXLAN mapping layer 2 interface information table."
+        ::= { zxr10VxlanObjects 3 }
+        
+    zxr10VxlanMapL2InterfaceEntry   OBJECT-TYPE
+        SYNTAX  Zxr10VxlanMapL2InterfaceEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VXLAN mapping layer 2 interface entry."
+        INDEX  { zxr10MapL2InterfaceVxlanId,
+                 zxr10MapL2InterfaceName
+               }
+        ::= { zxr10VxlanMapL2InterfaceTable 1 }
+        
+    Zxr10VxlanMapL2InterfaceEntry ::=
+        SEQUENCE {
+            zxr10MapL2InterfaceVxlanId
+                Unsigned32, 
+            zxr10MapL2InterfaceVlanId
+                Unsigned32,
+            zxr10MapL2InterfaceName
+                DisplayString,
+            zxr10MapL2InterfaceIngressAdjust
+                INTEGER
+            }  
+            
+    zxr10MapL2InterfaceVxlanId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The VXLAN ID of mapping layer 2 interface table."
+        ::= { zxr10VxlanMapL2InterfaceEntry 1}
+        
+    zxr10MapL2InterfaceVlanId OBJECT-TYPE            --obsolete
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "The VLAN ID of mapping layer 2 interface table."
+        ::= { zxr10VxlanMapL2InterfaceEntry 2 }
+        
+    zxr10MapL2InterfaceName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The layer 2 interface name of mapping layer 2 interface table."
+        ::= { zxr10VxlanMapL2InterfaceEntry 3 }
+
+    zxr10MapL2InterfaceIngressAdjust OBJECT-TYPE
+        SYNTAX  INTEGER{
+            all(1),
+            fromSublayer(2),
+            default(255)
+            }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The ingress tag as payload flag of mapping layer 2 interface table."
+        ::= { zxr10VxlanMapL2InterfaceEntry 4 }
+        
+    --vxlan map l3interface table 
+    zxr10VxlanMapL3InterfaceTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10VxlanMapL3InterfaceEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VXLAN mapping layer 3 interface information table."
+        ::= { zxr10VxlanObjects 4 }
+        
+    zxr10VxlanMapL3InterfaceEntry   OBJECT-TYPE
+        SYNTAX  Zxr10VxlanMapL3InterfaceEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VXLAN mapping layer 3 interface entry."
+        INDEX  { zxr10MapL3InterfaceVxlanId,
+                 zxr10MapL3InterfaceName
+               }
+        ::= { zxr10VxlanMapL3InterfaceTable 1 }
+        
+    Zxr10VxlanMapL3InterfaceEntry ::=
+        SEQUENCE {
+            zxr10MapL3InterfaceVxlanId
+                Unsigned32, 
+            zxr10MapL3InterfaceName
+                DisplayString
+            }  
+            
+    zxr10MapL3InterfaceVxlanId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The VXLAN ID of mapping layer 3 interface table."
+        ::= { zxr10VxlanMapL3InterfaceEntry 1}
+        
+    zxr10MapL3InterfaceName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The layer 3 interface name of mapping layer 3 interface table."
+        ::= { zxr10VxlanMapL3InterfaceEntry 2 }
+    
+    --vxlan map MAC table 
+    zxr10VxlanMapMacTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10VxlanMapMacEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VXLAN mapping MAC information table."
+        ::= { zxr10VxlanObjects 5 }
+        
+    zxr10VxlanMapMacEntry   OBJECT-TYPE
+        SYNTAX  Zxr10VxlanMapMacEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VXLAN mapping MAC entry."
+        INDEX  { zxr10MapMacVxlanId
+               }
+        ::= { zxr10VxlanMapMacTable 1 }
+        
+    Zxr10VxlanMapMacEntry ::=
+        SEQUENCE {
+            zxr10MapMacVxlanId
+                Unsigned32, 
+            zxr10MapMacAddress
+                MacAddress
+            }  
+            
+    zxr10MapMacVxlanId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The VXLAN ID of mapping MAC table."
+        ::= { zxr10VxlanMapMacEntry 1}
+        
+    zxr10MapMacAddress OBJECT-TYPE
+        SYNTAX   MacAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The MAC of mapping MAC table."
+        ::= { zxr10VxlanMapMacEntry 2 }
+    
+    --vxlan multicast table 
+    zxr10VxlanMulticastTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10VxlanMulticastEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+            "The VXLAN multicast information table."
+        ::= { zxr10VxlanObjects 6 }
+        
+    zxr10VxlanMulticastEntry   OBJECT-TYPE
+        SYNTAX  Zxr10VxlanMulticastEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+            "The VXLAN multicast entry."
+        INDEX  { zxr10MulticastVxlanId
+               }
+        ::= { zxr10VxlanMulticastTable 1 }
+        
+    Zxr10VxlanMulticastEntry ::=
+        SEQUENCE {
+            zxr10MulticastVxlanId
+                Unsigned32, 
+            zxr10MulticastIp
+                IpAddress
+            }  
+            
+    zxr10MulticastVxlanId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS      obsolete
+        DESCRIPTION
+            "The VXLAN ID of multicast table."
+        ::= { zxr10VxlanMulticastEntry 1}
+            
+    zxr10MulticastIp OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "The IP of multicast table."
+        ::= { zxr10VxlanMulticastEntry 2 }
+    
+    --vtep table 
+    zxr10VtepTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10VtepEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VTEP information table."
+        ::= { zxr10VxlanObjects 7 }
+        
+    zxr10VtepEntry   OBJECT-TYPE
+        SYNTAX  Zxr10VtepEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VTEP entry."
+        INDEX  { zxr10VtepName
+               }
+        ::= { zxr10VtepTable 1 }
+        
+    Zxr10VtepEntry ::=
+        SEQUENCE {
+            zxr10VtepName
+                DisplayString,
+            zxr10VtepMode
+                INTEGER
+            }  
+   zxr10VtepName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VTEP name of VTEP table."
+        ::= {zxr10VtepEntry 1 }
+       
+    zxr10VtepMode OBJECT-TYPE
+         SYNTAX  INTEGER{
+            discardInnerVlan(1),
+            noDiscardInnerVlan(2)
+        }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The mode of VTEP table."
+        DEFVAL     {discardInnerVlan}
+        ::= { zxr10VtepEntry 2}
+        
+    --vtep source interface table 
+    zxr10VtepSourceInterfaceTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10VtepSourceInterfaceEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VTEP source Interface information table."
+        ::= { zxr10VxlanObjects 8 }
+        
+    zxr10VtepSourceInterfaceEntry   OBJECT-TYPE
+        SYNTAX  Zxr10VtepSourceInterfaceEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VTEP source Interface entry."
+        INDEX  { zxr10SourceInterfaceVtepName
+               }
+        ::= { zxr10VtepSourceInterfaceTable 1 }
+        
+    Zxr10VtepSourceInterfaceEntry ::=
+        SEQUENCE {
+            zxr10SourceInterfaceVtepName
+                DisplayString,
+            zxr10SourceInterfaceName
+                DisplayString
+            }
+   zxr10SourceInterfaceVtepName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VTEP name of VTEP source interface table."
+        ::= {zxr10VtepSourceInterfaceEntry 1 }
+        
+    zxr10SourceInterfaceName OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The source interface name of VTEP source interface table."
+        ::= { zxr10VtepSourceInterfaceEntry 2}
+       
+    --vtep bind vxlan table  
+    zxr10VxlanVtepBindTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10VxlanVtepBindEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VTEP bind VXLAN information table."
+        ::= { zxr10VxlanObjects 9 }
+        
+    zxr10VxlanVtepBindEntry   OBJECT-TYPE
+        SYNTAX  Zxr10VxlanVtepBindEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VTEP bind VXLAN entry."
+        INDEX  { zxr10VxlanVtepBindVtepName,
+                 zxr10VxlanVtepBindVxlanId
+               }
+        ::= { zxr10VxlanVtepBindTable 1 }   
+        
+    Zxr10VxlanVtepBindEntry ::=
+        SEQUENCE {
+            zxr10VxlanVtepBindVtepName
+                DisplayString, 
+            zxr10VxlanVtepBindVxlanId
+                Unsigned32
+            }  
+   zxr10VxlanVtepBindVtepName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VTEP name of VTEP bind VXLAN table."
+        ::= {zxr10VxlanVtepBindEntry 1 } 
+        
+    zxr10VxlanVtepBindVxlanId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VXLAN ID of VTEP bind VXLAN table."
+        ::= { zxr10VxlanVtepBindEntry 2}
+    
+    --vtep multicast v4 table 
+     zxr10VtepMulticastV4Table  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10VtepMulticastV4Entry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The vtep multicast v4 information table."
+        ::= { zxr10VxlanObjects 10 }
+        
+    zxr10VtepMulticastV4Entry   OBJECT-TYPE
+        SYNTAX  Zxr10VtepMulticastV4Entry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VTEP multicast v4 entry."
+        INDEX  { zxr10VtepMulticastV4VtepName
+               }
+        ::= { zxr10VtepMulticastV4Table 1 }
+        
+    Zxr10VtepMulticastV4Entry ::=
+        SEQUENCE {
+            zxr10VtepMulticastV4VtepName
+                DisplayString, 
+            zxr10VtepMulticastV4Ip
+                IpAddress
+            }  
+
+    zxr10VtepMulticastV4VtepName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VTEP name of multicast v4 table."
+        ::= {zxr10VtepMulticastV4Entry 1 }        
+           
+    zxr10VtepMulticastV4Ip OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The IP of multicast v4 table."
+        ::= { zxr10VtepMulticastV4Entry 2 }
+        
+    --vtep multicast v6 table 
+    zxr10VtepMulticastV6Table  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10VtepMulticastV6Entry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VTEP multicast v6 information table."
+        ::= { zxr10VxlanObjects 11 }
+        
+    zxr10VtepMulticastV6Entry   OBJECT-TYPE
+        SYNTAX  Zxr10VtepMulticastV6Entry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VTEP multicast v6 entry."
+        INDEX  { zxr10VtepMulticastV6VtepName
+               }
+        ::= { zxr10VtepMulticastV6Table 1 }
+        
+    Zxr10VtepMulticastV6Entry ::=
+        SEQUENCE {
+            zxr10VtepMulticastV6VtepName
+                DisplayString, 
+            zxr10VtepMulticastV6Ip
+                Ipv6Address
+            }  
+
+    zxr10VtepMulticastV6VtepName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VTEP name of multicast v6 table."
+        ::= {zxr10VtepMulticastV6Entry 1 }        
+           
+    zxr10VtepMulticastV6Ip OBJECT-TYPE
+        SYNTAX   Ipv6Address
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The IP of multicast v6 table."
+        ::= { zxr10VtepMulticastV6Entry 2 }
+    
+END

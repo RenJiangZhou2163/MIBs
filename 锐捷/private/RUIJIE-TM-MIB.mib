@@ -1,0 +1,393 @@
+-- *****************************************************************
+-- RUIJIE-TM-MIB.mib:  Ruijie interface MIB file
+--
+-- Dec 2010, zhuzm
+--
+-- Copyright (c) 2002 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-TM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32,
+        TimeTicks
+                FROM SNMPv2-SMI
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        IfIndex
+                FROM RUIJIE-TC
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieTMMIB MODULE-IDENTITY
+        LAST-UPDATED "201012130000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie TM mibs."
+        REVISION      "201012130000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 91 }
+
+ruijieTMMIBObjects OBJECT IDENTIFIER ::= { ruijieTMMIB 1 }
+
+ruijieTMQosDramMIBObjects OBJECT IDENTIFIER ::= { ruijieTMMIBObjects 1 }
+ruijieTMQosDropMIBObjects OBJECT IDENTIFIER ::= { ruijieTMMIBObjects 2 }
+ruijieTMQosQueMIBObjects  OBJECT IDENTIFIER ::= { ruijieTMMIBObjects 3 }
+
+
+ruijieQosDramTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieQosDramEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This item is to show the Hardware Dram usage information.
+             It indicates the BUFFER traffic consumed."
+        ::= { ruijieTMQosDramMIBObjects 1 }
+    
+ruijieQosDramEntry OBJECT-TYPE
+        SYNTAX RuijieQosDramEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This item is to show the Hardware Dram usage information.
+             It indicates the BUFFER traffic consumed."
+        INDEX { ruijieQoSDramIndex }
+        ::= { ruijieQosDramTable 1 }
+
+RuijieQosDramEntry ::=
+        SEQUENCE {
+            ruijieQoSDramIndex     Integer32,
+            ruijieQosDramTotal     Integer32,
+            ruijieQosDramCurUsed   Integer32
+        }
+
+ruijieQoSDramIndex  OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item specifies the Petra Chip"
+        ::= { ruijieQosDramEntry 1 }
+
+ruijieQosDramTotal OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item shows Total Dram Size by MB, that's, the total BUFFER of
+             the specified Petra Chip."
+        ::= { ruijieQosDramEntry 2 }
+        	
+ruijieQosDramCurUsed OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item shows the CURRENT used Dram Size by B, that's,
+             the BUFFER consumed by traffic on the specified Petra Chip."
+        ::= { ruijieQosDramEntry 3 }
+ 
+
+--- ruijieTMQosDropMIBObjects
+ruijieQosDropTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieQosDropEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This item is to show the packet DROP Stat. information.
+             It includes information about INGRESS drop packet Stat.,
+             EGRESS drop packet Stat., etc."
+        ::= { ruijieTMQosDropMIBObjects 1 }
+    
+ruijieQosDropEntry OBJECT-TYPE
+        SYNTAX RuijieQosDropEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This item is to show the packet DROP Stat. information.
+             It includes information about INGRESS drop packet Stat.,
+             EGRESS drop packet Stat., etc."
+        INDEX { ruijieQoSDropIndex }
+        ::= { ruijieQosDropTable 1 }
+
+RuijieQosDropEntry ::=
+        SEQUENCE {
+            ruijieQoSDropIndex            Integer32,
+            ruijieQoSTotalEnQue           Integer32,
+            ruijieQoSTotalDeQue           Integer32,
+       	    ruijieQoSEnQueDrop            Integer32,
+       	    ruijieQoSEnQueDropByBuf       Integer32,
+       	    ruijieQoSEnQueDropByBufDesc   Integer32,
+       	    ruijieQoSEnQueDropByOther     Integer32,
+       	    ruijieQoSDeQueDrop            Integer32,
+       	    ruijieQoSLastClearTime        TimeTicks
+        }
+
+ruijieQoSDropIndex  OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item specifies the Petra Chip"
+        ::= { ruijieQosDropEntry 1 }
+        
+ruijieQoSTotalEnQue OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item shows Total Enqueue Packet Stat. of the specified
+             Petra Chip"
+        ::= { ruijieQosDropEntry 2 }
+        	
+ruijieQoSTotalDeQue OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item shows Total Dequeue Packet Stat. of the specified
+             Petra Chip"
+        ::= { ruijieQosDropEntry 3 }
+
+ruijieQoSEnQueDrop OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item shows Total Enqueue Drop Packet Stat. of the specified
+             Petra Chip"
+        ::= { ruijieQosDropEntry 4 }
+        
+ruijieQoSEnQueDropByBuf OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item shows Total Enqueue Drop Packet Stat. of the specified
+             Petra Chip, due to Buffer reason "
+        ::= { ruijieQosDropEntry 5 }
+        	
+ruijieQoSEnQueDropByBufDesc OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item shows Total Enqueue Drop Packet Stat. of the specified
+             Petra Chip, due to Buffer Descriptor reason"
+        ::= { ruijieQosDropEntry 6 }
+        	
+ruijieQoSEnQueDropByOther OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item shows Total Enqueue Drop Packet Stat. of the specified
+             Petra Chip, due to other reason"
+        ::= { ruijieQosDropEntry 7 }
+        
+ruijieQoSDeQueDrop OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item shows Total Dequeue Drop Packet Stat. of the specified
+             Petra Chip"
+        ::= { ruijieQosDropEntry 8 }
+
+ruijieQoSLastClearTime OBJECT-TYPE
+        SYNTAX TimeTicks
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item shows the last clear time."
+        ::= { ruijieQosDropEntry 9 }
+
+
+--- ruijieTMQosQueMIBObjects
+ruijieQosQueTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieQosQueEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This item is to show the buffer historic information of
+             the specified interface.
+             It includes information about the CURRENT buffer consumed by KB,
+               the MAXINUM buffer allocated by B,
+               the Peak Value of BUFFER consumed in the past by B,
+               the rate of BUFFER consumed by percentage, etc."
+        ::= { ruijieTMQosQueMIBObjects 1 }
+    
+ruijieQosQueEntry OBJECT-TYPE
+        SYNTAX RuijieQosQueEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This item is to show the buffer historic information of
+             the specified interface.
+             It includes information about the CURRENT buffer consumed by KB,
+               the MAXINUM buffer allocated by B,
+               the Peak Value of BUFFER consumed in the past by B,
+               the rate of BUFFER consumed by percentage, etc."
+        INDEX { ruijieQoSIfIndex,
+                ruijieQoSIfChipIndex,
+                ruijieQoSIfChipQueIndex
+              }
+        ::= { ruijieQosQueTable 1 }
+  
+RuijieQosQueEntry ::=
+        SEQUENCE {
+            ruijieQoSIfIndex          IfIndex,
+            ruijieQoSIfChipIndex      INTEGER,
+            ruijieQoSIfChipQueIndex   INTEGER,
+            ruijieQoSIfChipMax        Integer32,
+            ruijieQoSIfChipCur        Integer32,
+            ruijieQoSIfChipPeak       Integer32,
+            ruijieQoSIfChipRate       Integer32,
+            ruijieQoSIfChipTime       TimeTicks
+        } 
+
+ruijieQoSIfIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item indicates the Interface Index."
+        ::= { ruijieQosQueEntry 1 }
+        	
+ruijieQoSIfChipIndex OBJECT-TYPE
+        SYNTAX INTEGER {
+        	chip-0(0),
+        	chip-1(1)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item specifies the Petra Chip."
+        ::= { ruijieQosQueEntry 2 }
+        	
+ruijieQoSIfChipQueIndex OBJECT-TYPE
+        SYNTAX INTEGER {
+                queue-1(1),
+        	queue-2(2),
+        	queue-3(3),
+        	queue-4(4),
+        	queue-5(5),
+        	queue-6(6),
+        	queue-7(7),
+        	queue-8(8)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item specifies the queue index of the specified Petra Chip."
+        ::= { ruijieQosQueEntry 3 }
+
+ruijieQoSIfChipMax OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item specifies the MAXINUM buffer allocated on the specified
+             Petra Chip, by KByte."
+        ::= { ruijieQosQueEntry 4 }
+           
+ruijieQoSIfChipCur OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item specifies the CURRENT buffer consumed on the specified
+             Petra Chip, by Byte."
+        ::= { ruijieQosQueEntry 5 }
+
+ruijieQoSIfChipPeak OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item specifies the Peak Value of BUFFER consumed in the past
+             on the specified Petra Chip, by Byte."
+        ::= { ruijieQosQueEntry 6 }
+        	
+ruijieQoSIfChipRate OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item specifies the rate of BUFFER consumed on the specified
+             Petra Chip since last clear operation,  by percentage."
+        ::= { ruijieQosQueEntry 7 }        	
+        	
+ruijieQoSIfChipTime OBJECT-TYPE
+        SYNTAX TimeTicks
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This item shows the last clear time."
+        ::= { ruijieQosQueEntry 8 }    
+        
+--**********************************************************************
+-- about conformance info 
+--**********************************************************************
+ruijieTMMIBConformance OBJECT IDENTIFIER ::= { ruijieTMMIB 2 }
+ruijieTMMIBCompliances OBJECT IDENTIFIER ::= { ruijieTMMIBConformance 1 }
+ruijieTMMIBGroups      OBJECT IDENTIFIER ::= { ruijieTMMIBConformance 2 }
+
+-- compliance statements
+ruijieTMMIBCompliance MODULE-COMPLIANCE
+			STATUS  current
+    	DESCRIPTION
+        	"The compliance statement for entities which implement
+         	the RuijieTMMIB"
+    	MODULE  
+    	MANDATORY-GROUPS { 
+        	ruijieTMMIBGroup
+    	}
+    	::= { ruijieTMMIBCompliances 1 }
+
+-- units of conformance
+ruijieTMMIBGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieQoSDramIndex,
+            ruijieQosDramTotal,
+            ruijieQosDramCurUsed,
+            
+            ruijieQoSDropIndex,
+            ruijieQoSTotalEnQue,
+            ruijieQoSTotalDeQue,
+       	    ruijieQoSEnQueDrop,
+       	    ruijieQoSEnQueDropByBuf,
+       	    ruijieQoSEnQueDropByBufDesc,
+       	    ruijieQoSEnQueDropByOther,
+       	    ruijieQoSDeQueDrop,
+       	    ruijieQoSLastClearTime,
+       	    
+       	    ruijieQoSIfIndex,
+            ruijieQoSIfChipIndex,
+            ruijieQoSIfChipQueIndex,
+            ruijieQoSIfChipMax,
+            ruijieQoSIfChipCur,
+            ruijieQoSIfChipPeak,
+            ruijieQoSIfChipRate,
+            ruijieQoSIfChipTime
+        }
+        STATUS current
+        DESCRIPTION
+              "A collection of objects to show information about the Hardware
+               Dram usage,the packet DROP State, and the buffer historic
+               information of the specified interface."
+        ::= { ruijieTMMIBGroups 1 }
+
+END

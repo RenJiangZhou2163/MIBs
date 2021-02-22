@@ -1,0 +1,263 @@
+ZXR10-BGP-POLICY-ACCOUNTING-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE,
+        enterprises, Unsigned32, Counter64, IpAddress,Integer32
+                FROM SNMPv2-SMI
+        DisplayString
+                FROM SNMPv2-TC;
+
+zxr10BgpPolicyCountingMIB MODULE-IDENTITY
+        LAST-UPDATED "201411110000Z"
+        ORGANIZATION "ZTE Corporation."
+        CONTACT-INFO
+               "ZTE Corporation 
+         Nanjing Institute of ZTE Corporation
+         
+         No.68 Zijinghua Rd. Yuhuatai District, Nanjing, China
+         
+         Tel: +86-25-52870000"
+        DESCRIPTION
+                "BGP Policy Accounting configuration information 
+                 and 
+                 BGP routing traffic statistics."
+        REVISION "201411110000Z"
+        DESCRIPTION
+                "Modify the valid range of zxr10bgpPolicyAccStTrafficIndex."
+        REVISION "201410210000Z"
+        DESCRIPTION
+                "Modify the description information of some nodes.
+                 Modify the valid range of zxr10bgpPolicyAccStIfName."
+        REVISION "201405150000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { zxr10RosngMIB 167}
+
+    zte OBJECT IDENTIFIER ::={enterprises 3902}
+    zxr10 OBJECT IDENTIFIER ::={zte 3}    
+    zxr10RosngMIB OBJECT IDENTIFIER ::= { zxr10 6000}
+
+
+    -- 1.3.6.1.4.1.3902.3.6000.167.1
+    zxr10BgpPolicyAccGlobalObjects OBJECT IDENTIFIER    ::= { zxr10BgpPolicyCountingMIB 1 }
+    -- 1.3.6.1.4.1.3902.3.6000.167.2
+    zxr10BgpPolicyAccObjects OBJECT IDENTIFIER          ::= { zxr10BgpPolicyCountingMIB 2 }
+    -- 1.3.6.1.4.1.3902.3.6000.167.3
+    zxr10BgpPolicyAccTraps OBJECT IDENTIFIER            ::= { zxr10BgpPolicyCountingMIB 3 }
+    -- 1.3.6.1.4.1.3902.3.6000.167.4
+    zxr10BgpPolicyAccConformance OBJECT IDENTIFIER      ::= { zxr10BgpPolicyCountingMIB 4 }
+
+    -- =============================
+    -- 1. zxr10BgpPolicyAccGlobalObjects 
+    -- =============================
+    -- =============================
+
+    -- =============================
+    --2. zxr10BgpPolicyAccObjects
+    -- =============================
+
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.1
+    zxr10BgpPolicyAccCfgObjects       OBJECT IDENTIFIER ::= { zxr10BgpPolicyAccObjects 1 }
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.2
+    zxr10BgpPolicyAccStatisObjects    OBJECT IDENTIFIER ::= { zxr10BgpPolicyAccObjects 2 }
+
+    -- =============================
+    -- 1 zxr10BgpPolicyAccCfgObjects
+    -- =============================
+    -- =============================
+    -- 1.1 zxr10BgpPolicyAccCfgTable
+    -- =============================
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.1.1
+    zxr10BgpPolicyAccCfgTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10BgpPolicyAccCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An table to BGP Policy Accounting configuration information"  
+        ::= { zxr10BgpPolicyAccCfgObjects 1 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.1.1.1
+    zxr10BgpPolicyAccCfgEntry OBJECT-TYPE
+        SYNTAX Zxr10BgpPolicyAccCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to BGP Policy Accounting configuration information"
+        INDEX  { 
+                      zxr10bgpPolicyAccIfName,
+                      zxr10bgpPolicyAccAddrType,
+                      zxr10bgpPolicyAccDirection
+                    }
+        ::= { zxr10BgpPolicyAccCfgTable 1 }
+            
+    Zxr10BgpPolicyAccCfgEntry ::=
+        SEQUENCE {
+              zxr10bgpPolicyAccIfName      DisplayString,
+              zxr10bgpPolicyAccAddrType   INTEGER,
+              zxr10bgpPolicyAccDirection    INTEGER,
+              zxr10bgpPolicyAccSrc            INTEGER,
+              zxr10bgpPolicyAccDst            INTEGER
+            }
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.1.1.1.1
+    zxr10bgpPolicyAccIfName OBJECT-TYPE
+        SYNTAX DisplayString  (SIZE(1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Interface name"
+        ::= { zxr10BgpPolicyAccCfgEntry 1 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.1.1.1.2
+    zxr10bgpPolicyAccAddrType OBJECT-TYPE
+        SYNTAX INTEGER {ipv4(1),ipv6(2)}
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Protocol type"
+        ::= { zxr10BgpPolicyAccCfgEntry 2 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.1.1.1.3
+    zxr10bgpPolicyAccDirection OBJECT-TYPE
+        SYNTAX INTEGER {input(1),output(2)}
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Message direction"
+        ::= { zxr10BgpPolicyAccCfgEntry 3 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.1.1.1.4
+    zxr10bgpPolicyAccSrc OBJECT-TYPE
+        SYNTAX INTEGER  {enable(1),disable(2)}
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "The source counting switch"
+        ::= { zxr10BgpPolicyAccCfgEntry 4 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.1.1.1.5
+    zxr10bgpPolicyAccDst OBJECT-TYPE
+        SYNTAX INTEGER {enable(1),disable(2)}
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "The destination counting switch"
+        ::= { zxr10BgpPolicyAccCfgEntry 5 }
+
+    -- =============================
+    --2 zxr10BgpPolicyAccStatisObjects
+    -- =============================
+
+    -- =============================
+    --2.1 zxr10BgpPolicyAccStatisTable
+    -- =============================
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.2.1
+    zxr10BgpPolicyAccStatisTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10BgpPolicyAccStatisEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An table to BGP routing traffic statistics"
+        ::= { zxr10BgpPolicyAccStatisObjects 1 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.2.1.1
+    zxr10BgpPolicyAccStatisEntry OBJECT-TYPE
+        SYNTAX Zxr10BgpPolicyAccStatisEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to BGP routing traffic statistics"
+        INDEX  { 
+                      zxr10bgpPolicyAccStIfName,
+                      zxr10bgpPolicyAccStAddrType,
+                      zxr10bgpPolicyAccStDirection,
+                      zxr10bgpPolicyAccStSrcDst,
+                      zxr10bgpPolicyAccStTrafficIndex
+                   }
+        ::= { zxr10BgpPolicyAccStatisTable 1 }
+            
+    Zxr10BgpPolicyAccStatisEntry ::=
+        SEQUENCE {
+            zxr10bgpPolicyAccStIfName        DisplayString,
+            zxr10bgpPolicyAccStAddrType     INTEGER,
+            zxr10bgpPolicyAccStDirection      INTEGER,
+            zxr10bgpPolicyAccStSrcDst         INTEGER,
+            zxr10bgpPolicyAccStTrafficIndex Integer32,
+            zxr10bgpPolicyAccStPackets        Counter64,
+            zxr10bgpPolicyAccStBytes           Counter64
+           }
+
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.2.1.1.1
+    zxr10bgpPolicyAccStIfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Interface name"
+        ::= { zxr10BgpPolicyAccStatisEntry 1 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.2.1.1.2
+    zxr10bgpPolicyAccStAddrType OBJECT-TYPE
+        SYNTAX INTEGER {ipv4(1),ipv6(2)}
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Protocol type"
+        ::= { zxr10BgpPolicyAccStatisEntry 2 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.2.1.1.3
+    zxr10bgpPolicyAccStDirection OBJECT-TYPE
+        SYNTAX INTEGER {input(1),output(2)}
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Message direction"
+        ::= { zxr10BgpPolicyAccStatisEntry 3 }
+
+
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.2.1.1.4
+    zxr10bgpPolicyAccStSrcDst OBJECT-TYPE
+        SYNTAX INTEGER {src(1),dst(2)}
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Source counting or destination counting"
+        ::= { zxr10BgpPolicyAccStatisEntry 4 }
+        
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.2.1.1.5
+    zxr10bgpPolicyAccStTrafficIndex OBJECT-TYPE
+        SYNTAX Integer32 (0..63)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Traffic Index"
+        ::= { zxr10BgpPolicyAccStatisEntry 5 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.2.1.1.6
+    zxr10bgpPolicyAccStPackets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The number of packets received under the specified index."
+        ::= { zxr10BgpPolicyAccStatisEntry 6}
+
+    -- 1.3.6.1.4.1.3902.3.6000.167.2.2.1.1.7
+    zxr10bgpPolicyAccStBytes OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The number of bytes received under the specified index."
+        ::= { zxr10BgpPolicyAccStatisEntry 7}
+
+    -- =============================
+    --3. zxr10BgpPolicyAccTraps
+    -- =============================
+
+
+
+    -- =============================
+    --4. zxr10BgpPolicyAccConformance
+    -- =============================
+
+END

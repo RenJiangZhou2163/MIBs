@@ -1,0 +1,393 @@
+-- *****************************************************************
+-- RUIJIE-CM-PORTAL-MIB.mib:  Ruijie China Mobile Portal MIB file
+--
+-- March 2010, panshiyong
+--
+-- Copyright (c) 2010 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-CM-PORTAL-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Counter32,
+    Unsigned32,
+    Integer32
+            FROM SNMPv2-SMI
+    InetAddressType, 
+    InetAddress
+            FROM INET-ADDRESS-MIB
+    DisplayString,
+    RowStatus
+            FROM SNMPv2-TC
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP
+            FROM SNMPv2-CONF
+    ruijieMgmt
+            FROM RUIJIE-SMI;
+
+ruijieCMPortalMIB MODULE-IDENTITY
+    LAST-UPDATED "201003220000Z"
+    ORGANIZATION "Ruijie Networks Co.,Ltd."
+    CONTACT-INFO
+           " 
+           Tel: 4008-111-000 
+
+           E-mail: service@ruijie.com.cn"
+    DESCRIPTION
+           "This module defines ruijie portal mibs."
+    REVISION      "201003220000Z"
+    DESCRIPTION
+           "Initial version of this MIB module."
+    ::= { ruijieMgmt 74 }
+
+
+ruijieCMPortalMIBObjects OBJECT IDENTIFIER ::= { ruijieCMPortalMIB 1 }
+
+
+ruijieCMPortalMaxAuthNum OBJECT-TYPE
+		SYNTAX   Integer32
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+    		"The max number of all portal authenticated user online."
+    ::= { ruijieCMPortalMIBObjects 1 }
+
+ruijieCMPortalCurAuthNum OBJECT-TYPE
+		SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    		"The current number of all portal authenticated user online."
+    ::= { ruijieCMPortalMIBObjects 2 }
+
+ruijieCMPortalServerInetAddressType OBJECT-TYPE
+		SYNTAX InetAddressType   
+    MAX-ACCESS read-write
+    STATUS  current
+    DESCRIPTION
+    		"The inet address type of the portal server."
+		::= { ruijieCMPortalMIBObjects 3 }
+
+ruijieCMPortalServerInetAddress OBJECT-TYPE
+		SYNTAX InetAddress 
+    MAX-ACCESS read-write
+    STATUS  current
+    DESCRIPTION
+    		"The inet address of portal server."
+		::= { ruijieCMPortalMIBObjects 4 }
+
+ruijieCMPortalServerInetPortNumber OBJECT-TYPE
+		SYNTAX  INTEGER 
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+    		"The inet port number of portal server."
+		::= { ruijieCMPortalMIBObjects 5 }
+
+ruijieCMPortalServerUnavailableCode OBJECT-TYPE
+		SYNTAX  INTEGER {
+		        	not-configured(0),
+		        	ping-failed(1)
+		        }
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+    		"The flag code of portal server unavailable:
+    		 0 - not-configured,
+    		 1 - ping-failed
+    		 "
+    ::= { ruijieCMPortalMIBObjects 6 }
+
+ruijieCMPortalAuthReqCount OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+    		"The authenticator request count of portal server."
+    ::= { ruijieCMPortalMIBObjects 7 }
+
+ruijieCMPortalAuthRespCount OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+    		"The authenticator respone count of portal server."
+    ::= { ruijieCMPortalMIBObjects 8 }
+
+ruijieCMPortalChallengeReqCount OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+    		"The challenge request count of portal server."
+    ::= { ruijieCMPortalMIBObjects 9 }
+
+ruijieCMPortalChallengeRespCount OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+    		"The challenge request count of portal server."
+    ::= { ruijieCMPortalMIBObjects 10 }
+
+ruijieCMPortalGlobalServerURL OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..255))
+    MAX-ACCESS read-write
+    STATUS  current
+    DESCRIPTION
+    		"The URL of portal server."
+    ::= { ruijieCMPortalMIBObjects 11 }
+
+--
+-- ruijie CMCC Portal URL Info
+--        
+ruijieCMPortalServerURLTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieCMPortalServerURLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The table of Portal URL Info."
+        ::= { ruijieCMPortalMIBObjects 12 }
+
+ruijieCMPortalServerURLEntry OBJECT-TYPE
+        SYNTAX  RuijieCMPortalServerURLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The entry of Portal URL info table."
+        INDEX   { ruijieCMPortalServerURLId }
+        ::= { ruijieCMPortalServerURLTable 1 }
+
+RuijieCMPortalServerURLEntry ::=
+    SEQUENCE {
+            ruijieCMPortalServerURLId          Unsigned32,
+            ruijieCMPortalServerURL            DisplayString,
+            ruijieCMPortalServerName           DisplayString,
+            ruijieCMPortalServerInUsedCount    Unsigned32,
+            ruijieCMPortalServerConfigStatus   RowStatus
+            }
+
+ruijieCMPortalServerURLId OBJECT-TYPE
+        SYNTAX       Unsigned32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The Id of the Portal Server in device."    
+        ::= { ruijieCMPortalServerURLEntry 1 }
+
+ruijieCMPortalServerURL OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE (0..255))
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            " The Portal URL."
+         ::= { ruijieCMPortalServerURLEntry 2 }
+
+ruijieCMPortalServerName OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE (0..32))
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            " The Portal Server's Name."
+         ::= { ruijieCMPortalServerURLEntry 3 }
+
+ruijieCMPortalServerInUsedCount OBJECT-TYPE
+        SYNTAX       Unsigned32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The count that this Portal Server is used by Control Cells in the device."    
+        ::= { ruijieCMPortalServerURLEntry 4 }
+
+ruijieCMPortalServerConfigStatus OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "Setting this object to 'invalid' will try to remove specific Portal Server from device." 
+         ::= { ruijieCMPortalServerURLEntry 5 }
+
+ruijieCMPortalHttpReqCount OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+    		"The http request count to portal server for redirection."
+    ::= { ruijieCMPortalMIBObjects 13 }
+
+ruijieCMPortalHttpRespCount OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+    		"The http response count by portal server for redirection."
+    ::= { ruijieCMPortalMIBObjects 14 }
+
+ruijieCMPortalExceptionFailCount OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+    		"The user offline count for exception reason."
+    ::= { ruijieCMPortalMIBObjects 15 }
+
+ruijieCMPortalAuthSuccessedCount OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+    		"The radius authenticator response count for success result."
+    ::= { ruijieCMPortalMIBObjects 16 }
+    
+ruijieCMPortalNormalAuthReqCount OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+    		"The normal authenticator request count of portal server."
+    ::= { ruijieCMPortalMIBObjects 17 }
+    
+ruijieCMPortalEDUAuthReqCount OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+    		"The education authenticator request count of portal server."
+    ::= { ruijieCMPortalMIBObjects 18 }
+    
+ruijieCMPortalStarbucksAuthReqCount OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+    		"The starbuck authenticator request count of portal server."
+    ::= { ruijieCMPortalMIBObjects 19 }
+    
+ruijieCMPortalNormalAuthRespCount OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+    		"The normal authenticator respone count of portal server."
+    ::= { ruijieCMPortalMIBObjects 20 }
+    
+ruijieCMPortalEDUAuthRespCount OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+    		"The education authenticator respone count of portal server."
+    ::= { ruijieCMPortalMIBObjects 21 }
+    
+ruijieCMPortalStarbucksAuthRespCount OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS  current
+    DESCRIPTION
+    		"The starbucks authenticator respone count of portal server."
+    ::= { ruijieCMPortalMIBObjects 22 }
+    
+ruijieACPortalMaxAuthNum OBJECT-TYPE
+		SYNTAX   Integer32 
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    		"The max number of AC systerm authenticated user online."
+    ::= { ruijieCMPortalMIBObjects 23 }
+    
+ruijieACPortalCurrentMaxAuthNum OBJECT-TYPE
+		SYNTAX   Integer32 
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    		"The max number of AC current authenticated user online."
+    ::= { ruijieCMPortalMIBObjects 24}
+
+---
+---Portal trap nodes
+---
+ruijieCMPortalMIBTrap    OBJECT IDENTIFIER ::= { ruijieCMPortalMIB 0 }
+
+ruijieCMPortalServerDownTrap NOTIFICATION-TYPE
+   OBJECTS { 
+   			ruijieCMPortalServerInetAddressType,
+        ruijieCMPortalServerInetAddress,
+        ruijieCMPortalServerInetPortNumber,
+        ruijieCMPortalServerUnavailableCode }
+   STATUS current
+   DESCRIPTION
+   		"This trap is generated when the portal server doesn't 
+   		 respond client's requests for specified times."
+   ::= { ruijieCMPortalMIBTrap 1 }
+
+ruijieCMPortalServerRecoverTrap NOTIFICATION-TYPE
+   OBJECTS { 
+   			ruijieCMPortalServerInetAddressType,
+        ruijieCMPortalServerInetAddress,
+        ruijieCMPortalServerInetPortNumber,
+        ruijieCMPortalServerUnavailableCode }
+   STATUS current
+   DESCRIPTION
+   		"This trap is generated when the portal server recover from 
+   		 the down status."
+   ::= { ruijieCMPortalMIBTrap 2 }
+
+---
+---compliance statements
+---
+ruijieCMPortalMIBConformance OBJECT IDENTIFIER ::= { ruijieCMPortalMIB 2 }
+ruijieCMPortalMIBCompliances OBJECT IDENTIFIER ::= { ruijieCMPortalMIBConformance 1 }
+ruijieCMPortalMIBGroups      OBJECT IDENTIFIER ::= { ruijieCMPortalMIBConformance 2 }
+
+ruijieCMPortalMIBCompliance MODULE-COMPLIANCE
+   STATUS  current
+   DESCRIPTION
+   			"The compliance statement for entities which implement
+       	 the Portal MIB"
+   MODULE  -- this module
+   GROUP ruijieCMPortalMIBGroup
+ 	 DESCRIPTION
+        "This group is mandatory only for those system which support portal function."          
+   ::= { ruijieCMPortalMIBCompliances 1 }
+
+ruijieCMPortalMIBGroup OBJECT-GROUP 
+   OBJECTS { 
+   			ruijieCMPortalMaxAuthNum,
+   			ruijieCMPortalCurAuthNum,
+   			ruijieCMPortalServerInetAddressType,
+   			ruijieCMPortalServerInetAddress,
+   			ruijieCMPortalServerInetPortNumber,
+   			ruijieCMPortalServerUnavailableCode,
+   			ruijieCMPortalAuthReqCount,
+   			ruijieCMPortalAuthRespCount,
+   			ruijieCMPortalChallengeReqCount,
+   			ruijieCMPortalChallengeRespCount,
+   			ruijieCMPortalGlobalServerURL,
+   			ruijieCMPortalServerURL,
+                        ruijieCMPortalServerName,
+                        ruijieCMPortalServerInUsedCount,
+                        ruijieCMPortalServerConfigStatus,
+		    ruijieCMPortalHttpReqCount,
+			ruijieCMPortalHttpRespCount,
+			ruijieCMPortalExceptionFailCount,
+		    ruijieCMPortalAuthSuccessedCount,
+		    ruijieCMPortalNormalAuthReqCount,
+		    ruijieCMPortalEDUAuthReqCount,      
+		    ruijieCMPortalStarbucksAuthReqCount,
+		    ruijieCMPortalNormalAuthRespCount,
+		    ruijieCMPortalEDUAuthRespCount,
+		    ruijieCMPortalStarbucksAuthRespCount,
+		    ruijieACPortalMaxAuthNum,
+		    ruijieACPortalCurrentMaxAuthNum		
+      } 
+   STATUS  deprecated 
+   DESCRIPTION 
+         "The basic collection of objects providing management of portal management." 
+   ::= { ruijieCMPortalMIBGroups 1 } 
+
+END

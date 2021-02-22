@@ -1,0 +1,320 @@
+ISIS-MIB DEFINITIONS ::= BEGIN
+     IMPORTS
+        TEXTUAL-CONVENTION, RowStatus, TruthValue, TimeStamp
+                FROM SNMPv2-TC               -- RFC2579
+        MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+            Unsigned32, Counter32, mib-2
+                FROM SNMPv2-SMI              -- RFC2578
+        MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+                FROM SNMPv2-CONF             -- RFC2580
+        SnmpAdminString
+                FROM SNMP-FRAMEWORK-MIB      -- RFC2571
+        IndexInteger, IndexIntegerNextFree
+                FROM DIFFSERV-MIB            -- RFC3289
+        InterfaceIndex
+                FROM IF-MIB                  -- RFC2863
+        InetAddressType, InetAddress, InetAddressPrefixLength
+                FROM INET-ADDRESS-MIB;       -- RFC3291
+
+    isisMIB MODULE-IDENTITY
+        LAST-UPDATED "200604040000Z" -- April 4, 2006, midnight
+        ORGANIZATION "IETF IS-IS for IP Internets Working Group"
+        CONTACT-INFO
+            "IS-IS for IP Internets working Group
+             http://www.ietf.org/html.charters/isis-charter.html
+             isis-wg@ietf.org
+
+             Jeff Parker
+             Department of Computer Science
+             Middlebury College,
+             Middlebury, Vermont 05753
+             jeffp at middlbury dot edu"
+
+        DESCRIPTION
+             "This document describes a management information base for
+             the IS-IS Routing protocol, as described in ISO 10589,
+             when it is used to construct routing tables for IP
+             networks, as described in RFC 1195.
+
+             This document is based on a 1994 IETF document by Chris
+             Gunner.  This version has been modified to include
+             current syntax, to exclude portions of the protocol that
+             are not relevant to IP, and to add management support for
+             current practice.
+
+
+
+
+
+
+
+
+             Copyright (C) The Internet Society (2006).  This version
+             of this MIB module is part of RFC 4444; see the RFC
+             itself for full legal notices."
+
+        REVISION "200604040000Z" -- April 4, 2006, midnight
+
+        DESCRIPTION
+            "Initial version, published as RFC 4444."
+    ::= { mib-2 138 }
+
+-- Top-level structure of the MIB
+
+isisNotifications       OBJECT IDENTIFIER ::= { isisMIB 0 }
+isisObjects             OBJECT IDENTIFIER ::= { isisMIB 1 }
+isisConformance         OBJECT IDENTIFIER ::= { isisMIB 2 }
+
+-- OBJECT IDENTIFIER definitions
+
+-- System wide attributes.
+isisSystem OBJECT IDENTIFIER ::= { isisObjects 1 }
+
+-- Attributes associated with the domain or with the area.
+isisSysLevel OBJECT IDENTIFIER ::= { isisObjects 2 }
+
+-- Attributes associated with one Circuit
+isisCirc OBJECT IDENTIFIER ::= { isisObjects 3 }
+
+-- Attributes associated with area or domain relevant within a Circuit.
+isisCircLevelValues OBJECT IDENTIFIER ::= { isisObjects 4 }
+
+-- System and circuit counters.
+isisCounters OBJECT IDENTIFIER ::= { isisObjects 5 }
+
+-- Attributes associated with an adjacent Protocol Peer.
+isisISAdj OBJECT IDENTIFIER ::= { isisObjects 6 }
+
+-- Attributes associated with a configured address.
+isisReachAddr OBJECT IDENTIFIER ::= { isisObjects 7 }
+
+-- Attributes associated with IP routes learned by
+-- configuration or through another protocol.
+isisIPReachAddr OBJECT IDENTIFIER ::= { isisObjects 8 }
+
+-- The collection of Link State PDUs known to the Intermediate System
+isisLSPDataBase OBJECT IDENTIFIER ::= { isisObjects 9 }
+
+-- Objects included in Notifications.
+isisNotification OBJECT IDENTIFIER ::= { isisObjects 10 }
+
+
+
+
+
+-- Type definitions
+
+    IsisOSINSAddress ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+            "OSI Network Service Address, e.g., NSAP, SNPA, or Network
+             Entity Title"
+        SYNTAX OCTET STRING (SIZE(0..20))
+
+    IsisSystemID ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+            "The ID for an Intermediate System.  This should
+             be unique within a network, and is included
+             in all PDUs originated by an Intermediate System.
+             The protocol does not place any meanings upon
+             the bits, other than using ordering to break
+             ties in electing a Designated IS on a LAN."
+        REFERENCE "{ISIS.aoi systemId (119)}"
+        SYNTAX OCTET STRING (SIZE(6))
+
+    IsisLinkStatePDUID ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+            "The 8-byte Link State PDU (LSP) ID,
+             consisting of the 6-byte SystemID of the
+             originating IS; a one-byte PseudoNode ID,
+             which is 0 unless the LSP represents the
+             topology of a LAN; and a one-byte LSP
+             fragment number that is issued in sequence,
+             starting with 0.  Non-zero PseudoNode IDs
+             need to be unique to the IS but need not
+             match the IfIndex."
+        REFERENCE "{See section 9.8 of ISO 10589}"
+        SYNTAX OCTET STRING (SIZE(8))
+
+    IsisAdminState ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+            "Type used in enabling and disabling a row."
+        SYNTAX INTEGER
+            {
+                on(1),
+                off(2)
+            }
+
+    IsisLSPBuffSize ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "d"
+
+
+
+
+
+        STATUS current
+        DESCRIPTION
+            "Integer sub-range for maximum LSP size."
+        SYNTAX Unsigned32 (512..16000)
+
+    IsisLevelState ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+            "States of the IS-IS protocol."
+        SYNTAX INTEGER
+            {
+                off (1),
+                on (2),
+                waiting (3),
+                overloaded(4)
+            }
+
+    IsisSupportedProtocol ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+            "Types of network protocol supported by Integrated IS-IS.
+             The values for ISO8473 and IP are those registered for
+             these protocols in ISO TR9577."
+        REFERENCE "{See section 5.3.1 of RFC 1195}"
+        SYNTAX INTEGER
+            {
+                iso8473(129),
+                ipV6(142),
+                ip(204)
+            }
+
+    IsisDefaultMetric ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "d"
+        STATUS current
+        DESCRIPTION
+            "Integer sub-range for default metric for single hop.
+             ISO 10589 provides for 4 types of metric.  Only the
+             'default' metric is used in practice."
+        REFERENCE "{See section 7.2.2 of ISO 10589}"
+        SYNTAX Unsigned32 (0..63)
+
+    IsisWideMetric ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "d"
+        STATUS current
+        DESCRIPTION
+            "Wide metric for IS Neighbors.  ISO 10589 provides a
+             6-bit metric.  Traffic Engineering extensions provide
+             24-bit metrics."
+
+
+
+
+
+        REFERENCE "{See section 3 of RFC 3784}"
+        SYNTAX Unsigned32 (0..16777215)
+
+    IsisFullMetric ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "d"
+        STATUS current
+        DESCRIPTION
+            "Full metric for IP Routes.  Traffic Engineering extensions
+             provide 32-bit metrics."
+        REFERENCE "{See section 4 of RFC 3784}"
+        SYNTAX Unsigned32
+
+    IsisMetricType ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+            "Is this an Internal or External Metric?"
+        REFERENCE "{See section 7.2.2 of ISO 10589}"
+        SYNTAX INTEGER
+            {
+                internal(1),
+                external(2)
+            }
+
+    IsisMetricStyle ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+            "Do we use RFC 1195 style metrics or wide metrics?"
+        REFERENCE "{See section 5 of RFC 3787}"
+        SYNTAX INTEGER
+            {
+                narrow(1),
+                wide(2),
+                both(3)
+            }
+
+    IsisISLevel ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+            "Identifies a level."
+        REFERENCE "{See definitions 3.6.1 and 3.6.11 of ISO 10589}"
+        SYNTAX INTEGER
+            {
+                area(1),        -- L1
+                domain(2)       -- L2
+            }
+
+    IsisLevel ::= TEXTUAL-CONVENTION
+        STATUS current
+
+
+
+
+
+        DESCRIPTION
+            "Identifies one or more levels."
+        REFERENCE "{See definitions 3.6.1 and 3.6.11 of ISO 10589}"
+        SYNTAX INTEGER
+            {
+                level1(1),
+                level2(2),
+                level1and2(3)
+            }
+
+    IsisPDUHeader ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+            "A block to contain the header from a PDU."
+        SYNTAX OCTET STRING (SIZE(0..64))
+
+    IsisCircuitID ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+            "ID for a circuit."
+        REFERENCE "{See section 7.2.7 of ISO 10589}"
+        SYNTAX OCTET STRING (SIZE(0|7))
+
+    IsisISPriority ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "d"
+        STATUS current
+        DESCRIPTION
+            "Integer sub-range for IS-IS priority."
+        REFERENCE "{See section 9.5 of ISO 10589}"
+        SYNTAX Unsigned32 (0..127)
+
+    IsisUnsigned16TC ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "d"
+        STATUS current
+        DESCRIPTION
+            "An Unsigned32 further restricted to 16 bits.  Note that
+             the ASN.1 BER encoding may still require 24 bits for
+             some values."
+        SYNTAX Unsigned32 (0..65535)
+
+    IsisUnsigned8TC ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "d"
+        STATUS current
+        DESCRIPTION
+            "An Unsigned32 further restricted to 8 bits.  Note that
+             the ASN.1 BER encoding may still require 16 bits for
+             some values."
+        SYNTAX Unsigned32 (0..255)
+
+
+
+
+
+-- Behavior Definitions
+
+-- ResettingTimer behavior definition
+--

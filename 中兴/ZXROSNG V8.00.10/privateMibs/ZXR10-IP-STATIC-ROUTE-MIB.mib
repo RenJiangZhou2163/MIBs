@@ -1,0 +1,378 @@
+-- *****************************************************************
+-- ZXR10-IP-STATIC-ROUTE-MIB.mib
+-- 00105254
+-- 2010-11-9
+--
+-- Copyright (c) 1985-2010 by ZTE Corp.
+-- All rights reserved.
+-- *****************************************************************
+--
+ZXR10-IP-STATIC-ROUTE-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE,
+        Integer32, enterprises, IpAddress,Unsigned32         FROM SNMPv2-SMI
+        RowStatus,DisplayString,TruthValue                   FROM SNMPv2-TC
+        zxr10                                                FROM ZXR10-SMI;
+
+     -- This MIB module uses the extended OBJECT-TYPE macro as
+     -- defined in [9].
+
+    zxR10StaticRouteMib  MODULE-IDENTITY
+        LAST-UPDATED "201811071010Z"
+        ORGANIZATION "ZTE Corp."
+        CONTACT-INFO "ZTE"
+        DESCRIPTION  "ZXR10-IP-STATIC-ROUTE-MIB"
+
+        REVISION     "201811071010Z"
+        DESCRIPTION
+            "Add public(5) in zxR10Ipv4SrNexthopType node.
+            Modify the description of zxR10Ipv4SrNexthop node."
+
+        REVISION     "201411281010Z"
+        DESCRIPTION
+            "modify the rights of zxR10Ipv4SrPermanent node from read-create
+            to read-only."
+
+        REVISION     "201410291010Z"
+        DESCRIPTION
+            "Change the all names in this file to be standard.
+            Add create rights to the Zxr10Ipv4StaticRouteEntry."
+
+        REVISION     "201403031000Z"
+        DESCRIPTION
+            "Modify the description of ipStaticRouteSlave node;
+            Add the rang of ipStaticRoutePrefixLen node."
+        REVISION     "201303291000Z"
+        DESCRIPTION  "ZXR10-IP-STATIC-ROUTE-MIB"
+        ::= { zxr10 330 }
+
+
+    --/*ipv4 static route table*/--
+    zxR10Ipv4StaticRouteTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF ZxR10Ipv4StaticRouteEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of current IPv4 static route entries. "
+        ::= { zxR10StaticRouteMib 1 }
+
+    zxR10Ipv4StaticRouteEntry OBJECT-TYPE
+        SYNTAX      ZxR10Ipv4StaticRouteEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry containing information applicable to a particular IPv4
+             static route."
+        INDEX  {
+            zxR10Ipv4SrDest,
+            zxR10Ipv4SrPrefixLen,
+            zxR10Ipv4SrVrfName,
+            zxR10Ipv4SrNexthop,
+            zxR10Ipv4SrIfName
+        }
+        ::= { zxR10Ipv4StaticRouteTable 1 }
+
+    ZxR10Ipv4StaticRouteEntry   ::= SEQUENCE {
+        zxR10Ipv4SrDest                          IpAddress,
+        zxR10Ipv4SrPrefixLen                     INTEGER,
+        zxR10Ipv4SrVrfName                       DisplayString,
+        zxR10Ipv4SrNexthopType                   INTEGER,
+        zxR10Ipv4SrNexthop                       IpAddress,
+        zxR10Ipv4SrIfName                        DisplayString,
+        zxR10Ipv4SrNextHopIsGlobal               TruthValue,
+        zxR10Ipv4SrTag                           Unsigned32,
+        zxR10Ipv4SrMode                          INTEGER,
+        zxR10Ipv4SrMetric                        Integer32,
+        zxR10Ipv4SrDetectGroupeNum               Integer32,
+        zxR10Ipv4SrStatus                        INTEGER,
+        zxR10Ipv4SrRowStatus                     RowStatus,
+        zxR10Ipv4SrTrackSessionName              DisplayString,
+        zxR10Ipv4SrDetectType                    INTEGER,
+        zxR10Ipv4SrSlave                         INTEGER,
+        zxR10Ipv4SrBfdEnable                     INTEGER,
+        zxR10Ipv4SrDistance                      Integer32,
+        zxR10Ipv4SrName                          DisplayString,
+        zxR10Ipv4SrPermanent                     TruthValue
+    }
+
+    zxR10Ipv4SrDest  OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "IPv4 Static Route Dest ip address."
+        ::= { zxR10Ipv4StaticRouteEntry 1 }
+
+    zxR10Ipv4SrPrefixLen  OBJECT-TYPE
+        SYNTAX      INTEGER(0..32)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "IPv4 Static Route Mask length."
+        ::= { zxR10Ipv4StaticRouteEntry 2 }
+
+    zxR10Ipv4SrVrfName  OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..32))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "VRF Name. If this attribute has NULL value, it means that this 
+             route belongs to the global table."
+        ::= { zxR10Ipv4StaticRouteEntry 3 }
+
+    zxR10Ipv4SrNexthopType  OBJECT-TYPE
+        SYNTAX      INTEGER {
+            invalid(1),
+            ipv4addr(2),
+            outinterfacename(3),
+            outintandipv4(4),
+            public(5)
+        }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Static route nexthop type,as follow:
+             ipv4 address(2),
+             outinterfacename(3),
+             outinterfacename and ipv4(4),
+             public(5),
+             otherwise,is invalid(1)"
+        ::= { zxR10Ipv4StaticRouteEntry 4 }
+
+    zxR10Ipv4SrNexthop  OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The nexthop address of this static route. 
+             If zxR10Ipv4SrNexthopType's value is outinterfacename(3), 
+             public(5) or invalid(1), the zxR10Ipv4SrNexthop is NULL."
+        ::= { zxR10Ipv4StaticRouteEntry 5 }
+
+    zxR10Ipv4SrIfName  OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..32))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The outinterface name of this static route.
+             If zxR10Ipv4SrNexthopType's value is outinterfacename(3) or 
+             outintandipv4(4), the zxR10Ipv4SrNexthop cannot be NULL."
+        ::= { zxR10Ipv4StaticRouteEntry 6 }
+
+    zxR10Ipv4SrNextHopIsGlobal  OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Is the static route nexthop global or not."
+        DEFVAL  { false }
+        ::= { zxR10Ipv4StaticRouteEntry 7 }
+
+    zxR10Ipv4SrTag  OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The tag value of this static route."
+        DEFVAL  { 0 }
+        ::= { zxR10Ipv4StaticRouteEntry 8 }
+
+    zxR10Ipv4SrMode  OBJECT-TYPE
+        SYNTAX      INTEGER {
+            invalid(1),
+            config(2),
+            mng(3),
+            vrf(4)
+        }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The static route mode."
+        ::= { zxR10Ipv4StaticRouteEntry 9 }
+
+    zxR10Ipv4SrMetric  OBJECT-TYPE
+        SYNTAX      Integer32(0..255)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The static route metric."
+        DEFVAL  { 0 }
+        ::= { zxR10Ipv4StaticRouteEntry 10 }
+
+    zxR10Ipv4SrDetectGroupeNum  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of this static route ping detect group."
+        --DEFVAL { 0 }
+        ::= { zxR10Ipv4StaticRouteEntry 11 }
+
+    zxR10Ipv4SrStatus  OBJECT-TYPE
+        SYNTAX      INTEGER {
+            down(1),
+            up(2)
+        }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This static route's status is down or up."
+        ::= { zxR10Ipv4StaticRouteEntry 12 }
+
+    zxR10Ipv4SrRowStatus  OBJECT-TYPE
+        SYNTAX       RowStatus
+        MAX-ACCESS   read-create
+        STATUS       current
+        DESCRIPTION
+            "The status of this conceptual row.
+
+             The supported actions of this conceptual row only include:
+             'createAndGo' and 'destroy'.
+
+             To create a row in this table, a manager must set this object to
+             createAndGo(4), and must comply with the multi-variables binding
+             rule described in zxR10Ipv4StaticRouteEntry.
+
+             To delete a row in this table, a manager must set this object to
+             destroy(6).
+
+             To get this object, the agent always returns active(1)."
+        ::= { zxR10Ipv4StaticRouteEntry 13 }
+
+    zxR10Ipv4SrTrackSessionName  OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The static route's related track session name."
+        ::= { zxR10Ipv4StaticRouteEntry 14 }
+
+    zxR10Ipv4SrDetectType  OBJECT-TYPE
+        SYNTAX      INTEGER {
+            nontracksession(0),
+            tracksession(1)
+        }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The static route's tracksession is enable or not."
+        ::= { zxR10Ipv4StaticRouteEntry 15 }
+
+    zxR10Ipv4SrSlave  OBJECT-TYPE
+        SYNTAX      INTEGER {
+            nonslaveflag(0),
+            slaveflag(1)
+        }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The static route is a slave route or not."
+        ::= { zxR10Ipv4StaticRouteEntry 16 }
+
+    zxR10Ipv4SrBfdEnable  OBJECT-TYPE
+        SYNTAX      INTEGER {
+            bfddisable(0),
+            bfdenable(1)
+        }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The static route's related bfd is disable or enable."
+        DEFVAL  { 0 }
+        ::= { zxR10Ipv4StaticRouteEntry 17 }
+
+    zxR10Ipv4SrDistance  OBJECT-TYPE
+        SYNTAX      Integer32(1..255)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The distance of this static route."
+        DEFVAL  { 1 }
+        ::= { zxR10Ipv4StaticRouteEntry 18 }
+
+    zxR10Ipv4SrName  OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..64))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The static route name."
+        ::= { zxR10Ipv4StaticRouteEntry 19 }
+
+    zxR10Ipv4SrPermanent  OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The static route is permanent route or not."
+        DEFVAL  { false }
+        ::= { zxR10Ipv4StaticRouteEntry 20 }
+
+    --/*ipv4 static route frr table*/--
+
+    zxR10Ipv4StaticRouteFrrTable  OBJECT-TYPE
+        SYNTAX      SEQUENCE OF ZxR10Ipv4StaticRouteFrrEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of current static route entries for frr."
+        ::= { zxR10StaticRouteMib 2 }
+
+    zxR10Ipv4StaticRouteFrrEntry  OBJECT-TYPE
+        SYNTAX      ZxR10Ipv4StaticRouteFrrEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "An entry containing information applicable to static frr route."
+        INDEX  {
+            zxR10Ipv4SrFrrVrfName
+        }
+        ::= { zxR10Ipv4StaticRouteFrrTable 1 }
+
+    ZxR10Ipv4StaticRouteFrrEntry  ::= SEQUENCE {
+        zxR10Ipv4SrFrrVrfName     DisplayString,
+        zxR10Ipv4SrFrrStatus      INTEGER,
+        zxR10Ipv4SrFrrWtr         Integer32
+    }
+
+    zxR10Ipv4SrFrrVrfName  OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..32))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VRF name frred on."
+        ::= { zxR10Ipv4StaticRouteFrrEntry 1 }
+
+    zxR10Ipv4SrFrrStatus  OBJECT-TYPE
+        SYNTAX      INTEGER {
+            enable(1),
+            disable(0)
+        }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Frr is enable or disable."
+        ::= { zxR10Ipv4StaticRouteFrrEntry 2 }
+
+    zxR10Ipv4SrFrrWtr  OBJECT-TYPE
+        SYNTAX      Integer32(0..12)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Static route wtr time interval."
+        DEFVAL { 0 }
+        ::= { zxR10Ipv4StaticRouteFrrEntry 3 }
+
+    --/*ipv4 static route globals scalar*/--
+
+    zxR10Ipv4StaticRouteGlobals  OBJECT IDENTIFIER ::= { zxR10StaticRouteMib 3 }
+
+    zxR10Ipv4SrNhSourceIfName  OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..32))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The interface bound to static route nexthop source."
+        ::= { zxR10Ipv4StaticRouteGlobals 1 }
+
+END

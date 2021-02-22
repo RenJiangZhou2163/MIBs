@@ -1,0 +1,201 @@
+-- *****************************************************************
+-- ZXR10-ROUTE-LABEL.mib 
+--
+-- 2008-3-18 10:50
+-- 
+--
+-- Copyright (c) 1985-2008 by ZTE Corp.
+-- All rights reserved.
+-- *****************************************************************
+--
+ZXR10-ROUTE-LABEL-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE, IpAddress,
+        Integer32, NOTIFICATION-TYPE,enterprises
+                FROM SNMPv2-SMI
+        DisplayString
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE, OBJECT-GROUP
+                FROM SNMPv2-CONF;
+
+    zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+    zxr10 OBJECT IDENTIFIER ::= { zte 3}
+    
+zxr10rtmLabel MODULE-IDENTITY
+        LAST-UPDATED "200705280000Z"
+        ORGANIZATION "ZTE Corp."
+        CONTACT-INFO
+               ""
+
+        DESCRIPTION 
+                ""
+        REVISION "200405140000Z"
+        DESCRIPTION
+                ""
+        ::= { zxr10 109 }  
+                       
+zxr10rtmLabelTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10rtmLabelEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A list of rtm label information."
+        ::= { zxr10rtmLabel 1 } 
+        
+zxr10rtmLabelEntry OBJECT-TYPE
+        SYNTAX  Zxr10rtmLabelEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to rtm label table."
+        INDEX  { zxr10rtmLabelDestAddr,zxr10rtmLabelDestMask,zxr10rtmLabelReTag }
+        ::= { zxr10rtmLabelTable 1 }  
+        
+Zxr10rtmLabelEntry ::=
+     SEQUENCE {       
+         zxr10rtmLabelDestAddr
+             IpAddress,  
+         zxr10rtmLabelDestMask
+             Integer32,  
+         zxr10rtmLabelReTag
+             Integer32,                       
+         zxr10rtmLabelNextHop
+             IpAddress,    
+         zxr10rtmLabelOutIfName 
+             DisplayString,        
+         zxr10rtmLabelOutIf
+             Integer32,
+         zxr10rtmLabelInLabel
+             Integer32,
+         zxr10rtmLabelOutLabel
+             Integer32,
+         zxr10rtmLabelSpecialFlag
+             INTEGER                         
+}               
+
+
+zxr10rtmLabelDestAddr OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The destination IP address of this route.  An
+             entry with a value of 0.0.0.0 is considered a
+             default route.  Multiple routes to a single
+             destination can appear in the table, but access to
+             such multiple entries is dependent on the table-
+             access mechanisms defined by the network
+             management protocol in use."
+        ::= { zxr10rtmLabelEntry 1 }
+                                   
+zxr10rtmLabelDestMask OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Indicate the mask to be logical-ANDed with the
+             destination address before being compared to the
+             value in the ipRouteDest field.  For those systems
+             that do not support arbitrary subnet masks, an
+             agent constructs the value of the ipRouteMask by
+             determining whether the value of the correspondent
+             ipRouteDest field belong to a class-A, B, or C
+             network, and then using one of:
+
+                           mask           network
+                           8              class-A
+                           16             class-B
+                           24             class-C
+
+             If the value of the ipRouteDest is 0 (a
+             default route), then the mask value is also
+             0.  It should be noted that all IP routing
+             subsystems implicitly use this mechanism."
+        ::= { zxr10rtmLabelEntry 2 }
+ 
+zxr10rtmLabelReTag OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "This value is used to distinguish route entry 
+            who have the same Dest and Mask.In other words,
+            it's a speical id for route entry with the same 
+            destination IP address(For static route it can 
+            be configured by user)."
+        ::= { zxr10rtmLabelEntry 3 }  
+                 
+zxr10rtmLabelNextHop OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The IP address of the next hop of this route.
+             (In the case of a route bound to an interface
+              which is realized via a broadcast media, the value
+              of this field is the agent's IP address on that
+              interface.)"
+        ::= { zxr10rtmLabelEntry 4 }  
+                       
+zxr10rtmLabelOutIfName OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The interface name which uniquely identifies the
+             local interface through which the next hop of this
+             route should be reached.  The interface identified
+             by a particular value of this index is the same
+             interface as identified by the same value of
+             ifIndex"
+        ::= { zxr10rtmLabelEntry 5 } 
+        
+zxr10rtmLabelOutIf OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The index value which uniquely identifies the
+             local interface through which the next hop of this
+             route should be reached.  The interface identified
+             by a particular value of this index is the same
+             interface as identified by the same value of
+             ifIndex."
+        ::= { zxr10rtmLabelEntry 6 } 
+                          
+zxr10rtmLabelInLabel OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The incoming label of this LSP."
+        ::= { zxr10rtmLabelEntry 7 }          
+                
+zxr10rtmLabelOutLabel OBJECT-TYPE
+        SYNTAX        Integer32        
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION  
+           "The outgoing label of this LSP"
+        ::= { zxr10rtmLabelEntry 8 } 
+               
+zxr10rtmLabelSpecialFlag OBJECT-TYPE
+        SYNTAX  INTEGER {
+                          active-route-entry(0),   
+                          slave-route-entry(1),        
+                          loadshare-route-entry(2),
+                          none(3)
+                        }  
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "This flag indicate the link info about this IP address.
+                     0: means it's an active route entry,at the sametime,
+                        indicate the master link under fast-re_route application.
+                     1: means it's a slave route entry under fast-re-route
+                        application.
+                     2: means it's a loadshare route entry.  
+                     3: means none of the above. "
+        ::= { zxr10rtmLabelEntry 9 }  
+END

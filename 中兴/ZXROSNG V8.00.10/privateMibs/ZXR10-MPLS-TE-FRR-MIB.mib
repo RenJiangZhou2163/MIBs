@@ -1,0 +1,915 @@
+ZXR10-MPLS-TE-FRR-MIB DEFINITIONS ::= BEGIN
+
+        IMPORTS
+            MODULE-IDENTITY, OBJECT-TYPE,NOTIFICATION-TYPE,Unsigned32,IpAddress,Integer32
+                    FROM SNMPv2-SMI
+            DisplayString       
+                    FROM SNMPv2-TC 
+            zxr10MplsTeFrr
+            		FROM ZXR10-SMI;
+                    
+    zxr10MplsTeFrrMIB MODULE-IDENTITY
+       LAST-UPDATED
+          "200811131200Z" -- 13 November 2008 12:00:00 GMT
+       ORGANIZATION
+          "Multiprotocol Label Switching (MPLS) Working Group"
+       CONTACT-INFO
+            "
+                     Riza Cetin
+              Email: riza.cetin@alcatel.be
+
+                     Thomas D. Nadeau
+              Email: tom.nadeau@bt.com
+
+                     A S Kiran Koushik
+              Email: kkoushik@cisco.com
+
+                     Stefaan De Cnodder
+              Email: Stefaan.de_cnodder@alcatel.be
+
+                     Der-Hwa Gan
+              Email: dhg@juniper.net
+            "
+       DESCRIPTION
+         "Copyright (C) 2008 The IETF Trust.  This version of this MIB
+          module is part of RFC xxxx; See the RFC itself for full
+          legal notices.
+          This MIB module contains object definitions for
+          MPLS Traffic Engineering facility backup method for
+          Fast Reroute as defined in RFC4090."          
+          -- Revision history.
+       REVISION
+          "200809111200Z" -- 11 September 2008 12:00:00 GMT
+       DESCRIPTION
+          ""      
+    ::= { zxr10MplsTeFrr 1 }
+                                               
+-- Top level components of this MIB module.         
+     mplsFrrGeneralScalars                 OBJECT IDENTIFIER 
+                                    ::= { zxr10MplsTeFrrMIB 1 }
+     mplsFrrFacilityObjects                OBJECT IDENTIFIER 
+                                    ::= { zxr10MplsTeFrrMIB 2 }                             
+     mplsFrrHelloObjects		           OBJECT IDENTIFIER
+     								::= { zxr10MplsTeFrrMIB 3 }         								
+     mplsFrrDetourObjects                OBJECT IDENTIFIER 
+                                    ::= { zxr10MplsTeFrrMIB 4 }                             
+                            
+               
+               
+-- Scalar objects defined for hello status     
+	mplsFrrHelloEnabled OBJECT-TYPE
+		SYNTAX            INTEGER {enable(1),
+                                   disable(0)
+                                  }
+		MAX-ACCESS        read-only
+        STATUS            obsolete
+        DESCRIPTION
+         "Enables or disables hello message in global-configuration mode 
+         which is defined in RFC3209."   
+     ::= { mplsFrrGeneralScalars 2 }
+
+
+    --
+    -- Hello-state Tables
+    -- 
+    mplsFrrHelloStatusTable OBJECT-TYPE
+    	SYNTAX            SEQUENCE OF MplsFrrHelloStatusEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION
+            "The mplsFrrHelloStatusTable provides information about the
+             hello status database."  
+        ::= { mplsFrrHelloObjects 1 }
+   
+   mplsFrrHelloStatusEntry OBJECT-TYPE
+       SYNTAX        MplsFrrHelloStatusEntry
+       MAX-ACCESS    not-accessible
+       STATUS        current
+       DESCRIPTION
+            "An entry in the mplsFrrHelloStatusTable represents a single
+             hello enabled interface on local node for timely neighbor failure detection."
+       INDEX {
+               mplsFrrHelloEnabledIfIndex,            -- enabled ifIndex
+               mplsFrrHelloLocalAddress,                -- local id
+               mplsFrrHelloNeighborAddress }            -- neighbor id
+    ::= { mplsFrrHelloStatusTable 1 }
+   
+    MplsFrrHelloStatusEntry ::= SEQUENCE {
+       mplsFrrHelloEnabledIfIndex               Unsigned32,
+       mplsFrrHelloLocalAddress               	IpAddress,
+       mplsFrrHelloNeighborAddress              IpAddress,
+       mplsFrrHelloNeighborState			    INTEGER,
+       mplsFrrHelloType             			INTEGER,
+       mplsFrrHelloSrcInstance    		        Unsigned32, 
+       mplsFrrHelloDstInstance                  Unsigned32,   
+       mplsFrrHelloRefreshInterval              Unsigned32, 
+       mplsFrrHelloNumRefreshMisses             Unsigned32, 
+       mplsFrrHelloNumLosses                    Unsigned32,  
+       mplsFrrHelloNumProtectedLsps             Unsigned32,
+       mplsFrrHelloEnabledIfName                DisplayString    
+    }            
+    
+    mplsFrrHelloEnabledIfIndex OBJECT-TYPE
+       SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+         "Uniquely identifies the hello enabled interface on the local node."
+      ::= { mplsFrrHelloStatusEntry 1 }
+
+    mplsFrrHelloLocalAddress OBJECT-TYPE
+       SYNTAX        IpAddress
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+         "Uniquely identifies the local address on which hello enabled interfaces are 
+         configured for neighbor failure detection."
+      ::= { mplsFrrHelloStatusEntry 2 }
+
+    mplsFrrHelloNeighborAddress OBJECT-TYPE
+       SYNTAX        IpAddress
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+         "Uniquely identifies the neighboring address whose status is being tracked."
+      ::= { mplsFrrHelloStatusEntry 3 }    
+      
+    mplsFrrHelloNeighborState OBJECT-TYPE
+       SYNTAX        INTEGER {down(1),
+       			      up(2)
+       			     }
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+         "Specifies the state of neighbor node as specified by 
+         mplsFrrHelloNeighborLSRID."
+      ::= { mplsFrrHelloStatusEntry 4 }  
+      
+     mplsFrrHelloType OBJECT-TYPE
+       SYNTAX        INTEGER  {active(1),
+       			       passive(2)
+       			      }
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+         "Indicates the way the hello enabled interface processes hello 
+         messages.     
+         
+         active(1)  : initiate to detect the state of neighbor with hello 
+         	request message. 
+         passive(2) : receives and processes hello request message."
+      ::= { mplsFrrHelloStatusEntry 5 }  
+      
+     mplsFrrHelloSrcInstance OBJECT-TYPE
+       SYNTAX        Unsigned32  
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+         "Represents the sender's instance."
+      ::= { mplsFrrHelloStatusEntry 6 } 
+                            
+     mplsFrrHelloDstInstance OBJECT-TYPE
+       SYNTAX        Unsigned32  
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+         "The most recently received Src_Instance value as specified by 
+         mplsFrrHelloSrcInstance received from the neighbor.
+          This field MUST be set to zero (0) when no value has ever been seen 
+          from the neighbor."
+      ::= { mplsFrrHelloStatusEntry 7 }   
+      
+     mplsFrrHelloRefreshInterval OBJECT-TYPE
+       SYNTAX        Unsigned32  
+       MAX-ACCESS    read-only
+       STATUS        obsolete
+       DESCRIPTION
+         "Represents the periodicity in which hello message is issued."
+      ::= { mplsFrrHelloStatusEntry 8 } 
+      
+     mplsFrrHelloNumRefreshMisses OBJECT-TYPE
+       SYNTAX        Unsigned32  
+       MAX-ACCESS    read-only
+       STATUS        obsolete
+       DESCRIPTION
+         "Represents the allowed max miss number of hello instances after which
+         the node treat the neighbor communication has been lost."
+      ::= { mplsFrrHelloStatusEntry 9 } 
+      
+     mplsFrrHelloNumLosses OBJECT-TYPE
+       SYNTAX        Unsigned32  
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+         "Represents the lost count of hello instances."
+      ::= { mplsFrrHelloStatusEntry 10 }
+               
+       mplsFrrHelloNumProtectedLsps OBJECT-TYPE
+       SYNTAX        Unsigned32  
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+         "Represents the number of protected LSPs."
+      ::= { mplsFrrHelloStatusEntry 11 }  
+      
+      mplsFrrHelloEnabledIfName OBJECT-TYPE
+       SYNTAX        DisplayString
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+         "Hello enabled interface name."
+      ::= { mplsFrrHelloStatusEntry 12 }        
+      
+      
+    --
+    -- Hello-config Tables
+    -- 
+    mplsFrrHelloConfigTable OBJECT-TYPE
+    	SYNTAX            SEQUENCE OF MplsFrrHelloConfigEntry
+        MAX-ACCESS        not-accessible
+        STATUS            obsolete
+        DESCRIPTION
+            "The mplsFrrHelloConfigTable provides information about the
+             hello configuration info on interfaces."  
+        ::= { mplsFrrHelloObjects 2 }
+   
+   mplsFrrHelloConfigEntry OBJECT-TYPE
+       SYNTAX        MplsFrrHelloConfigEntry
+       MAX-ACCESS    not-accessible
+       STATUS        obsolete
+       DESCRIPTION
+            "An entry in the mplsFrrHelloConfigTable represents a single
+             hello configuration info of hello enabled interface."
+       INDEX {
+               mplsFrrHelloConfigIfIndex           
+             }          
+    ::= { mplsFrrHelloConfigTable 1 }
+   
+    MplsFrrHelloConfigEntry ::= SEQUENCE {
+       mplsFrrHelloConfigIfIndex               Unsigned32,
+       mplsFrrHelloConfigRefreshInterval       Unsigned32, 
+       mplsFrrHelloConfigRefreshMisses         Unsigned32,    
+       mplsFrrHelloConfigIfName                DisplayString
+    }          
+    
+    mplsFrrHelloConfigIfIndex OBJECT-TYPE
+       SYNTAX        Unsigned32  
+       MAX-ACCESS    read-only
+       STATUS        obsolete
+       DESCRIPTION
+         "The index of interface which enables FRR hello."
+      ::= { mplsFrrHelloConfigEntry 1 }  
+
+     mplsFrrHelloConfigRefreshInterval OBJECT-TYPE
+       SYNTAX        Unsigned32  
+       MAX-ACCESS    read-only
+       STATUS        obsolete
+       DESCRIPTION
+         "FRR Hello refresh interval on this interface."
+      ::= { mplsFrrHelloConfigEntry 2 }  
+      
+      mplsFrrHelloConfigRefreshMisses OBJECT-TYPE
+       SYNTAX        Unsigned32  
+       MAX-ACCESS    read-only
+       STATUS        obsolete
+       DESCRIPTION
+         "FRR Hello refresh misses on this interface."
+      ::= { mplsFrrHelloConfigEntry 3 }  
+      
+      mplsFrrHelloConfigIfName OBJECT-TYPE
+       SYNTAX        DisplayString  
+       MAX-ACCESS    read-only
+       STATUS        obsolete
+       DESCRIPTION
+         "The name of interface which enables FRR hello."
+      ::= { mplsFrrHelloConfigEntry 4 }   
+      
+                                    
+      -- Scalar objects defined for Facility Backup style FRR
+    --
+    -- Facility-based FRR-specific Tables
+    -- 
+    -- Tables in this section pertain only to the facility-
+    -- based style of FRR.
+    --
+                                  
+-- This table below pertains statistical attributes of the FRR-configured interface  
+                                  
+     mplsFrrFacilityIfTable OBJECT-TYPE
+        SYNTAX            SEQUENCE OF MplsFrrFacilityIfEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION
+            "The mplsFrrFacilityInfTable provides information about the interface as specified 
+            by mplsFrrFacilityProtectedIfIndex.  Each entry belongs to a protected 
+             interface, including statistical attributes of this interface."
+    ::= { mplsFrrFacilityObjects 1 }
+                                                   
+                                                  
+    mplsFrrFacilityIfEntry OBJECT-TYPE
+       SYNTAX        MplsFrrFacilityIfEntry
+       MAX-ACCESS    not-accessible
+       STATUS        current
+       DESCRIPTION
+            "An entry in the mplsFrrFacilityInfTable represents the statistical attributes
+             of a FRR-configured interface."
+        INDEX {
+               mplsFrrFacilityConfigIfIndex       -- protected ifIndex  
+              }  
+    ::= { mplsFrrFacilityIfTable 1 }
+                                  
+    MplsFrrFacilityIfEntry ::= SEQUENCE {
+       mplsFrrFacilityConfigIfIndex                     Unsigned32,
+       mplsFrrFacilityDBNumProtectingTunnelOnIf         Unsigned32,
+       mplsFrrFacilityDBNumProtectedLspOnIf             Unsigned32,
+       mplsFrrFacilityDBNumProtectedTunnels             Unsigned32, 
+       mplsFrrFacilityProtectingTunnelIndex             DisplayString,
+       mplsFrrFacilityConfigIfName                      DisplayString
+    }
+                       
+                                  
+    mplsFrrFacilityConfigIfIndex OBJECT-TYPE
+       SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+         "Uniquely identifies the interface configured for FRR 
+          protection. If this object is set to 0, this indicates
+          that the remaining indexing combinations for this row 
+          apply to all interfaces on this device for which 
+          the FRR feature can operate."
+      ::= { mplsFrrFacilityIfEntry 1 }
+                    
+    mplsFrrFacilityDBNumProtectingTunnelOnIf OBJECT-TYPE
+        SYNTAX            Unsigned32
+        MAX-ACCESS        read-only
+        STATUS            current
+        DESCRIPTION
+            "The number of backup tunnels protecting the
+             interface specified by mplsFrrFacilityProtectedIfIndex."
+       ::= { mplsFrrFacilityIfEntry 2 }  
+       
+   mplsFrrFacilityDBNumProtectedLspOnIf OBJECT-TYPE
+        SYNTAX            Unsigned32
+        MAX-ACCESS        read-only
+        STATUS            current
+        DESCRIPTION
+            "The number of LSPs currently being protected on 
+             the interface specified by 
+             mplsFrrFacilityProtectedIfIndex."
+       ::= { mplsFrrFacilityIfEntry 3 } 
+                                 
+   mplsFrrFacilityDBNumProtectedTunnels OBJECT-TYPE
+        SYNTAX            Unsigned32
+        MAX-ACCESS        read-only
+        STATUS            current
+        DESCRIPTION
+            "The number of tunnels protected on the interface
+             specified by mplsFrrFacilityProtectedIfIndex."
+    ::= { mplsFrrFacilityIfEntry 4 }
+
+   mplsFrrFacilityProtectingTunnelIndex OBJECT-TYPE
+       SYNTAX        DisplayString
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+         "Uniquely identifies the mplsTunnelEntry primary index for
+          the tunnel head interface designated to protect the
+          interface as specified in the mplsFrrFacilityProtectedIfIndex
+          (and all of the tunnels using this interface). Note 
+          that the corresponding mplsTunnelInstance MUST BE
+          0 as per the indexing convention stipulated."
+       REFERENCE
+          "RFC3812"
+       ::= { mplsFrrFacilityIfEntry 5 }
+                                              
+    
+     mplsFrrFacilityConfigIfName OBJECT-TYPE
+       SYNTAX        DisplayString
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+         "The name of interface configured for FRR 
+          protection."
+      ::= { mplsFrrFacilityIfEntry 8 }
+
+                   
+ 
+-- This table below pertains FRR relationship of the FRR-configured interface                              
+   mplsFrrFacilityDBTable OBJECT-TYPE
+        SYNTAX            SEQUENCE OF MplsFrrFacilityDBEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION
+            "The mplsFrrFacilityDBTable provides summary information about the
+             fast reroute database which indicates information of primary LSPs protected by the LSP 
+             as specified by mplsFrrFacilityProtectingTunnelIndex on the protected interface."
+    ::= { mplsFrrFacilityObjects 2 }  
+    
+   mplsFrrFacilityDBEntry OBJECT-TYPE
+       SYNTAX        MplsFrrFacilityDBEntry
+       MAX-ACCESS    not-accessible
+       STATUS        current
+       DESCRIPTION
+            "An entry in the mplsFrrFacilityDBTable represents a single
+             protected LSP, protected by a backup tunnel on a
+             specific protected interface."
+        INDEX {
+               mplsFrrFacilityProtectedIfIndex,       -- protected ifIndex  
+               mplsFrrFacilityPrimaryTunnelIndex,      -- protected TE tun
+               mplsFrrFacilityPrimaryTunnelIngressLSRId,  
+               mplsFrrFacilityPrimaryTunnelEgressLSRId,
+               mplsFrrFacilityPrimaryTunnelInstance   -- LSP           
+
+  }  
+    ::= { mplsFrrFacilityDBTable 1 }
+
+    MplsFrrFacilityDBEntry ::= SEQUENCE {
+       mplsFrrFacilityProtectedIfIndex          Unsigned32,   
+       mplsFrrFacilityPrimaryTunnelIndex         Unsigned32,
+       mplsFrrFacilityPrimaryTunnelIngressLSRId  IpAddress,
+       mplsFrrFacilityPrimaryTunnelEgressLSRId   IpAddress, 
+       mplsFrrFacilityPrimaryTunnelInstance      Unsigned32,
+       mplsFrrFacilityProtectingTunIdx           Unsigned32,      
+       mplsFrrFacilityProtectedIfName           DisplayString,
+       mplsFrrFacilityProtectingTunnelStatus     INTEGER  
+    }
+ 
+   mplsFrrFacilityProtectedIfIndex OBJECT-TYPE
+       SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+         "Uniquely identifies the interface configured for FRR 
+          protection. If this object is set to 0, this indicates
+          that the remaining indexing combinations for this row 
+          apply to all interfaces on this device for which 
+          the FRR feature can operate."
+      ::= { mplsFrrFacilityDBEntry 1 }
+
+    mplsFrrFacilityPrimaryTunnelIndex OBJECT-TYPE
+       SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Uniquely identifies the mplsTunnelEntry primary index for
+          the TE tunnel LSP being protected on the
+          interface as specified by mplsFrrFacilityProtectedIfIndex."
+       ::= { mplsFrrFacilityDBEntry 2 }
+
+    mplsFrrFacilityPrimaryTunnelIngressLSRId OBJECT-TYPE
+       SYNTAX        IpAddress
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Uniquely identifies the mplsTunnelEntry third index 
+         for the TE tunnel LSP being protected on the
+         interface as specified by mplsFrrFacilityProtectedIfIndex."
+       REFERENCE
+         "RFC3209, RFC3212"
+       ::= { mplsFrrFacilityDBEntry 3 }
+
+    mplsFrrFacilityPrimaryTunnelEgressLSRId  OBJECT-TYPE
+       SYNTAX        IpAddress
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Uniquely identifies the mplsTunnelEntry fourth index 
+         for the TE tunnel LSP being protected on the
+         interface as specified by mplsFrrFacilityProtectedIfIndex."
+       ::= { mplsFrrFacilityDBEntry 4 } 
+       
+    mplsFrrFacilityPrimaryTunnelInstance OBJECT-TYPE
+       SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Uniquely identifies the mplsTunnelEntry secondary index 
+         for the TE tunnel LSP being protected on the
+         interface as specified by mplsFrrFacilityProtectedIfIndex."
+       ::= { mplsFrrFacilityDBEntry 5 }
+
+    mplsFrrFacilityProtectingTunIdx OBJECT-TYPE
+       SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+         "Uniquely identifies the mplsTunnelEntry primary index for
+          the tunnel head interface designated to protect the
+          interface as specified in the mplsFrrFacilityProtectedIfIndex
+          (and all of the tunnels using this interface). Note 
+          that the corresponding mplsTunnelInstance MUST BE
+          0 as per the indexing convention stipulated."
+       REFERENCE
+          "RFC3812"
+       ::= { mplsFrrFacilityDBEntry 6 }   
+       
+       mplsFrrFacilityProtectedIfName OBJECT-TYPE
+       SYNTAX        DisplayString
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+         "The name of interface configured for FRR 
+          protection."
+      ::= { mplsFrrFacilityDBEntry 7 }
+      
+      mplsFrrFacilityProtectingTunnelStatus OBJECT-TYPE
+        SYNTAX            INTEGER {
+                              active(2),
+                              ready(1),
+                              partial(0)
+                          }
+        MAX-ACCESS        read-only
+        STATUS            current
+        DESCRIPTION
+            "Specifies the state of the protecting tunnel as
+             specified by mplsFrrFacilityProtectingTunnelIndex.
+
+             active  This tunnel's label has been placed in the
+                      LFIB and is ready to be applied to incoming
+                      packets.
+
+             ready -  This tunnel's label entry has been created but is
+                      not yet in the LFIB.
+
+             partial - This tunnel's label entry as not been fully
+                       created."
+    ::= { mplsFrrFacilityDBEntry 8 }
+
+      
+
+      -- Scalar objects defined for detour Backup style FRR
+    --
+    -- Detour-based FRR-specific Tables
+    -- 
+    -- Tables in this section pertain only to the detour-
+    -- based style of FRR.
+    --
+	
+	
+	mplsFrrDetourDBTable OBJECT-TYPE
+        SYNTAX            SEQUENCE OF MplsFrrDetourDBEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION
+            "The mplsFrrDetourDBTable provides summary information about the
+             fast reroute database which indicates information of tunnels 
+			 protected by detour LSP.
+			 
+			 The entries of this table are present in PLR nodes of the detour LSP."
+    ::= { mplsFrrDetourObjects 1 }
+                                                   
+                                                  
+    mplsFrrDetourDBEntry OBJECT-TYPE
+       SYNTAX        MplsFrrDetourDBEntry
+       MAX-ACCESS    not-accessible
+       STATUS        current
+       DESCRIPTION
+            "An entry in the mplsFrrDetourDBEntry represents a single
+             protected LSP, protected by a detour lsp."
+        INDEX {
+               mplsFrrDetourTunnelIndex,       -- protected TE tun_id  
+               mplsFrrDetourTunnelInstance,      -- protected lsp_id
+               mplsFrrDetourTunnelIngressLSRId,  
+               mplsFrrDetourTunnelEgressLSRId
+              }  
+    ::= { mplsFrrDetourDBTable 1 }
+                                  
+    MplsFrrDetourDBEntry ::= SEQUENCE {
+       mplsFrrDetourTunnelIndex                  Unsigned32,   
+       mplsFrrDetourTunnelInstance               Unsigned32,
+       mplsFrrDetourTunnelIngressLSRId           IpAddress,
+       mplsFrrDetourTunnelEgressLSRId            IpAddress, 
+	   mplsFrrDetourPrimaryLspInIntf             Unsigned32,
+       mplsFrrDetourPrimaryLspInLable            Unsigned32,
+       mplsFrrDetourPrimaryLspOutIntf            Unsigned32,
+       mplsFrrDetourPrimaryLspOutLable           Unsigned32,
+       mplsFrrDetourBackupLspInLable            Unsigned32,
+	   mplsFrrDetourBackupLspInIntf             Unsigned32,
+	   mplsFrrDetourBackupLspMstype             Unsigned32,
+       mplsFrrDetourBackupLspOutLable           Unsigned32,
+       mplsFrrDetourBackupLspOutIntf            Unsigned32,
+       mplsFrrDetourBackupLspNextHop            IpAddress,	   
+       mplsFrrDetourProtectingLspStatus 	    INTEGER,    
+       mplsFrrDetourProtecttype         	    INTEGER   
+    }
+                       
+    
+   mplsFrrDetourTunnelIndex OBJECT-TYPE
+       SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Uniquely identifies the mplsTunnelEntry index for the TE tunnel
+  		LSP being protected by detour Lsp with the same tunnel index."
+       ::= { mplsFrrDetourDBEntry 1 }
+
+    mplsFrrDetourTunnelInstance OBJECT-TYPE
+       SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Uniquely identifies the mplsTunnelEntry secondary index 
+         for the TE tunnel LSP being protected by detour Lsp with the
+		 same tunnel instance."
+       ::= { mplsFrrDetourDBEntry 2 }
+
+	mplsFrrDetourTunnelIngressLSRId OBJECT-TYPE
+       SYNTAX        IpAddress
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Uniquely identifies the mplsTunnelEntry third index 
+         for the TE tunnel LSP being protected by  detour Lsp."
+       REFERENCE
+         "RFC3209, RFC3212"
+       ::= { mplsFrrDetourDBEntry 3 }
+
+    mplsFrrDetourTunnelEgressLSRId  OBJECT-TYPE
+       SYNTAX        IpAddress
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Uniquely identifies the mplsTunnelEntry fourth index 
+         for the TE tunnel LSP being protected by  detour Lsp."
+       ::= { mplsFrrDetourDBEntry 4 } 
+	   
+	mplsFrrDetourPrimaryLspInIntf OBJECT-TYPE
+	   SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Indicates the index of in interface of primary lsp on this node."
+       ::= { mplsFrrDetourDBEntry 5 }
+	   
+    mplsFrrDetourPrimaryLspInLable OBJECT-TYPE
+       SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Indicates the in lable of primary lsp on this node."
+       ::= { mplsFrrDetourDBEntry 6 }
+	   
+	mplsFrrDetourPrimaryLspOutIntf OBJECT-TYPE
+	   SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Indicates the index of out interface of primary lsp on this node."
+       ::= { mplsFrrDetourDBEntry 7 }
+	   
+    mplsFrrDetourPrimaryLspOutLable OBJECT-TYPE
+       SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Indicates the out lable of primary lsp on this node."
+       ::= { mplsFrrDetourDBEntry 8 }
+	   
+    mplsFrrDetourBackupLspInLable OBJECT-TYPE
+       SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Indicates the in lable of detour lsp on this node."
+       ::= { mplsFrrDetourDBEntry 9 }
+	   
+	mplsFrrDetourBackupLspInIntf OBJECT-TYPE
+	   SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Indicates the index of in interface of detour lsp on this node."
+       ::= { mplsFrrDetourDBEntry 10 }
+	   
+    mplsFrrDetourBackupLspOutLable OBJECT-TYPE
+       SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Indicates the out lable of detour lsp on this node."
+       ::= { mplsFrrDetourDBEntry 11 }
+	   
+	mplsFrrDetourBackupLspOutIntf OBJECT-TYPE
+	   SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Indicates the index of out interface of detour lsp on this node."
+       ::= { mplsFrrDetourDBEntry 12 }	   
+	   
+    mplsFrrDetourBackupLspNextHop OBJECT-TYPE
+       SYNTAX        IpAddress
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Indicates the next hop address of detour Lsp ."
+       REFERENCE
+         "RFC3209, RFC3212"
+       ::= { mplsFrrDetourDBEntry 13 }
+	  
+    mplsFrrDetourProtectingLspStatus OBJECT-TYPE
+        SYNTAX            INTEGER {
+                              active(2),
+                              ready(1)
+                          }
+        MAX-ACCESS        read-only
+        STATUS            current
+        DESCRIPTION
+            "Specifies the state of the detour lsp.
+
+             active  This lsp's label has been placed in the
+                      LFIB and is ready to be applied to incoming
+                      packets.
+
+             ready -  This lsp's label entry has been created but is
+                      not yet in the LFIB."
+    ::= { mplsFrrDetourDBEntry 14 }
+	
+	mplsFrrDetourProtecttype OBJECT-TYPE
+	   SYNTAX                       INTEGER { 
+	                                   node(1),
+								       link(2) 
+									}
+       MAX-ACCESS                   read-only
+       STATUS                       current
+       DESCRIPTION
+             "This object indicates the protection type provided by detour lsp.
+		     
+			 node  The detour lsp is NNHop protection.
+			 
+			 link  The detour lsp id NHop protection.
+		     "
+    ::= { mplsFrrDetourDBEntry 15 }
+	
+	-- detour lsp table
+	
+    mplsFrrDetourLspTable OBJECT-TYPE
+        SYNTAX            SEQUENCE OF MplsFrrDetourLspEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION
+            "The mplsFrrDetourLspTable provides summary information about the
+             detour LSP.
+			 
+			 The entries of this table are present in all LSRs on the path
+             of the detour LSP."
+    ::= { mplsFrrDetourObjects 2 }
+                                                   
+                                                  
+    mplsFrrDetourLspEntry OBJECT-TYPE
+       SYNTAX        MplsFrrDetourLspEntry
+       MAX-ACCESS    not-accessible
+       STATUS        current
+       DESCRIPTION
+             "An entry in this table represents a detour. An entry in this
+             table is only created by an SNMP agent as instructed by an MPLS
+             signaling protocol. "
+        INDEX {
+               mplsFrrDetourLspIndex,       -- protected TE tun_id  
+               mplsFrrDetourLspInstance,      -- protected lsp_id
+               mplsFrrDetourLspIngressLSRId,  
+               mplsFrrDetourLspEgressLSRId,
+               mplsFrrDetourLspPLRLSRId
+              }  
+    ::= { mplsFrrDetourLspTable 1 }
+                                  
+    MplsFrrDetourLspEntry ::= SEQUENCE {
+       mplsFrrDetourLspIndex                  Unsigned32,   
+       mplsFrrDetourLspInstance               Unsigned32,
+       mplsFrrDetourLspIngressLSRId           IpAddress,
+       mplsFrrDetourLspEgressLSRId            IpAddress, 
+	   mplsFrrDetourLspInInterface            Unsigned32,
+	   mplsFrrDetourLspOutInterface           Unsigned32,
+	   mplsFrrDetourLspType                   INTEGER,
+	   mplsFrrDetourMergeType                 INTEGER,
+	   mplsFrrDetourLspPLRLSRId               IpAddress,
+	   mplsFrrDetourLspAviodLSRId             IpAddress,
+	   mplsFrrDetourLspBandwidth              Unsigned32
+    }
+ 
+   mplsFrrDetourLspIndex OBJECT-TYPE
+       SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Uniquely identifies the mplsTunnelEntry index for the detour Lsp
+         which is the same as th TE tunnel LSP being protected."
+       ::= { mplsFrrDetourLspEntry 1 }
+
+    mplsFrrDetourLspInstance OBJECT-TYPE
+       SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Uniquely identifies the mplsTunnelEntry secondary index for the 
+		detour Lsp which is the same as th TE tunnel LSP being protected."
+       ::= { mplsFrrDetourLspEntry 2 }
+
+	mplsFrrDetourLspIngressLSRId OBJECT-TYPE
+       SYNTAX        IpAddress
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Uniquely identifies the mplsTunnelEntry third index for the 
+		detour Lsp which is the same as th TE tunnel LSP being protected."
+       REFERENCE
+         "RFC3209, RFC3212"
+       ::= { mplsFrrDetourLspEntry 3 }
+
+    mplsFrrDetourLspEgressLSRId  OBJECT-TYPE
+       SYNTAX        IpAddress
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Uniquely identifies the mplsTunnelEntry fourth index for the 
+		detour Lsp which is the same as th TE tunnel LSP being protected."
+       ::= { mplsFrrDetourLspEntry 4 } 
+	   
+	mplsFrrDetourLspInInterface OBJECT-TYPE
+	   SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Indicates the index of in interface of the detour lsp on this node."
+       ::= { mplsFrrDetourLspEntry 5 }
+	   
+	mplsFrrDetourLspOutInterface OBJECT-TYPE
+	   SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "Indicates the index of out interface of the detour lsp on this node."
+       ::= { mplsFrrDetourLspEntry 6 }    
+
+	mplsFrrDetourLspType OBJECT-TYPE
+	   SYNTAX                       INTEGER { 
+	                                   plrlsp(1),
+								       dtrLsp(2) 
+									}
+       MAX-ACCESS                   read-only
+       STATUS                       current
+       DESCRIPTION
+             "This object indicates the lsp type.
+		     
+			 plrlsp  The detour lsp originated from this node.
+			 
+			 dtrLsp  The detour lsp through this node.
+		     "
+      ::= { mplsFrrDetourLspEntry 7 }
+
+	mplsFrrDetourMergeType OBJECT-TYPE
+	   SYNTAX                       INTEGER { 
+	                                   notmerged (0),
+	                                   mergedwithdtr_lsp(1),
+								       mergedwithmain(2),
+									   mergelsp(3)
+									}
+       MAX-ACCESS                   read-only
+       STATUS                       current
+       DESCRIPTION
+             "This value represents whether or not this detour is merged.
+			 
+			 notmerged          This detour is not merged.
+		     
+			 mergedwithdtr_lsp  This detour is merged into another detour protecting
+                    			 the same tunnel.
+			 
+			 mergedwithmain    This detour is merged with the protected tunnel.
+			 
+			 mergelsp          Another detour lsp protecting the same tunnel is merged 
+			                   into this detour lsp.
+		     "
+      ::= { mplsFrrDetourLspEntry 8 }	
+	
+	mplsFrrDetourLspPLRLSRId OBJECT-TYPE
+       SYNTAX        IpAddress
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "The IP address of the PLR which has initiated the detour LSP."
+       ::= { mplsFrrDetourLspEntry 9 }
+	   
+	mplsFrrDetourLspAviodLSRId OBJECT-TYPE
+       SYNTAX        IpAddress
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "The IP address of the node that this PLR tries to avoid."
+       ::= { mplsFrrDetourLspEntry 10 }
+	   
+    mplsFrrDetourLspBandwidth OBJECT-TYPE
+       SYNTAX        Unsigned32
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+        "The maximum bandwidth specifically reserved for the detour
+          LSP, in units of thousands of bits per second (Kbps)."
+       ::= { mplsFrrDetourLspEntry 11 }
+	   
+	-- Table end   	
+END
+
+
+-- End of ZXR10-MPLSTE-FRR-MIB
+

@@ -1,0 +1,1407 @@
+-- *****************************************************************
+-- This mib was extracted from draft-ietf-pim-mib-v2-01.txt
+--
+-- January 2003, zhenggao
+--
+-- Copyright (c) 2003 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+RUIJIE-PIM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, 
+    OBJECT-TYPE, 
+    NOTIFICATION-TYPE,
+    Integer32, 
+    IpAddress, 
+    TimeTicks  
+        FROM SNMPv2-SMI
+    DisplayString, 
+    RowStatus, 
+    TruthValue            
+        FROM SNMPv2-TC
+    MODULE-COMPLIANCE,
+    NOTIFICATION-GROUP,
+    OBJECT-GROUP
+        FROM SNMPv2-CONF
+    ipMRouteGroup, 
+    ipMRouteSource,
+    ipMRouteSourceMask, 
+    ipMRouteNextHopGroup,
+    ipMRouteNextHopSource, 
+    ipMRouteNextHopSourceMask,
+    ipMRouteNextHopIfIndex,
+    ipMRouteNextHopAddress           
+        FROM IPMROUTE-STD-MIB
+    EnabledStatus                
+        FROM P-BRIDGE-MIB 
+    ruijieMgmt                
+        FROM RUIJIE-SMI
+    InterfaceIndex                   
+        FROM IF-MIB;
+
+ruijiePimMIB MODULE-IDENTITY
+    LAST-UPDATED "200301200000Z"
+    ORGANIZATION "Ruijie Networks Co.,Ltd."
+    CONTACT-INFO
+        "
+        Tel: 4008-111-000
+        
+        E-mail:  service@ruijie.com.cn"
+    DESCRIPTION
+        "This module defines ruijie Pim mibs."
+    REVISION      "200301200000Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { ruijieMgmt 27}
+
+ruijiePimMIBObjects OBJECT IDENTIFIER ::= { ruijiePimMIB 1 }
+
+ruijiePimTraps      OBJECT IDENTIFIER ::= { ruijiePimMIBObjects 2 }
+
+ruijiePim           OBJECT IDENTIFIER ::= { ruijiePimMIBObjects 1 }
+
+ruijiePimJoinPruneInterval OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "seconds"
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "The default interval at which periodic PIM-SM Join/Prune
+         messages are to be sent."
+    DEFVAL { 60 }
+    ::= { ruijiePim 1 }
+
+-- The PIM Interface Table
+
+ruijiePimInterfaceTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijiePimInterfaceEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table listing the router's PIM interfaces.
+         IGMP and PIM are enabled on all interfaces listed in this
+         table."
+    ::= { ruijiePim 2 }
+
+ruijiePimInterfaceEntry OBJECT-TYPE
+    SYNTAX     RuijiePimInterfaceEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) in the ruijiePimInterfaceTable."
+    INDEX      { ruijiePimInterfaceIfIndex }
+    ::= { ruijiePimInterfaceTable 1 }
+
+RuijiePimInterfaceEntry ::= SEQUENCE {
+    ruijiePimInterfaceIfIndex                   InterfaceIndex,
+    ruijiePimInterfaceAddress                   IpAddress,
+    ruijiePimInterfaceNetMask                   IpAddress,
+    ruijiePimInterfaceMode                      INTEGER,
+    ruijiePimInterfaceDR                        IpAddress,
+    ruijiePimInterfaceHelloInterval             Integer32,
+    ruijiePimInterfaceJoinPruneInterval         Integer32,
+    ruijiePimInterfaceCBSRPreference            Integer32,
+    ruijiePimInterfaceTrigHelloInterval         Integer32,
+    ruijiePimInterfaceHelloHoldtime             Integer32,
+    ruijiePimInterfaceLanPruneDelay             INTEGER,
+    ruijiePimInterfacePropagationDelay          Integer32,
+    ruijiePimInterfaceOverrideInterval          Integer32,
+    ruijiePimInterfaceGenerationID              INTEGER,
+    ruijiePimInterfaceJoinPruneHoldtime         Integer32,
+    ruijiePimInterfaceGraftRetryInterval        Integer32,
+    ruijiePimInterfaceMaxGraftRetries           Integer32,
+    ruijiePimInterfaceSRTTLThreshold            Integer32,
+    ruijiePimInterfaceLanDelayEnabled           TruthValue,
+    ruijiePimInterfaceSRCapable                 TruthValue,
+    ruijiePimInterfaceDRPriority                Integer32,
+    ruijiePimInterfaceNbrCounter                Integer32,     
+    ruijiePimInterfaceBsrBorderEnabled          EnabledStatus,     
+    ruijiePimInterfaceCountIn                   Integer32,
+    ruijiePimInterfaceCountOut                  Integer32,
+    ruijiePimInterfaceEnabled                   EnabledStatus, 
+    ruijiePimNeighborFilterAcl                  DisplayString, 
+    ruijiePimDrSupportAddressBound              DisplayString
+}
+
+ruijiePimInterfaceIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The ifIndex value of this PIM interface."
+    ::= { ruijiePimInterfaceEntry 1 }
+
+ruijiePimInterfaceAddress OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The IP address of the PIM interface."
+    ::= { ruijiePimInterfaceEntry 2 }
+
+ruijiePimInterfaceNetMask OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The network mask for the IP address of the PIM interface."
+    ::= { ruijiePimInterfaceEntry 3 }
+
+ruijiePimInterfaceMode OBJECT-TYPE
+    SYNTAX     INTEGER { dense(1), sparse(2), sparseDense(3) }
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "The configured mode of this PIM interface.  A value of
+         sparseDense is only valid for PIMv1."
+    DEFVAL     { dense }
+    ::= { ruijiePimInterfaceEntry 4 }
+
+ruijiePimInterfaceDR OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The Designated Router on this PIM interface."
+    ::= { ruijiePimInterfaceEntry 5 }
+
+ruijiePimInterfaceHelloInterval OBJECT-TYPE
+    SYNTAX     Integer32(0..65535)
+    UNITS      "seconds"
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "The frequency at which PIM Hello messages are transmitted
+         on this interface."
+    DEFVAL     { 30 }
+    ::= { ruijiePimInterfaceEntry 6 }
+
+ruijiePimInterfaceJoinPruneInterval OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "seconds"
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "The frequency at which PIM Join/Prune messages are
+         transmitted on this PIM interface.  The default value of
+         this object is the pimJoinPruneInterval."
+    ::= { ruijiePimInterfaceEntry 7 }
+
+ruijiePimInterfaceCBSRPreference OBJECT-TYPE
+    SYNTAX     Integer32 (-1..255)
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+        "The preference value for the local interface as a candidate
+         bootstrap router.  The value of -1 is used to indicate that
+         the local interface is not a candidate BSR interface."
+    DEFVAL     { 0 }
+    ::= { ruijiePimInterfaceEntry 8 }
+
+ruijiePimInterfaceTrigHelloInterval OBJECT-TYPE 
+    SYNTAX Integer32 
+    UNITS "seconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION 
+        "The maximum time before a triggered PIM Hello message 
+         is transmitted on this interface."
+    DEFVAL { 5 } 
+    ::= { ruijiePimInterfaceEntry 9 } 
+
+ruijiePimInterfaceHelloHoldtime OBJECT-TYPE 
+    SYNTAX Integer32 (0..65535) 
+    UNITS "seconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION 
+        "The value set in the Holdtime field of Hello messages 
+         transmitted on this interface.  This should be 3.5 
+         times the value of pimInterfaceHelloInterval."
+    DEFVAL { 105 } 
+    ::= { ruijiePimInterfaceEntry 10 } 
+
+ruijiePimInterfaceLanPruneDelay OBJECT-TYPE 
+    SYNTAX INTEGER { off (2), on (1) }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION 
+        "Turns the LAN Prune Delay Option off and on on this 
+         interface."
+    DEFVAL { off }
+    ::= { ruijiePimInterfaceEntry 11 }
+
+ruijiePimInterfacePropagationDelay OBJECT-TYPE 
+    SYNTAX Integer32 (0..32767)
+    UNITS "milliseconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The value inserted into the LAN Prune Delay field of a 
+         LAN Prune Delay option on this interface."
+    DEFVAL { 500 } 
+    ::= { ruijiePimInterfaceEntry 12 }
+
+ruijiePimInterfaceOverrideInterval OBJECT-TYPE 
+    SYNTAX Integer32 (0..65535)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The value inserted into the Override Interval field of 
+         a LAN Prune Delay option on this interface."
+    DEFVAL { 2500 } 
+    ::= { ruijiePimInterfaceEntry 13 } 
+
+ruijiePimInterfaceGenerationID OBJECT-TYPE 
+    SYNTAX INTEGER { off (2), on (1) }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION 
+        "Turns the Generation ID Option off and on on this 
+         interface."
+    DEFVAL {off} 
+    ::= { ruijiePimInterfaceEntry 14 }
+
+ruijiePimInterfaceJoinPruneHoldtime OBJECT-TYPE
+    SYNTAX Integer32 (0..65535)
+    UNITS "seconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The value inserted into the Holdtime field of a Join/
+         Prune message sent on this interface.  The value should
+         be 3.5 times pimInterfaceJoinPruneInterval."
+    DEFVAL { 210 }
+    ::= { ruijiePimInterfaceEntry 15 }
+
+ruijiePimInterfaceGraftRetryInterval OBJECT-TYPE 
+    SYNTAX Integer32
+    UNITS "seconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The interval a PIM router waits for a Graft Ack before 
+         resending a Graft on this interface."
+    DEFVAL { 3 } 
+    ::= { ruijiePimInterfaceEntry 16 } 
+
+ruijiePimInterfaceMaxGraftRetries OBJECT-TYPE 
+    SYNTAX Integer32 
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The maximum number of times this router will resend a 
+         Graft on this interface."
+    DEFVAL { 2 } 
+    ::= { ruijiePimInterfaceEntry 17 }
+
+ruijiePimInterfaceSRTTLThreshold OBJECT-TYPE 
+    SYNTAX Integer32 
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The Time To Live in a PIM-DM Refresh message at
+         which it is not forwarded on this interface."
+    DEFVAL { 0 }
+    ::= { ruijiePimInterfaceEntry 18 }
+
+ruijiePimInterfaceLanDelayEnabled OBJECT-TYPE 
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Evaluates to TRUE if all routers on this interface are
+         using the LAN Prune Delay Option."
+    ::= { ruijiePimInterfaceEntry 19 }
+
+ruijiePimInterfaceSRCapable OBJECT-TYPE 
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Evaluates to TRUE if all routers on this interface are
+         using the State Refresh Capable Option."
+    ::= { ruijiePimInterfaceEntry 20 }
+
+ruijiePimInterfaceDRPriority OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The Designater Router Priority inserted into the DR
+         priority option on this interface."
+    DEFVAL { 1 } 
+    ::= { ruijiePimInterfaceEntry 21 }
+
+ruijiePimInterfaceNbrCounter OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of interface's neighbour."
+    ::= { ruijiePimInterfaceEntry 22 }
+    
+ruijiePimInterfaceBsrBorderEnabled    OBJECT-TYPE
+    SYNTAX    EnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Enabled means Define a PIM bootstrap message boundary 
+         for the PIM domain,use disabled to remove the PIM border."
+    DEFVAL {disabled}
+    ::= { ruijiePimInterfaceEntry 23 }
+    
+ruijiePimInterfaceCountIn       OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION 
+        "Number of packets into  the interface since the 
+         router has been up."
+    ::= { ruijiePimInterfaceEntry 24 }
+
+ruijiePimInterfaceCountOut       OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION 
+        "Number of packets out of the interface 
+         since the router has been up."
+    ::= { ruijiePimInterfaceEntry 25 }
+
+ruijiePimInterfaceEnabled OBJECT-TYPE 
+    SYNTAX EnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "use the ip pim command in interface configuration mode. 
+         To disable PIM on the interface, use the no form of this 
+         command."
+    DEFVAL{disabled}
+    ::= { ruijiePimInterfaceEntry 26 } 
+
+ruijiePimNeighborFilterAcl   OBJECT-TYPE
+    SYNTAX     DisplayString
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The name of the neighbor filter address list,which limits
+         the scope of  the neighbor,The default value means all 
+         neighbors will be allowed."
+    DEFVAL{""}
+    ::= { ruijiePimInterfaceEntry 27}    
+    
+ruijiePimDrSupportAddressBound    OBJECT-TYPE
+    SYNTAX     DisplayString
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION 
+        "The name of the DR support address  list,which limits the scope of 
+         the souce address ,this will be only used when the interface is DR,
+         The default value means all souce address will be allowed."
+    DEFVAL{""}
+    ::= { ruijiePimInterfaceEntry 28 }
+
+--
+-- The PIM Neighbor Table
+--
+ruijiePimNeighborTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijiePimNeighborEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table listing the router's PIM neighbors."
+    ::= { ruijiePim 3 }
+
+ruijiePimNeighborEntry OBJECT-TYPE
+    SYNTAX     RuijiePimNeighborEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) in the ruijiePimNeighborTable."
+    INDEX      { ruijiePimNeighborAddress }
+    ::= { ruijiePimNeighborTable 1 }
+
+RuijiePimNeighborEntry ::= SEQUENCE {
+   ruijiePimNeighborAddress          IpAddress,
+   ruijiePimNeighborIfIndex          InterfaceIndex,
+   ruijiePimNeighborUpTime           TimeTicks,
+   ruijiePimNeighborExpiryTime       TimeTicks,
+   ruijiePimNeighborMode             INTEGER,
+   ruijiePimNeighborLanPruneDelay    Integer32,
+   ruijiePimNeighborOverrideInterval Integer32,
+   ruijiePimNeighborTBit             Integer32,
+   ruijiePimNeighborSRCapable        TruthValue,
+   ruijiePimNeighborDRPresent        TruthValue
+}
+
+ruijiePimNeighborAddress OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The IP address of the PIM neighbor for which this entry
+         contains information."
+    ::= { ruijiePimNeighborEntry 1 }
+
+ruijiePimNeighborIfIndex OBJECT-TYPE
+    SYNTAX     InterfaceIndex
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The value of ifIndex for the interface used to reach this
+         PIM neighbor."
+    ::= { ruijiePimNeighborEntry 2 }
+
+ruijiePimNeighborUpTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The time since this PIM neighbor (last) became a neighbor
+         of the local router."
+    ::= { ruijiePimNeighborEntry 3 }
+
+ruijiePimNeighborExpiryTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The minimum time remaining before this PIM neighbor will be
+         aged out."
+    ::= { ruijiePimNeighborEntry 4 }
+    
+ruijiePimNeighborMode OBJECT-TYPE
+    SYNTAX     INTEGER { dense(1), sparse(2) }
+    MAX-ACCESS read-only
+    STATUS     deprecated
+    DESCRIPTION
+        "The active PIM mode of this neighbor.  This object is
+         deprecated for PIMv2 routers since all neighbors on the
+         interface must be either dense or sparse as determined by
+         the protocol running on the interface."
+    ::= { ruijiePimNeighborEntry 5 }                   
+
+ruijiePimNeighborLanPruneDelay OBJECT-TYPE 
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The value of LAN Prune Delay field of the LAN Prune 
+         Delay Option received from this neighbor.  A value of 
+         0 indicates that no LAN Prune Delay Option was 
+         received from this neigbor."
+    ::= { ruijiePimNeighborEntry 6 }
+
+ruijiePimNeighborOverrideInterval OBJECT-TYPE 
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The value of Override Interval field of the LAN Prune
+         Delay Option received from this neighbor.  A value of 
+         0 indicates that no LAN Prune Delay Option was
+         received from this neigbor."
+    ::= { ruijiePimNeighborEntry 7 }
+
+ruijiePimNeighborTBit OBJECT-TYPE 
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The value of the T bit field of the LAN Prune
+         Delay Option received from this neighbor.  The T bit
+         specifies the ability of the neighbor to disable
+         join suppression."
+    ::= { ruijiePimNeighborEntry 8 }
+
+ruijiePimNeighborSRCapable OBJECT-TYPE 
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Evaluates to TRUE if this neighbor is using the State
+         Refresh Capable Option."
+    ::= { ruijiePimNeighborEntry 9 }
+
+ruijiePimNeighborDRPresent OBJECT-TYPE 
+    SYNTAX TruthValue
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Evaluates to TRUE if this neighbor is using the
+         Designated Router Option."
+    ::= { ruijiePimNeighborEntry 10 }
+
+--
+-- The PIM IP Multicast Route Table
+--
+
+ruijiePimIpMRouteTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijiePimIpMRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table listing PIM-specific information on
+         a subset of the rows of the ipMRouteTable defined in the IP
+         Multicast MIB."
+    ::= { ruijiePim 4 }
+
+ruijiePimIpMRouteEntry OBJECT-TYPE
+    SYNTAX     RuijiePimIpMRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) in the pimIpMRouteTable.  There
+         is one entry per entry in the ipMRouteTable whose incoming
+         interface is running PIM."
+    INDEX      { ipMRouteGroup, ipMRouteSource, ipMRouteSourceMask }
+    ::= { ruijiePimIpMRouteTable 1 }
+
+RuijiePimIpMRouteEntry ::= SEQUENCE {
+  ruijiePimIpMRouteUpstreamAssertTimer   TimeTicks,
+  ruijiePimIpMRouteAssertMetric          Integer32,
+  ruijiePimIpMRouteAssertMetricPref      Integer32,
+  ruijiePimIpMRouteAssertRPTBit          TruthValue,
+  ruijiePimIpMRouteFlags                 INTEGER,
+  ruijiePimIpMRouteRPFNeighbor           IpAddress,
+  ruijiePimIpMRouteSourceTimer           TimeTicks,
+  ruijiePimIpMRouteOriginatorSRTTL       Integer32
+}
+
+ruijiePimIpMRouteUpstreamAssertTimer OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The time remaining before the router changes its upstream
+         neighbor back to its RPF neighbor.  This timer is called the
+         Assert timer in the PIM Sparse and Dense mode specification.
+         A value of 0 indicates that no Assert has changed the
+            upstream neighbor away from the RPF neighbor."
+    ::= { ruijiePimIpMRouteEntry 1 }
+
+ruijiePimIpMRouteAssertMetric OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The metric advertised by the assert winner on the upstream
+         interface, or 0 if no such assert is in received."
+    ::= { ruijiePimIpMRouteEntry 2 }
+
+ruijiePimIpMRouteAssertMetricPref OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The preference advertised by the assert winner on the
+         upstream interface, or 0 if no such assert is in effect."
+    ::= { ruijiePimIpMRouteEntry 3 }
+
+ruijiePimIpMRouteAssertRPTBit OBJECT-TYPE
+    SYNTAX     TruthValue
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The value of the RPT-bit advertised by the assert winner on
+         the upstream interface, or false if no such assert is in
+         effect."
+    ::= { ruijiePimIpMRouteEntry 4 }
+
+ruijiePimIpMRouteFlags OBJECT-TYPE
+    SYNTAX  INTEGER {
+                  rpt(0),
+                  spt(1) 
+                 }
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "This object describes PIM-specific flags related to a
+         multicast state entry.  See the PIM Sparse Mode
+         specification for the meaning of the RPT and SPT bits."
+    ::= { ruijiePimIpMRouteEntry 5 }
+
+ruijiePimIpMRouteRPFNeighbor OBJECT-TYPE 
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION 
+        "The IP Address of the current RPF neighbor.  If there
+         is an upstream Assert Winner, it will be the RPF
+         neighbor.  Otherwise, the RPF neighbor will be
+         the next hop indicated by unicast routing."
+    ::= { ruijiePimIpMRouteEntry 6 }
+
+ruijiePimIpMRouteSourceTimer OBJECT-TYPE 
+    SYNTAX TimeTicks
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION 
+        "The time before this router ceases originating State
+         Refresh messages for this route."
+    ::= { ruijiePimIpMRouteEntry 7 }
+    
+ruijiePimIpMRouteOriginatorSRTTL  OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The TTL used in State Refresh messages originated by
+         this router for this route."
+    ::= { ruijiePimIpMRouteEntry 8 }
+
+--
+-- The PIM Next Hop Table
+--
+
+ruijiePimIpMRouteNextHopTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijiePimIpMRouteNextHopEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table listing PIM-specific information on
+         a subset of the rows of the ipMRouteNextHopTable defined in
+         the IP Multicast MIB."
+    ::= { ruijiePim 5 }
+ruijiePimIpMRouteNextHopEntry OBJECT-TYPE
+    SYNTAX     RuijiePimIpMRouteNextHopEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) in the pimIpMRouteNextHopTable.
+         There is one entry per entry in the ipMRouteNextHopTable
+         whose interface is running PIM and whose
+         ipMRouteNextHopState is pruned(1)."
+    INDEX   { ipMRouteNextHopGroup, ipMRouteNextHopSource,
+              ipMRouteNextHopSourceMask, ipMRouteNextHopIfIndex,
+              ipMRouteNextHopAddress }
+    ::= { ruijiePimIpMRouteNextHopTable 1 }
+
+RuijiePimIpMRouteNextHopEntry ::= SEQUENCE {
+   ruijiePimIpMRouteNextHopPruneReason       INTEGER,
+   ruijiePimIpMRouteNextHopAssertWinner      IpAddress,
+   ruijiePimIpMRouteNextHopAssertTimer       TimeTicks,
+   ruijiePimIpMRouteNextHopAssertMetric      Integer32,
+   ruijiePimIpMRouteNextHopAssertMetricPref  Integer32,
+   ruijiePimIpMRouteNextHopJoinPruneTimer    TimeTicks
+    }
+
+ruijiePimIpMRouteNextHopPruneReason OBJECT-TYPE
+    SYNTAX   INTEGER {
+                     other (1),
+                     prune (2),
+                     assert (3)
+                     }
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "This object indicates why the downstream interface was
+         pruned, whether in response to a PIM prune message or due to
+         PIM Assert processing."
+    ::= { ruijiePimIpMRouteNextHopEntry 1 }      
+
+ruijiePimIpMRouteNextHopAssertWinner OBJECT-TYPE 
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION 
+        "The IP Address of the Assert Winner."
+    ::= { ruijiePimIpMRouteNextHopEntry 2 }
+
+ruijiePimIpMRouteNextHopAssertTimer OBJECT-TYPE 
+    SYNTAX TimeTicks
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The time remaining before the PIM router leaves the
+         current Assert state.  A value of 0 indicates that the
+         router is in the No Info state."
+    ::= { ruijiePimIpMRouteNextHopEntry 3 }
+
+ruijiePimIpMRouteNextHopAssertMetric OBJECT-TYPE 
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The metric advertised by the Assert Winner."
+    ::= { ruijiePimIpMRouteNextHopEntry 4 }
+
+ruijiePimIpMRouteNextHopAssertMetricPref OBJECT-TYPE 
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The metric preference advertised by the Assert Winner."
+    ::= { ruijiePimIpMRouteNextHopEntry 5 }
+
+ruijiePimIpMRouteNextHopJoinPruneTimer OBJECT-TYPE 
+    SYNTAX TimeTicks
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The time remaining before the PIM router reverts to
+         default operation on this interface.  PIM-SM will 
+         cease forwarding, PIM-DM will resume forwarding."
+    ::= { ruijiePimIpMRouteNextHopEntry 6 }
+
+--
+-- The PIM RP-Set Table 
+--
+ruijiePimRPSetTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijiePimRPSetEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table listing PIM information for
+         candidate Rendezvous Points (RPs) for IP multicast groups.
+         When the local router is the BSR, this information is
+         obtained from received Candidate-RP-Advertisements.  When
+         the local router is not the BSR, this information is
+         obtained from received RP-Set messages."
+    ::= { ruijiePim 6 }
+
+ruijiePimRPSetEntry OBJECT-TYPE
+    SYNTAX     RuijiePimRPSetEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) in the pimRPSetTable."
+    INDEX   { ruijiePimRPSetComponent, ruijiePimRPSetGroupAddress,
+              ruijiePimRPSetGroupMask, ruijiePimRPSetAddress }
+    ::= { ruijiePimRPSetTable 1 }
+
+RuijiePimRPSetEntry ::= SEQUENCE {
+     ruijiePimRPSetGroupAddress    IpAddress, 
+   ruijiePimRPSetGroupMask       IpAddress,
+   ruijiePimRPSetAddress         IpAddress,
+   ruijiePimRPSetHoldTime        Integer32,
+   ruijiePimRPSetExpiryTime      TimeTicks,
+   ruijiePimRPSetComponent       Integer32,
+   ruijiePimRPSetUpTime          TimeTicks
+    }
+
+ruijiePimRPSetGroupAddress OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The IP multicast group address which, when combined with
+         pimRPSetGroupMask, gives the group prefix for which this
+         entry contains information about the Candidate-RP."
+    ::= { ruijiePimRPSetEntry 1 }
+    
+ruijiePimRPSetGroupMask OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The multicast group address mask which, when combined with
+         pimRPSetGroupAddress, gives the group prefix for which this
+         entry contains information about the Candidate-RP."
+    ::= { ruijiePimRPSetEntry 2 }
+
+ruijiePimRPSetAddress OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The IP address of the Candidate-RP."
+    ::= { ruijiePimRPSetEntry 3 }
+
+ruijiePimRPSetHoldTime OBJECT-TYPE
+    SYNTAX     Integer32 (0..255)
+    UNITS      "seconds"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The holdtime of a Candidate-RP."
+    ::= { ruijiePimRPSetEntry 4 }
+
+ruijiePimRPSetExpiryTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The minimum time remaining before the Candidate-RP will be
+         declared down."
+    ::= { ruijiePimRPSetEntry 5 }
+    
+ruijiePimRPSetComponent OBJECT-TYPE
+    SYNTAX     Integer32 (1..255)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        " A number uniquely identifying the component.  Each
+          protocol instance connected to a separate domain should have
+          a different index value."
+    ::= { ruijiePimRPSetEntry 6 }
+
+ruijiePimRPSetUpTime  OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        " Length of time that this rp has been up."
+    ::= { ruijiePimRPSetEntry 7 }
+
+
+--
+-- The PIM Component Table
+--
+ruijiePimComponentTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijiePimComponentEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The (conceptual) table containing objects specific to a PIM
+         domain.  One row exists for each domain to which the router
+         is connected.  A PIM-SM domain is defined as an area of the
+         network over which Bootstrap messages are forwarded.
+         Typically, a PIM-SM router will be a member of exactly one
+         domain.  This table also supports, however, routers which
+         may form a border between two PIM-SM domains and do not
+         forward Bootstrap messages between them."
+    ::= { ruijiePim 7 }
+
+ruijiePimComponentEntry OBJECT-TYPE
+    SYNTAX     RuijiePimComponentEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) in the starPimComponentTable."
+    INDEX      { ruijiePimComponentIndex }
+    ::= { ruijiePimComponentTable 1 }
+
+RuijiePimComponentEntry ::= SEQUENCE {
+    ruijiePimComponentIndex                  Integer32,
+    ruijiePimComponentBSRAddress             IpAddress,
+    ruijiePimComponentBSRExpiryTime          TimeTicks,
+    ruijiePimComponentCRPHoldTime            Integer32,
+    ruijiePimComponentBSRUptime              TimeTicks,
+    ruijiePimComponentBSRPriority            Integer32,
+    ruijiePimComponentBSRHashMaskLength      Integer32,
+    ruijiePimComponentBSRNextBsrMessage      TimeTicks,
+    ruijiePimComponentNextCandRPAdv          TimeTicks
+    }
+
+ruijiePimComponentIndex OBJECT-TYPE
+    SYNTAX     Integer32 (1..255)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "A number uniquely identifying the component.  Each protocol
+         instance connected to a separate domain should have a
+         different index value.  Routers that only support membership
+         in a single PIM-SM domain should use a pimComponentIndex
+         value of 1."
+    ::= { ruijiePimComponentEntry 1 }
+
+ruijiePimComponentBSRAddress OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The IP address of the bootstrap router (BSR) for the local
+         PIM region."
+    ::= { ruijiePimComponentEntry 2 }
+
+ruijiePimComponentBSRExpiryTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The minimum time remaining before the bootstrap router in
+         the local domain will be declared down.  For candidate BSRs,
+         this is the time until the component sends an RP-Set
+         message.  For other routers, this is the time until it may
+         accept an RP-Set message from a lower candidate BSR."
+    ::= { ruijiePimComponentEntry 3 }
+
+ruijiePimComponentCRPHoldTime OBJECT-TYPE
+    SYNTAX     Integer32 (0..255)
+    UNITS      "seconds"
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "The holdtime of the component when it is a candidate RP in
+         the local domain."
+    ::= { ruijiePimComponentEntry 4 }
+
+ruijiePimComponentBSRUptime   OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Length of time that this router has been up."
+    ::= { ruijiePimComponentEntry 5 }
+
+ruijiePimComponentBSRPriority  OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The Priority of Bsr."
+    ::= { ruijiePimComponentEntry 6 }
+
+ruijiePimComponentBSRHashMaskLength    OBJECT-TYPE
+    SYNTAX     Integer32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Length of a mask (32 bits maximum) that is to be ANDed with
+         the group address before the hash function is called."
+    ::= { ruijiePimComponentEntry 7 }
+
+ruijiePimComponentBSRNextBsrMessage    OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Time (in hours, minutes, and seconds) in which the next
+         bootstrap message is due from this BSR."
+    ::= { ruijiePimComponentEntry 8 }
+
+ruijiePimComponentNextCandRPAdv    OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Time (in hours, minutes, and seconds) in which the next
+         candidate RP advertisement will be sent."
+    ::= { ruijiePimComponentEntry 9}
+
+--
+-- PIM State Refresh Objects
+--
+ruijiePimSourceLifetime OBJECT-TYPE 
+    SYNTAX Integer32 
+    UNITS "seconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The maximum time this router will continue to
+         originate State Refresh messages in the absence of
+         traffic from the source itself."
+    DEFVAL { 2100 }
+    ::= { ruijiePim 8 }
+    
+ruijiePimStateRefreshInterval OBJECT-TYPE 
+    SYNTAX Integer32 (1..255) 
+    UNITS "seconds"
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The interval between successive State Refresh
+         messages originated by this router."
+    DEFVAL { 60 }
+    ::= { ruijiePim 9 } 
+
+ruijiePimStateRefreshLimitInterval OBJECT-TYPE 
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "This router will not forward successive State Refresh
+         messages received at less than this interval."
+    DEFVAL { 0 } 
+    ::= { ruijiePim 10 } 
+
+ruijiePimStateRefreshTimeToLive OBJECT-TYPE 
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The TTL to be used by this router's originated State
+         Refresh messages if the data packet's TTL is not
+         recorded."
+    DEFVAL { 16 } 
+::= { ruijiePim 11 }
+
+ruijiePimBsrCandidateGroup  OBJECT IDENTIFIER    ::= { ruijiePim 12 }
+
+ruijiePimBsrCandidateIfindex     OBJECT-TYPE 
+    SYNTAX Integer32
+    MAX-ACCESS read-write  
+    STATUS current
+    DESCRIPTION 
+        "Interface type and number on this router from which the bootstrap router
+         address is derived, to make it a candidate. This interface must be enabled
+         with Protocol Independent Multicast (PIM)."
+::= { ruijiePimBsrCandidateGroup 1 }
+
+ruijiePimBsrCandidateHashMaskLength     OBJECT-TYPE 
+    SYNTAX Integer32(0..32)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION 
+        "Length of a mask (32 bits maximum) that is to be ANDed with
+         the group address before the hash function is called. All 
+         groups with the same seed hash (correspond) to the same RP.
+         if ruijiePimBsrCandidateIfindex is 0,then set this value is 
+         not valid."
+    DEFVAL { 0 }
+::= { ruijiePimBsrCandidateGroup 2 }
+
+ruijiePimBsrCandidatePriority     OBJECT-TYPE 
+    SYNTAX Integer32(0..255)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION 
+        "The BSR with the larger priority is preferred. If the priority 
+         values are the same, the router with the larger IP address is 
+         the BSR.if ruijiePimBsrCandidateIfindex is 0,then set this value 
+         is not valid"
+    DEFVAL { 0 }
+::= { ruijiePimBsrCandidateGroup 3 }
+
+ruijiePimRPTable   OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijiePimRPEntry
+    MAX-ACCESS not-accessible
+    STATUS     current 
+    DESCRIPTION 
+        "The (conceptual) table listing PIM version 2 information
+         for the Rendezvous Points (RPs) for IP multicast groups."
+    ::= { ruijiePim 13 }
+
+
+ruijiePimRPEntry OBJECT-TYPE
+    SYNTAX     RuijiePimRPEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) in the pimRPTable."
+    INDEX      { ruijiePimRPGroupAddress }
+    ::= { ruijiePimRPTable 1 }
+
+RuijiePimRPEntry ::= SEQUENCE {
+   ruijiePimRPGroupAddress           IpAddress, 
+   ruijiePimRPAddress                IpAddress,
+   ruijiePimRPExpiryTime             TimeTicks, 
+   ruijiePimRPNextRPReachableIn      TimeTicks  
+}
+
+ruijiePimRPGroupAddress OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "The IP multicast group address which, when combined with
+         pimRPSetGroupMask, gives the group prefix for which this
+         entry contains information about the Candidate-RP."
+    ::= { ruijiePimRPEntry 1 }
+
+ruijiePimRPAddress OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The IP address of the RP."
+    ::= { ruijiePimRPEntry 2 }
+
+ruijiePimRPExpiryTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "The minimum time remaining before the RP will be
+         declared down.  If the local router is not the BSR, this
+         value is 0."
+    ::= { ruijiePimRPEntry 3 }
+
+ruijiePimRPNextRPReachableIn   OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+        "Indicates the time the next RP-reachable message will be sent.
+         Time is expressed in hours:minutes:seconds."
+    ::= { ruijiePimRPEntry 4 }
+
+
+--
+--static RP Table
+--
+ruijiePimStaticRPTable   OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijiePimStaticRPEntry
+    MAX-ACCESS not-accessible
+    STATUS     current 
+    DESCRIPTION 
+        "The (conceptual) table listing PIM version 2 information
+         for the Rendezvous Points (RPs) for IP multicast groups."
+    ::= { ruijiePim 14 }
+
+ruijiePimStaticRPEntry OBJECT-TYPE
+    SYNTAX     RuijiePimStaticRPEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) in the pimStaticRPTable."
+    INDEX      { ruijiePimStaticRPAddress }
+    ::= { ruijiePimStaticRPTable 1 }
+
+RuijiePimStaticRPEntry ::= SEQUENCE {   
+   ruijiePimStaticRPAddress                IpAddress, 
+   ruijiePimStaticRPAddressIsOverride      EnabledStatus, 
+   ruijiePimStaticRPAclName                DisplayString,
+   ruijiePimStaticRPStatus                 RowStatus
+    }
+
+ruijiePimStaticRPAddress OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The IP address of the RP."
+    ::= { ruijiePimStaticRPEntry 1 }
+
+ruijiePimStaticRPAddressIsOverride   OBJECT-TYPE
+    SYNTAX   EnabledStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION 
+        "Indicates that if there is a conflict, the RP configured with
+         this command prevails over the RP learned by Bsr-RP."
+    DEFVAL { disabled }
+::= { ruijiePimStaticRPEntry  2 }
+
+ruijiePimStaticRPAclName    OBJECT-TYPE
+    SYNTAX        DisplayString
+    MAX-ACCESS    read-create
+    STATUS current
+    DESCRIPTION 
+        "Name of an access list that defines for which
+         multicast groups the RP should be used,the 
+         default value means all groups should be 
+         used."
+    DEFVAL { "" }
+::= { ruijiePimStaticRPEntry  3 }
+
+ruijiePimStaticRPStatus   OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION 
+        "The status of this entry.  Creating the entry enables PIM
+         on the interface; destroying the entry disables PIM on the
+         interface."
+    ::= {ruijiePimStaticRPEntry  4}
+
+ruijiePimRpCandidateTable   OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijiePimRpCandidateEntry
+    MAX-ACCESS not-accessible
+    STATUS     current 
+    DESCRIPTION 
+        "The (conceptual) table listing the IP multicast groups for
+         which the local router is to advertise itself as a
+         Candidate-RP when the value of pimComponentCRPHoldTime is
+         non-zero.  If this table is empty, then the local router
+         will advertise itself as a Candidate-RP for all groups
+         (providing the value of pimComponentCRPHoldTime is non-
+         zero)."
+    ::= { ruijiePim 15 } 
+
+ruijiePimRpCandidateEntry OBJECT-TYPE
+    SYNTAX     RuijiePimRpCandidateEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) in the pimRpCandidateTable."
+    INDEX      {  ruijiePimRpCandidateIfindex }
+    ::= { ruijiePimRpCandidateTable 1 }
+
+RuijiePimRpCandidateEntry ::= SEQUENCE {   
+    ruijiePimRpCandidateIfindex         InterfaceIndex,
+    ruijiePimRpCandidateAclName         DisplayString,
+    ruijiePimRpCandidateStatus          RowStatus
+    }
+
+ruijiePimRpCandidateIfindex  OBJECT-TYPE
+    SYNTAX InterfaceIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION 
+        "IP address associated with this interface type and number 
+         is advertised as a candidate RP address."
+    ::= { ruijiePimRpCandidateEntry 1 }
+    
+ruijiePimRpCandidateAclName    OBJECT-TYPE
+    SYNTAX        DisplayString
+    MAX-ACCESS    read-create
+    STATUS current
+    DESCRIPTION 
+        "The name of Acl list,that defines the group
+         prefixes that are advertised in association 
+         with the RP address,the default value means
+         all groups will be advertised in association
+         with the RP address."
+    DEFVAL { "" }
+    ::= { ruijiePimRpCandidateEntry 2 }
+
+ruijiePimRpCandidateStatus   OBJECT-TYPE
+    SYNTAX     RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION 
+        "The status of this entry.  Creating the entry enables PIM
+         on the interface; destroying the entry disables PIM on the
+         interface."
+    ::= {ruijiePimRpCandidateEntry 3}
+    
+-- PIM Traps
+ruijiePimNeighborLoss NOTIFICATION-TYPE
+    OBJECTS {
+       ruijiePimNeighborIfIndex
+    }
+    STATUS             current
+    DESCRIPTION
+        "A pimNeighborLoss trap signifies the loss of an adjacency
+         with a neighbor.  This trap should be generated when the
+         neighbor timer expires, and the router has no other
+         neighbors on the same interface with a lower IP address than
+         itself."
+    ::= { ruijiePimTraps 1 }
+
+ 
+-- compliance statements
+ruijiePimMIBConformance OBJECT IDENTIFIER ::= { ruijiePimMIB 2 }
+ruijiePimMIBCompliances OBJECT IDENTIFIER ::= { ruijiePimMIBConformance 1 }
+ruijiePimMIBGroups      OBJECT IDENTIFIER ::= { ruijiePimMIBConformance 2 }
+
+ruijiePimMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie Pim MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijiePimMIBGroup
+                 }
+                       
+        ::= { ruijiePimMIBCompliances 1 }
+
+        
+-- units of conformance
+
+ruijiePimMIBGroup OBJECT-GROUP
+        OBJECTS {
+        ruijiePimJoinPruneInterval,
+        ruijiePimInterfaceAddress,
+        ruijiePimInterfaceNetMask,
+        ruijiePimInterfaceMode,
+        ruijiePimInterfaceDR,
+        ruijiePimInterfaceHelloInterval,
+        ruijiePimInterfaceJoinPruneInterval,
+        ruijiePimInterfaceCBSRPreference,
+        ruijiePimInterfaceTrigHelloInterval,
+        ruijiePimInterfaceHelloHoldtime,
+        ruijiePimInterfaceLanPruneDelay,
+        ruijiePimInterfacePropagationDelay,
+        ruijiePimInterfaceOverrideInterval,
+        ruijiePimInterfaceGenerationID,
+        ruijiePimInterfaceJoinPruneHoldtime,
+        ruijiePimInterfaceGraftRetryInterval,
+        ruijiePimInterfaceMaxGraftRetries,
+        ruijiePimInterfaceSRTTLThreshold,
+        ruijiePimInterfaceLanDelayEnabled,
+        ruijiePimInterfaceSRCapable,
+        ruijiePimInterfaceDRPriority,
+        ruijiePimInterfaceNbrCounter,     
+        ruijiePimInterfaceBsrBorderEnabled,     
+        ruijiePimInterfaceCountIn,
+        ruijiePimInterfaceCountOut,
+        ruijiePimInterfaceEnabled, 
+        ruijiePimNeighborFilterAcl, 
+        ruijiePimDrSupportAddressBound,
+        ruijiePimNeighborIfIndex,
+        ruijiePimNeighborUpTime,
+        ruijiePimNeighborExpiryTime,
+        ruijiePimNeighborMode,
+        ruijiePimNeighborLanPruneDelay,
+        ruijiePimNeighborOverrideInterval,
+        ruijiePimNeighborTBit,
+        ruijiePimNeighborSRCapable,
+        ruijiePimNeighborDRPresent,
+        ruijiePimIpMRouteUpstreamAssertTimer,
+        ruijiePimIpMRouteAssertMetric,
+        ruijiePimIpMRouteAssertMetricPref,
+        ruijiePimIpMRouteAssertRPTBit,
+        ruijiePimIpMRouteFlags,
+        ruijiePimIpMRouteRPFNeighbor,
+        ruijiePimIpMRouteSourceTimer,
+        ruijiePimIpMRouteOriginatorSRTTL,
+        ruijiePimIpMRouteNextHopPruneReason,
+        ruijiePimIpMRouteNextHopAssertWinner,
+        ruijiePimIpMRouteNextHopAssertTimer,
+        ruijiePimIpMRouteNextHopAssertMetric,
+        ruijiePimIpMRouteNextHopAssertMetricPref,
+        ruijiePimIpMRouteNextHopJoinPruneTimer,
+        ruijiePimRPSetHoldTime,
+        ruijiePimRPSetExpiryTime,
+        ruijiePimRPSetUpTime,
+        ruijiePimComponentBSRAddress,
+        ruijiePimComponentBSRExpiryTime,
+        ruijiePimComponentCRPHoldTime,
+        ruijiePimComponentBSRUptime,
+        ruijiePimComponentBSRPriority,
+        ruijiePimComponentBSRHashMaskLength,
+        ruijiePimComponentBSRNextBsrMessage,
+        ruijiePimComponentNextCandRPAdv,
+        ruijiePimSourceLifetime,
+        ruijiePimStateRefreshInterval, 
+        ruijiePimStateRefreshLimitInterval,
+        ruijiePimStateRefreshTimeToLive,
+        ruijiePimBsrCandidateIfindex,
+        ruijiePimBsrCandidateHashMaskLength,
+        ruijiePimBsrCandidatePriority,
+        ruijiePimRPAddress,
+        ruijiePimRPExpiryTime,  
+        ruijiePimRPNextRPReachableIn,
+        ruijiePimStaticRPAddressIsOverride, 
+        ruijiePimStaticRPAclName,
+        ruijiePimStaticRPStatus,
+        ruijiePimRpCandidateAclName,
+        ruijiePimRpCandidateStatus
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing pim management and
+                opertion to a Ruijie agent."
+        ::= { ruijiePimMIBGroups 1 } 
+        
+ruijiePimNotifyGroup NOTIFICATION-GROUP
+       NOTIFICATIONS { ruijiePimNeighborLoss }
+       STATUS     current
+       DESCRIPTION
+              "The collection of objects which are used to specify 
+               notifications for pim."
+       ::= { ruijiePimMIBGroups 2 } 
+
+END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,1072 @@
+-- *****************************************************************
+-- RUIJIE-IGMP-SNOOPING-MIB.mib:  Ruijie IGMP snooping MIB file
+--
+-- March 2002, Wuzg
+--
+-- Copyright (c) 2002 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-IGMP-SNOOPING-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32,
+        Unsigned32,
+        IpAddress
+                FROM SNMPv2-SMI
+        VlanId
+                FROM Q-BRIDGE-MIB
+        TruthValue
+        --RowStatus
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        MemberMap,
+        IfIndex
+                FROM RUIJIE-TC
+        EnabledStatus 
+                FROM P-BRIDGE-MIB
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieIgmpSnoopingMIB MODULE-IDENTITY
+        LAST-UPDATED "200910220000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+
+        DESCRIPTION
+                "This module defines ruijie IGMP snooping mibs for WLAN DEV."
+        REVISION      "200910220000Z"
+
+        DESCRIPTION
+                "This module defines ruijie IGMP snooping mibs."
+        REVISION      "200203200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 8}
+
+ruijieIgmpSnoopingMIBObjects OBJECT IDENTIFIER ::= { ruijieIgmpSnoopingMIB 1 }
+
+--
+-- ruijie Snooping Igmp Group
+--
+ruijieSNIgmpWorkingMode OBJECT-TYPE
+        SYNTAX INTEGER {
+            disabled(1),
+            svgl(2),    -- shared-vlan-group-learning(2),
+            ivgl(3),    -- independent-vlan-group-learning(3)
+            ivgl-svgl(4)-- svgl-and-ivgl-coexist(4)
+        }
+        MAX-ACCESS read-write
+        STATUS deprecated
+        DESCRIPTION
+            "System IGMP snooping working mode:
+             disabled(1):
+                disable the snooping IGMP function, and all IGMP report or leave
+                message will be forward transparent.
+             svgl(2):
+                shared vlan group learning, all group learning in each VLAN will 
+                be awared of by other VLAN.
+             ivgl(3):
+                independent vlan group learning, all group learning by each VLAN
+                cannot be used by other VLAN.
+             ivgl-svgl(4):
+                svgl-and-ivgl-coexist."                
+        DEFVAL { disabled }
+        ::= { ruijieIgmpSnoopingMIBObjects 1 }
+
+ruijieSNIgmpSourcePortCheck OBJECT-TYPE
+        SYNTAX EnabledStatus
+        MAX-ACCESS read-write
+        STATUS deprecated
+        DESCRIPTION
+            "Only video flow of router port can be accept by switch when 
+            this value is enabled"
+        DEFVAL { disabled }
+        ::= { ruijieIgmpSnoopingMIBObjects 2 }
+        
+ruijieSNIgmpSourceIpCheck OBJECT-TYPE
+        SYNTAX EnabledStatus
+        MAX-ACCESS read-write
+        STATUS deprecated
+        DESCRIPTION
+            " "
+        DEFVAL { disabled }
+        ::= { ruijieIgmpSnoopingMIBObjects 3 }        
+
+ruijieSNIgmpSourceIpCheckDefIp OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-write
+        STATUS deprecated
+        DESCRIPTION
+            "Default multicast server ip address of igmp source ip checking,
+            this value must be setted before ruijieSNIgmpSourceIpCheck be setted
+            to enabled"
+        ::= { ruijieIgmpSnoopingMIBObjects 4 }
+
+ruijieSNIgmpSrcIpCheckTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieSNIgmpSrcIpCheckEntry
+        MAX-ACCESS not-accessible
+        STATUS deprecated
+        DESCRIPTION
+            "table of igmp source Ip check."
+        ::= { ruijieIgmpSnoopingMIBObjects 5 }
+    
+ruijieSNIgmpSrcIpCheckEntry OBJECT-TYPE
+        SYNTAX RuijieSNIgmpSrcIpCheckEntry
+        MAX-ACCESS not-accessible
+        STATUS deprecated
+        DESCRIPTION 
+            "list of igmp source Ip check"
+        INDEX { ruijieSNIgmpSrcIpCheckVID,ruijieSNIgmpSrcIpCheckMultiIpAddr }
+        ::= { ruijieSNIgmpSrcIpCheckTable 1 }
+    
+RuijieSNIgmpSrcIpCheckEntry ::= 
+        SEQUENCE {
+        ruijieSNIgmpSrcIpCheckVID VlanId,
+        ruijieSNIgmpSrcIpCheckMultiIpAddr IpAddress,
+        ruijieSNIgmpSrcIpCheckSrcIpAddr IpAddress,
+        ruijieSNIgmpSrcIpCheckEntryStatus INTEGER
+        }
+
+ruijieSNIgmpSrcIpCheckVID OBJECT-TYPE
+        SYNTAX VlanId
+        MAX-ACCESS read-only
+        STATUS deprecated
+        DESCRIPTION
+            "VID of ipmc stream"
+        ::= { ruijieSNIgmpSrcIpCheckEntry 1 }
+        
+ruijieSNIgmpSrcIpCheckMultiIpAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS deprecated
+        DESCRIPTION
+            "Group Destination Address for a ipmc stream."
+        ::= { ruijieSNIgmpSrcIpCheckEntry 2 }
+
+ruijieSNIgmpSrcIpCheckSrcIpAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-create
+        STATUS deprecated
+        DESCRIPTION
+            "The associate source ip of this ipmc stream. This Stream can be accepted only it's
+            source ip address is ruijieSNIgmpSrcIpCheckSrcIpAddr."
+        ::= { ruijieSNIgmpSrcIpCheckEntry 3 }
+            
+ruijieSNIgmpSrcIpCheckEntryStatus OBJECT-TYPE
+        SYNTAX INTEGER{
+              valid(1),
+              delete(2) 
+        }
+        MAX-ACCESS read-create
+        STATUS deprecated
+        DESCRIPTION
+            "entry status of this entry. Setting this value to 'delete' will delete this
+             entry.Setting this value to value have no any effect"
+        ::= { ruijieSNIgmpSrcIpCheckEntry 4 } 
+   
+ruijieSNIgmpPortTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieSNIgmpPortEntry
+        MAX-ACCESS not-accessible
+        STATUS deprecated
+        DESCRIPTION
+            "Port's configuration concerned with snooping IGMP"
+       ::= { ruijieIgmpSnoopingMIBObjects 6 }
+        
+ruijieSNIgmpPortEntry OBJECT-TYPE
+        SYNTAX RuijieSNIgmpPortEntry
+        MAX-ACCESS not-accessible
+        STATUS deprecated
+        DESCRIPTION 
+            "list of IGMP port configurations."
+        INDEX { ruijieSNIgmpPortRouterVID,ruijieSNIgmpPortIndex }
+        ::= { ruijieSNIgmpPortTable 1 }
+        
+RuijieSNIgmpPortEntry ::= 
+        SEQUENCE {
+        ruijieSNIgmpPortRouterVID VlanId,        
+        ruijieSNIgmpPortIndex IfIndex,
+        ruijieSNIgmpPortRouterState INTEGER,
+        ruijieSNIgmpPortRouterProfile Unsigned32
+        }
+    
+ruijieSNIgmpPortRouterVID OBJECT-TYPE
+        SYNTAX VlanId
+        MAX-ACCESS read-write
+        STATUS deprecated
+        DESCRIPTION
+            "the mroute port's vlan id"
+        ::= { ruijieSNIgmpPortEntry 1 }    
+    
+ruijieSNIgmpPortIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS deprecated
+        DESCRIPTION     
+            ""
+        ::= { ruijieSNIgmpPortEntry 2 }
+
+ruijieSNIgmpPortRouterState OBJECT-TYPE
+        SYNTAX INTEGER{
+           mrnone(1),
+           mrstatic(2),
+           mrdynamic(3)
+        }
+        MAX-ACCESS read-write
+        STATUS deprecated
+        DESCRIPTION
+            "the mroute port's state,"
+        ::= { ruijieSNIgmpPortEntry 3 }        
+
+ruijieSNIgmpPortRouterProfile OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS deprecated
+        DESCRIPTION
+            "the mroute port's profile."
+        ::= { ruijieSNIgmpPortEntry 4 }        
+    
+
+--ruijieSNIgmpPortDefGroupsFilterBehavior OBJECT-TYPE
+--        SYNTAX INTEGER {
+--            forwardAllGroups(1),
+--            forwardUnregisteredGroups (2),
+--            filterUnregisteredGroups (3)
+--        }
+--        MAX-ACCESS read-write
+--        STATUS current
+--        DESCRIPTION
+--         "Forwarding and filtering of group addressed frames may be managed by specifying 
+--         defaults for each outbound Port. The behavior of each of these defaults, as modified
+--         by the control elements of more explicit Filtering Database entries applicable to 
+--         a given frame¡¯s MAC Address, reception Port, and outbound Port, is as follows.
+--              a) Forward All Groups. The frame is forwarded, unless an explicit Static Filtering
+--                 Entry specifies filtering independent of any dynamic filtering information.
+--              b) Forward Unregistered Groups. The frame is forwarded, unless
+--                 1) An explicit Static Filtering Entry specifies filtering independent 
+--                    of any dynamic filtering information; or
+--                 2) An explicit Static Filtering Entry specifies forwarding or filtering
+--                    on the basis of dynamic filtering information, and an applicable explicit
+--                     Group Registration Entry exists specifying filtering;or
+--                 3) An applicable explicit Static Filtering Entry does not exist, but an 
+--                    applicable Group Registration entry specifies filtering.
+--              c) Filter Unregistered Groups. The frame is filtered unless
+--                 1) An explicit Static Filtering Entry specifies forwarding independent of 
+--                    any dynamic filtering information; or
+--                 2) An explicit Static Filtering Entry specifies forwarding or filtering on
+--                   the basis of dynamic filtering information, and an applicable explicit 
+--                   Group Registration Entry exists specifying forwarding;or
+--                 3) An applicable explicit Static Filtering Entry does not exist, but an 
+--                    applicable Group Registration entry specifies forwarding."
+--        ::= { ruijieSNIgmpPortEntry 4 }
+
+ruijieSNIgmpGDANumber OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS deprecated
+        DESCRIPTION
+            "max number of Group Destination Address this system supported."
+        ::= { ruijieIgmpSnoopingMIBObjects 7 }
+
+ruijieSNIgmpGDATable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieSNIgmpGDAEntry
+        MAX-ACCESS not-accessible
+        STATUS deprecated
+        DESCRIPTION
+            "table of GDA."
+        ::= { ruijieIgmpSnoopingMIBObjects 8}
+    
+ruijieSNIgmpGDAEntry OBJECT-TYPE
+        SYNTAX RuijieSNIgmpGDAEntry
+        MAX-ACCESS not-accessible
+        STATUS deprecated
+        DESCRIPTION 
+            "list of GDA of ports"
+        INDEX { ruijieSNIgmpGDAVID,ruijieSNIgmpGDAAddr }
+        ::= { ruijieSNIgmpGDATable 1 }
+    
+RuijieSNIgmpGDAEntry ::= 
+        SEQUENCE {
+        ruijieSNIgmpGDAVID VlanId,
+        ruijieSNIgmpGDAAddr IpAddress,
+        ruijieSNIgmpGDAPortMemberAction MemberMap,
+        ruijieSNIgmpGDATrunkMemberAction MemberMap
+--        ruijieSNIgmpGDAStatus RowStatus
+--        ruijieSNIgmpGDAStatus INTEGER
+        }
+
+ruijieSNIgmpGDAVID OBJECT-TYPE
+        SYNTAX VlanId
+        MAX-ACCESS read-only
+        STATUS deprecated
+        DESCRIPTION
+            "VID of ipmc stream"
+        ::= { ruijieSNIgmpGDAEntry 1 }
+        
+ruijieSNIgmpGDAAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS deprecated
+        DESCRIPTION
+            "Group Destination Address for a port."
+        ::= { ruijieSNIgmpGDAEntry 2 }
+    
+ruijieSNIgmpGDAPortMemberAction OBJECT-TYPE
+        SYNTAX MemberMap
+        MAX-ACCESS read-write
+        STATUS deprecated
+        DESCRIPTION
+            "member physical port of this group, and each port have its action:
+             null(1), static(2), dynamic(3), mroute(4). the port is the logic port
+             by implementation specific."
+        ::= { ruijieSNIgmpGDAEntry 3 }
+        
+ruijieSNIgmpGDATrunkMemberAction OBJECT-TYPE
+        SYNTAX MemberMap
+        MAX-ACCESS read-write
+        STATUS deprecated
+        DESCRIPTION
+            "member trunk port of this group, and each trunk port have its action:
+             null(1), static(2), dynamic(3), mroute(4). the port is the logic port
+             by implementation specific."
+        ::= { ruijieSNIgmpGDAEntry 4 }        
+   
+--ruijieSNIgmpGDAStatus OBJECT-TYPE
+--        SYNTAX RowStatus
+--        MAX-ACCESS read-create
+--        STATUS current
+--        DESCRIPTION
+--            "the item status"
+--        ::= { ruijieSNIgmpGDAEntry 5 }    
+        
+--ruijieSNIgmpGDAStatus OBJECT-TYPE
+--        SYNTAX INTEGER {
+--            invalid(1),
+--          dynamic(2),
+--          static(3)
+--      }
+--      MAX-ACCESS read-only
+--      STATUS current
+--      DESCRIPTION
+--          "Status of a logic port's Group Destination Address.
+--          dynamic (2):
+--          while logic port's GDA dynamic configuration in 
+--          snoopingIgmpPortTable is enabled some GDA 
+--          will add to table with status dynamic.
+--          static (3):
+--          add by management, you can specify a GDA by
+--          hand for a logic port.
+--          changes can occur between every status, from invalid
+--          to dynamic, static to dynamic, etc. but can't change
+--          from invalid to dynamic or static when 
+--          snoopingIgmpGDAAddr is not a valid GDA."
+--      ::= { ruijieSNIgmpGDAEntry 5 }
+
+ruijieSNIgmpSvglVID OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-write
+        STATUS deprecated
+        DESCRIPTION
+            "the vid of svgl mode"
+        ::= { ruijieIgmpSnoopingMIBObjects 9 }
+        
+ruijieSNIgmpSvglProfile OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS deprecated
+        DESCRIPTION
+            "the profile of svgl mode"
+        ::= { ruijieIgmpSnoopingMIBObjects 10 }        
+
+
+ruijieSNIgmpMrLearnTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieSNIgmpMrLearnEntry
+        MAX-ACCESS not-accessible
+        STATUS deprecated
+        DESCRIPTION
+            "table of MrLearn."
+        ::= { ruijieIgmpSnoopingMIBObjects 11}
+    
+ruijieSNIgmpMrLearnEntry OBJECT-TYPE
+        SYNTAX RuijieSNIgmpMrLearnEntry
+        MAX-ACCESS not-accessible
+        STATUS deprecated
+        DESCRIPTION
+            "list of MrLearn table"
+        INDEX { ruijieSNIgmpMrLearnVID }         
+        ::= { ruijieSNIgmpMrLearnTable 1}
+    
+RuijieSNIgmpMrLearnEntry ::= 
+        SEQUENCE {
+        ruijieSNIgmpMrLearnVID VlanId,
+        ruijieSNIgmpMrLearnStatus INTEGER
+        }
+
+ruijieSNIgmpMrLearnVID OBJECT-TYPE
+        SYNTAX VlanId
+        MAX-ACCESS read-write
+        STATUS deprecated
+        DESCRIPTION
+            "VID of Mr Learn"
+        ::= { ruijieSNIgmpMrLearnEntry 1 } 
+        
+ruijieSNIgmpMrLearnStatus OBJECT-TYPE
+        SYNTAX INTEGER{
+        	disable(1),
+        	pim-dvmrp(2)
+        }
+        MAX-ACCESS read-write
+        STATUS deprecated
+        DESCRIPTION
+            "Status of Mr Learn"
+        ::= { ruijieSNIgmpMrLearnEntry 2 }          
+
+ruijieSNIgmpPortFilteringTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieSNIgmpPortFilteringEntry
+        MAX-ACCESS not-accessible
+        STATUS deprecated
+        DESCRIPTION
+            "table of igmp snooping port filtering."
+        ::= { ruijieIgmpSnoopingMIBObjects 12}
+    
+ruijieSNIgmpPortFilteringEntry OBJECT-TYPE
+        SYNTAX RuijieSNIgmpPortFilteringEntry
+        MAX-ACCESS not-accessible
+        STATUS deprecated
+        DESCRIPTION
+            "list of igmp filtering table"
+        INDEX { ruijieSNPortIndex }         
+        ::= { ruijieSNIgmpPortFilteringTable 1}
+        
+RuijieSNIgmpPortFilteringEntry ::= 
+        SEQUENCE {
+        ruijieSNPortIndex IfIndex,
+        ruijieSNIgmpFilteringProfile Unsigned32,
+        ruijieSNIgmpFilteringMaxGroups Unsigned32
+        }
+
+ruijieSNPortIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS deprecated
+        DESCRIPTION     
+            ""
+        ::= { ruijieSNIgmpPortFilteringEntry 1}  
+
+ruijieSNIgmpFilteringProfile OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS deprecated
+        DESCRIPTION
+            "profile for igmp snooping port filtering"
+        ::= { ruijieSNIgmpPortFilteringEntry 2 }     
+
+
+ruijieSNIgmpFilteringMaxGroups OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS deprecated
+        DESCRIPTION
+            "The maximum number of IGMP groups that the L2 interface can join,the number can 
+            be from 0-4294967294;4294967295(0xFFFFFFFF) means no limit"
+        ::= { ruijieSNIgmpPortFilteringEntry 3 }             
+
+ruijieSNIgmpGDAConfigTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieSNIgmpGDAConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS deprecated
+        DESCRIPTION
+            "GDA config table"
+        ::= { ruijieIgmpSnoopingMIBObjects 13}
+    
+ruijieSNIgmpGDAConfigEntry OBJECT-TYPE
+        SYNTAX RuijieSNIgmpGDAConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS deprecated
+        DESCRIPTION 
+            "list of GDA table"
+        INDEX { ruijieSNIgmpGDAConfigVID,ruijieSNIgmpGDAConfigAddr }
+        ::= { ruijieSNIgmpGDAConfigTable 1 }
+    
+RuijieSNIgmpGDAConfigEntry ::= 
+        SEQUENCE {
+        ruijieSNIgmpGDAConfigVID VlanId,
+        ruijieSNIgmpGDAConfigAddr IpAddress,
+        ruijieSNIgmpGDAConfigIfIndex IfIndex,
+        ruijieSNIgmpGDAConfigType INTEGER,
+        ruijieSNIgmpGDAConfigStatus INTEGER
+        }        
+
+ruijieSNIgmpGDAConfigVID OBJECT-TYPE
+        SYNTAX VlanId
+        MAX-ACCESS read-only
+        STATUS deprecated
+        DESCRIPTION
+            "VID of ipmc stream"
+        ::= { ruijieSNIgmpGDAConfigEntry 1 }
+        
+ruijieSNIgmpGDAConfigAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS deprecated
+        DESCRIPTION
+            "Group Destination Address for a port."
+        ::= { ruijieSNIgmpGDAConfigEntry 2 }
+        
+ruijieSNIgmpGDAConfigIfIndex OBJECT-TYPE   
+	SYNTAX   IfIndex
+        MAX-ACCESS read-only
+        STATUS deprecated
+        DESCRIPTION
+            "member port of this group"
+        ::= { ruijieSNIgmpGDAConfigEntry 3 }
+        
+ruijieSNIgmpGDAConfigType OBJECT-TYPE   
+	SYNTAX   INTEGER{
+		null(1),
+		static(2),
+		dynamic(3),
+		mrouter(4)
+	}
+        MAX-ACCESS read-only
+        STATUS deprecated
+        DESCRIPTION
+            ""
+        ::= { ruijieSNIgmpGDAConfigEntry 4 }        
+        
+ruijieSNIgmpGDAConfigStatus OBJECT-TYPE   
+	SYNTAX   INTEGER{
+		valid(1),
+		invalid(2)
+	}
+        MAX-ACCESS read-only
+        STATUS deprecated
+        DESCRIPTION
+            ""
+        ::= { ruijieSNIgmpGDAConfigEntry 5 }     
+        
+ruijieSNIgmpQueryResponeTime  OBJECT-TYPE   
+	SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS deprecated
+        DESCRIPTION
+            "The maximal response time for Query messages."  
+        ::= { ruijieIgmpSnoopingMIBObjects 14}                 
+
+
+
+ruijieIgmpSnoopingWorkingMode OBJECT-TYPE
+        SYNTAX INTEGER {
+            disabled(1),
+            svgl(2),    -- shared-vlan-group-learning(2),
+            ivgl(3),    -- independent-vlan-group-learning(3)
+            ivgl-svgl(4)-- svgl-and-ivgl-coexist(4)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "System IGMP snooping working mode:
+             disabled(1):
+                disable the snooping IGMP function, and all IGMP report or leave
+                message will be forward transparent.
+             svgl(2):
+                shared vlan group learning, all group learning in each VLAN will 
+                be awared of by other VLAN.
+             ivgl(3):
+                independent vlan group learning, all group learning by each VLAN
+                cannot be used by other VLAN.
+             ivgl-svgl(4):
+                svgl-and-ivgl-coexist."                
+        DEFVAL { disabled }
+        ::= { ruijieIgmpSnoopingMIBObjects 15 }
+
+ruijieIgmpSnoopingGDANumber OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Max number of Group Destination Address this system supported."
+        ::= { ruijieIgmpSnoopingMIBObjects 16 }
+
+ruijieIgmpSnoopingGDATable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIgmpSnoopingGDAEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "table of GDA."
+        ::= { ruijieIgmpSnoopingMIBObjects 17}
+    
+ruijieIgmpSnoopingGDAEntry OBJECT-TYPE
+        SYNTAX RuijieIgmpSnoopingGDAEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            "list of GDA of ports"
+        INDEX { ruijieIgmpSnoopingGDAVID,ruijieIgmpSnoopingGDAAddr }
+        ::= { ruijieIgmpSnoopingGDATable 1 }
+    
+RuijieIgmpSnoopingGDAEntry ::= 
+        SEQUENCE {
+        ruijieIgmpSnoopingGDAVID VlanId,
+        ruijieIgmpSnoopingGDAAddr IpAddress,
+        ruijieIgmpSnoopingGDAPortMemberAction MemberMap
+        }
+
+ruijieIgmpSnoopingGDAVID OBJECT-TYPE
+        SYNTAX VlanId
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "VID of ipmc stream"
+        ::= { ruijieIgmpSnoopingGDAEntry 1 }
+
+ruijieIgmpSnoopingGDAAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Group Destination Address for a port."
+        ::= { ruijieIgmpSnoopingGDAEntry 2 }
+    
+ruijieIgmpSnoopingGDAPortMemberAction OBJECT-TYPE
+        SYNTAX MemberMap
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "member physical port of this group, and each port have its action:
+             null(1), static(2), dynamic(3), mroute(4). the port is the logic port
+             by implementation specific."
+        ::= { ruijieIgmpSnoopingGDAEntry 3 }
+
+--show vlan snooping status
+ruijieIgmpSnoopingVlanStatusTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIgmpSnoopingVlanStatusEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "table of Vlan snooping status."
+        ::= { ruijieIgmpSnoopingMIBObjects 18}
+
+ruijieIgmpSnoopingVlanStatusEntry OBJECT-TYPE
+        SYNTAX RuijieIgmpSnoopingVlanStatusEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of Vlan Status"
+        INDEX { ruijieIgmpSnoopingVlanStatusVID }         
+        ::= { ruijieIgmpSnoopingVlanStatusTable 1}
+
+RuijieIgmpSnoopingVlanStatusEntry ::= 
+        SEQUENCE {
+        ruijieIgmpSnoopingVlanStatusVID VlanId,
+        ruijieIgmpSnoopingVlanStatusStatus EnabledStatus
+        }
+
+ruijieIgmpSnoopingVlanStatusVID OBJECT-TYPE
+        SYNTAX VlanId
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "VID of Mr Learn"
+        ::= { ruijieIgmpSnoopingVlanStatusEntry 1 } 
+        
+ruijieIgmpSnoopingVlanStatusStatus OBJECT-TYPE
+        SYNTAX EnabledStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Status of Vlan snooping"
+        ::= { ruijieIgmpSnoopingVlanStatusEntry 2 }
+
+--show svgl vlan
+ruijieIgmpSnoopingSvglVID OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "the vid of share-vlan mode"
+        ::= { ruijieIgmpSnoopingMIBObjects 19 }
+
+ruijieIgmpSnoopingSvglProfile OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "the profile of svgl mode"
+        ::= { ruijieIgmpSnoopingMIBObjects 20 }
+
+--show vlan learning
+ruijieIgmpSnoopingMrLearnTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIgmpSnoopingMrLearnEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "table of MrLearn."
+        ::= { ruijieIgmpSnoopingMIBObjects 21}
+
+ruijieIgmpSnoopingMrLearnEntry OBJECT-TYPE
+        SYNTAX RuijieIgmpSnoopingMrLearnEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of MrLearn table"
+        INDEX { ruijieIgmpSnoopingMrLearnVID }         
+        ::= { ruijieIgmpSnoopingMrLearnTable 1}
+
+RuijieIgmpSnoopingMrLearnEntry ::= 
+        SEQUENCE {
+        ruijieIgmpSnoopingMrLearnVID VlanId,
+        ruijieIgmpSnoopingMrLearnStatus INTEGER
+        }
+
+ruijieIgmpSnoopingMrLearnVID OBJECT-TYPE
+        SYNTAX VlanId
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "VID of Mr Learn"
+        ::= { ruijieIgmpSnoopingMrLearnEntry 1 } 
+        
+ruijieIgmpSnoopingMrLearnStatus OBJECT-TYPE
+        SYNTAX INTEGER{
+        	disable(1),
+        	pim-dvmrp(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Status of Mr Learn"
+        ::= { ruijieIgmpSnoopingMrLearnEntry 2 }
+
+ruijieIgmpSnoopingPortFilteringTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIgmpSnoopingPortFilteringEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "table of igmp snooping port filtering."
+        ::= { ruijieIgmpSnoopingMIBObjects 22 }
+    
+ruijieIgmpSnoopingPortFilteringEntry OBJECT-TYPE
+        SYNTAX RuijieIgmpSnoopingPortFilteringEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of igmp filtering table"
+        INDEX { ruijieIgmpSnoopingportIndex }         
+        ::= { ruijieIgmpSnoopingPortFilteringTable 1}
+        
+RuijieIgmpSnoopingPortFilteringEntry ::= 
+        SEQUENCE {
+        ruijieIgmpSnoopingportIndex IfIndex,
+        ruijieIgmpSnoopingFilteringProfile Unsigned32,
+        ruijieIgmpSnoopingFilteringMaxGroups Unsigned32
+        }
+
+ruijieIgmpSnoopingportIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION     
+            ""
+        ::= { ruijieIgmpSnoopingPortFilteringEntry 1}  
+
+ruijieIgmpSnoopingFilteringProfile OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "profile for igmp snooping port filtering"
+        ::= { ruijieIgmpSnoopingPortFilteringEntry 2 }
+
+
+ruijieIgmpSnoopingFilteringMaxGroups OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The maximum number of IGMP groups that the L2 interface can join,the number can 
+            be from 0-4294967294;4294967295(0xFFFFFFFF) means no limit"
+        ::= { ruijieIgmpSnoopingPortFilteringEntry 3 }             
+
+ruijieIgmpSnoopingGDAConfigTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIgmpSnoopingGDAConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "GDA config table"
+        ::= { ruijieIgmpSnoopingMIBObjects 23 }
+    
+ruijieIgmpSnoopingGDAConfigEntry OBJECT-TYPE
+        SYNTAX RuijieIgmpSnoopingGDAConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            "list of GDA table static configure"
+        INDEX { ruijieIgmpSnoopingGDAConfigVID,ruijieIgmpSnoopingGDAConfigAddr,ruijieIgmpSnoopingGDAConfigIfIndex }
+        ::= { ruijieIgmpSnoopingGDAConfigTable 1 }
+    
+RuijieIgmpSnoopingGDAConfigEntry ::= 
+        SEQUENCE {
+        ruijieIgmpSnoopingGDAConfigVID VlanId,
+        ruijieIgmpSnoopingGDAConfigAddr IpAddress,
+        ruijieIgmpSnoopingGDAConfigIfIndex IfIndex
+        }        
+
+ruijieIgmpSnoopingGDAConfigVID OBJECT-TYPE
+        SYNTAX VlanId
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "VID of ipmc stream"
+        ::= { ruijieIgmpSnoopingGDAConfigEntry 1 }
+        
+ruijieIgmpSnoopingGDAConfigAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Group Destination Address for a port."
+        ::= { ruijieIgmpSnoopingGDAConfigEntry 2 }
+        
+ruijieIgmpSnoopingGDAConfigIfIndex OBJECT-TYPE   
+	SYNTAX   IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "member port of this group"
+        ::= { ruijieIgmpSnoopingGDAConfigEntry 3 }   
+        
+ruijieIgmpSnoopingQueryResponeTime  OBJECT-TYPE   
+	SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Query max response time"
+        ::= { ruijieIgmpSnoopingMIBObjects 24 }
+
+ruijieIgmpSnoopingReportSuppress  OBJECT-TYPE   
+	SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Report suppress"
+        ::= { ruijieIgmpSnoopingMIBObjects 25 }                 
+
+
+ruijieIgmpSnoopingFastleave  OBJECT-TYPE   
+	SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Fast leave"
+        ::= { ruijieIgmpSnoopingMIBObjects 26 }
+
+--newgdatable
+ruijieIgmpSnoopingGDANewTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIgmpSnoopingGDANewEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "table of GDA."
+        ::= { ruijieIgmpSnoopingMIBObjects 27}
+
+ruijieIgmpSnoopingMulticastWlan  OBJECT-TYPE   
+	SYNTAX INTEGER {
+            disabled(0),
+            enable(1)    -- enable Multicast for Wlan(1)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "enable or disable the global Multicast for Wlan"
+        DEFVAL{disabled}
+        ::= { ruijieIgmpSnoopingMIBObjects 28 }
+		
+ruijieIgmpSnoopingGDANewEntry OBJECT-TYPE
+        SYNTAX RuijieIgmpSnoopingGDANewEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            "list of GDA of ports"
+        INDEX { ruijieIgmpSnoopingGDANewInVID,
+        	ruijieIgmpSnoopingGDANewOutVID,
+        	ruijieIgsmpSnoopingGDASrc,
+        	ruijieIgmpSnoopingGDAGrp,
+        	ruijieIgmpSnoopingGDAIfx }
+        ::= { ruijieIgmpSnoopingGDANewTable 1 }
+    
+RuijieIgmpSnoopingGDANewEntry ::=
+        SEQUENCE {
+        ruijieIgmpSnoopingGDANewInVID VlanId,
+        ruijieIgmpSnoopingGDANewOutVID VlanId,
+        ruijieIgsmpSnoopingGDASrc IpAddress,
+        ruijieIgmpSnoopingGDAGrp IpAddress,
+        ruijieIgmpSnoopingGDAIfx   IfIndex,
+        ruijieIgmpSnoopingGDAIfxAction INTEGER
+        }
+
+ruijieIgmpSnoopingGDANewInVID OBJECT-TYPE
+        SYNTAX VlanId
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "VID of In ipmc stream"
+        ::= { ruijieIgmpSnoopingGDANewEntry 1 }
+        
+ruijieIgmpSnoopingGDANewOutVID OBJECT-TYPE
+        SYNTAX VlanId
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "VID of Out ipmc stream"
+        ::= { ruijieIgmpSnoopingGDANewEntry 2 } 
+             
+ruijieIgsmpSnoopingGDASrc OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Source Address of the entry"
+        ::= { ruijieIgmpSnoopingGDANewEntry 3 }
+        
+ruijieIgmpSnoopingGDAGrp OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Group Address of the entry"
+        ::= { ruijieIgmpSnoopingGDANewEntry 4 }
+             
+ruijieIgmpSnoopingGDAIfx OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Egress of the entry"
+        ::= { ruijieIgmpSnoopingGDANewEntry 5 }
+              
+ruijieIgmpSnoopingGDAIfxAction OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Every egress in the entry may have three states: 1. static, 2.dynamic, 3.mroute."
+        ::= { ruijieIgmpSnoopingGDANewEntry 6 }
+
+        
+
+ruijieIgmpSnoopingMIBConformance OBJECT IDENTIFIER ::= { ruijieIgmpSnoopingMIB 2 }
+ruijieIgmpSnoopingMIBCompliances OBJECT IDENTIFIER ::= { ruijieIgmpSnoopingMIBConformance 1 }
+ruijieIgmpSnoopingMIBGroups      OBJECT IDENTIFIER ::= { ruijieIgmpSnoopingMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieIgmpSnoopingMIBCompliance MODULE-COMPLIANCE
+        STATUS  deprecated
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie Snooping Igmp MIB. It is replaced by 
+                the ruijieIgmpSnoopingMIBCompliance2."
+        MODULE   --this module
+                MANDATORY-GROUPS { ruijieIgmpSnoopingMIBGroup
+                 }
+        ::= { ruijieIgmpSnoopingMIBCompliances 1 }
+        
+ruijieIgmpSnoopingMIBCompliance2 MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie Snooping Igmp MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieIgmpSnoopingMIBGroup2
+                 }
+        ::= { ruijieIgmpSnoopingMIBCompliances 2 }
+                
+-- units of conformance
+
+ruijieIgmpSnoopingMIBGroup OBJECT-GROUP
+        OBJECTS {
+           ruijieSNIgmpWorkingMode,
+           ruijieSNIgmpSourcePortCheck,
+           ruijieSNIgmpSourceIpCheck,
+           ruijieSNIgmpSourceIpCheckDefIp,           
+           ruijieSNIgmpSrcIpCheckVID,
+           ruijieSNIgmpSrcIpCheckMultiIpAddr,
+           ruijieSNIgmpSrcIpCheckSrcIpAddr,
+           ruijieSNIgmpSrcIpCheckEntryStatus,    
+           ruijieSNIgmpPortRouterVID,        
+           ruijieSNIgmpPortIndex,
+           ruijieSNIgmpPortRouterState,
+           ruijieSNIgmpPortRouterProfile,
+           ruijieSNIgmpGDANumber,
+           ruijieSNIgmpGDAVID,
+           ruijieSNIgmpGDAAddr,
+           ruijieSNIgmpGDAPortMemberAction,
+           ruijieSNIgmpGDATrunkMemberAction,   
+           ruijieSNIgmpSvglVID,   
+           ruijieSNIgmpSvglProfile,	      
+           ruijieSNIgmpMrLearnVID,
+           ruijieSNIgmpMrLearnStatus,
+           ruijieSNPortIndex,
+           ruijieSNIgmpFilteringProfile,
+           ruijieSNIgmpFilteringMaxGroups,
+           ruijieSNIgmpGDAConfigVID,
+           ruijieSNIgmpGDAConfigAddr,
+           ruijieSNIgmpGDAConfigIfIndex,
+           ruijieSNIgmpGDAConfigType,
+           ruijieSNIgmpGDAConfigStatus,
+           ruijieSNIgmpQueryResponeTime           
+        }
+        STATUS  deprecated
+        DESCRIPTION
+                "A collection of objects providing snooping Igmp configure.
+                It is replaced by the ruijieIgmpSnoopingMIBGroup2."
+        ::= { ruijieIgmpSnoopingMIBGroups 1 }
+        
+ruijieIgmpSnoopingMIBGroup2 OBJECT-GROUP
+        OBJECTS {
+           ruijieIgmpSnoopingWorkingMode,
+           ruijieIgmpSnoopingGDANumber,
+           ruijieIgmpSnoopingGDAVID,
+           ruijieIgmpSnoopingGDAAddr,
+           ruijieIgmpSnoopingGDAPortMemberAction,
+           ruijieIgmpSnoopingVlanStatusVID,
+           ruijieIgmpSnoopingVlanStatusStatus,
+           ruijieIgmpSnoopingSvglVID,   
+           ruijieIgmpSnoopingSvglProfile,	      
+           ruijieIgmpSnoopingMrLearnVID,
+           ruijieIgmpSnoopingMrLearnStatus,
+           ruijieIgmpSnoopingportIndex,
+           ruijieIgmpSnoopingFilteringProfile,
+           ruijieIgmpSnoopingFilteringMaxGroups,
+           ruijieIgmpSnoopingGDAConfigVID,
+           ruijieIgmpSnoopingGDAConfigAddr,
+           ruijieIgmpSnoopingGDAConfigIfIndex,
+           ruijieIgmpSnoopingQueryResponeTime,    
+           ruijieIgmpSnoopingReportSuppress,
+           ruijieIgmpSnoopingFastleave,
+           ruijieIgmpSnoopingGDANewInVID,
+       	   ruijieIgmpSnoopingGDANewOutVID,
+       	   ruijieIgsmpSnoopingGDASrc,
+           ruijieIgmpSnoopingGDAGrp,
+           ruijieIgmpSnoopingGDAIfx,
+           ruijieIgmpSnoopingGDAIfxAction,
+           ruijieIgmpSnoopingMulticastWlan	         
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing snooping Igmp configure ."
+        ::= { ruijieIgmpSnoopingMIBGroups 2 }
+        
+END

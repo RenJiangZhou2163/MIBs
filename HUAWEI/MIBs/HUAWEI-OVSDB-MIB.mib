@@ -1,0 +1,105 @@
+-- =================================================================
+-- Copyright (C) 2018 by HUAWEI TECHNOLOGIES. All rights reserved
+-- 
+-- Description: OVSDB huawei mib define
+-- Reference: OVSDB 
+-- Version: V1.00
+-- History:
+--    <yangyang 00240494>,<2018.04.11>,<create>
+-- =================================================================
+         
+HUAWEI-OVSDB-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        hwDatacomm            
+            FROM HUAWEI-MIB
+        OBJECT-GROUP, NOTIFICATION-GROUP, MODULE-COMPLIANCE
+            FROM SNMPv2-CONF            
+        OBJECT-TYPE, MODULE-IDENTITY, OBJECT-IDENTITY, NOTIFICATION-TYPE, Integer32
+            FROM SNMPv2-SMI                
+        entPhysicalName
+      	    FROM ENTITY-MIB;
+ 
+    hwOvsdbMIB MODULE-IDENTITY 
+            LAST-UPDATED "201804112018Z"        
+            ORGANIZATION 
+                  "Huawei Technologies Co.,Ltd."
+            CONTACT-INFO 
+                  "Huawei Industrial Base
+				   Bantian, Longgang
+				   Shenzhen 518129
+				   People's Republic of China
+				   Website: http://www.huawei.com
+				   Email: support@huawei.com
+				  "
+            DESCRIPTION 
+                "Please provide the descritpion."
+
+            REVISION    "201804112018Z"   
+            DESCRIPTION "V1.00, initial version."
+    
+            ::= { hwDatacomm 411 }
+
+    
+-- Top-level structure of the MIB
+
+hwOvsdbObjects        OBJECT IDENTIFIER ::= { hwOvsdbMIB 1 }
+hwOvsdbNotifications  OBJECT IDENTIFIER ::= { hwOvsdbMIB 2 }
+hwOvsdbConformance    OBJECT IDENTIFIER ::= { hwOvsdbMIB 3 }
+
+--MIB Objects
+		hwOvsdbCfgFailDetail OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The detail of ovsdb configure failures."
+			::= { hwOvsdbObjects 1 }
+
+		hwOvsdbCfgFailReason OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The reason of ovsdb configure failures."
+			::= { hwOvsdbObjects 2 }
+
+-- Notifications
+
+		hwOvsdbCfgFailureEvent NOTIFICATION-TYPE
+		    OBJECTS { hwOvsdbCfgFailReason, hwOvsdbCfgFailDetail}
+			STATUS current
+			DESCRIPTION 
+				"Failed to config ovsdb configurations."
+			::= { hwOvsdbNotifications 1 }
+
+-- Conformance
+    hwOvsdbGroups OBJECT IDENTIFIER ::= { hwOvsdbConformance 1 }
+        
+
+    hwOvsdbObjectGroup OBJECT-GROUP
+        OBJECTS { hwOvsdbCfgFailDetail, hwOvsdbCfgFailReason }
+        STATUS current
+        DESCRIPTION 
+            "The object group."
+        ::= { hwOvsdbGroups 1 }
+        
+    hwOvsdbNotificationGroup NOTIFICATION-GROUP
+        NOTIFICATIONS { hwOvsdbCfgFailureEvent }
+        STATUS current
+        DESCRIPTION 
+            "The notification group."
+        ::= { hwOvsdbGroups 2 }        
+
+    hwOvsdbCompliances OBJECT IDENTIFIER ::= { hwOvsdbConformance 2 }
+                    
+    hwOvsdbCompliance MODULE-COMPLIANCE
+	STATUS current
+	DESCRIPTION
+            "The core compliance statement for all implementations."
+	MODULE -- this module
+	MANDATORY-GROUPS  {
+		hwOvsdbObjectGroup,hwOvsdbNotificationGroup  		            		            		            
+	    }
+	    ::= { hwOvsdbCompliances 1 }
+END

@@ -1,0 +1,402 @@
+ZXR10-CDP-COMPLIANCE-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+     TEXTUAL-CONVENTION, TimeStamp, TruthValue, MacAddress
+        FROM SNMPv2-TC
+
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32, enterprises,
+    OBJECT-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+ 
+     TimeFilter, ZeroBasedCounter32
+        FROM RMON2-MIB
+
+    InterfaceIndex
+        FROM IF-MIB
+            
+    EnabledStatus
+        FROM P-BRIDGE-MIB;
+ 
+    zxr10CdpComplianceMIB MODULE-IDENTITY
+        LAST-UPDATED "201901140000Z"  
+        ORGANIZATION 
+            "ZTE Corporation"
+        CONTACT-INFO 
+            "       Liu hu
+            Tel : +86-25-52870000
+            E-Mail: liu.hu2@zte.com.cn
+            "
+        DESCRIPTION
+            "This file is a file for CDP compliance. It provides such functions of 
+           globally enabling or disabling the CDP compliance function, enabling the global
+           alarm, querying statistics."
+           
+        REVISION "201901140000Z"
+        DESCRIPTION
+            "Initial revision."
+
+            ::= { zxr10RosngMIB 511 }  
+    zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+    zxr10 OBJECT IDENTIFIER ::= { zte 3 }
+    zxr10RosngMIB OBJECT IDENTIFIER ::= { zxr10 6000}
+    -- ============================================================================
+    -- Node definitions
+    -- ============================================================================ 
+    
+    zxr10CdpGlobalObjects  OBJECT IDENTIFIER ::= { zxr10CdpComplianceMIB 1}
+
+    zxr10CdpObjects  OBJECT IDENTIFIER ::= { zxr10CdpComplianceMIB 2} 
+
+    zxr10CdpNotifications OBJECT IDENTIFIER ::= { zxr10CdpComplianceMIB 3 }  
+    
+    zxr10CdpConformance  OBJECT IDENTIFIER ::= { zxr10CdpComplianceMIB 4 }
+
+  -- ============================================================================
+  --
+  -- ======================= Global objects definitions==========================
+  --
+  -- ============================================================================  
+    zxr10CdpEnable OBJECT-TYPE
+    SYNTAX EnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The administratively desired status of the global CDP compliance function.
+        If the associated zxr10CdpEnable object has a
+        value of 'disabled(2)', then the system will discard CDP packets.
+        If the associated zxr10CdpEnable object has a
+        value of 'enabled(1)', then the system will counter and keep the latest CDP packet."
+    DEFVAL { disabled }
+    ::= { zxr10CdpGlobalObjects 1 }   
+    
+  -- ============================================================================
+  --
+  -- ======================= Objects definitions=================================
+  --
+  -- ============================================================================  
+  
+    zxr10CdpStatistics OBJECT IDENTIFIER ::= { zxr10CdpObjects 1 }
+    zxr10CdpRemSysData OBJECT IDENTIFIER ::= { zxr10CdpObjects 2 }    
+    
+    -- ***********************************************************
+    --
+    -- zxr10CdpStatistics
+    --
+    -- ***********************************************************
+    --
+    -- CDP Stats Group   
+
+    zxr10CdpStatsLocalRxTotal OBJECT-TYPE
+    SYNTAX ZeroBasedCounter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of frames received."
+    ::= { zxr10CdpStatistics 1 } 
+    
+    zxr10CdpStatsLocalRxErrors OBJECT-TYPE
+    SYNTAX ZeroBasedCounter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of invalid frames received."
+    ::= { zxr10CdpStatistics 2 } 
+    
+    zxr10CdpStatsLocalRxDiscarded OBJECT-TYPE
+    SYNTAX ZeroBasedCounter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of frames received, and then discarded for some reason."
+    ::= { zxr10CdpStatistics 3 } 
+    
+    zxr10CdpStatsRemInserts OBJECT-TYPE
+    SYNTAX ZeroBasedCounter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of times neighbor added."
+    ::= { zxr10CdpStatistics 4 } 
+ 
+    zxr10CdpStatsRemDeletes OBJECT-TYPE
+    SYNTAX ZeroBasedCounter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of times neighbor deleted."
+    ::= { zxr10CdpStatistics 5 } 
+
+    zxr10CdpStatsRemAgeouts OBJECT-TYPE
+    SYNTAX ZeroBasedCounter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of times the complete set of information
+        advertised by a particular MSAP has been deleted from tables
+        contained in zxr10CdpRemSysData because the information timeliness 
+        interval has expired.
+        This counter should be incremented only once when the complete
+        set of information is completely invalidated (aged out)
+        from all related tables. Partial aging, similar to deletion
+        case, is not allowed, and thus, should not change the value
+        of this counter."
+    ::= { zxr10CdpStatistics 6 }
+
+    --
+    -- RX statistics of a port
+    --
+    zxr10CdpStatsRxPortTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Zxr10CdpStatsRxPortEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "A table containing CDP reception statistics for individual
+        ports."
+    ::= { zxr10CdpStatistics 7}    
+    
+    zxr10CdpStatsRxPortEntry OBJECT-TYPE
+    SYNTAX Zxr10CdpStatsRxPortEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "CDP frame reception statistics for a particular port.
+        All counter values in a particular entry shall be
+        maintained on a continuing basis and shall not be deleted
+        until aged out."
+    INDEX { zxr10CdpStatsRxPortIfIndex }
+    ::= { zxr10CdpStatsRxPortTable 1 } 
+    
+    Zxr10CdpStatsRxPortEntry ::= SEQUENCE { 
+    zxr10CdpStatsRxPortIfIndex InterfaceIndex,    
+    zxr10CdpStatsRxPortInTotal Counter32,
+    zxr10CdpStatsRxPortInErrors Counter32,
+    zxr10CdpStatsRxPortInDiscarded Counter32,
+    zxr10CdpStatsRxPortInserts Counter32,
+    zxr10CdpStatsRxPortDeletes Counter32,
+    zxr10CdpStatsRxPortAgeouts Counter32
+    } 
+
+    zxr10CdpStatsRxPortIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The interface index of the bridge port receiving CDP packets, reference RFC2233."
+    ::={ zxr10CdpStatsRxPortEntry 1 }
+        
+    zxr10CdpStatsRxPortInTotal OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of frames received on the port."
+    ::= { zxr10CdpStatsRxPortEntry 2 }  
+
+    zxr10CdpStatsRxPortInErrors OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of invalid frames received on the port."
+    ::= { zxr10CdpStatsRxPortEntry 3 }   
+        
+    zxr10CdpStatsRxPortInDiscarded OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of frames received, and then discarded for some reason on the port."
+    ::= { zxr10CdpStatsRxPortEntry 4 }
+    
+    zxr10CdpStatsRxPortInserts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of neighbor added on the port."
+    ::= { zxr10CdpStatsRxPortEntry 5 }
+    
+    zxr10CdpStatsRxPortDeletes OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of neighbor deleted on the port."
+    ::= { zxr10CdpStatsRxPortEntry 6 }
+    
+    
+    zxr10CdpStatsRxPortAgeouts OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The number of times the complete set of information
+        advertised by a particular MSAP has been deleted on a port from tables
+        contained in zxr10CdpRemSysData because the information timeliness 
+        interval has expired."
+    ::= { zxr10CdpStatsRxPortEntry 7 } 
+    
+    
+    -- ***********************************************************
+    --
+    -- R E M O T E S Y S T E M S D A T A
+    --
+    -- ***********************************************************
+    zxr10CdpRemoteTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Zxr10CdpRemoteEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains one or more rows per physical network
+        connection known to this agent. The agent may wish to ensure
+        that only one zxr10CdpRemoteEntry is present for each local port,
+        or it may choose to maintain multiple zxr10CdpRemoteEntry for
+        the same local port."
+    ::= { zxr10CdpRemSysData 1 }  
+    
+    zxr10CdpRemoteEntry OBJECT-TYPE
+    SYNTAX Zxr10CdpRemoteEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Information about a particular physical network connection.
+        Entries may be created and deleted in this table by the agent,
+        if a physical topology discovery process is active."
+    INDEX {  
+              zxr10CdpRemLocalPortIfIndex,
+              zxr10CdpRemIndex
+        }
+    ::= { zxr10CdpRemoteTable 1 }    
+    
+    Zxr10CdpRemoteEntry ::= SEQUENCE { 
+    zxr10CdpRemLocalPortIfIndex InterfaceIndex,  
+    zxr10CdpRemIndex   Integer32,
+    zxr10CdpRemMac MacAddress, 
+    zxr10CdpRemDeviceId OCTET STRING,
+    zxr10CdpRemPortId OCTET STRING,
+    zxr10CdpRemAddrType  INTEGER,
+    zxr10CdpRemAddr    OCTET STRING
+    }             
+      
+    zxr10CdpRemLocalPortIfIndex OBJECT-TYPE
+    SYNTAX      InterfaceIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The interface index of the local bridge port receiving CDP packets, reference RFC2233."
+    ::={ zxr10CdpRemoteEntry 1 }
+    
+    zxr10CdpRemIndex  OBJECT-TYPE
+    SYNTAX      Integer32(1..2147483647)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "This object represents an arbitrary local integer value used
+            by this agent to identify a particular connection instance,
+            unique only for the indicated remote system.
+            An agent is encouraged to assign monotonically increasing
+            index values to new entries, starting with one, after each
+            reboot.  It is considered unlikely that the zxr10CdpRemIndex
+            will wrap between reboots."
+    ::= { zxr10CdpRemoteEntry 2 }
+   
+    zxr10CdpRemMac  OBJECT-TYPE 
+    SYNTAX  MacAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION 
+        "The source MAC of remote system."
+    ::= { zxr10CdpRemoteEntry 3 }  
+ 
+    zxr10CdpRemDeviceId  OBJECT-TYPE 
+    SYNTAX  OCTET STRING (SIZE(1..1500))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION 
+        "The device ID of remote system."
+    ::= { zxr10CdpRemoteEntry 4 }
+    
+    zxr10CdpRemPortId  OBJECT-TYPE 
+    SYNTAX  OCTET STRING (SIZE(1..1500))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION 
+        "The port ID of remote system."
+    ::= { zxr10CdpRemoteEntry 5 }
+
+    zxr10CdpRemAddrType  OBJECT-TYPE 
+    SYNTAX INTEGER { 
+       ip(1), 
+       ipv6(20),
+       unknown(65535)
+        -----------the remAddrType defined by cisco is as the following. Only ip/ipv6 is Distinguished by ZTE.--------------------
+       ------CiscoNetworkProtocol ::= INTEGER {
+       ------ ip(1),
+       ------decnet(2),
+       ------pup(3),
+       ------chaos(4),
+       ------xns(5),
+       ------x121(6),
+       ------appletalk(7),
+       ------clns(8),
+       ------lat(9),
+       ------vines(10),
+       ------cons(11),
+       ------apollo(12),
+       ------stun(13),
+       ------novell(14),
+       ------qllc(15),
+       ------snapshot(16),
+       ------atmIlmi(17),
+       ------bstun(18),
+       ------x25pvc(19),
+       ------ipv6(20),
+       ------cdm(21),
+       ------nbf(22),
+       ------bpxIgx(23),
+       ------clnsPfx(24),
+       ------http(25),
+       ------unknown(65535)
+       -----------the end-------------------------------------------------------
+        }
+    MAX-ACCESS read-only 
+    STATUS     current 
+    DESCRIPTION 
+            "The address type of remote system."    
+   ::= { zxr10CdpRemoteEntry 6 } 
+   
+   zxr10CdpRemAddr  OBJECT-TYPE 
+    SYNTAX OCTET STRING (SIZE(1..1500))
+    MAX-ACCESS read-only 
+    STATUS     current 
+    DESCRIPTION 
+            "The address of remote system."    
+   ::= { zxr10CdpRemoteEntry 7 }
+
+    
+    --
+    -- ***********************************************************
+    --
+    -- C D P C O M P L I A N C E M I B N O T I F I C A T I O N S
+    --
+    -- ***********************************************************
+    --
+    zxr10CdpNotificationPrefix OBJECT IDENTIFIER ::= { zxr10CdpNotifications 1 }
+    zxr10CdpRemTablesChange NOTIFICATION-TYPE
+    OBJECTS { 
+            zxr10CdpRemMac, 
+            zxr10CdpRemDeviceId,
+            zxr10CdpRemPortId
+    }
+    STATUS current
+    DESCRIPTION
+        "A zxr10CdpRemTablesChange notification is sent when the neighbor changes."
+    ::= { zxr10CdpNotificationPrefix 1 }   
+    
+ --=======================================================================
+--3. zxr10CdpConformance 
+--=======================================================================   
+
+END
+
+
+

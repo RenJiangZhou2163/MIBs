@@ -1,0 +1,507 @@
+-- *****************************************************************
+-- RUIJIE-SECZONE-MIB.mib:  Ruijie security zone MIB file
+--
+-- March 2009, rendh
+--
+-- Copyright (c) 2009 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+RUIJIE-SECZONE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    NOTIFICATION-TYPE,
+    IpAddress,
+    Integer32
+            FROM SNMPv2-SMI
+    DisplayString,
+    RowStatus
+            FROM SNMPv2-TC
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP,
+    NOTIFICATION-GROUP
+            FROM SNMPv2-CONF
+    ConfigStatus
+            FROM RUIJIE-TC
+    ruijieMgmt
+            FROM RUIJIE-SMI;
+
+ruijieSecZoneMIB MODULE-IDENTITY
+    LAST-UPDATED "200908110000Z"
+    ORGANIZATION "Ruijie Networks Co.,Ltd."
+    CONTACT-INFO
+            " 
+            Tel: 4008-111-000 
+
+            E-mail: service@ruijie.com.cn"
+    DESCRIPTION
+            "This module defines my Security Zone mibs."
+    REVISION      "200908110000Z"
+    DESCRIPTION
+            "Initial version of this MIB module."
+    ::= { ruijieMgmt 54}
+    
+ruijieSecZoneMIBObjects OBJECT IDENTIFIER ::= { ruijieSecZoneMIB 1 }
+
+
+-- *****************************************************************************************
+--     define Security  Zone chain
+-- *****************************************************************************************
+ruijieSecZoneChainTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieSecZoneChainEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+               "A table of Security Zone Chain entries."
+        ::= { ruijieSecZoneMIBObjects 1 }
+    
+ruijieSecZoneChainEntry OBJECT-TYPE
+        SYNTAX RuijieSecZoneChainEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "Entry contains chain name and level."  
+        INDEX { ruijieSecZoneChainName }
+        ::= { ruijieSecZoneChainTable 1 }
+        
+RuijieSecZoneChainEntry ::= 
+        SEQUENCE {
+                ruijieSecZoneChainName DisplayString,
+                ruijieSecZoneLevel INTEGER,
+                ruijieSecZoneAclName DisplayString,
+                ruijieSecZoneViolationNotifyThresh  INTEGER,
+                ruijieSecZoneViolationNotifyAction  INTEGER,
+                ruijieSecZoneViolationBlockThresh   INTEGER,
+                ruijieSecZoneViolationBlockAction   INTEGER,
+                ruijieSecZoneViolationBlockTimeout  INTEGER,
+                ruijieSecZoneChainEntryStatus RowStatus
+        } 
+
+ruijieSecZoneChainName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "security zone chain name of this entry.This value is unique for every entry
+            When this string be used as an index,Value of a sub-identifier equal 
+            ASCII value of corresponding character(first sub-identifier corresponds
+            first character of string). The number of sub-identifiers of this string
+            must be 32,If length of string is less than 32 the sub-identifier(0x0) 
+            will be filled in tail."
+        ::= { ruijieSecZoneChainEntry  1 }
+
+ruijieSecZoneLevel OBJECT-TYPE
+       SYNTAX  INTEGER(0..100)
+       MAX-ACCESS read-write
+       STATUS current
+        DESCRIPTION
+               " Config level of this Seczone"
+        ::= { ruijieSecZoneChainEntry 2 } 
+        
+ruijieSecZoneAclName   OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Access list name of security zone belong to.
+            When this string be used as an index,Value of a sub-identifier equal 
+            ASCII value of corresponding character(first sub-identifier corresponds
+            first character of string). The number of sub-identifiers of this string
+            must be 32,If length of string is less than 32 the sub-identifier(0x0) 
+            will be filled in tail."
+        ::= { ruijieSecZoneChainEntry  3 }
+        
+ruijieSecZoneViolationNotifyThresh   OBJECT-TYPE
+      SYNTAX  INTEGER(0..65535)
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION 
+        "Threshold of security zone access violation . value 0 means no notify."
+      ::= {ruijieSecZoneChainEntry  4  }  
+
+ruijieSecZoneViolationNotifyAction   OBJECT-TYPE
+      SYNTAX  INTEGER{
+               log(1),
+               trap(2), 
+               logtrap(3)
+      }         
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION 
+        "Action of security zone access violation Notify:log (1), trap (2) , log and trap(3)."
+      ::= {ruijieSecZoneChainEntry  5  }  
+
+ruijieSecZoneViolationBlockThresh   OBJECT-TYPE
+      SYNTAX  INTEGER(0..65535)
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION 
+        "Threshold of security zone access violation Blocking. value 0 means no block."
+      ::= {ruijieSecZoneChainEntry  6  }               
+      
+ruijieSecZoneViolationBlockAction   OBJECT-TYPE
+      SYNTAX  INTEGER{
+              globalblock (1),
+              zoneblock(2) 
+      }         
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION 
+        "Action of security zone access violation Blocking:globalblock(1),zoneblock(2) ."
+      ::= {ruijieSecZoneChainEntry  7  }             
+
+ruijieSecZoneViolationBlockTimeout    OBJECT-TYPE
+      SYNTAX  INTEGER (0..3600)
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION 
+        "Timeout of security zone access violation Blocking . value 0 means block permanently"
+      ::= {ruijieSecZoneChainEntry  8  }   
+        
+ruijieSecZoneChainEntryStatus  OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Status of this entry, set its value to invalid will delete this entry.
+            set its value to valid has no effect."
+        ::= { ruijieSecZoneChainEntry 9 }
+
+-- *****************************************************************************************
+-- define zone to zone policy
+-- *****************************************************************************************
+
+
+ruijieSecZone2ZoneTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieSecZone2ZoneEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+               "A table of Two Security Zone entries."
+        ::= { ruijieSecZoneMIBObjects 2 }
+
+ruijieSecZone2ZoneEntry OBJECT-TYPE
+        SYNTAX RuijieSecZone2ZoneEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "Entry contains policy from one Zone to another Zone ."  
+        INDEX { ruijieZoneFirstName ,ruijieZoneSecondName,ruijieZone2ZoneAclName }
+        ::= { ruijieSecZone2ZoneTable 1 }        
+        
+RuijieSecZone2ZoneEntry ::= 
+        SEQUENCE {
+                ruijieZoneFirstName DisplayString,
+                ruijieZoneSecondName   DisplayString,
+                ruijieZone2ZoneAclName DisplayString,
+                ruijieZone2ZoneEntryStauts RowStatus
+        }         
+
+ruijieZoneFirstName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "First zone name of this entry.This value is unique for every entry
+            When this string be used as an index,Value of a sub-identifier equal 
+            ASCII value of corresponding character(first sub-identifier corresponds
+            first character of string). The number of sub-identifiers of this string
+            must be 32,If length of string is less than 32 the sub-identifier(0x0) 
+            will be filled in tail."
+        ::= { ruijieSecZone2ZoneEntry  1 }                
+
+ruijieZoneSecondName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Second zone name  of this entry.This value is unique for every entry
+            When this string be used as an index,Value of a sub-identifier equal 
+            ASCII value of corresponding character(first sub-identifier corresponds
+            first character of string). The number of sub-identifiers of this string
+            must be 32,If length of string is less than 32 the sub-identifier(0x0) 
+            will be filled in tail."
+        ::= { ruijieSecZone2ZoneEntry  2 }                       
+
+ruijieZone2ZoneAclName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Key chain name of this entry.This value is unique for every entry
+            When this string be used as an index,Value of a sub-identifier equal 
+            ASCII value of corresponding character(first sub-identifier corresponds
+            first character of string). The number of sub-identifiers of this string
+            must be 32,If length of string is less than 32 the sub-identifier(0x0) 
+            will be filled in tail."
+        ::= { ruijieSecZone2ZoneEntry  3 }                              
+        
+ruijieZone2ZoneEntryStauts OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "entry status for this list."      
+       ::= { ruijieSecZone2ZoneEntry  4 }   
+
+-- *****************************************************************************************       
+-- blocking ip table
+-- *****************************************************************************************       
+
+ruijieSecZoneBlockingTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF RuijieSecZoneBlockingEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+               "A table of IP blocking entries."
+      ::= { ruijieSecZoneMIBObjects 3 }
+      
+ruijieSecZoneBlockingEntry OBJECT-TYPE      
+      SYNTAX RuijieSecZoneBlockingEntry
+      MAX-ACCESS not-accessible
+      STATUS current
+      DESCRIPTION
+                "Entry contains blocking IP .value 0 mean all block IP for deleting all blocking IP"  
+      INDEX { ruijieBockingIP }
+      ::= { ruijieSecZoneBlockingTable 1 } 
+      
+RuijieSecZoneBlockingEntry ::= 
+      SEQUENCE {
+                ruijieBockingIP  IpAddress  ,
+                ruijieBockingCurrentStatus INTEGER ,
+                ruijieBockingTryAccessZoneName DisplayString,
+                ruijieBockingEntryStatus ConfigStatus
+      }               
+      
+ruijieBockingIP    OBJECT-TYPE
+   SYNTAX IpAddress
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+            "ip address of Blocking table. "
+        ::= { ruijieSecZoneBlockingEntry 1 }
+
+ruijieBockingCurrentStatus  OBJECT-TYPE
+  SYNTAX INTEGER{
+              globalblock (1),
+              zoneblock(2) 
+      }         
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+            "status of security zone access violation Blocking:globalblock(1),zoneblock(2)."
+        ::= { ruijieSecZoneBlockingEntry 2 }   
+        
+ruijieBockingTryAccessZoneName  OBJECT-TYPE
+   SYNTAX   DisplayString(SIZE (0..32))     
+   MAX-ACCESS read-only
+   STATUS current
+   DESCRIPTION
+         "Try access Zone name of blocking IP.It indicate that 
+         this  doesn't match any Zone if this string is null"
+        ::= { ruijieSecZoneBlockingEntry 3 }   
+        
+ruijieBockingEntryStatus  OBJECT-TYPE
+   SYNTAX ConfigStatus
+   MAX-ACCESS read-write
+   STATUS current
+   DESCRIPTION
+            "Status of this entry, set its value to invalid (2)will delete this entry.
+            set its value to valid(1)has no effect."
+   ::= { ruijieSecZoneBlockingEntry 4 }        
+   
+-- *****************************************************************************************               
+--     define Global Violation policy parameter
+-- *****************************************************************************************               
+
+
+ruijieGlobalViolationNotifyThresh   OBJECT-TYPE
+      SYNTAX  INTEGER(0..65535)
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION 
+        "Threshold of Global parameter access violation . value 0 means no notify."
+      ::= { ruijieSecZoneMIBObjects 4   }  
+
+ruijieGlobalViolationNotifyAction   OBJECT-TYPE
+      SYNTAX  INTEGER{
+               log(1),
+               trap(2), 
+               logtrap(3)
+      }         
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION 
+        "Action of Global parameter access violation Notify:log (1), trap (2) , log and trap(3)."
+      ::= { ruijieSecZoneMIBObjects 5 }  
+
+ruijieGlobalViolationBlockThresh   OBJECT-TYPE
+      SYNTAX  INTEGER(0..65535)
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION 
+        "Threshold of Global parameter access violation Blocking. value 0 means no block."
+      ::= {ruijieSecZoneMIBObjects 6  }               
+      
+ruijieGlobalViolationBlockAction   OBJECT-TYPE
+      SYNTAX  INTEGER{
+              globalblock (1),
+              zoneblock(2) 
+      }         
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION 
+        "Action of Global parameter access violation Blocking:globalblock(1),zoneblock(2) ."
+      ::= {ruijieSecZoneMIBObjects 7  }             
+
+ruijieGlobalViolationBlockTimeout    OBJECT-TYPE
+      SYNTAX  INTEGER (0..3600)
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION 
+        "Timeout of Global parameter access violation Blocking . value 0 means block permanently"
+      ::= {ruijieSecZoneMIBObjects 8  }   
+
+
+-- *****************************************************************************************               
+-- trap define 
+-- *****************************************************************************************               
+
+ruijieSecZoneMIBTraps OBJECT IDENTIFIER ::= { ruijieSecZoneMIB 2 }      
+
+violationTime OBJECT-TYPE 
+     SYNTAX       DisplayString 
+     MAX-ACCESS   accessible-for-notify
+     STATUS       current
+     DESCRIPTION
+         "The time of  packet violation. Used by trap."
+     ::= { ruijieSecZoneMIBObjects 9  }
+                
+violationSrcIP OBJECT-TYPE 
+     SYNTAX       IpAddress
+     MAX-ACCESS   accessible-for-notify
+     STATUS       current
+     DESCRIPTION
+         "The source IP address of packet violation. Used by trap."
+     ::= { ruijieSecZoneMIBObjects 10  }
+
+violationDestIP OBJECT-TYPE 
+     SYNTAX       IpAddress
+     MAX-ACCESS   accessible-for-notify
+     STATUS       current
+     DESCRIPTION
+         "The dest IP address of packet violation. Used by trap."
+     ::= { ruijieSecZoneMIBObjects 11 }     
+     
+violationProtocol OBJECT-TYPE 
+     SYNTAX       Integer32
+     MAX-ACCESS   accessible-for-notify
+     STATUS       current
+     DESCRIPTION
+         "The protocol of packet violation. Used by trap."
+     ::= { ruijieSecZoneMIBObjects 12 }      
+
+violationL4Key OBJECT-TYPE 
+     SYNTAX       Integer32
+     MAX-ACCESS   accessible-for-notify
+     STATUS       current
+     DESCRIPTION
+         "The tcp/udp port or icmp type&code of packet violation. Used by trap."
+     ::= { ruijieSecZoneMIBObjects 13 }           
+             
+ruijieSecZoneViolationTrap NOTIFICATION-TYPE
+    OBJECTS   {  violationTime,  
+                 violationSrcIP, 
+                 violationDestIP,
+                 violationProtocol,      
+                 violationL4Key, 
+                 ruijieZoneFirstName,
+                 ruijieZoneSecondName
+    }
+    STATUS     current
+    DESCRIPTION
+            "Security zone access Violation trap."
+    ::= { ruijieSecZoneMIBTraps 1 }                    
+    
+-- *****************************************************************************************                   
+
+
+ruijieSecZoneMIBConformance OBJECT IDENTIFIER ::= { ruijieSecZoneMIB 3 }
+ruijieSecZoneMIBCompliances OBJECT IDENTIFIER ::= { ruijieSecZoneMIBConformance 1 }
+ruijieSecZoneMIBGroups      OBJECT IDENTIFIER ::= { ruijieSecZoneMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieSecZoneMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie SecZone MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { 
+                        ruijieSecZoneMIBGroup,
+                        ruijieSecZoneNotifObjectsGroup,
+                        ruijieSecZoneNotificationsGroup
+                 }         
+ 
+         ::= { ruijieSecZoneMIBCompliances 1 }
+         
+-- units of conformance
+
+ruijieSecZoneMIBGroup OBJECT-GROUP
+        OBJECTS {
+              ruijieSecZoneChainName,
+              ruijieSecZoneLevel,
+              ruijieSecZoneAclName,
+              ruijieSecZoneViolationNotifyThresh,
+              ruijieSecZoneViolationNotifyAction,
+              ruijieSecZoneViolationBlockThresh,
+              ruijieSecZoneViolationBlockAction,
+              ruijieSecZoneViolationBlockTimeout,
+              ruijieSecZoneChainEntryStatus,
+              ruijieZoneFirstName,
+              ruijieZoneSecondName,
+              ruijieZone2ZoneAclName,
+              ruijieZone2ZoneEntryStauts,
+              ruijieBockingIP,
+              ruijieBockingCurrentStatus,
+              ruijieBockingTryAccessZoneName,
+              ruijieBockingEntryStatus,
+              ruijieGlobalViolationNotifyThresh,
+              ruijieGlobalViolationNotifyAction,
+              ruijieGlobalViolationBlockThresh,
+              ruijieGlobalViolationBlockAction,
+              ruijieGlobalViolationBlockTimeout
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing seczone managment."
+        ::= { ruijieSecZoneMIBGroups 1 }
+     
+ruijieSecZoneNotifObjectsGroup OBJECT-GROUP
+        OBJECTS {
+              violationTime,
+              violationSrcIP,
+              violationDestIP,
+              violationProtocol,
+              violationL4Key
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects that specify information for
+                 TRIP notifications."
+        ::= { ruijieSecZoneMIBGroups 2 }
+           
+ruijieSecZoneNotificationsGroup NOTIFICATION-GROUP
+        NOTIFICATIONS {
+               ruijieSecZoneViolationTrap     
+        }
+        STATUS        current
+        DESCRIPTION
+              "A collection of security zone access Violation traps."
+      ::= { ruijieSecZoneMIBGroups 3 }
+END    

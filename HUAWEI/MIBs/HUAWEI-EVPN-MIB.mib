@@ -1,0 +1,163 @@
+-- ==================================================================
+-- Copyright (C) 2018 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- 
+-- Description: HUAWEI EVPN Management MIB
+-- Reference:
+-- Version: V1.02
+-- History:
+--      V1.0 wangyaru, 2018-07-09, publish
+-- ==================================================================
+
+HUAWEI-EVPN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    
+    hwDatacomm 
+    FROM HUAWEI-MIB
+        
+    TruthValue,TEXTUAL-CONVENTION
+    FROM SNMPv2-TC
+
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32, IpAddress, OBJECT-IDENTITY, NOTIFICATION-TYPE, Counter64
+    FROM SNMPv2-SMI
+
+	MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+    FROM SNMPv2-CONF; 
+        
+    hwEvpnMgmt OBJECT IDENTIFIER ::= { hwDatacomm 356 }
+	
+--
+-- Module Identifier	
+--	
+
+    hwEvpnMib MODULE-IDENTITY
+        LAST-UPDATED "201807121447Z"        
+    ORGANIZATION 
+        "Huawei Technologies Co.,Ltd."
+    CONTACT-INFO 
+        "Huawei Industrial Base
+          Bantian, Longgang
+           Shenzhen 518129
+           People's Republic of China
+           Website: http://www.huawei.com
+           Email: support@huawei.com
+         "
+    DESCRIPTION
+        "This object indicates EVPN management information."  
+        
+    REVISION    "201807121447Z"   
+	DESCRIPTION "Add trap hwEvpnEtreeMulErrConfig at 2018-07-12."
+     
+                   REVISION    "201807101125Z"   
+	DESCRIPTION "V1.00, initial version."
+
+	REVISION    "201807091121Z"   
+	DESCRIPTION "V1.00, initial version."
+            ::= { hwEvpnMgmt 1 }
+      
+--
+-- Objects Identifier
+--
+                  
+    hwEvpnObjects OBJECT IDENTIFIER ::= { hwEvpnMib 1 }  
+    hwEvpnInstance OBJECT IDENTIFIER ::= { hwEvpnObjects 1 }
+
+--
+-- Node definitions
+--
+   
+    hwEvpnInstanceTable  OBJECT-TYPE 
+        SYNTAX  SEQUENCE OF HwEvpnInstanceEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            "This object indicates a table that contains basic information about queried EVPN instances."
+        ::= { hwEvpnInstance  1 }    
+
+    hwEvpnInstanceEntry  OBJECT-TYPE
+        SYNTAX HwEvpnInstanceEntry
+        MAX-ACCESS not-accessible
+        STATUS   current
+        DESCRIPTION 
+            "This object indicates the entry to an EVPN instance information table."
+        INDEX    { hwEvpnInstanceVpnName }
+        ::= { hwEvpnInstanceTable 1}
+
+    HwEvpnInstanceEntry ::=
+    SEQUENCE {
+        hwEvpnInstanceVpnName OCTET STRING  
+        }
+            
+    hwEvpnInstanceVpnName OBJECT-TYPE
+        SYNTAX OCTET STRING(SIZE(1..31))
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "This object indicates the name of an EVPN instance."
+        ::= { hwEvpnInstanceEntry 1 }
+
+--
+--Traps Defination
+--		
+
+    hwEvpnTraps OBJECT IDENTIFIER ::= { hwEvpnObjects 2 }
+
+    hwEvpnMacDupVpnAlarm NOTIFICATION-TYPE
+            OBJECTS {hwEvpnInstanceVpnName}
+            STATUS current
+            DESCRIPTION 
+                "This object indicates that an EVPN instance name is used to report an alarm when a MAC address is suppressed in the EVPN instance."
+            ::= { hwEvpnTraps 1 }        
+
+    hwEvpnMacDupVpnAlarmClear NOTIFICATION-TYPE
+            OBJECTS {hwEvpnInstanceVpnName} 
+            STATUS current     
+            DESCRIPTION 
+                "This object indicates that an EVPN instance name is used to clear an alarm when all MAC addresses are unsuppressed in the EVPN instance."
+            ::= { hwEvpnTraps 2 }                          
+
+    hwEvpnEtreeMulErrConfig NOTIFICATION-TYPE
+            OBJECTS {hwEvpnInstanceVpnName} 
+            STATUS current     
+            DESCRIPTION 
+                "This object indicates that an EVPN instance name is used to report an alarm for leaf attribute difference between AC interfaces bound to an EVPN instance in an EVPN E-Tree dual-homing scenario."
+            ::= { hwEvpnTraps 3 }
+--
+--Compliance Defination
+--		
+    hwEvpnInstConformance OBJECT IDENTIFIER ::= { hwEvpnMib 2 }    
+    hwEvpnCompliances OBJECT IDENTIFIER ::= { hwEvpnInstConformance 1 } 
+	hwEvpnCompliance MODULE-COMPLIANCE
+                        STATUS current
+                        DESCRIPTION 
+                                "The compliance statement for systems supporting the HUAWEI-EVPN-MIB."
+                        MODULE -- this module
+                                MANDATORY-GROUPS { hwEvpnInstanceGroup, hwEvpnMacDupNotificationGroup, hwEvpnEtreeMulNotificationGroup }
+                        ::= { hwEvpnCompliances 1 }
+
+	hwEvpnInstanceGroups OBJECT IDENTIFIER ::= { hwEvpnInstConformance 2 }
+		  
+	hwEvpnInstanceGroup OBJECT-GROUP
+			OBJECTS { hwEvpnInstanceVpnName }
+			STATUS current
+			DESCRIPTION 
+					"This object indicates an EVPN instance group, which is used for a MAC duplication suppression alarm."
+			::= { hwEvpnInstanceGroups 1 }
+
+
+	hwEvpnMacDupNotificationGroup NOTIFICATION-GROUP
+			NOTIFICATIONS { hwEvpnMacDupVpnAlarmClear, hwEvpnMacDupVpnAlarm }
+			STATUS current
+			DESCRIPTION 
+					"This object indicates a MAC duplication suppression alarm group, which is used to prompt an alarm or clear the alarm."
+			::= { hwEvpnInstanceGroups 2 }
+
+
+	hwEvpnEtreeMulNotificationGroup NOTIFICATION-GROUP
+			NOTIFICATIONS { hwEvpnEtreeMulErrConfig }
+			STATUS current
+			DESCRIPTION 
+					"This object indicates an error configuration alarm group, which is used to prompt an alarm in EVPN E-Tree scenarios."
+			::= { hwEvpnInstanceGroups 3 }
+
+END

@@ -1,0 +1,898 @@
+-- *****************************************************************
+-- RUIJIE-ACL-CONTEXT-MIB.mib:  Ruijie Acl MIB file for multiple context
+--
+--
+-- December 2009, rendh
+--
+-- Copyright (c) 2009 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-ACL-CONTEXT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32,
+        Unsigned32,
+        IpAddress
+                FROM SNMPv2-SMI
+        TruthValue,
+        DisplayString,
+        RowStatus,
+        MacAddress
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        IfIndex,
+        ConfigStatus
+                FROM RUIJIE-TC        
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieAclVCMIB MODULE-IDENTITY
+        LAST-UPDATED "200912060000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie acl mibs for multiple context."
+        REVISION      "200912060000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 66}
+
+--ACLNO ::= TEXTUAL-CONVENTION
+--    STATUS current
+--    DESCRIPTION
+--        " Serial number of Access control list entry, Access control list entry of 
+--          bigger ACL number will have  higher implement priority. One ACL number 
+--          corresponding to only one entry."
+--    SYNTAX      INTEGER
+
+-- Access control list
+ruijieAclVCMIBObjects OBJECT IDENTIFIER ::= { ruijieAclVCMIB 1 }
+
+
+ruijieAclVCTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieAclVCEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+               "A table of acl request entries."
+        ::= { ruijieAclVCMIBObjects 1 }
+    
+ruijieAclVCEntry OBJECT-TYPE
+        SYNTAX RuijieAclVCEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "Entry contains acl name and mode."  
+        INDEX { ruijieAclContextNameVC,  ruijieAclNameVC }
+        ::= { ruijieAclVCTable 1 }
+        
+RuijieAclVCEntry ::= 
+        SEQUENCE {
+                ruijieAclContextNameVC   DisplayString,
+                ruijieAclNameVC          DisplayString,
+                ruijieAclModeVC          INTEGER,
+                ruijieAclEntryStatusVC   ConfigStatus
+        } 
+
+ruijieAclContextNameVC OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..31))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "context name of this entry."
+        ::= { ruijieAclVCEntry  1 }        
+           
+ruijieAclNameVC OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Access list name of this entry.This value is unique for every entry
+            When this string be used as an index,Value of a sub-identifier equal 
+            ASCII value of corresponding character(first sub-identifier corresponds
+            first character of string). The number of sub-identifiers of this string
+            must be 32,If length of string is less than 32 the sub-identifier(0x0) 
+            will be filled in tail."
+        ::= { ruijieAclVCEntry  2 }
+                
+ruijieAclModeVC OBJECT-TYPE
+        SYNTAX INTEGER{
+               acl-ip-standard(1),   
+               acl-ip-extended(2),   
+               acl-mac-extended(3),  
+               acl-expert(4), 
+               acl-ipv6-extended(5)
+            }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+               " Config mode of this ACL"
+        ::= { ruijieAclVCEntry 3 }    
+
+ruijieAclEntryStatusVC OBJECT-TYPE
+        SYNTAX ConfigStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Status of this entry, set its value to invalid will delete this entry.
+            set its value to valid has no effect."
+        ::= { ruijieAclVCEntry 4 }
+
+-- if table ******************************************
+    
+
+        
+
+ruijieAclIfVCTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieAclIfVCEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of ACL interface objects."
+        ::= { ruijieAclVCMIBObjects 2 }
+    
+ruijieAclIfVCEntry OBJECT-TYPE
+        SYNTAX RuijieAclIfVCEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry ACL interface information."
+        INDEX { ruijieAclIfContextNameVC, ruijieAclIfIndexVC }
+        ::= { ruijieAclIfVCTable 1 }
+        
+        
+
+RuijieAclIfVCEntry ::=
+        SEQUENCE {
+            ruijieAclIfContextNameVC      DisplayString,
+            ruijieAclIfIndexVC            IfIndex,
+            ruijieAclIfMaxEntryNumVC      Integer32,
+            ruijieAclIfCurruntEntryNumVC  Integer32,
+            ruijieIfInAclNameVC           DisplayString,
+            ruijieIfOutAclNameVC          DisplayString
+        }
+
+ruijieAclIfContextNameVC   OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..31))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "context name of this entry."
+        ::= { ruijieAclIfVCEntry 1 }   
+    
+
+ruijieAclIfIndexVC OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " "
+        ::= { ruijieAclIfVCEntry 2 }
+
+ruijieAclIfMaxEntryNumVC OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+               "Max num of ACL entry(ACE) in a interface."
+        ::= { ruijieAclIfVCEntry 3 }
+
+ruijieAclIfCurruntEntryNumVC OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+               "Currunt valid num of ACL entry(ACE) in a interface."
+        ::= { ruijieAclIfVCEntry 4 }
+        
+ruijieIfInAclNameVC OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (0..32))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Access list name of ACL of this interface match for input. 
+            It indicate that this interface doesn't match any ACL for input 
+            if this string is null"
+        ::= { ruijieAclIfVCEntry  5 }        
+        
+ruijieIfOutAclNameVC OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (0..32))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Access list name of ACL of this interface match for output. 
+            It indicate that this interface doesn't match any ACL for output 
+            if this string is null
+            
+            This relation function apply only L3 interface."
+        ::= { ruijieAclIfVCEntry  6 }
+        
+        
+-- AceExt************************************************
+
+ruijieAceExtVCTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieAceExtVCEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+               "A table of ACE request entries."
+        ::= { ruijieAclVCMIBObjects 3 }
+  
+ruijieAceExtVCEntry OBJECT-TYPE
+        SYNTAX RuijieAceExtVCEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "Entry contains ace parameters and results.
+                
+                A management station wishing to create an entry should
+                first generate a pseudo-random serial number to be used
+                as the index to a ace entry of a acl.  The station should
+                then create the associated entry.
+                
+                We must set all specifies valid values for the 
+                non-defaulted configuration objects, certainly, it should
+                also modify  the default values for the other configuration 
+                objects if the defaults are not appropriate.
+                                       
+                Once the appropriate instance of all the configuration
+                objects have been created or set,the row status should be set
+                to active to initiate the request."  
+        INDEX {  ruijieAceExtContextNameVC, ruijieAceExtAclNameVC,ruijieAceExtIndexVC }
+        ::= { ruijieAceExtVCTable 1 }
+        
+RuijieAceExtVCEntry ::= 
+        SEQUENCE {
+                ruijieAceExtContextNameVC DisplayString,
+                ruijieAceExtAclNameVC DisplayString,
+                ruijieAceExtIndexVC Integer32,
+                ruijieAceExtIfAnyVIDVC TruthValue,
+                ruijieAceExtVIDVC Unsigned32,
+                ruijieAceExtIfAnySourceIpVC TruthValue,
+                ruijieAceExtSourceIpVC IpAddress,
+                ruijieAceExtIfAnySourceWildCardVC TruthValue,
+                ruijieAceExtSourceWildCardVC IpAddress,
+                ruijieAceExtIfAnySourceMacAddrVC TruthValue,
+                ruijieAceExtSourceMacAddrVC MacAddress,
+                ruijieAceExtIfAnyDestIpVC TruthValue,
+                ruijieAceExtDestIpVC IpAddress,
+                ruijieAceExtIfAnyDestWildCardVC TruthValue,
+                ruijieAceExtDestIpWildCardVC IpAddress,
+                ruijieAceExtIfAnyDestMacAddrVC TruthValue,
+                ruijieAceExtDestMacAddrVC MacAddress,
+                ruijieAceExtIfAnyEtherLikeTypeVC TruthValue,
+                ruijieAceExtEtherLikeTypeVC Integer32,
+                ruijieAceExtIfAnyIpProtocolFieldVC TruthValue,
+                ruijieAceExtIpProtocolFieldVC Integer32,
+                ruijieAceExtSourceProtocolPortVC Integer32,
+                ruijieAceExtDestProtocolPortVC Integer32,
+                ruijieAceExtIfAnyProtocolTypeVC TruthValue,
+                ruijieAceExtProtocolTypeVC Integer32,
+                ruijieAceExtFlowActionVC INTEGER,
+                ruijieAceExtEntryStautsVC RowStatus,
+                ruijieAceExtTimeRangeNameVC DisplayString,
+                ruijieAceExtSourcePortOpVC INTEGER,
+                ruijieAceExtSourceProtocolPortRangeVC Integer32,
+                ruijieAceExtDestPortOpVC INTEGER,
+                ruijieAceExtDestProtocolPortRangeVC Integer32,
+                ruijieAceExtIfAnyCosVC TruthValue,
+                ruijieAceExtCosVC Integer32,
+                ruijieAceExtIfAnyIpPrecVC TruthValue,
+                ruijieAceExtIpPrecVC Integer32,
+                ruijieAceExtIfAnyDscpVC TruthValue,
+                ruijieAceExtDscpVC Integer32,
+                ruijieAceExtIfAnySourceMacAddrWildCardVC TruthValue,
+                ruijieAceExtSourceMacAddrWildCardVC MacAddress,
+                ruijieAceExtIfAnyDestMacAddrWildCardVC TruthValue,
+                ruijieAceExtDestMacAddrWildCardVC MacAddress,
+                ruijieAceExtIfAnyTcpFlagVC TruthValue,
+                ruijieAceExtTcpFlagVC Integer32,
+                ruijieAceExtIfAnySourceIp6VC TruthValue,
+                ruijieAceExtSourceIp6VC OCTET STRING,
+                ruijieAceExtIfAnySourceIp6WildCardVC TruthValue,
+                ruijieAceExtSourceIp6WildCardVC OCTET STRING,
+                ruijieAceExtIfAnyDestIp6VC TruthValue,
+                ruijieAceExtDestIp6VC OCTET STRING,
+                ruijieAceExtIfAnyDestIp6WildCardVC TruthValue,
+                ruijieAceExtDestIp6WildCardVC OCTET STRING
+        }
+        
+ruijieAceExtContextNameVC   OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..31))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "context name of this entry."
+        ::= { ruijieAceExtVCEntry  1 }      
+
+ruijieAceExtAclNameVC OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Access list name of this ace belong to.
+            When this string be used as an index,Value of a sub-identifier equal 
+            ASCII value of corresponding character(first sub-identifier corresponds
+            first character of string). The number of sub-identifiers of this string
+            must be 32,If length of string is less than 32 the sub-identifier(0x0) 
+            will be filled in tail."
+        ::= { ruijieAceExtVCEntry  2 }
+
+ruijieAceExtIndexVC OBJECT-TYPE
+        SYNTAX Integer32(1..2147483647)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+               "Object which specifies a unique entry in the
+                ruijieAclTable.  A management station wishing
+                to initiate a acl operation should use a
+                pseudo-random value for this object when creating
+                or modifying an instance of a ruijieAclEntry.
+                The RowStatus semantics of the ruijieAclEntryStatus
+                object will prevent access conflicts."
+        ::= { ruijieAceExtVCEntry 3 }
+   
+ruijieAceExtIfAnyVIDVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "VID of class will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 4 }
+   
+ruijieAceExtVIDVC OBJECT-TYPE
+        SYNTAX Unsigned32(0..4094)
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "VID of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 5 }
+    
+ruijieAceExtIfAnySourceIpVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Source Ip of class will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 6 }
+            
+ruijieAceExtSourceIpVC OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Sourece ip address of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 7 }
+
+ruijieAceExtIfAnySourceWildCardVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Source Ip wild card of class will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 8 }
+                
+ruijieAceExtSourceWildCardVC OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Sourece ip wild card(in reverse ip address mask)of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 9 }        
+
+ruijieAceExtIfAnySourceMacAddrVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Source mac address of class will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 10 }
+                
+ruijieAceExtSourceMacAddrVC OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Sourece Mac address of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 11 }                
+ 
+ruijieAceExtIfAnyDestIpVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Destination Ip wild card of class will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 12 }
+         
+ruijieAceExtDestIpVC OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Destination ip address of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 13 }
+
+ruijieAceExtIfAnyDestWildCardVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Source Ip wild card of class will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 14 }
+                
+ruijieAceExtDestIpWildCardVC OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Destination ip wild card(in reverse ip address mask) of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 15 }        
+
+ruijieAceExtIfAnyDestMacAddrVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Source Ip wild card of class will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 16 }
+                
+ruijieAceExtDestMacAddrVC OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Destination Mac address of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 17 }
+
+ruijieAceExtIfAnyEtherLikeTypeVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Ether Like Type in MAC packet will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 18 }
+            
+ruijieAceExtEtherLikeTypeVC OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Ether Like Type in MAC packet of Ace flow definition. "
+        ::= { ruijieAceExtVCEntry 19 }
+
+ruijieAceExtIfAnyIpProtocolFieldVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Source Ip wild card of class will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 20 }
+            
+ruijieAceExtIpProtocolFieldVC OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The value of protocol field in IP packet of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 21 }
+      
+ruijieAceExtSourceProtocolPortVC OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The value of source protocol port in IP packet of Ace flow definition. It is 
+             significative only to those protocol which support this field."
+        ::= { ruijieAceExtVCEntry 22 }
+
+ruijieAceExtDestProtocolPortVC OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The value of destination protocol port in IP packet of Ace flow definition. It is 
+             significative only to those protocol which support this field(tcp,udp)."
+        ::= { ruijieAceExtVCEntry 23 }        
+
+ruijieAceExtIfAnyProtocolTypeVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The value of protocol type field in IP packet will not be checked if this 
+            value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 24 }
+            
+ruijieAceExtProtocolTypeVC OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The value of protocol type field in IP packet of Ace flow definition. It is 
+             significative only to those protocol which support this field(icmp,igmp)."
+        ::= { ruijieAceExtVCEntry 25 }            
+                
+ruijieAceExtFlowActionVC OBJECT-TYPE
+        SYNTAX INTEGER{
+               permit(1),
+               deny(2) 
+        }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Permit indicate that the kind of  flow which entry define will be allow to access ,
+             deny indicate that the kind of flow which entry define will be refuse to access"
+        ::= { ruijieAceExtVCEntry 26 }
+    
+ruijieAceExtEntryStautsVC OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "entry status for this list."
+        ::= { ruijieAceExtVCEntry 27 }
+
+ruijieAceExtTimeRangeNameVC OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE (0..32))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Name of time-range of this ACE match. It indicate that 
+         this ACE doesn't match any time-range if this string is null"
+    ::= { ruijieAceExtVCEntry 28 }
+
+ruijieAceExtSourcePortOpVC OBJECT-TYPE
+        SYNTAX   INTEGER {
+               noOperator(1), 
+               lt(2), 
+               gt(3),
+               eq(4), 
+               neq(5), 
+               range(6) 
+        }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "noOperator(1), which is the default value, means that no
+             comparison is to be made with the Source TCP/UDP port
+             number.
+             lt(2) means less than.
+             gt(3) means greater than.
+             eq(4) means equal. 
+             neq(5) means not equal." 
+        ::= { ruijieAceExtVCEntry 29 }
+
+ruijieAceExtSourceProtocolPortRangeVC OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The ending value of source protocol port in IP packet of Ace flow definition. It is 
+             significative only to those protocol which support this field. The ruijieAceExtSourcePortOp
+             must set to range(6)."
+        ::= { ruijieAceExtVCEntry 30 }
+
+ruijieAceExtDestPortOpVC OBJECT-TYPE
+        SYNTAX   INTEGER {
+               noOperator(1), 
+               lt(2), 
+               gt(3),
+               eq(4), 
+               neq(5), 
+               range(6) 
+        }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "noOperator(1), which is the default value, means that no
+             comparison is to be made with the Dest TCP/UDP port
+             number.
+             lt(2) means less than.
+             gt(3) means greater than.
+             eq(4) means equal. 
+             neq(5) means not equal." 
+        ::= { ruijieAceExtVCEntry 31 }
+
+ruijieAceExtDestProtocolPortRangeVC OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The ending value of dest protocol port in IP packet of Ace flow definition. It is 
+             significative only to those protocol which support this field. The ruijieAceExtSourcePortOp
+             must set to range(6)."
+        ::= { ruijieAceExtVCEntry 32 }
+
+ruijieAceExtIfAnyCosVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Cos will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 33 }
+   
+ruijieAceExtCosVC OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Cos of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 34 }
+
+ruijieAceExtIfAnyIpPrecVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Ip precedence will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 35 }
+   
+ruijieAceExtIpPrecVC OBJECT-TYPE
+        SYNTAX Integer32 
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Ip precedence of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 36 }
+
+ruijieAceExtIfAnyDscpVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Dscp will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 37 }
+   
+ruijieAceExtDscpVC OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Dscp of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 38 }
+
+ruijieAceExtIfAnyTcpFlagVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Tcp flag will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 39 }
+   
+ruijieAceExtTcpFlagVC OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Tcp flag of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 40 }
+        
+ruijieAceExtIfAnySourceMacAddrWildCardVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Source mac address wildcard of class will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 41 }
+                
+ruijieAceExtSourceMacAddrWildCardVC OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Sourece Mac address wildcard of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 42 }                
+
+ruijieAceExtIfAnyDestMacAddrWildCardVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Dest mac address wildcard of class will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 43 }
+                
+ruijieAceExtDestMacAddrWildCardVC OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Dest Mac address wildcard of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 44 }                
+
+ruijieAceExtIfAnySourceIp6VC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Source Ipv6 address of class will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 45 }
+            
+ruijieAceExtSourceIp6VC OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (16))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Sourece ipv6 address of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 46 }
+
+ruijieAceExtIfAnySourceIp6WildCardVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Source Ipv6 address wild card of class will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 47 }
+                
+ruijieAceExtSourceIp6WildCardVC OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (16))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Sourece ipv6 address wild card(in reverse ip address mask)of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 48 }        
+
+ruijieAceExtIfAnyDestIp6VC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Dest Ipv6 address of class will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 49 }
+            
+ruijieAceExtDestIp6VC OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (16))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Dest ipv6 address of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 50 }
+
+ruijieAceExtIfAnyDestIp6WildCardVC OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Dest Ipv6 address wild card of class will not be checked if this value is true."
+        DEFVAL{ true }
+        ::= { ruijieAceExtVCEntry 51 }
+                
+ruijieAceExtDestIp6WildCardVC OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (16))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Dest ipv6 address wild card(in reverse ip address mask)of Ace flow definition."
+        ::= { ruijieAceExtVCEntry 52 }        
+
+
+
+-- conformance information
+
+ruijieAclVCMIBConformance OBJECT IDENTIFIER ::= { ruijieAclVCMIB 2 }
+ruijieAclVCMIBCompliances OBJECT IDENTIFIER ::= { ruijieAclVCMIBConformance 1 }
+ruijieAclVCMIBGroups      OBJECT IDENTIFIER ::= { ruijieAclVCMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieAclVCMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie Acl MIB for multiple context"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieAclVCMIBGroup }
+        ::= { ruijieAclVCMIBCompliances 1 }
+        
+        
+-- units of conformance
+
+ruijieAclVCMIBGroup OBJECT-GROUP
+        OBJECTS {
+                ruijieAclContextNameVC,
+                ruijieAclNameVC,
+                ruijieAclModeVC,
+                ruijieAclEntryStatusVC,
+                
+                ruijieAceExtContextNameVC,
+                ruijieAceExtAclNameVC,
+                ruijieAceExtIndexVC,
+                ruijieAceExtIfAnyVIDVC,
+                ruijieAceExtVIDVC,
+                ruijieAceExtIfAnySourceIpVC,
+                ruijieAceExtSourceIpVC,
+                ruijieAceExtIfAnySourceWildCardVC,
+                ruijieAceExtSourceWildCardVC,
+                ruijieAceExtIfAnySourceMacAddrVC,
+                ruijieAceExtSourceMacAddrVC,
+                ruijieAceExtIfAnyDestIpVC,
+                ruijieAceExtDestIpVC,
+                ruijieAceExtIfAnyDestWildCardVC,
+                ruijieAceExtDestIpWildCardVC,
+                ruijieAceExtIfAnyDestMacAddrVC,
+                ruijieAceExtDestMacAddrVC,
+                ruijieAceExtIfAnyEtherLikeTypeVC,
+                ruijieAceExtEtherLikeTypeVC,
+                ruijieAceExtIfAnyIpProtocolFieldVC,
+                ruijieAceExtIpProtocolFieldVC,
+                ruijieAceExtSourceProtocolPortVC,
+                ruijieAceExtDestProtocolPortVC,
+                ruijieAceExtProtocolTypeVC,
+                ruijieAceExtProtocolTypeVC,
+                ruijieAceExtFlowActionVC,
+                ruijieAceExtEntryStautsVC,
+                ruijieAceExtTimeRangeNameVC,
+                ruijieAceExtSourcePortOpVC,
+                ruijieAceExtSourceProtocolPortRangeVC,
+                --ruijieAceExtIfAnySourceProtocolPortVC,
+                ruijieAceExtDestPortOpVC,
+                ruijieAceExtDestProtocolPortRangeVC,
+                --ruijieAceExtIfAnyDestProtocolPortVC,
+                ruijieAceExtIfAnyCosVC,
+                ruijieAceExtCosVC,
+                ruijieAceExtIfAnyIpPrecVC,
+                ruijieAceExtIpPrecVC,
+                ruijieAceExtIfAnyDscpVC,
+                ruijieAceExtDscpVC,
+                ruijieAceExtIfAnyTcpFlagVC,
+                ruijieAceExtTcpFlagVC,
+                ruijieAceExtIfAnySourceMacAddrWildCardVC,
+                ruijieAceExtSourceMacAddrWildCardVC,
+                ruijieAceExtIfAnyDestMacAddrWildCardVC,
+                ruijieAceExtDestMacAddrWildCardVC,
+                ruijieAceExtIfAnySourceIp6VC,
+                ruijieAceExtSourceIp6VC,
+                ruijieAceExtIfAnySourceIp6WildCardVC,
+                ruijieAceExtSourceIp6WildCardVC,
+                ruijieAceExtIfAnyDestIp6VC,
+                ruijieAceExtDestIp6VC,
+                ruijieAceExtIfAnyDestIp6WildCardVC,
+                ruijieAceExtDestIp6WildCardVC,
+                
+                ruijieAclIfContextNameVC,
+                ruijieAclIfIndexVC,
+                ruijieAclIfMaxEntryNumVC,
+                ruijieAclIfCurruntEntryNumVC,
+                ruijieIfInAclNameVC,
+                ruijieIfOutAclNameVC
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing acl (echo) ability to a
+                Ruijie agent."
+        ::= { ruijieAclVCMIBGroups 1 }        
+
+
+--
+        
+END

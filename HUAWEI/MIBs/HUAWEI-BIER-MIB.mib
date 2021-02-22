@@ -1,0 +1,338 @@
+-- ===========================================================================
+-- Copyright(C) 2019 by HUAWEI TECHNOLOGIES. All rights reserved.
+-- Description: HUAWEI-BIER-MIB
+-- Version: V1.01
+-- History:
+--             Created by l00419278 2019-07-22
+-- Reference:   Module(HUAWEI-BIER-MIB) Extracted from RFCXXXX.TXT,from XXXX to XXXXX.Obsoletes: 1850
+-- =====================================================================================================
+
+   HUAWEI-BIER-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+       MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, IpAddress, Unsigned32
+                    FROM SNMPv2-SMI
+       DisplayString  
+                    FROM SNMPv2-TC
+       MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+                    FROM SNMPv2-CONF
+       InetAddress, InetAddressType
+                    FROM INET-ADDRESS-MIB                    
+       hwDatacomm            
+                    FROM HUAWEI-MIB;
+                    
+     hwBierMIB MODULE-IDENTITY
+
+          LAST-UPDATED "201907250000Z" 
+          ORGANIZATION 
+            "Huawei Technologies Co.,Ltd."
+          CONTACT-INFO 
+            "Huawei Industrial Base
+            Bantian, Longgang
+            Shenzhen 518129
+            People's Republic of China
+            Website: http://www.huawei.com
+            Email: support@huawei.com"
+
+          DESCRIPTION
+             "The MIB module to describe traps for the BIER
+             Version 2 Protocol."
+            
+          REVISION "201907250000Z" 
+          DESCRIPTION
+             "Modify advertiser string length at 2019-07-25."         
+        
+          REVISION "201907220000Z" 
+          DESCRIPTION
+             "Add hwBierPrefixBfridConflict at 2019-07-22."
+       
+          ::= { hwDatacomm 360 }
+
+   --  Trap Support Objects
+
+   --  The following are support objects for the BIER traps.
+
+     hwBierTrapControl OBJECT IDENTIFIER ::= { hwBierMIB 1 }
+     hwBierTraps OBJECT IDENTIFIER ::= { hwBierMIB 2 }
+     
+     hwBierAddressType OBJECT-TYPE
+        SYNTAX     InetAddressType
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION
+            "A value indicating the address family of the address
+            contained in hwBierConflictPrefix.  Legal values correspond to
+            the subset of address families for which multicast
+            forwarding is supported."
+        ::= { hwBierTrapControl 1 }     
+        
+     hwBierSubdomain OBJECT-TYPE
+         SYNTAX       Unsigned32(0..255)
+         MAX-ACCESS   accessible-for-notify
+         STATUS       current
+         DESCRIPTION
+          "The conflict alarm can be raised within subdomain."
+         ::= { hwBierTrapControl 2 }    
+                    
+     hwBierConflictType OBJECT-TYPE
+         SYNTAX       INTEGER { bfridConflict (1),
+                                prefixConflict (2)
+                            }
+         MAX-ACCESS   accessible-for-notify
+         STATUS       current
+         DESCRIPTION
+          "Conflict type can be Bfr-id conflict or Prefix conflict."
+         ::= { hwBierTrapControl 3 }           
+
+     hwBierConflictBfrid OBJECT-TYPE
+         SYNTAX       Unsigned32 (0..65535)
+         MAX-ACCESS   accessible-for-notify
+         STATUS       current
+         DESCRIPTION
+          "Conflicted Bfr-id Index. The value ranges from  0 to 65535."
+         ::= { hwBierTrapControl 4 }    
+
+     hwBierConflictPrefix OBJECT-TYPE
+          SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+          MAX-ACCESS accessible-for-notify
+          STATUS     current
+          DESCRIPTION
+            "The Prefix Address configured in the Loopback Interface.
+            For addresses of type ipv4z or ipv6z, the appended zone
+            index is significant even though it lies beyond the prefix
+            length.  The use of these address types indicate that this
+            source address applies only within the given zone.  Zone
+            index zero is not valid in this table."
+         ::= { hwBierTrapControl 5 }      
+          
+     hwBierConflictState OBJECT-TYPE
+         SYNTAX       INTEGER { inConflict (1),
+                                conflictResolved (2)
+                            }
+         MAX-ACCESS   accessible-for-notify
+         STATUS       current
+         DESCRIPTION
+          "Conflict state indicates the current conflict state."
+          ::= { hwBierTrapControl 6 } 
+
+     hwBierAdvertiserCurr  OBJECT-TYPE
+         SYNTAX     DisplayString (SIZE(1..20))
+         MAX-ACCESS accessible-for-notify
+         STATUS     current
+         DESCRIPTION
+            "Current advertiser of the prefix and bfr-id."
+         ::= { hwBierTrapControl 7 }
+         
+     hwBierAdvertiserNew  OBJECT-TYPE
+         SYNTAX     DisplayString (SIZE(1..20))
+         MAX-ACCESS accessible-for-notify
+         STATUS     current
+         DESCRIPTION
+            "New advertiser of the prefix and bfr-id."
+         ::= { hwBierTrapControl 8 }    
+         
+     hwBierPrefixCurr OBJECT-TYPE
+          SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+          MAX-ACCESS accessible-for-notify
+          STATUS     current
+          DESCRIPTION
+            "The current BFR-prefix Address.
+            For addresses of type ipv4z or ipv6z, the appended zone
+            index is significant even though it lies beyond the prefix
+            length.  The use of these address types indicate that this
+            source address applies only within the given zone.  Zone
+            index zero is not valid in this table."
+         ::= { hwBierTrapControl 9 }      
+
+     hwBierPrefixNew OBJECT-TYPE
+          SYNTAX     InetAddress (SIZE (0|4|8|16|20))
+          MAX-ACCESS accessible-for-notify
+          STATUS     current
+          DESCRIPTION
+            "The new BFR-prefix Address.
+            For addresses of type ipv4z or ipv6z, the appended zone
+            index is significant even though it lies beyond the prefix
+            length.  The use of these address types indicate that this
+            source address applies only within the given zone.  Zone
+            index zero is not valid in this table."
+         ::= { hwBierTrapControl 10 }    
+         
+     hwBierBfridCurr OBJECT-TYPE
+         SYNTAX       Unsigned32 (0..65535)
+         MAX-ACCESS   accessible-for-notify
+         STATUS       current
+         DESCRIPTION
+          "The current Bfr-id Index. The value ranges from  0 to 65535."
+          ::= { hwBierTrapControl 11 }    
+          
+     hwBierBfridNew OBJECT-TYPE
+         SYNTAX       Unsigned32 (0..65535)
+         MAX-ACCESS   accessible-for-notify
+         STATUS       current
+         DESCRIPTION
+          "The new Bfr-id Index. The value ranges from  0 to 65535."
+          ::= { hwBierTrapControl 12 }
+        
+   --  Traps
+
+     hwBierPrefixBfridConflict NOTIFICATION-TYPE
+          OBJECTS { 
+             hwBierAddressType,
+             hwBierSubdomain,
+             hwBierConflictType,
+             hwBierConflictBfrid,
+             hwBierConflictPrefix,
+             hwBierConflictState,
+             hwBierAdvertiserCurr,
+             hwBierAdvertiserNew,
+             hwBierPrefixCurr,
+             hwBierPrefixNew,
+             hwBierBfridCurr,
+             hwBierBfridNew
+             }
+          STATUS       current
+          DESCRIPTION
+             "An hwBierPrefixBfridConflict trap signifies that a prefix bfr-id 
+             conflict is detected."
+          ::= { hwBierTraps 1 }
+
+     hwBierPrefixBfridConflictClear NOTIFICATION-TYPE
+          OBJECTS { 
+             hwBierAddressType,
+             hwBierSubdomain,
+             hwBierConflictType,
+             hwBierConflictBfrid, 
+             hwBierConflictPrefix,
+             hwBierConflictState,
+             hwBierAdvertiserCurr,
+             hwBierAdvertiserNew,
+             hwBierPrefixCurr,
+             hwBierPrefixNew,
+             hwBierBfridCurr,
+             hwBierBfridNew
+             }
+          STATUS       current
+          DESCRIPTION
+             "Clear hwBierPrefixBfridConflict trap."
+          ::= { hwBierTraps 2 } 
+
+   hwBierTrapConformance OBJECT IDENTIFIER ::= { hwBierMIB 4 }
+   hwBierTrapGroups      OBJECT IDENTIFIER ::= { hwBierTrapConformance 1 }
+   hwBierTrapCompliances OBJECT IDENTIFIER ::= { hwBierTrapConformance 2 }
+
+   --  compliance statements
+
+   hwBierTrapCompliance MODULE-COMPLIANCE
+        STATUS       obsolete
+        DESCRIPTION
+           "The compliance statement."
+        MODULE       -- this module
+        MANDATORY-GROUPS { hwBierTrapControlGroup }
+
+        GROUP       hwBierTrapControlGroup
+        DESCRIPTION
+           "This group is optional but recommended for all HUAWEI BIER systems."
+        ::= { hwBierTrapCompliances 1 }
+
+   hwBierTrapCompliance2 MODULE-COMPLIANCE
+        STATUS       current
+        DESCRIPTION
+           "The compliance statement."
+        MODULE       -- this module
+        MANDATORY-GROUPS { hwBierTrapControlGroup, hwBierTrapEventGroup }
+        
+        OBJECT       hwBierAddressType
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwBierSubdomain
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwBierConflictType
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwBierConflictPrefix
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwBierConflictBfrid
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwBierAdvertiserCurr
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwBierAdvertiserNew
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwBierPrefixCurr
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwBierPrefixNew
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwBierBfridCurr
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwBierBfridNew
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."
+        OBJECT       hwBierConflictState
+        MIN-ACCESS   accessible-for-notify
+        DESCRIPTION
+           "This object is only required to be supplied within
+           notifications."           
+        ::= { hwBierTrapCompliances 2 }
+
+   --  units of conformance
+
+     hwBierTrapControlGroup    OBJECT-GROUP
+          OBJECTS { hwBierAddressType,
+                    hwBierSubdomain,
+                    hwBierConflictType,
+                    hwBierConflictBfrid,
+                    hwBierConflictPrefix,
+                    hwBierConflictState,
+                    hwBierAdvertiserCurr,
+                    hwBierAdvertiserNew,
+                    hwBierPrefixCurr,
+                    hwBierPrefixNew,
+                    hwBierBfridCurr,
+                    hwBierBfridNew }
+          STATUS       current
+          DESCRIPTION
+             "These objects are required to control traps from HUAWEI BIER systems."
+          ::= { hwBierTrapGroups 1 }
+
+     hwBierTrapEventGroup       NOTIFICATION-GROUP
+          NOTIFICATIONS {
+             hwBierPrefixBfridConflict,
+             hwBierPrefixBfridConflictClear
+             }
+          STATUS        current
+          DESCRIPTION
+             "A grouping of BIER trap events, as specified
+             in NOTIFICATION-TYPE constructs."
+          ::= { hwBierTrapGroups 2 }
+
+   END 
+

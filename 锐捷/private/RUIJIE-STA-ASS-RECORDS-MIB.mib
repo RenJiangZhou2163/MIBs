@@ -1,0 +1,985 @@
+
+-- *******************************************************************
+-- RUIJIE-STA-ASS-RECORDS-MIB.mib : Ruijie STA ASSIATION RECORDS MIB 
+-- 
+-- JUNE 2011, chenfg1
+--
+-- Copyright (c) 2011 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- *******************************************************************
+--
+RUIJIE-STA-ASS-RECORDS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS 
+        MODULE-IDENTITY, 
+        OBJECT-TYPE,
+		Integer32,
+	    NOTIFICATION-TYPE,	
+        Unsigned32,
+        IpAddress
+                FROM SNMPv2-SMI
+        OBJECT-GROUP,
+        MODULE-COMPLIANCE
+                FROM SNMPv2-CONF
+        TruthValue,
+        RowStatus,
+        DisplayString,
+        MacAddress,
+        DateAndTime
+                FROM SNMPv2-TC 
+        ruijieMgmt
+                FROM RUIJIE-SMI
+        ruijieIfIndex 
+                FROM RUIJIE-INTERFACE-MIB;
+
+--********************************************************************
+--*  MODULE IDENTITY
+--********************************************************************
+
+ruijieStaAssRecordsMIB    MODULE-IDENTITY
+       LAST-UPDATED       "201111100000Z"
+       ORGANIZATION       "Ruijie Networks Co.,Ltd."
+       CONTACT-INFO  
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+
+        DESCRIPTION             
+                "This MIB is intended to get the sta assoiation records"
+        
+        REVISION      "200911100000Z"
+        DESCRIPTION
+                "Initial version of this MIB module. "
+        ::= { ruijieMgmt 101 }
+
+ruijieStaAssRecordsMIBTrap    OBJECT IDENTIFIER 
+    ::= { ruijieStaAssRecordsMIB 0 }
+
+ruijieStaAssRecordsMIBObjects OBJECT IDENTIFIER 
+    ::= { ruijieStaAssRecordsMIB 1 }
+
+ruijieStaAssRecordsGrobal OBJECT IDENTIFIER
+	::= { ruijieStaAssRecordsMIBObjects 1 }
+
+ruijieStaAssRecordsByMAC OBJECT IDENTIFIER
+	::= { ruijieStaAssRecordsMIBObjects 2 }
+
+ruijieStaAssRecordsByTime OBJECT IDENTIFIER
+	::= { ruijieStaAssRecordsMIBObjects 3 }
+
+ruijieStaAssRecordsByAP OBJECT IDENTIFIER
+	::= { ruijieStaAssRecordsMIBObjects 4 }
+	
+ruijieStaAssSignalByMAC OBJECT IDENTIFIER
+	::= { ruijieStaAssRecordsMIBObjects 5 }
+
+ruijieStaAssRetryByMAC OBJECT IDENTIFIER
+	::= { ruijieStaAssRecordsMIBObjects 6 }	
+
+ruijieStaAssStatistic OBJECT IDENTIFIER
+	::= { ruijieStaAssRecordsMIBObjects 7 }		
+	
+--*******************************************************************
+--ruijieStaAssRecordsTable:  get sta association grobal static by mac
+--*******************************************************************
+    ruijieStaAssRecordsGrobalTable  OBJECT-TYPE
+         SYNTAX      SEQUENCE OF RuijieStaAssRecordsGrobalEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "A table listing the sta association process survey records,
+                      can be search record by mac."
+         ::= { ruijieStaAssRecordsGrobal 1 }
+   
+    ruijieStaAssRecordsGrobalEntry OBJECT-TYPE
+         SYNTAX      RuijieStaAssRecordsGrobalEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Get sta association records by mac."
+         INDEX       { ruijieStaMacGrobalAddress }
+         ::= { ruijieStaAssRecordsGrobalTable  1 }
+
+    RuijieStaAssRecordsGrobalEntry ::= SEQUENCE {             
+             ruijieStaMacGrobalAddress        MacAddress,       
+             ruijieStaMacGrobalAPName         DisplayString,    
+             ruijieStaMacGrobalISUP           INTEGER,          
+             ruijieStaMacGrobalStartime       DateAndTime,      
+             ruijieStaMacGrobalupdowntimes    Unsigned32,       
+             ruijieStaMacGrobalroamtimes      Unsigned32,      
+	     ruijieStaMacGrobaltotaltimes     Unsigned32,
+	     ruijieStaMacGrobalrealdowntimes  Unsigned32,
+	     ruijieStaMacGrobalSSID           DisplayString
+             }
+
+    ruijieStaMacGrobalAddress OBJECT-TYPE
+         SYNTAX      MacAddress
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Sta Mac address."
+         ::= { ruijieStaAssRecordsGrobalEntry 1 }
+
+    ruijieStaMacGrobalAPName OBJECT-TYPE
+         SYNTAX      DisplayString(SIZE(1..64))
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "ap name."
+         ::= { ruijieStaAssRecordsGrobalEntry 2 }
+
+    ruijieStaMacGrobalISUP OBJECT-TYPE
+         SYNTAX      INTEGER {
+                      up(0),
+                      down(1)
+                     }
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta is active or not."
+         ::= { ruijieStaAssRecordsGrobalEntry 3 }
+
+    ruijieStaMacGrobalStartime OBJECT-TYPE
+         SYNTAX      DateAndTime
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta active time."
+         ::= { ruijieStaAssRecordsGrobalEntry 4 }
+
+    ruijieStaMacGrobalupdowntimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta up and down times."
+         ::= { ruijieStaAssRecordsGrobalEntry 5 }
+
+    ruijieStaMacGrobalroamtimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta roam times."
+         ::= { ruijieStaAssRecordsGrobalEntry 6 }
+		 
+    ruijieStaMacGrobaltotaltimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta total times(join\leave\delete\roam)."
+         ::= { ruijieStaAssRecordsGrobalEntry 7 }
+		 
+    ruijieStaMacGrobalrealdowntimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta real down times(sta join after leave within 5s)."
+         ::= { ruijieStaAssRecordsGrobalEntry 8 }		 
+
+    ruijieStaMacGrobalSSID OBJECT-TYPE
+         SYNTAX      DisplayString(SIZE(1..64))
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "STA curent ssid."
+         ::= { ruijieStaAssRecordsGrobalEntry 9 }
+		 
+--*******************************************************************
+--ruijieStaAssRecordsByMACTable  :  get sta association records by mac
+--*******************************************************************
+    ruijieStaAssRecordsByMACTable  OBJECT-TYPE
+         SYNTAX      SEQUENCE OF RuijieStaAssRecordsByMACEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "A table listing the sta association process detail records,
+                      can be search record by mac."
+         ::= { ruijieStaAssRecordsByMAC 1 }
+   
+    ruijieStaAssRecordsByMACEntry OBJECT-TYPE
+         SYNTAX      RuijieStaAssRecordsByMACEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Get sta association records by mac."
+         INDEX       { ruijieStaMacAddress,
+                       ruijieStaMacindex}
+         ::= { ruijieStaAssRecordsByMACTable  1 }
+
+    RuijieStaAssRecordsByMACEntry ::= SEQUENCE {        
+             ruijieStaMacAddress      MacAddress,      
+             ruijieStaMacindex        Unsigned32,     
+             ruijieStaAsstime         DateAndTime,    
+             ruijieStaAssAction       INTEGER,
+             ruijieStaAssSubAction    INTEGER,			 
+             ruijieStaAssResult       INTEGER,       
+             ruijieStaAssReason       INTEGER,       
+             ruijieStaAssApNamePre    DisplayString,   
+             ruijieStaAssApNameNow    DisplayString,   
+             ruijieStaAssSignalQua    INTEGER,        
+             ruijieStaAssRoamtype     INTEGER,
+             ruijieStaAssjitter       INTEGER,
+             ruijieStaAssjointimes    Unsigned32,
+             ruijieStaAsslatelytime   DateAndTime,
+             ruijieStaAssSSID         DisplayString
+             			 
+             }
+    ruijieStaMacAddress OBJECT-TYPE
+         SYNTAX      MacAddress
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Sta Mac address."
+         ::= { ruijieStaAssRecordsByMACEntry 1 }
+
+    ruijieStaMacindex OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "the index of Sta mac."
+         ::= { ruijieStaAssRecordsByMACEntry 2 }
+		 
+    ruijieStaAsstime OBJECT-TYPE
+         SYNTAX      DateAndTime
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta association time."
+         ::= { ruijieStaAssRecordsByMACEntry 3 }
+		 
+    ruijieStaAssAction OBJECT-TYPE
+         SYNTAX      INTEGER {
+                      join(1),
+                      leave(2),
+                      roam(3),
+                      delete(4)
+                     }
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta association action."
+         ::= { ruijieStaAssRecordsByMACEntry 4 }		 
+		 
+    ruijieStaAssSubAction OBJECT-TYPE
+         SYNTAX      INTEGER 
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta association sub action."
+         ::= { ruijieStaAssRecordsByMACEntry 5 }
+		 
+    ruijieStaAssResult OBJECT-TYPE
+         SYNTAX      INTEGER {
+                      success(0),
+                      failed(1)
+                     }
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta association action resoult."
+         ::= { ruijieStaAssRecordsByMACEntry 6 }
+
+    ruijieStaAssReason OBJECT-TYPE
+         SYNTAX      INTEGER
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta association action reason."
+         ::= { ruijieStaAssRecordsByMACEntry 7 }
+
+    ruijieStaAssApNamePre OBJECT-TYPE
+         SYNTAX      DisplayString(SIZE(1..64))
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta preference ap-id."
+         ::= { ruijieStaAssRecordsByMACEntry 8 }
+
+    ruijieStaAssApNameNow OBJECT-TYPE
+         SYNTAX      DisplayString(SIZE(1..64))
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta now ap-id."
+         ::= { ruijieStaAssRecordsByMACEntry 9 }
+
+    ruijieStaAssSignalQua OBJECT-TYPE
+         SYNTAX      INTEGER
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta signal quality."
+         ::= { ruijieStaAssRecordsByMACEntry 10 }
+		 
+    ruijieStaAssRoamtype OBJECT-TYPE
+         SYNTAX      INTEGER
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta roam type."
+         ::= { ruijieStaAssRecordsByMACEntry 11 }		 
+
+    ruijieStaAssjitter OBJECT-TYPE
+         SYNTAX      INTEGER
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta association action jitter or not."
+         ::= { ruijieStaAssRecordsByMACEntry 12}
+		 
+    ruijieStaAssjointimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta association join times."
+         ::= { ruijieStaAssRecordsByMACEntry 13 }
+
+    ruijieStaAsslatelytime OBJECT-TYPE
+         SYNTAX      DateAndTime
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta association lately join time."
+         ::= { ruijieStaAssRecordsByMACEntry 14 }
+
+    ruijieStaAssSSID OBJECT-TYPE
+         SYNTAX      DisplayString
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta association ssid."
+         ::= { ruijieStaAssRecordsByMACEntry 15 }		 
+		 
+		 
+--*******************************************************************************
+--ruijieStaAssRecordsSearchByTime  :  search sta association records macs by time
+--*******************************************************************************
+    ruijieStaAssRecordsSearchByTimeTable  OBJECT-TYPE
+         SYNTAX      SEQUENCE OF RuijieStaAssRecordsSearchByTimeEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "A table listing the sta association process detail records,
+                      can be search record by the time of sta association."
+         ::= { ruijieStaAssRecordsByTime 1 }
+   
+    ruijieStaAssRecordsSearchByTimeEntry OBJECT-TYPE
+         SYNTAX      RuijieStaAssRecordsSearchByTimeEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Get sta association records by mac."
+         INDEX       { ruijieStaUptimeLow, 
+                       ruijieStaUptimeHigh,
+                       ruijieStaDowntimeLow,
+                       ruijieStaDowntimeHigh,
+                       ruijieStaTimeindex }
+         ::= { ruijieStaAssRecordsSearchByTimeTable  1 }
+
+
+    RuijieStaAssRecordsSearchByTimeEntry ::= SEQUENCE {      
+             ruijieStaUptimeLow        DateAndTime,           
+             ruijieStaUptimeHigh       DateAndTime,           
+             ruijieStaDowntimeLow      DateAndTime,          
+             ruijieStaDowntimeHigh     DateAndTime,          
+             ruijieStaTimeindex        Unsigned32,            
+             ruijieStaTimeMac          MacAddress,           
+             ruijieStaTimeAPName       DisplayString,      
+             ruijieStaTimeISUP         INTEGER,            
+             ruijieStaTimeStartime     DateAndTime,          
+             ruijieStaTimeupdowntimes  Unsigned32,         
+             ruijieStaTimeroamtimes    Unsigned32,           
+             ruijieStaTimertotaltimes  Unsigned32,
+             ruijieStaTimerjitter      INTEGER,
+             ruijieStaTimerjointimes   Unsigned32,
+             ruijieStaTimerlatelytime  DateAndTime,
+             ruijieStaTimerSSID        DisplayString			 
+             }
+
+    ruijieStaUptimeLow OBJECT-TYPE
+         SYNTAX      DateAndTime
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "the low time of Sta active time range."
+         ::= { ruijieStaAssRecordsSearchByTimeEntry 1 }
+
+    ruijieStaUptimeHigh OBJECT-TYPE
+         SYNTAX      DateAndTime
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "the high time of Sta active time range."
+         ::= { ruijieStaAssRecordsSearchByTimeEntry 2 }
+
+    ruijieStaDowntimeLow OBJECT-TYPE
+         SYNTAX      DateAndTime
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "the low time of Sta down time range."
+         ::= { ruijieStaAssRecordsSearchByTimeEntry 3 }
+
+    ruijieStaDowntimeHigh OBJECT-TYPE
+         SYNTAX      DateAndTime
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "the high time of Sta down time range."
+         ::= { ruijieStaAssRecordsSearchByTimeEntry 4 }
+
+    ruijieStaTimeindex OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "the index of Sta mac."
+         ::= { ruijieStaAssRecordsSearchByTimeEntry 5 }
+
+    ruijieStaTimeMac OBJECT-TYPE
+         SYNTAX      MacAddress
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta Mac address."
+         ::= { ruijieStaAssRecordsSearchByTimeEntry 6 }
+
+    ruijieStaTimeAPName OBJECT-TYPE
+         SYNTAX      DisplayString(SIZE(1..64))
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "ap name."
+         ::= { ruijieStaAssRecordsSearchByTimeEntry 7 }
+
+    ruijieStaTimeISUP OBJECT-TYPE
+         SYNTAX      INTEGER {
+                      up(0),
+                      down(1)
+                     }
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta is active or not."
+         ::= { ruijieStaAssRecordsSearchByTimeEntry 8 }
+
+    ruijieStaTimeStartime OBJECT-TYPE
+         SYNTAX      DateAndTime
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta active time."
+         ::= { ruijieStaAssRecordsSearchByTimeEntry 9 }
+
+    ruijieStaTimeupdowntimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta up and down times."
+         ::= { ruijieStaAssRecordsSearchByTimeEntry 10 }
+
+    ruijieStaTimeroamtimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta roam times."
+         ::= { ruijieStaAssRecordsSearchByTimeEntry 11 }
+		 
+    ruijieStaTimertotaltimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta total times(join\leave\delete\roam)."
+         ::= { ruijieStaAssRecordsSearchByTimeEntry 12 }		 
+
+    ruijieStaTimerjitter OBJECT-TYPE
+         SYNTAX      INTEGER
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta association action jitter or not."
+         ::= { ruijieStaAssRecordsSearchByTimeEntry 13}
+		 
+    ruijieStaTimerjointimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta association join times."
+         ::= { ruijieStaAssRecordsSearchByTimeEntry 14 }
+
+    ruijieStaTimerlatelytime OBJECT-TYPE
+         SYNTAX      DateAndTime
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta association lately join time."
+         ::= { ruijieStaAssRecordsSearchByTimeEntry 15 }
+
+    ruijieStaTimerSSID OBJECT-TYPE
+         SYNTAX      DisplayString
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta association ssid."
+         ::= { ruijieStaAssRecordsSearchByTimeEntry 16 }				 
+		 
+--*******************************************************************************
+--ruijieStaAssRecordsSearchByAPTable :  search sta association records macs by AP
+--*******************************************************************************
+    ruijieStaAssRecordsSearchByAPTable  OBJECT-TYPE
+         SYNTAX      SEQUENCE OF RuijieStaAssRecordsSearchByAPEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "A table listing the sta association process detail records,
+                      can be search record by ap which sta associatied."
+         ::= { ruijieStaAssRecordsByAP 1 }
+   
+    ruijieStaAssRecordsSearchByAPEntry OBJECT-TYPE
+         SYNTAX      RuijieStaAssRecordsSearchByAPEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Get sta association records by ap."
+         INDEX       { ruijieStaAPAPName,
+                       ruijieStaAPindex }
+         ::= { ruijieStaAssRecordsSearchByAPTable  1 }
+
+
+    RuijieStaAssRecordsSearchByAPEntry ::= SEQUENCE {    
+             ruijieStaAPAPName       DisplayString,    
+             ruijieStaAPindex        Unsigned32,      
+             ruijieStaAPMac          MacAddress,       
+             ruijieStaAPISUP         INTEGER,          
+             ruijieStaAPStartime     DateAndTime,      
+             ruijieStaAPupdowntimes  Unsigned32,       
+             ruijieStaAProamtimes    Unsigned32,       
+             ruijieStaAPtotaltimes   Unsigned32,
+	     ruijieStaAPjitter       INTEGER,
+             ruijieStaAPjointimes    Unsigned32,
+             ruijieStaAPlatelytime   DateAndTime,
+             ruijieStaAPSSID         DisplayString					 
+             }
+
+    ruijieStaAPAPName OBJECT-TYPE
+         SYNTAX      DisplayString(SIZE(1..64))
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "ap name."
+         ::= { ruijieStaAssRecordsSearchByAPEntry 1 }
+
+    ruijieStaAPindex OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "the index of Sta mac."
+         ::= { ruijieStaAssRecordsSearchByAPEntry 2 }
+
+
+    ruijieStaAPMac OBJECT-TYPE
+         SYNTAX      MacAddress
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta Mac address."
+         ::= { ruijieStaAssRecordsSearchByAPEntry 3 }
+
+    ruijieStaAPISUP OBJECT-TYPE
+         SYNTAX      INTEGER {
+                      up(0),
+                      down(1)
+                     }
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta is active or not."
+         ::= { ruijieStaAssRecordsSearchByAPEntry 4 }
+
+    ruijieStaAPStartime OBJECT-TYPE
+         SYNTAX      DateAndTime
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta active time."
+         ::= { ruijieStaAssRecordsSearchByAPEntry 5 }
+
+    ruijieStaAPupdowntimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta up and down times."
+         ::= { ruijieStaAssRecordsSearchByAPEntry 6 }
+
+    ruijieStaAProamtimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta roam times."
+         ::= { ruijieStaAssRecordsSearchByAPEntry 7 }
+		 
+    ruijieStaAPtotaltimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta total times(join\leave\delete\roam)."
+         ::= { ruijieStaAssRecordsSearchByAPEntry 8 }
+		 
+    ruijieStaAPjitter OBJECT-TYPE
+         SYNTAX      INTEGER
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta association action jitter or not."
+         ::= { ruijieStaAssRecordsSearchByAPEntry 9}
+		 
+    ruijieStaAPjointimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta association join times."
+         ::= { ruijieStaAssRecordsSearchByAPEntry 10 }
+
+    ruijieStaAPlatelytime OBJECT-TYPE
+         SYNTAX      DateAndTime
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta association lately join time."
+         ::= { ruijieStaAssRecordsSearchByAPEntry 11 }
+
+    ruijieStaAPSSID OBJECT-TYPE
+         SYNTAX      DisplayString
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta association ssid."
+         ::= { ruijieStaAssRecordsSearchByAPEntry 12 }		
+
+--*******************************************************************
+--ruijieStaAssSignalByMACTable  :  get sta association signal by mac
+--*******************************************************************
+    ruijieStaAssSignalByMACTable  OBJECT-TYPE
+         SYNTAX      SEQUENCE OF RuijieStaAssSignalByMACEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "A table listing the sta association process detail signal,
+                      can be search by mac."
+         ::= { ruijieStaAssSignalByMAC 1 }
+   
+    ruijieStaAssSignalByMACEntry OBJECT-TYPE
+         SYNTAX      RuijieStaAssSignalByMACEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Get sta association signal by mac."
+         INDEX       { ruijieStaSignalMacAddress,
+                       ruijieStaSignalMacindex}
+         ::= { ruijieStaAssSignalByMACTable  1 }
+
+    RuijieStaAssSignalByMACEntry ::= SEQUENCE {        
+             ruijieStaSignalMacAddress      MacAddress,      
+             ruijieStaSignalMacindex        Unsigned32,     
+             ruijieStaSignaltime            DateAndTime,    
+             ruijieStaSignalValue           INTEGER
+             }
+    ruijieStaSignalMacAddress OBJECT-TYPE
+         SYNTAX      MacAddress
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Sta Mac address."
+         ::= { ruijieStaAssSignalByMACEntry 1 }
+
+    ruijieStaSignalMacindex OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "the index of Sta mac."
+         ::= { ruijieStaAssSignalByMACEntry 2 }
+		 
+    ruijieStaSignaltime OBJECT-TYPE
+         SYNTAX      DateAndTime
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta time of signal."
+         ::= { ruijieStaAssSignalByMACEntry 3 }
+		 
+    ruijieStaSignalValue OBJECT-TYPE
+         SYNTAX      INTEGER 
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "the signal value."
+         ::= { ruijieStaAssSignalByMACEntry 4 }
+
+--*******************************************************************
+--ruijieStaAssRetryByMACTable  :  get sta retry packet value by mac
+--*******************************************************************
+    ruijieStaAssRetryByMACTable  OBJECT-TYPE
+         SYNTAX      SEQUENCE OF RuijieStaAssRetryByMACEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "A table listing the sta association process detail signal,
+                      can be search by mac."
+         ::= { ruijieStaAssRetryByMAC 1 }
+   
+    ruijieStaAssRetryByMACEntry OBJECT-TYPE
+         SYNTAX      RuijieStaAssRetryByMACEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Get sta association signal by mac."
+         INDEX       { ruijieStaRetryMacAddress,
+                       ruijieStaRetryMacindex}
+         ::= { ruijieStaAssRetryByMACTable  1 }
+
+    RuijieStaAssRetryByMACEntry ::= SEQUENCE {        
+             ruijieStaRetryMacAddress      MacAddress,      
+             ruijieStaRetryMacindex        Unsigned32,     
+             ruijieStaRetrytime            DateAndTime,    
+             ruijieStaRetryValue           INTEGER
+             }
+    ruijieStaRetryMacAddress OBJECT-TYPE
+         SYNTAX      MacAddress
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Sta Mac address."
+         ::= { ruijieStaAssRetryByMACEntry 1 }
+
+    ruijieStaRetryMacindex OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "the index of Sta mac."
+         ::= { ruijieStaAssRetryByMACEntry 2 }
+		 
+    ruijieStaRetrytime OBJECT-TYPE
+         SYNTAX      DateAndTime
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Sta time of signal."
+         ::= { ruijieStaAssRetryByMACEntry 3 }
+		 
+    ruijieStaRetryValue OBJECT-TYPE
+         SYNTAX      INTEGER 
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "the retry value."
+         ::= { ruijieStaAssRetryByMACEntry 4 }		
+
+--*******************************************************************
+--statistics data
+--*******************************************************************
+    ruijieAssStatisticsTotalsta OBJECT-TYPE
+         SYNTAX      Unsigned32 
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "the total sta."
+         ::= { ruijieStaAssStatistic 1 }	
+
+    ruijieAssStatisticsTotalinfo OBJECT-TYPE
+         SYNTAX      Unsigned32 
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "the total info."
+         ::= { ruijieStaAssStatistic 2 }	
+		 
+    ruijieAssStatisticsdown OBJECT-TYPE
+         SYNTAX      Unsigned32 
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "the down sta within one hour."
+         ::= { ruijieStaAssStatistic 3 }			 
+
+    ruijieAssStatisticsObligate1 OBJECT-TYPE
+         SYNTAX      Unsigned32 
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "the obligate 2."
+         ::= { ruijieStaAssStatistic 4 }					 
+
+    ruijieAssStatisticsObligate2 OBJECT-TYPE
+         SYNTAX      Unsigned32 
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "the obligate 2."
+         ::= { ruijieStaAssStatistic 5 }			 
+		 
+    ruijieAssStatisticsObligate3 OBJECT-TYPE
+         SYNTAX      Unsigned32 
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "the obligate 2."
+         ::= { ruijieStaAssStatistic 6 }					 
+		 
+ruijieStaAssRecordsMIBConformance OBJECT IDENTIFIER ::= { ruijieStaAssRecordsMIB 2 }
+ruijieStaAssRecordsMIBCompliances OBJECT IDENTIFIER ::= { ruijieStaAssRecordsMIBConformance 1 }
+ruijieStaAssRecordsMIBGroups      OBJECT IDENTIFIER ::= { ruijieStaAssRecordsMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieStaAssRecordsMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie Sta Association Records"
+        MODULE  -- this module
+                MANDATORY-GROUPS { 
+                                  ruijieStaAssRecordsGrobalMIBroup,
+                                  ruijieStaAssRecordsMIBroup,
+                                  ruijieStaAssRecordsSearchByTimeMIBroup,
+                                  ruijieStaAssRecordsSearchByAPMIBroup,
+				  ruijieStaAssSignalSearchByMACMIBroup,
+				  ruijieStaAssRetrySearchByMACMIBroup,
+				  ruijieStaAssStatisticsMIBroup
+                }
+        ::= { ruijieStaAssRecordsMIBCompliances 1 }
+                
+-- units of conformance
+
+ruijieStaAssRecordsGrobalMIBroup OBJECT-GROUP
+        OBJECTS {
+             ruijieStaMacGrobalAPName,  
+             ruijieStaMacGrobalISUP,           
+             ruijieStaMacGrobalStartime,       
+             ruijieStaMacGrobalupdowntimes,     
+             ruijieStaMacGrobalroamtimes,    
+             ruijieStaMacGrobaltotaltimes,    
+             ruijieStaMacGrobalrealdowntimes, 
+             ruijieStaMacGrobalSSID          
+        }
+        STATUS  current
+        DESCRIPTION
+                "A table listing the sta association process survey records,
+                      can be search record by mac."
+        ::= { ruijieStaAssRecordsMIBGroups 1 } 
+
+ruijieStaAssRecordsMIBroup OBJECT-GROUP
+        OBJECTS {
+             ruijieStaAsstime,  
+             ruijieStaAssAction,    
+             ruijieStaAssSubAction,   		 
+             ruijieStaAssResult,       
+             ruijieStaAssReason,        
+             ruijieStaAssApNamePre,    
+             ruijieStaAssApNameNow,     
+             ruijieStaAssSignalQua,   
+             ruijieStaAssRoamtype,    
+             ruijieStaAssjitter,       
+             ruijieStaAssjointimes,    
+             ruijieStaAsslatelytime,  
+	     ruijieStaAssSSID        
+        }
+        STATUS  current
+        DESCRIPTION
+                "A table listing the sta association process detail records,
+                      can be search record by mac."
+        ::= { ruijieStaAssRecordsMIBGroups 2 } 
+
+ruijieStaAssRecordsSearchByTimeMIBroup OBJECT-GROUP
+        OBJECTS {
+             ruijieStaTimeMac,
+             ruijieStaTimeAPName,
+             ruijieStaTimeISUP,
+             ruijieStaTimeStartime,
+             ruijieStaTimeupdowntimes,
+             ruijieStaTimeroamtimes,
+             ruijieStaTimertotaltimes,
+             ruijieStaTimerjitter,
+             ruijieStaTimerjointimes,   
+             ruijieStaTimerlatelytime,  
+             ruijieStaTimerSSID       				 
+        }
+        STATUS  current
+        DESCRIPTION
+                "A table listing the sta association process detail records,
+                      can be search record by the time of sta association."
+        ::= { ruijieStaAssRecordsMIBGroups 3 } 
+
+ruijieStaAssRecordsSearchByAPMIBroup OBJECT-GROUP
+        OBJECTS {
+             ruijieStaAPMac,
+             ruijieStaAPISUP,
+             ruijieStaAPStartime,
+             ruijieStaAPupdowntimes,
+             ruijieStaAProamtimes,
+             ruijieStaAPtotaltimes,
+             ruijieStaAPjitter,   
+             ruijieStaAPjointimes,   
+             ruijieStaAPlatelytime,  
+             ruijieStaAPSSID       
+        }
+        STATUS  current
+        DESCRIPTION
+                "A table listing the sta association process detail records,
+                      can be search record by ap which sta associatied."
+        ::= { ruijieStaAssRecordsMIBGroups 4 } 
+
+ruijieStaAssSignalSearchByMACMIBroup OBJECT-GROUP
+        OBJECTS {
+             ruijieStaSignaltime,    
+             ruijieStaSignalValue
+        }
+        STATUS  current
+        DESCRIPTION
+                "A table listing the sta association process detail signal,
+                      can be search record by mac."
+        ::= { ruijieStaAssRecordsMIBGroups 5 } 
+
+ruijieStaAssRetrySearchByMACMIBroup OBJECT-GROUP
+        OBJECTS {
+             ruijieStaRetrytime,    
+             ruijieStaRetryValue
+        }
+        STATUS  current
+        DESCRIPTION
+                "A table listing the sta association process detail retry packet,
+                      can be search record by mac."
+        ::= { ruijieStaAssRecordsMIBGroups 6 } 		
+
+ruijieStaAssStatisticsMIBroup OBJECT-GROUP
+        OBJECTS {
+             ruijieAssStatisticsTotalsta,    
+             ruijieAssStatisticsTotalinfo,
+	     ruijieAssStatisticsdown,
+	     ruijieAssStatisticsObligate1,
+	     ruijieAssStatisticsObligate2,
+	     ruijieAssStatisticsObligate3
+        }
+        STATUS  current
+        DESCRIPTION
+                "statistics of troubleshooting."
+        ::= { ruijieStaAssRecordsMIBGroups 7 } 				
+		
+END

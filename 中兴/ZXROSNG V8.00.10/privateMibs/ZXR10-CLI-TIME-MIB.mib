@@ -1,0 +1,545 @@
+--  ************************************************
+--  $Id: zxr10cli.mib 8 2010-10-25 12:17:08Z songb $
+--
+--  zxr10cli.mib: ZXR10 CLI MIB kfile
+--
+--  Oct. 2010, songbo 170727
+--
+--  Copyright(c) 2010 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+
+ZXR10-CLI-TIME-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    Unsigned32, 
+    Integer32, 
+    enterprises
+        FROM SNMPv2-SMI    
+
+    DisplayString,DateAndTime,RowStatus,TEXTUAL-CONVENTION
+                FROM SNMPv2-TC;
+         
+    zxr10SystemMIB  MODULE-IDENTITY
+        LAST-UPDATED "201707241008Z"
+        ORGANIZATION "ZTE Corp."
+        CONTACT-INFO
+               "ZTE" 
+        DESCRIPTION 
+             "clock manager: timezone and summer time 
+                  "
+        REVISION "201707241008Z" 
+           DESCRIPTION 
+                "add zxr10TimeZoneGlobalObjects
+                 zxr10SummerTimeGlobalObjects
+                 zxr10TimeGlobalObjects
+                 zxr10SyncSourceObjects
+                 zxr10SyncControlObjects
+                 "
+        REVISION "201503311600Z"  
+        DESCRIPTION 
+                "add summerTimeSignOffset"
+        REVISION "201404211108Z"  
+        DESCRIPTION
+            "modify TimezoneOffset
+                    the max value of TimezoneOffset change to 899
+                    "
+        REVISION "201311051550Z"  
+        DESCRIPTION
+            "modify timezoneName
+                    summerTimeName
+                    summerTimeStartTime
+                    summerTimeEndTime
+                    the max length of timezonename change to 32
+                    and SYNTAX DisplayString add length
+                    "
+        REVISION "201010250000Z"
+        DESCRIPTION
+                "CLI"        
+        ::= { zxr10RosngMIB 10 }
+        
+--  Cli table
+    zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+    zxr10 OBJECT IDENTIFIER ::= { zte 3}
+    zxr10RosngMIB OBJECT IDENTIFIER ::= { zxr10 6000}
+    zxr10TimeZone OBJECT IDENTIFIER ::= { zxr10SystemMIB 1}
+    zxr10SummerTime OBJECT IDENTIFIER ::= { zxr10SystemMIB 2}
+    zxr10TimeZoneGlobalObjects OBJECT IDENTIFIER ::= { zxr10SystemMIB 3}
+    zxr10SummerTimeObjects OBJECT IDENTIFIER ::= { zxr10SystemMIB 4}
+    zxr10TimeGlobalObjects OBJECT IDENTIFIER ::= { zxr10SystemMIB 5}
+    zxr10SyncControlObjects OBJECT IDENTIFIER ::= { zxr10SystemMIB 6}
+    zxr10SyncSourceObjects OBJECT IDENTIFIER ::= { zxr10SystemMIB 7}
+    zxr10SummerTimeGlobalObjects OBJECT IDENTIFIER ::={zxr10SummerTimeObjects 1}
+
+--******************************************************************************
+-- 1. zxr10TimeZone
+--******************************************************************************
+--  TimezoneName    
+    timezoneName OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(1..32))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Name of time zone."
+        ::= { zxr10TimeZone 1 }
+
+ --  TimezoneOffset 
+    timezoneOffset OBJECT-TYPE 
+        SYNTAX      Integer32
+        UNITS       "minutes"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Offset from UTC in minutes. "
+        ::= { zxr10TimeZone 2 } 
+--******************************************************************************
+-- 2. zxr10SummerTime
+--******************************************************************************
+--  SummerTimeName    
+    summerTimeName OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(1..9))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Name of time zone in summer. "
+        ::= { zxr10SummerTime 1 }
+
+ --  SummerTimeOffset 
+    summerTimeOffset OBJECT-TYPE 
+        SYNTAX      Unsigned32
+        MAX-ACCESS  read-only
+        STATUS      deprecated
+        DESCRIPTION
+            "Offset to add in minutes(1-240). 
+                Replace summerTimeOffset with summerTimeSignOffset."
+        ::= { zxr10SummerTime 2 } 
+
+--  SummerTimeStartTime    
+    summerTimeStartTime OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(20))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Start time is relative to yyyy-mm-dd hh:mm:00. "
+        ::= { zxr10SummerTime 3 }
+
+ --  SummerTimeEndTime
+    summerTimeEndTime OBJECT-TYPE 
+        SYNTAX      DisplayString(SIZE(20))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "End time is relative to yyyy-mm-dd hh:mm:00. "
+        ::= { zxr10SummerTime 4 } 
+
+  --  SummerTimeSignOffset 
+    summerTimeSignOffset OBJECT-TYPE 
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Offset to add in minutes. "
+        ::= { zxr10SummerTime 5 } 
+--******************************************************************************
+-- 3. zxr10TimeZoneGlobalObjects
+--******************************************************************************
+    
+    zxr10TimeZoneName OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE (0..32))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Name of time zone."
+        DEFVAL     {""}
+        ::= { zxr10TimeZoneGlobalObjects 1 }
+
+    zxr10TimeZoneHours OBJECT-TYPE
+        SYNTAX      Integer32 (-12..14)
+        UNITS       "Hours"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Offset from UTC in hours."
+        DEFVAL     {0}
+        ::= { zxr10TimeZoneGlobalObjects 2 }
+  
+    zxr10TimeZoneMinutes OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..59)
+        UNITS       "Minutes"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Offset from UTC in minuts."
+        DEFVAL     {0}
+        ::= { zxr10TimeZoneGlobalObjects 3 }
+
+--******************************************************************************
+-- 4. zxr10SummerTimeGlobalObjects
+--******************************************************************************
+    zxr10SummerTimeOperStatus    OBJECT-TYPE 
+        SYNTAX      INTEGER {
+            summerTime(1),
+            standardTime(2)
+        }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION 
+            "An indication of whether the summer time feature
+             is worked on this device. "
+        ::=  {  zxr10SummerTimeGlobalObjects  1  }
+
+    zxr10SummerTimeTable OBJECT-TYPE
+        SYNTAX       SEQUENCE OF Zxr10SummerTimeEntry
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION  "Summer time table."
+        ::= { zxr10SummerTimeObjects 2}
+
+    zxr10SummerTimeEntry OBJECT-TYPE
+        SYNTAX      Zxr10SummerTimeEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION "Summer time entry."
+        INDEX   { zxr10SummerTimeId }
+        ::= { zxr10SummerTimeTable 1 }
+ 
+    Zxr10SummerTimeEntry ::= SEQUENCE {
+        zxr10SummerTimeId            Integer32,
+        zxr10SummerTimeName          DisplayString,
+        zxr10SummerTimeType          INTEGER,
+        zxr10SummerTimeStartYear     Integer32,
+        zxr10SummerTimeStartMonth    INTEGER,
+        zxr10SummerTimeDateMode      INTEGER,
+        zxr10SummerTimeStartDate     Integer32,
+        zxr10SummerTimeStartWeek     INTEGER,
+        zxr10SummerTimeStartWeekDay  INTEGER,
+        zxr10SummerTimeStartTime     Integer32,
+        zxr10SummerTimeEndYear       Integer32,
+        zxr10SummerTimeEndMonth      INTEGER,
+        zxr10SummerTimeEndDate       Integer32,
+        zxr10SummerTimeEndWeek       INTEGER,
+        zxr10SummerTimeEndWeekDay    INTEGER,
+        zxr10SummerTimeEndTime       Integer32,
+        zxr10SummerTimeOffset        Unsigned32,
+        zxr10SummerTimeOffsetSign    INTEGER,
+        zxr10SummerTimeRowStatus     RowStatus 
+        }
+ 
+    zxr10SummerTimeId OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+           "The ID of the summer time. It can only be set to 0."
+        ::= { zxr10SummerTimeEntry 1 }
+  
+    zxr10SummerTimeName OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE (1..9))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The name of the summer time."
+        ::= { zxr10SummerTimeEntry 2 }
+
+    zxr10SummerTimeType OBJECT-TYPE
+        SYNTAX      INTEGER {
+            recurring(1),
+            once(2)
+        }
+        MAX-ACCESS   read-create
+        STATUS       current
+        DESCRIPTION
+            "The type of the summer time.
+             If type is recurring, the summer time feature will work 
+             every year on this device. 
+             If the type is once,the summer time feature will work only
+             once on this device. 
+             When the type is recurring, the zxr10SummerTimeStartYear and 
+             zxr10SummerTimeEndYear are valid."
+        ::= { zxr10SummerTimeEntry 3 }
+
+    zxr10SummerTimeStartYear OBJECT-TYPE
+        SYNTAX      Integer32 (2000..2037|65535)
+        MAX-ACCESS  read-create
+        STATUS      current
+       DESCRIPTION
+            "The starting year of the summer time. 65535 means invalid."
+        ::= { zxr10SummerTimeEntry 4 } 
+  
+    zxr10SummerTimeStartMonth OBJECT-TYPE
+        SYNTAX      INTEGER {
+            january(1),
+            february(2),
+            march(3),
+            april(4),
+            may(5),
+            june(6),
+            july(7),
+            august(8),
+            september(9),
+            october(10),
+            november(11),
+            december(12)
+        }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The starting month of the summer time."
+        ::= { zxr10SummerTimeEntry 5 } 
+  
+    zxr10SummerTimeDateMode OBJECT-TYPE
+        SYNTAX      INTEGER {
+            date(1),
+            weekDay(2)
+        }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The day mode of the summer time.
+             If the day mode is date, the zxr10SummerTimeStartDate and  
+             zxr10SummerTimeEndDate are valid. 
+             If the day mode is weekDay, the zxr10SummerTimeStartWeek, 
+             zxr10SummerTimeStartWeekDay, zxr10SummerTimeEndWeek, 
+             zxr10SummerTimeEndWeekDay are valid."
+        ::= { zxr10SummerTimeEntry 6 }
+
+    zxr10SummerTimeStartDate OBJECT-TYPE
+        SYNTAX      Integer32 (1..31|255)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The starting date of the summer time. 255 means invalid."
+        ::= { zxr10SummerTimeEntry 7 } 
+
+    zxr10SummerTimeStartWeek OBJECT-TYPE
+        SYNTAX      INTEGER {
+            firstWeek(1),
+            secondWeek(2),
+            thirdWeek(3),
+            fourthWeek(4),
+            fifthWeek(5),
+            lastWeek(6),
+            invalid(255)
+        }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The starting week of the summer time."
+        ::= { zxr10SummerTimeEntry 8 }
+
+    zxr10SummerTimeStartWeekDay OBJECT-TYPE
+        SYNTAX      INTEGER {
+            monday(1),
+            tuesday(2),
+            wednesday(3),
+            thursday(4),
+            friday(5),
+            saturday(6),
+            sunday(7),
+            invalid(255)
+        }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The starting day in week."
+        ::= { zxr10SummerTimeEntry 9 }
+ 
+    zxr10SummerTimeStartTime OBJECT-TYPE
+        SYNTAX       Integer32( 0..1439 )
+        UNITS        "Minutes" 
+        MAX-ACCESS   read-create
+        STATUS       current
+        DESCRIPTION
+            "The starting time of the summer time. 
+             To convert a time HH:MM into a value in units of
+             minutes, the following algorithm should be used:
+             value = HH * 60 + MM "
+        ::= { zxr10SummerTimeEntry 10 }  
+
+    zxr10SummerTimeEndYear OBJECT-TYPE
+        SYNTAX      Integer32 (2000..2037|65535)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The ending year of the summer time. 65535 means invalid."
+        ::= { zxr10SummerTimeEntry 11 }  
+
+    zxr10SummerTimeEndMonth OBJECT-TYPE
+        SYNTAX      INTEGER {
+            january(1),
+            february(2),
+            march(3),
+            april(4),
+            may(5),
+            june(6),
+            july(7),
+            august(8),
+            september(9),
+            october(10),
+            november(11),
+            december(12)
+        }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The ending month of the summer time."
+        ::= { zxr10SummerTimeEntry 12 }
+
+    zxr10SummerTimeEndDate OBJECT-TYPE
+        SYNTAX      Integer32 (1..31|255)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The ending date of the summer time. 255 means invalid."
+        ::= { zxr10SummerTimeEntry 13 } 
+
+    zxr10SummerTimeEndWeek OBJECT-TYPE
+        SYNTAX      INTEGER {
+            firstWeek(1),
+            secondWeek(2),
+            thirdWeek(3),
+            fourthWeek(4),
+            fifthWeek(5),
+            lastWeek(6),
+            invalid(255)
+        }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The ending week of the summer time."
+        ::= { zxr10SummerTimeEntry 14 }
+
+    zxr10SummerTimeEndWeekDay OBJECT-TYPE
+        SYNTAX      INTEGER {
+            monday(1),
+            tuesday(2),
+            wednesday(3),
+            thursday(4),
+            friday(5),
+            saturday(6),
+            sunday(7),
+            invalid(255)
+        }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The ending day in week."
+        ::= { zxr10SummerTimeEntry 15 }
+
+    zxr10SummerTimeEndTime OBJECT-TYPE
+        SYNTAX      Integer32( 0..1439 )
+        UNITS       "Minutes"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The ending time of the summer time.
+             To convert a time HH:MM into a value in units of
+             minutes, the following algorithm should be used:
+             value = HH * 60 + MM "
+        ::= { zxr10SummerTimeEntry 16 }
+
+    zxr10SummerTimeOffset OBJECT-TYPE
+        SYNTAX      Unsigned32  (1..240)
+        UNITS       "Minutes"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The number of minutes to add or to subtract during summer time."
+        ::= { zxr10SummerTimeEntry 17 }  
+
+    zxr10SummerTimeOffsetSign  OBJECT-TYPE
+        SYNTAX      INTEGER {
+            positive(1),
+            negative(2)
+        }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The sign of zxr10SummerTimeOffset."
+        DEFVAL     { positive }
+        ::= { zxr10SummerTimeEntry 18 } 
+
+    zxr10SummerTimeRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+             "The status of this conceptual row.
+            
+             The supported actions of this conceptual row only include:
+             'createAndGo' and 'destroy'.
+
+             To create a row in this table, a manager must set this object to 
+             createAndGo(4).
+    
+             To delete a row in this table, a manager must set this object to 
+             destroy(6). 
+             
+             To get this object, the agent always returns active(1)."
+        ::= { zxr10SummerTimeEntry 50 }
+
+--******************************************************************************
+-- 5. zxr10TimeGlobalObjects
+--******************************************************************************
+    zxr10TimeUtcTime OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The system UTC time."
+        ::= { zxr10TimeGlobalObjects 1 }
+
+    zxr10TimeLocalTime  OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The system local time."
+        ::= { zxr10TimeGlobalObjects 2 }  
+--******************************************************************************
+-- 6. zxr10SyncControlObjects
+--******************************************************************************
+    zxr10SyncThresholdSwitch  OBJECT-TYPE
+        SYNTAX      INTEGER { 
+            off(1),
+            on(2)
+        }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The threshold switch of sync offset."
+        ::= { zxr10SyncControlObjects 1 } 
+
+    zxr10SyncMaxOffsetThreshold  OBJECT-TYPE
+        SYNTAX      Unsigned32 (0|500..86400000)
+        UNITS       "milliseconds"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The max threshold of sync offset,0 means invalid"
+        DEFVAL     {0}
+        ::= { zxr10SyncControlObjects 2 }  
+--******************************************************************************
+-- 7. zxr10SyncSourceObjects
+--******************************************************************************
+    zxr10NtpPriority OBJECT-TYPE
+        SYNTAX      Unsigned32 (1..10)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The priority of NTP,10 means invalid."
+        DEFVAL     {9}
+        ::= { zxr10SyncSourceObjects 1 }
+
+    zxr10PtpPriority OBJECT-TYPE
+        SYNTAX      Unsigned32 (1..10)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The priority of PTP,10 means invalid."
+        DEFVAL     {10}
+        ::= { zxr10SyncSourceObjects 2 }   
+
+  END

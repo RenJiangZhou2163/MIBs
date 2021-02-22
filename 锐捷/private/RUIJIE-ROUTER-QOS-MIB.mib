@@ -1,0 +1,4076 @@
+-- ****************************************************************
+-- Ruijie Class-Based QoS Configuration and Statistics MIB
+--   
+-- March 2012, Luo Junxin
+--   
+-- Copyright (c) 2012 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+--   
+-- ****************************************************************
+
+
+-- Start module
+RUIJIE-ROUTER-QOS-MIB DEFINITIONS ::= BEGIN
+
+-- Start external defined node
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Integer32,
+    Counter32,
+    Gauge32,
+    Unsigned32,
+    Counter64
+        FROM SNMPv2-SMI
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP
+        FROM SNMPv2-CONF
+    TEXTUAL-CONVENTION,
+    DisplayString,
+    MacAddress,
+    RowStatus,
+    TruthValue
+        FROM SNMPv2-TC
+    InterfaceIndex
+        FROM IF-MIB
+    ruijieMgmt
+        FROM RUIJIE-SMI;
+-- End external defined node
+
+
+-- Start root node
+ruijieRouterQoSMIB MODULE-IDENTITY
+        LAST-UPDATED "201202270000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie QoS(Quality of Service) mibs."
+
+        REVISION    "201112200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 106}
+        
+        RuijieCosType ::= TEXTUAL-CONVENTION
+          STATUS  current
+          DESCRIPTION
+             "Class of service type."
+          SYNTAX INTEGER {
+                     cos-be(1),
+                     cos-af1(2), 
+                     cos-af2(3),
+                     cos-af3(4),
+                     cos-af4(5),
+                     cos-ef(6),
+                     cos-cs6(7),
+                     cos-cs7(8)
+                 }
+
+       RuijieQType ::= TEXTUAL-CONVENTION
+          STATUS  current
+          DESCRIPTION
+             "Queue type."
+          SYNTAX INTEGER {
+                     q-lpq(1),
+                     q-wfq(2), 
+                     q-pq(3)
+                     }
+
+       RuijieQDirectionType ::= TEXTUAL-CONVENTION
+          STATUS  current
+          DESCRIPTION
+             "Direction type."
+          SYNTAX INTEGER {
+                     d-input(1),
+                     d-output(2)
+                     }
+
+       RuijieLayerType ::= TEXTUAL-CONVENTION
+          STATUS  current
+          DESCRIPTION
+             "Layer type to apply match rule."
+          SYNTAX INTEGER {
+                     link-layer(1),
+                     all-layer(2)
+                     }
+                     
+-- End root node
+  
+        ruijieCBQoSMIBObjects OBJECT IDENTIFIER ::= { ruijieRouterQoSMIB 1 }
+        ruijieIfQoSMIBObjects OBJECT IDENTIFIER ::= { ruijieRouterQoSMIB 2 }
+        ruijieHQoSMIBObjects  OBJECT IDENTIFIER ::= { ruijieRouterQoSMIB 3 }
+
+-- CBQoS MIB    
+
+
+-- Node definitions
+        
+--  Interface: policy Running statistics information
+        ruijieCBQoSIfStaticsObjects OBJECT IDENTIFIER ::= { ruijieCBQoSMIBObjects  1 }
+
+        
+--  Interface CBWFQ statistics
+        ruijieCBQoSIfCbwfqRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RuijieCBQoSIfCbwfqRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of interface CBWFQ Running statistics. When policy using queue behavior is applied on
+                interface the interface will using Class Base Weighted Fair Queueing."
+            ::= { ruijieCBQoSIfStaticsObjects 1 }
+        
+        ruijieCBQoSIfCbwfqRunInfoEntry OBJECT-TYPE
+            SYNTAX RuijieCBQoSIfCbwfqRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Interface CBWFQ statistics entry."
+            INDEX { ruijieCBQoSIfCbwfqPolicyIfIndex }
+            ::= { ruijieCBQoSIfCbwfqRunInfoTable 1 }
+        
+        RuijieCBQoSIfCbwfqRunInfoEntry ::=
+            SEQUENCE { 
+            	ruijieCBQoSIfCbwfqPolicyIfIndex
+            		Integer32,
+                ruijieCBQoSIfCbwfqQueueSize
+                    Integer32,
+                ruijieCBQoSIfCbwfqDiscard
+                    Counter64,
+                ruijieCBQoSIfCbwfqEfQueueSize
+                    Integer32,
+                ruijieCBQoSIfCbwfqAfQueueSize
+                    Integer32,
+                ruijieCBQoSIfCbwfqBeQueueSize
+                    Integer32,
+                ruijieCBQoSIfCbwfqBeActiveQueueNum
+                    Integer32,
+                ruijieCBQoSIfCbwfqBeMaxActiveQueueNum
+                    Integer32,
+                ruijieCBQoSIfCbwfqBeTotalQueueNum
+                    Integer32,
+                ruijieCBQoSIfCbwfqAfAllocatedQueueNum
+                    Integer32
+             }
+             
+        ruijieCBQoSIfCbwfqPolicyIfIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The interface index"
+            ::= { ruijieCBQoSIfCbwfqRunInfoEntry 1 }
+            
+        ruijieCBQoSIfCbwfqQueueSize OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Queue size of CBWFQ"
+            ::= { ruijieCBQoSIfCbwfqRunInfoEntry 2 }
+        
+        ruijieCBQoSIfCbwfqDiscard OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of discarded packets which coundn't be enqueued."
+            ::= { ruijieCBQoSIfCbwfqRunInfoEntry 3 }
+        
+        ruijieCBQoSIfCbwfqEfQueueSize OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Queue size of EF"
+            ::= { ruijieCBQoSIfCbwfqRunInfoEntry 4 }
+        
+        ruijieCBQoSIfCbwfqAfQueueSize OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Queue size of AF"
+            ::= { ruijieCBQoSIfCbwfqRunInfoEntry 5}
+        
+        ruijieCBQoSIfCbwfqBeQueueSize OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Queue size of BE"
+            ::= { ruijieCBQoSIfCbwfqRunInfoEntry 6 }
+        
+        ruijieCBQoSIfCbwfqBeActiveQueueNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the number of Active Be Queue"
+            ::= { ruijieCBQoSIfCbwfqRunInfoEntry 7 }
+        
+        ruijieCBQoSIfCbwfqBeMaxActiveQueueNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the max number of Active Be Queue"
+            ::= { ruijieCBQoSIfCbwfqRunInfoEntry 8 }
+        
+        ruijieCBQoSIfCbwfqBeTotalQueueNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the total number of Be Queue"
+            ::= { ruijieCBQoSIfCbwfqRunInfoEntry 9 }
+        
+        ruijieCBQoSIfCbwfqAfAllocatedQueueNum OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the Allocated number of Af Queue"
+            ::= { ruijieCBQoSIfCbwfqRunInfoEntry 10 }
+   
+        
+--  Class match statistics
+        ruijieCBQoSIfClassMatchRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RuijieCBQoSIfClassMatchRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of Running statistics for matching a classifier
+                in a QoS policy applied on the interface."
+            ::= { ruijieCBQoSIfStaticsObjects 2 }
+        
+        ruijieCBQoSIfClassMatchRunInfoEntry OBJECT-TYPE
+            SYNTAX RuijieCBQoSIfClassMatchRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Classifier's matching statistics information entry."
+            INDEX { ruijieCBQoSIfClassMatchIfIndex, ruijieCBQoSIfClassMatchPolicyDirection, ruijieCBQoSIfClassMatchClassIndex }
+            ::= { ruijieCBQoSIfClassMatchRunInfoTable 1 }
+        
+        RuijieCBQoSIfClassMatchRunInfoEntry ::=
+            SEQUENCE { 
+            	ruijieCBQoSIfClassMatchIfIndex
+            		Integer32,
+            	ruijieCBQoSIfClassMatchPolicyDirection
+            		INTEGER,
+            	ruijieCBQoSIfClassMatchClassIndex
+            		Integer32,
+                ruijieCBQoSIfClassMatchedPackets
+                    Counter64,
+                ruijieCBQoSIfClassMatchedBytes
+                    Counter64,
+                ruijieCBQosIfClassPassedPackets
+                    Counter64,
+                ruijieCBQosIfClassDroppedPackets
+                    Counter64
+             }
+
+        ruijieCBQoSIfClassMatchIfIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the interface index"
+            ::= { ruijieCBQoSIfClassMatchRunInfoEntry 1 }
+
+        ruijieCBQoSIfClassMatchPolicyDirection OBJECT-TYPE
+            SYNTAX INTEGER
+            	{
+            	input(1),
+            	output(2)
+            	}
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the direction of policy-map."
+            ::= { ruijieCBQoSIfClassMatchRunInfoEntry 2 }
+
+        ruijieCBQoSIfClassMatchClassIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "class index in the policy-map."
+            ::= { ruijieCBQoSIfClassMatchRunInfoEntry 3 }                        
+            
+        ruijieCBQoSIfClassMatchedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of packets matching a class in a QoS policy."
+            ::= { ruijieCBQoSIfClassMatchRunInfoEntry 4 }
+
+        ruijieCBQoSIfClassMatchedBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of bytes matching a class in a QoS policy."
+            ::= { ruijieCBQoSIfClassMatchRunInfoEntry 5 }
+        
+		ruijieCBQosIfClassPassedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of passed packets matching a class in a QoS policy."
+            ::= { ruijieCBQoSIfClassMatchRunInfoEntry 6 }
+      
+		ruijieCBQosIfClassDroppedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of dropped packets matching a class in a QoS policy."
+            ::= { ruijieCBQoSIfClassMatchRunInfoEntry 7 }      
+    
+        
+--  CAR statistics
+    	ruijieCBQoSIfCarRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RuijieCBQoSIfCarRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of Running statistics for CAR in a QoS policy applied on the interface."
+            ::= { ruijieCBQoSIfStaticsObjects 3 }
+
+    	ruijieCBQoSIfCarRunInfoEntry OBJECT-TYPE
+	        SYNTAX RuijieCBQoSIfCarRunInfoEntry
+	        MAX-ACCESS not-accessible
+	        STATUS current
+	        DESCRIPTION
+	            "CAR statistics information entry."
+	        INDEX { ruijieCBQoSIfCarIfIndex, ruijieCBQoSIfCarPolicyDirection, ruijieCBQoSIfCarClassIndex }
+	        ::= { ruijieCBQoSIfCarRunInfoTable 1 }
+        
+        RuijieCBQoSIfCarRunInfoEntry ::=
+            SEQUENCE { 
+            	ruijieCBQoSIfCarIfIndex
+            		Integer32,
+            	ruijieCBQoSIfCarPolicyDirection
+            		INTEGER,
+            	ruijieCBQoSIfCarClassIndex
+            		Integer32,
+                ruijieCBQoSIfCarConformedPackets
+                    Counter64,
+                ruijieCBQoSIfCarConformedBytes
+                    Counter64,
+                ruijieCBQoSIfCarExceededPackets
+                    Counter64,
+                ruijieCBQoSIfCarExceededBytes
+                    Counter64,
+                ruijieCBQoSIfCarViolatedPackets
+                    Counter64,
+                ruijieCBQoSIfCarViolatedBytes
+                    Counter64
+             }
+
+        ruijieCBQoSIfCarIfIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the interface index"
+            ::= { ruijieCBQoSIfCarRunInfoEntry 1 }
+        
+        ruijieCBQoSIfCarPolicyDirection OBJECT-TYPE         
+            SYNTAX INTEGER
+            	{
+            	input(1),
+            	output(2)
+            	}
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the direction of policy-map."
+            ::= { ruijieCBQoSIfCarRunInfoEntry 2 }
+        
+        ruijieCBQoSIfCarClassIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "class index in the policy-map."
+            ::= { ruijieCBQoSIfCarRunInfoEntry 3 }
+        
+        ruijieCBQoSIfCarConformedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "packets of conformed"
+            ::= { ruijieCBQoSIfCarRunInfoEntry 4 }
+        
+        ruijieCBQoSIfCarConformedBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "bytes of conformed"
+            ::= { ruijieCBQoSIfCarRunInfoEntry 5 }
+        
+        ruijieCBQoSIfCarExceededPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "packets of exceeded"
+            ::= { ruijieCBQoSIfCarRunInfoEntry 6 }
+        
+        ruijieCBQoSIfCarExceededBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "bytes of exceeded"
+            ::= { ruijieCBQoSIfCarRunInfoEntry 7 }
+        
+        ruijieCBQoSIfCarViolatedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "packets of violated"
+            ::= { ruijieCBQoSIfCarRunInfoEntry 8 }
+        
+        ruijieCBQoSIfCarViolatedBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "bytes of violated"
+            ::= { ruijieCBQoSIfCarRunInfoEntry 9 }
+
+                  
+--  Remark statistics
+        ruijieCBQoSIfRemarkRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RuijieCBQoSIfRemarkRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of Running statistics for remarking in a QoS policy applied on the interface."
+            ::= { ruijieCBQoSIfStaticsObjects 4 }
+        
+        ruijieCBQoSIfRemarkRunInfoEntry OBJECT-TYPE
+            SYNTAX RuijieCBQoSIfRemarkRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Remarking statistics entry."
+            INDEX { ruijieCBQoSIfRemarkIfIndex, ruijieCBQoSIfRemarkPolicyDirection, ruijieCBQoSIfRemarkClassIndex }
+            ::= { ruijieCBQoSIfRemarkRunInfoTable 1 }
+        
+        RuijieCBQoSIfRemarkRunInfoEntry ::=
+            SEQUENCE { 
+            	ruijieCBQoSIfRemarkIfIndex
+            		Integer32,
+            	ruijieCBQoSIfRemarkPolicyDirection
+            		INTEGER,
+            	ruijieCBQoSIfRemarkClassIndex
+            		Integer32,
+                ruijieCBQoSIfRemarkedPackets
+                    Counter64,
+                ruijieCBQoSIfRemarkedBytes
+                    Counter64
+             }
+
+        ruijieCBQoSIfRemarkIfIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the interface index"
+            ::= { ruijieCBQoSIfRemarkRunInfoEntry 1 }
+        
+        ruijieCBQoSIfRemarkPolicyDirection OBJECT-TYPE
+            SYNTAX INTEGER
+            	{
+            	input(1),
+            	output(2)
+            	}
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the direction of policy-map."
+            ::= { ruijieCBQoSIfRemarkRunInfoEntry 2 }
+        
+        ruijieCBQoSIfRemarkClassIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "class index in the policy-map."
+            ::= { ruijieCBQoSIfRemarkRunInfoEntry 3 }
+            
+        ruijieCBQoSIfRemarkedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of packets remarked."
+            ::= { ruijieCBQoSIfRemarkRunInfoEntry 4 }
+        
+        ruijieCBQoSIfRemarkedBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of bytes remarked."
+            ::= { ruijieCBQoSIfRemarkRunInfoEntry 5 }
+
+        
+--  Queue statistics
+        ruijieCBQoSIfQueueRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RuijieCBQoSIfQueueRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of Running statistics for queue in a QoS policy applied on the interface."
+            ::= { ruijieCBQoSIfStaticsObjects 5 }
+        
+        ruijieCBQoSIfQueueRunInfoEntry OBJECT-TYPE
+            SYNTAX RuijieCBQoSIfQueueRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Queue statistics entry."
+            INDEX { ruijieCBQoSIfQueueIfIndex, ruijieCBQoSIfQueuePolicyDirection, ruijieCBQoSIfQueueClassIndex }
+            ::= { ruijieCBQoSIfQueueRunInfoTable 1 }
+        
+        RuijieCBQoSIfQueueRunInfoEntry ::=
+            SEQUENCE { 
+            	ruijieCBQoSIfQueueIfIndex
+            		Integer32,
+            	ruijieCBQoSIfQueuePolicyDirection
+            		INTEGER,
+            	ruijieCBQoSIfQueueClassIndex
+            		Integer32,
+                ruijieCBQoSIfQueueMatchedPackets
+                    Counter64,
+                ruijieCBQoSIfQueueMatchedBytes
+                    Counter64,
+                ruijieCBQoSIfQueueEnqueuedPackets
+                    Counter64,
+                ruijieCBQoSIfQueueEnqueuedBytes
+                    Counter64,
+                ruijieCBQoSIfQueueDiscardedPackets
+                    Counter64,
+                ruijieCBQoSIfQueueDiscardedBytes
+                    Counter64
+             }
+
+        ruijieCBQoSIfQueueIfIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the interface index"
+            ::= { ruijieCBQoSIfQueueRunInfoEntry 1 }
+        
+        ruijieCBQoSIfQueuePolicyDirection OBJECT-TYPE
+            SYNTAX INTEGER
+            	{
+            	input(1),
+            	output(2)
+            	}			
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the direction of policy-map."
+            ::= { ruijieCBQoSIfQueueRunInfoEntry 2 }
+        
+        ruijieCBQoSIfQueueClassIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "class index in the policy-map."
+            ::= { ruijieCBQoSIfQueueRunInfoEntry 3 }
+            
+        ruijieCBQoSIfQueueMatchedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of packets matched to enqueue."
+            ::= { ruijieCBQoSIfQueueRunInfoEntry 4 }
+        
+        ruijieCBQoSIfQueueMatchedBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of bytes matched to enqueue."
+            ::= { ruijieCBQoSIfQueueRunInfoEntry 5 }
+        
+        ruijieCBQoSIfQueueEnqueuedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of packets enqueued."
+            ::= { ruijieCBQoSIfQueueRunInfoEntry 6 }
+        
+        ruijieCBQoSIfQueueEnqueuedBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of bytes enqueued."
+            ::= { ruijieCBQoSIfQueueRunInfoEntry 7 }
+        
+        ruijieCBQoSIfQueueDiscardedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of packets discarded when enqueued by discard method."
+            ::= { ruijieCBQoSIfQueueRunInfoEntry 8 }
+        
+        ruijieCBQoSIfQueueDiscardedBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of bytes discarded when enqueued by discard method."
+            ::= { ruijieCBQoSIfQueueRunInfoEntry 9 }
+
+        
+--  WRED statistics
+        ruijieCBQoSIfWredRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RuijieCBQoSIfWredRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of Running statistics for WRED in a QoS policy applied on the interface."
+            ::= { ruijieCBQoSIfStaticsObjects 6 }
+        
+        ruijieCBQoSIfWredRunInfoEntry OBJECT-TYPE
+            SYNTAX RuijieCBQoSIfWredRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "WRED statistics entry."
+            INDEX { ruijieCBQoSIfWredIfIndex, ruijieCBQoSIfWredClassIndex, ruijieCBQoSIfWredClassValue }
+            ::= { ruijieCBQoSIfWredRunInfoTable 1 }
+        
+        RuijieCBQoSIfWredRunInfoEntry ::=
+            SEQUENCE { 
+            	ruijieCBQoSIfWredIfIndex
+            		Integer32,
+            	ruijieCBQoSIfWredClassIndex
+            		Integer32,
+            	ruijieCBQoSIfWredClassValue
+            		Integer32,
+                ruijieCBQoSIfWredRandomDiscardedPackets
+                    Counter64,
+                ruijieCBQoSIfWredTailDiscardedPackets
+                    Counter64
+            }
+
+        ruijieCBQoSIfWredIfIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the interface index."
+            ::= { ruijieCBQoSIfWredRunInfoEntry 1 }
+
+        ruijieCBQoSIfWredClassIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the direction of policy-map."
+            ::= { ruijieCBQoSIfWredRunInfoEntry 2 }
+        
+        ruijieCBQoSIfWredClassValue OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "dscp/prec value."
+            ::= { ruijieCBQoSIfWredRunInfoEntry 3 } 
+
+        ruijieCBQoSIfWredRandomDiscardedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of packets that random-discarded by WRED."
+            ::= { ruijieCBQoSIfWredRunInfoEntry 4 }
+        
+        ruijieCBQoSIfWredTailDiscardedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of packets that tail-discarded by WRED."
+            ::= { ruijieCBQoSIfWredRunInfoEntry 5 }
+
+-- End CBQoS MIB
+
+
+
+-- Begin IF QoS MIB
+
+-- qos pq / display qos pq interface   6                
+    ruijieIfQosPQRunInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIfQosPQRunInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "PQ(Priority Queuing) table
+             PQ is a kind of queuing strategy applied on interface for congestion management.
+             PQ provides a mechanism to prioritize packets sent on an interface.
+             If the specified priority list is applied to an interface the Priority Queuing strategy
+             is applied on this interface. Only one list can be assigned per interface. 
+             This table is about the PQ configuration and running infomation."
+        ::= { ruijieIfQoSMIBObjects 1 }
+
+    ruijieIfQosPQRunInfoEntry OBJECT-TYPE
+        SYNTAX RuijieIfQosPQRunInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "PQ configuration and running infomation"
+        INDEX { ruijieIfQosPQIfIndex }
+        ::= { ruijieIfQosPQRunInfoTable 1 }
+
+            
+    RuijieIfQosPQRunInfoEntry ::=
+        SEQUENCE { 
+            ruijieIfQosPQIfIndex
+                Integer32,
+            ruijieIfQosPQListNum
+                Integer32,
+            ruijieIfQosPQIfName
+                OCTET STRING,
+            ruijieIfQosPQHighPkt
+                Integer32,
+            ruijieIfQosPQHighDiscard
+                Counter32,
+            ruijieIfQosPQHighMaxQueLen
+                Integer32,
+            ruijieIfQosPQMiddlePkt
+                Integer32,
+            ruijieIfQosPQMiddleDiscard
+                Counter32,
+            ruijieIfQosPQMiddleMaxQueLen
+                Integer32,
+            ruijieIfQosPQNormalPkt
+                Integer32,
+            ruijieIfQosPQNormalDiscard
+                Counter32,
+            ruijieIfQosPQNormalMaxQueLen
+                Integer32,
+            ruijieIfQosPQLowPkt
+                Integer32,
+            ruijieIfQosPQLowDiscard
+                Counter32,
+            ruijieIfQosPQLowMaxQueLen
+                Integer32
+        }
+
+    ruijieIfQosPQIfIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The index of table, which is the index of interface applying Priority Queuing strategy. 
+             The interface identified by the value of this index is the same interface 
+             as identified by the same value of ifIndex."
+        ::= { ruijieIfQosPQRunInfoEntry 1 }
+
+    ruijieIfQosPQListNum OBJECT-TYPE
+        SYNTAX Integer32 (1..16)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of PQL applied to an interface identified by the value of qosPQIfIndex."
+        ::= { ruijieIfQosPQRunInfoEntry 2 }
+
+    ruijieIfQosPQIfName OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The description of the interface by the value of qosPQIfIndex.
+             It's a textual string containing information about the interface type and the interface number."
+        ::= { ruijieIfQosPQRunInfoEntry 3 }
+
+    ruijieIfQosPQHighPkt OBJECT-TYPE
+        SYNTAX Integer32 (0..32767)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The count of packets enqueued the high priority queue when congestion occoured in the interface."
+        ::= { ruijieIfQosPQRunInfoEntry 4 }
+
+    ruijieIfQosPQHighDiscard OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The count of discarded packets which can't be enqueued high priority queue because the high priority queue is full."
+        ::= { ruijieIfQosPQRunInfoEntry 5 }
+
+    ruijieIfQosPQHighMaxQueLen OBJECT-TYPE
+        SYNTAX Integer32 (1..1024)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The maximum length of high priority queue.
+             The default value of maximum queue length is 20."
+        ::= { ruijieIfQosPQRunInfoEntry 6 }
+
+    ruijieIfQosPQMiddlePkt OBJECT-TYPE
+        SYNTAX Integer32 (0..32767)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The count of packets enqueued the middle priority queue when congestion occoured in the interface."
+        ::= { ruijieIfQosPQRunInfoEntry 7 }
+
+    ruijieIfQosPQMiddleDiscard OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The count of discarded packets which can't be enqueued middle priority queue because the middle priority queue is full."
+        ::= { ruijieIfQosPQRunInfoEntry 8 }
+
+    ruijieIfQosPQMiddleMaxQueLen OBJECT-TYPE
+        SYNTAX Integer32 (1..1024)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The maximum length of middle priority queue. The default value of maximum queue length is 40."
+        ::= { ruijieIfQosPQRunInfoEntry 9 }
+
+    ruijieIfQosPQNormalPkt OBJECT-TYPE
+        SYNTAX Integer32 (0..32767)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The count of packets enqueued the normal priority queue when congestion occoured in the interface."
+        ::= { ruijieIfQosPQRunInfoEntry 10 }
+
+    ruijieIfQosPQNormalDiscard OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The count of discarded packets which can't be enqueued normal priority queue  because the normal priority queue is full."
+        ::= { ruijieIfQosPQRunInfoEntry 11 }
+
+    ruijieIfQosPQNormalMaxQueLen OBJECT-TYPE
+        SYNTAX Integer32 (1..1024)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The maximum length of normal priority queue.
+             The default value of maximum queue length is 60."
+        ::= { ruijieIfQosPQRunInfoEntry 12 }
+
+    ruijieIfQosPQLowPkt OBJECT-TYPE
+        SYNTAX Integer32 (0..32767)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The count of packets enqueued the bottom priority queue when congestion occoured in the interface."
+        ::= { ruijieIfQosPQRunInfoEntry 13 }
+
+    ruijieIfQosPQLowDiscard OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The count of discarded packets which can't be enqueued low priority queue  because the low priority queue is full."
+        ::= { ruijieIfQosPQRunInfoEntry 14 }
+
+    ruijieIfQosPQLowMaxQueLen OBJECT-TYPE
+        SYNTAX Integer32 (1..1024)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The maximum length of low priority queue. The default value of maximum queue length is 80."
+        ::= { ruijieIfQosPQRunInfoEntry 15 }
+
+  
+-- display qos cq interface   2                
+    ruijieIfQosCQRunInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIfQosCQRunInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "CQ(Custom Queuing) statistics table
+             This table is about the running infomation of CQ applied on interface for congestion management."
+        ::= { ruijieIfQoSMIBObjects 2 }
+
+    ruijieIfQosCQRunInfoEntry OBJECT-TYPE
+        SYNTAX RuijieIfQosCQRunInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "CQ running infomation"
+        INDEX { ruijieIfQosCQRunInfoIfIndex, ruijieIfQosCQRunInfoQueNum }
+        ::= { ruijieIfQosCQRunInfoTable 1 }
+            
+    RuijieIfQosCQRunInfoEntry ::=
+        SEQUENCE { 
+            ruijieIfQosCQRunInfoIfIndex
+                Integer32,
+            ruijieIfQosCQRunInfoQueNum
+                Integer32,
+            ruijieIfQosCQRunInfoIfName
+                OCTET STRING,
+            ruijieIfQosCQRunInfoQuePkt
+                Integer32,
+            ruijieIfQosCQRunInfoQueDiscard
+                Counter32,
+            ruijieIfQosCQRunInfoMaxQueLen
+                Integer32
+        }
+
+    ruijieIfQosCQRunInfoIfIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The index of the table, which is the index of interface applying Custom Queuing strategy. 
+             The interface identified by the value of this index is the same interface 
+             as identified by the same value of ifIndex."
+        ::= { ruijieIfQosCQRunInfoEntry 1 }
+
+    ruijieIfQosCQRunInfoQueNum OBJECT-TYPE
+        SYNTAX Integer32 (1..16)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The index of the table, which is the custom queue number"
+        ::= { ruijieIfQosCQRunInfoEntry 2 }
+
+    ruijieIfQosCQRunInfoIfName OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The description of the interface by the value of qosCQRunInfoIfIndex.
+             It's a textual string containing information about the interface type and the interface number."
+        ::= { ruijieIfQosCQRunInfoEntry 3 }
+
+    ruijieIfQosCQRunInfoQuePkt OBJECT-TYPE
+        SYNTAX Integer32 (0..32767)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The count of packets enqueued the spceified custom queue when congestion occoured in the interface."
+        ::= { ruijieIfQosCQRunInfoEntry 4 }
+
+    ruijieIfQosCQRunInfoQueDiscard OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The count of discarded packets which can't be enqueued the specified custom queue because the custom queue is full."
+        ::= { ruijieIfQosCQRunInfoEntry 5 }
+
+     ruijieIfQosCQRunInfoMaxQueLen OBJECT-TYPE
+        SYNTAX Integer32 (1..1024)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The maximum length of the specified queue.
+             The default value of maximum queue length is 20."
+        ::= { ruijieIfQosCQRunInfoEntry 6 }
+
+
+-- qos wfq / display qos wfq interface  13  
+    ruijieIfQosWFQRunInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIfQosWFQRunInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "WFQ(Weighted Fair Queuing) table
+             WFQ is a kind of queuing strategy applied on interface for congestion management.
+             With WFQ, packets are classified by flow. For example, packets with the same source IP address,
+             destination IP address, source TCP or UDP port, destination TCP or UDP port, and protocol 
+             belong to the same flow.
+             When enabled for an interface, WFQ provides traffic priority management that automatically sorts
+             among individual traffic flows without requiring first defined match rule lists.
+             This table is about the WFQ configuration and running infomation."
+        ::= { ruijieIfQoSMIBObjects 3 }
+
+    ruijieIfQosWFQRunInfoEntry OBJECT-TYPE
+        SYNTAX RuijieIfQosWFQRunInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "WFQ configuration and running infomation"
+        INDEX { ruijieIfQosWFQIfIndex }
+        ::= { ruijieIfQosWFQRunInfoTable 1 }
+            
+    RuijieIfQosWFQRunInfoEntry ::=
+        SEQUENCE { 
+            ruijieIfQosWFQIfIndex
+                Integer32,
+            ruijieIfQosWFQIfName
+                OCTET STRING,
+            ruijieIfQosWFQMaxQueLen
+                Integer32,
+            ruijieIfQosWFQTotalQueNum
+                INTEGER,
+            ruijieIfQosWFQCurQueLen
+                Integer32,
+            ruijieIfQosWFQTotalDiscard
+                Counter32,
+            ruijieIfQosWFQActiveQueNum
+                Integer32,
+            ruijieIfQosWFQMaxActiveQueNum
+                Integer32
+        }
+
+    ruijieIfQosWFQIfIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The index of the table, which is the index of interface applying Weighted Fair Queuing strategy. 
+             The interface identified by the value of this index is the same interface 
+             as identified by the same value of ifIndex."
+        ::= { ruijieIfQosWFQRunInfoEntry 1 }
+
+    ruijieIfQosWFQIfName OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The description of the interface by the value of qosWFQIfIndex.
+             It's a textual string containing information about the interface type and the interface number."
+        ::= { ruijieIfQosWFQRunInfoEntry 2 }
+
+    ruijieIfQosWFQMaxQueLen OBJECT-TYPE
+        SYNTAX Integer32 (1..1024)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The maximum length of the queue."
+        ::= { ruijieIfQosWFQRunInfoEntry 3 }
+
+    ruijieIfQosWFQTotalQueNum OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+            a16(16),
+            a32(32),
+            a64(64),
+            a128(128),
+            a256(256),
+            a512(512),
+            a1024(1024),
+            a2048(2048),
+            a4096(4096)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of queues. The default value is a256(256)."
+        ::= { ruijieIfQosWFQRunInfoEntry 4 }
+
+    ruijieIfQosWFQCurQueLen OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The count of packets enqueued all the queues when congestion occoured in the interface."
+        ::= { ruijieIfQosWFQRunInfoEntry 5 }
+
+    ruijieIfQosWFQTotalDiscard OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The count of discarded packets which can't be enqueued all the queues
+             because the queue is full."
+        ::= { ruijieIfQosWFQRunInfoEntry 6 }
+
+    ruijieIfQosWFQActiveQueNum OBJECT-TYPE
+        SYNTAX Integer32 (0..32767)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "A queue becomes active when the queue is not empty.
+             The count of current active queues when WFQ was enabled in the interface."
+        ::= { ruijieIfQosWFQRunInfoEntry 7 }
+
+    ruijieIfQosWFQMaxActiveQueNum OBJECT-TYPE
+        SYNTAX Integer32 (0..32767)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The maximum count of active queues.
+             It is the count of active queues that have occurred since WFQ was enabled in the interface."
+        ::= { ruijieIfQosWFQRunInfoEntry 8 }
+
+
+--  WRED statistics
+        ruijieIfQosWredRunInfoTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RuijieIfQosWredRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of Running statistics for WRED in the interface."
+            ::= { ruijieIfQoSMIBObjects 4 }
+        
+        ruijieIfQosWredRunInfoEntry OBJECT-TYPE
+            SYNTAX RuijieIfQosWredRunInfoEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "WRED statistics entry."
+            INDEX { ruijieIfQosWredIfIndex,  ruijieIfQosWredValue }
+            ::= { ruijieIfQosWredRunInfoTable 1 }
+        
+        RuijieIfQosWredRunInfoEntry ::=
+            SEQUENCE { 
+            	ruijieIfQosWredIfIndex
+            		Integer32,
+            	ruijieIfQosWredValue
+            		Integer32,
+                ruijieIfQosWredRandomDiscardedPackets
+                    Counter64,
+                ruijieIfQosWredTailDiscardedPackets
+                    Counter64
+             }
+
+        ruijieIfQosWredIfIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The index of the table, which is the index of interface applying WRED."
+            ::= { ruijieIfQosWredRunInfoEntry 1 }
+               
+        ruijieIfQosWredValue OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the dscp/prec value."
+            ::= { ruijieIfQosWredRunInfoEntry 2 } 
+            
+        ruijieIfQosWredRandomDiscardedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of packets that random-discarded by WRED."
+            ::= { ruijieIfQosWredRunInfoEntry 3 }
+        
+        ruijieIfQosWredTailDiscardedPackets OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Number of packets that tail-discarded by WRED."
+            ::= { ruijieIfQosWredRunInfoEntry 4 }
+
+
+-- qos car / display qos car interface 17
+-- the CAR table
+-- CAR(Committed Access Rate) is the feature for limiting the traffic to a committed rate. 
+-- The CAR table contains configuration and running information of the CAR policy
+-- which applied on an interface.
+    ruijieIfQosCARTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIfQosCAREntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "CAR(Committed Access Rate) table"
+        ::= { ruijieIfQoSMIBObjects 5 }
+
+    ruijieIfQosCAREntry OBJECT-TYPE
+        SYNTAX RuijieIfQosCAREntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "CAR configuration and running infomation."
+        INDEX { ruijieIfQosCARIfIndex, ruijieIfQosCARPktDirection, ruijieIfQosCARindex }
+        ::= { ruijieIfQosCARTable 1 }
+            
+    RuijieIfQosCAREntry ::=
+        SEQUENCE { 
+            ruijieIfQosCARIfIndex
+                Integer32,
+            ruijieIfQosCARIfName
+                OCTET STRING,
+            ruijieIfQosCARPktDirection
+                INTEGER,
+            ruijieIfQosCARType
+                INTEGER,
+            ruijieIfQosCARListNum
+                Integer32, 
+            ruijieIfQosCARindex
+            	Integer32, 
+            ruijieIfQosCARCIR
+                Integer32,
+            ruijieIfQosCARBurstSize
+                Integer32,
+            ruijieIfQosCARExcessBurstSize
+                Integer32,
+            ruijieIfQosCARConformAction
+                INTEGER,
+            ruijieIfQosCARExceedAction
+                INTEGER,
+            ruijieIfQosCARConformNewPrec
+                Integer32,
+            ruijieIfQosCARExceedNewPrec
+                Integer32,
+            ruijieIfQosCARConformPkt
+                Counter32,
+            ruijieIfQosCARConformByte
+                Counter32,
+            ruijieIfQosCARExceedPkt
+                Counter32,
+            ruijieIfQosCARExceedByte
+                Counter32    
+        }
+        
+    ruijieIfQosCARIfIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "One of the index of the CAR table. This is the index of the interface on which CAR policy applied."
+        ::= { ruijieIfQosCAREntry 1 }
+
+    ruijieIfQosCARIfName OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The description of the interface."
+        ::= { ruijieIfQosCAREntry 2 }
+
+    ruijieIfQosCARPktDirection OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+            input(1),
+            outout(2)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "One of the index of the CAR table. This is the direction of traffic. 
+            There are two directions: input(1) and output(2)."
+        ::= { ruijieIfQosCAREntry 3 }
+
+    ruijieIfQosCARType OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+            acl(1),
+            dscp(2),
+            qos-group(3),
+            default(4)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This is the matching type for the traffic. 
+             The value acl(1) means that the traffic matching the 
+             configured ACL is applicable to the CAR policy.
+             The value dscp(2) means that the traffic matching the 
+             configured DSCP is applicable to the CAR policy.            
+             The value qos-group(3) means that the traffic matching the 
+             configured QOS-GROUP is applicable to the CAR policy.
+             The value default(4) means that the traffic matching the 
+             default setting is applicable to the CAR policy."
+        ::= { ruijieIfQosCAREntry 4 }
+
+    ruijieIfQosCARListNum OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This is the ACL number, DSCP number or QOS-GROUP number. 
+             When CARType=1,this number is ACL number;
+             When CARType=2,this number is DSCP number;
+             When CARType=3,this number is QOS-GROUP number."
+        ::= { ruijieIfQosCAREntry 5 }
+
+    ruijieIfQosCARindex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "One of the index of the CAR table. This is the index of the configured CAR policy. "
+        ::= { ruijieIfQosCAREntry 6 }
+
+    ruijieIfQosCARCIR OBJECT-TYPE
+        SYNTAX Integer32 (8000..155000000)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Committed Information Rate.
+             Unit: bps. This is the target rate which the CAR policy limits. "
+        ::= { ruijieIfQosCAREntry 7 }
+
+    ruijieIfQosCARBurstSize OBJECT-TYPE
+        SYNTAX Integer32 (15000..155000000)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Burst traffic size. Unit: bit. 
+             This is the amount of traffic in excess of the committed information 
+             rate that will be permitted by the CAR policy."
+        ::= { ruijieIfQosCAREntry 8 }
+
+    ruijieIfQosCARExcessBurstSize OBJECT-TYPE
+        SYNTAX Integer32 (0..155000000)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Excess Burst Size. Unit: bit. 
+             This is the amount of traffic in excess of the burst size, 
+             which may be conditionally permitted by the CAR policy."
+        ::= { ruijieIfQosCAREntry 9 }
+
+    ruijieIfQosCARConformAction OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+            continue(1),
+            drop(2), 
+            set-dscp-continue(3), 
+            set-dscp-transmit(4),
+            set-prec-continue(5),
+            set-prec-transmit(6),
+            transmit(7),
+            set-mpls-exp-continue(8), 
+            set-mpls-exp-transmit(9)  
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Action to be taken by the traffic, when the traffic conforms CIR. 
+             There are the following actions:
+             Continue(1) -- Continue to be processed by the following 
+                            CAR policy which applied on the interface.
+             drop(2) -- Discard the packet. 
+             set-dscp-continue(3) -- Remark the IP dscp of IP packet,
+                                        and then continue to be processed by 
+                                        the following CAR policy., 
+             set-dscp-transmit(4) -- Remark the IP dscp of IP packet,
+                                    and then send the packet.
+             set-prec-continue(5) -- Remark the IP precedence of IP packet,
+                                        and then continue to be processed by 
+                                        the following CAR policy.
+             set-prec-transmit(6) -- Remark the IP precedence of IP packet,
+                                    and then send the packet.
+             transmit(7) -- Send the packet directly. 
+             set-mpls-exp-continue(8) -- Remark the mpls exp field of mpls packet,
+                                           and then continue to be processed by 
+                                           the following CAR policy.
+             set-mpls-exp-transmit(9) -- Remark the mpls exp field of mpls packet,
+                                       and then send the packet.
+             "
+        ::= { ruijieIfQosCAREntry 10 }
+
+    ruijieIfQosCARExceedAction OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+            continue(1),
+            drop(2), 
+            set-dscp-continue(3), 
+            set-dscp-transmit(4),
+            set-prec-continue(5),
+            set-prec-transmit(6),
+            transmit(7),
+            set-mpls-exp-continue(8), 
+            set-mpls-exp-transmit(9)  
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Action to be taken by the traffic, when the traffic is exceeds the CIR. 
+             There are the following actions:
+             Continue(1) -- Continue to be processed by the following 
+                            CAR policy which applied on the interface.
+             drop(2) -- Discard the packet. 
+             set-dscp-continue(3) -- Remark the IP dscp of IP packet,
+                                        and then continue to be processed by 
+                                        the following CAR policy., 
+             set-dscp-transmit(4) -- Remark the IP dscp of IP packet,
+                                    and then send the packet.
+             set-prec-continue(5) -- Remark the IP precedence of IP packet,
+                                        and then continue to be processed by 
+                                        the following CAR policy.
+             set-prec-transmit(6) -- Remark the IP precedence of IP packet,
+                                    and then send the packet.
+             transmit(7) -- Send the packet directly. 
+             set-mpls-exp-continue(8) -- Remark the mpls exp field of mpls packet,
+                                           and then continue to be processed by 
+                                           the following CAR policy.
+             set-mpls-exp-transmit(9) -- Remark the mpls exp field of mpls packet,
+                                       and then send the packet.
+
+             "
+        ::= { ruijieIfQosCAREntry 11 }
+
+    ruijieIfQosCARConformNewPrec OBJECT-TYPE
+        SYNTAX Integer32 (0..7)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Rewrite the precedence value on packets when traffic is within the CIR."
+        ::= { ruijieIfQosCAREntry 12 }
+
+    ruijieIfQosCARExceedNewPrec OBJECT-TYPE
+        SYNTAX Integer32 (0..7)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Rewrite the precedence value on packets when traffic is out of CIR."
+        ::= { ruijieIfQosCAREntry 13 }
+
+    ruijieIfQosCARConformPkt OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of packets which conformed CIR."
+        ::= { ruijieIfQosCAREntry 14 }
+
+    ruijieIfQosCARConformByte OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The bytes of packets which conformed CIR."
+        ::= { ruijieIfQosCAREntry 15 }
+
+    ruijieIfQosCARExceedPkt OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of packets which exceeded CIR."
+            ::= { ruijieIfQosCAREntry 16 }
+
+    ruijieIfQosCARExceedByte OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "the bytes of packets which exceeded CIR."
+        ::= { ruijieIfQosCAREntry 17 }
+
+
+-- qos gts / display qos gts interface  18
+-- the GTS table
+-- GTS(Generic Traffic Shaping) is the feature for shaping the traffic. 
+-- The GTS table contains configuration and running information of GTS policy
+-- which applied on an interface. 
+    ruijieIfQosGTSTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIfQosGTSEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "GTS(Generic Traffic Shaping) table"
+        ::= { ruijieIfQoSMIBObjects 6 }
+
+    ruijieIfQosGTSEntry OBJECT-TYPE
+        SYNTAX RuijieIfQosGTSEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "GTS configuration and running information"
+        INDEX { ruijieIfQosGTSIfIndex, ruijieIfQosGTSType, ruijieIfQosGTSACLNum }
+        ::= { ruijieIfQosGTSTable 1 }
+    
+    RuijieIfQosGTSEntry ::=
+        SEQUENCE { 
+            ruijieIfQosGTSIfIndex
+                Integer32,
+            ruijieIfQosGTSIfName
+                OCTET STRING,
+            ruijieIfQosGTSType
+                INTEGER,
+            ruijieIfQosGTSACLNum
+                Integer32,
+            ruijieIfQosGTSCIR
+                Integer32,
+            ruijieIfQosGTSBurstSize
+                Integer32,
+            ruijieIfQosGTSExcessBurstSize
+                Integer32,
+            ruijieIfQosGTSMaxQueLen
+                Integer32,
+            ruijieIfQosGTSCurQueLen
+                Integer32,
+            ruijieIfQosGTSPassPkt
+                Counter32,
+            ruijieIfQosGTSPassByte
+                Counter32,
+            ruijieIfQosGTSDiscardPkt
+                Counter32,
+            ruijieIfQosGTSDiscardByte
+                Counter32
+        }
+
+    ruijieIfQosGTSIfIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "One of the index of the GTS table. This is the index of the interface on which GTS policy applied."
+        ::= { ruijieIfQosGTSEntry 1 }
+
+    ruijieIfQosGTSIfName OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The description of the interface on which GTS policy applied."
+        ::= { ruijieIfQosGTSEntry 2 }
+
+    ruijieIfQosGTSType OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+            acl(1),
+            all(2)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "One of the index of the GTS table. This is the matching type for the traffic. 
+             The value acl(1) means that the traffic matching the 
+             configured ACL is applicable to the GTS policy.
+             The value all(2) means that all the traffic passing the interface
+             is applicable to the GTS policy."
+        ::= { ruijieIfQosGTSEntry 3 }
+
+    ruijieIfQosGTSACLNum OBJECT-TYPE
+        SYNTAX Integer32 (0|2000..3999)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "One of the index of the GTS table. This is the ACL number for the shaping traffic to match. "
+        ::= { ruijieIfQosGTSEntry 4 }
+
+    ruijieIfQosGTSCIR OBJECT-TYPE
+        SYNTAX Integer32 (8000..155000000)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Committed Information Rate. This is the target sustained rate which the GTS policy will shape. Unit: bps."
+        ::= { ruijieIfQosGTSEntry 5 }
+
+    ruijieIfQosGTSBurstSize OBJECT-TYPE
+        SYNTAX Integer32 (15000..155000000)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Burst traffic size. Unit: bit. This is the amount of traffic in excess of the committed information rate that will be permitted by the GTS policy."
+        ::= { ruijieIfQosGTSEntry 6 }
+
+    ruijieIfQosGTSExcessBurstSize OBJECT-TYPE
+        SYNTAX Integer32 (0..155000000)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Excess Burst Size. Unit: bit. This is the amount of traffic in excess of the burst size, which may be conditionally permitted by the GTS policy."
+        ::= { ruijieIfQosGTSEntry 7 }
+
+    ruijieIfQosGTSMaxQueLen OBJECT-TYPE
+        SYNTAX Integer32 (1..1024)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The maximum queue length for the GTS buffer."
+        ::= { ruijieIfQosGTSEntry 8 }
+
+    ruijieIfQosGTSCurQueLen OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The current queue length for the GTS buffer, i.e. the 
+             number of packets queuing in the GTS buffer."
+        ::= { ruijieIfQosGTSEntry 9 }
+
+    ruijieIfQosGTSPassPkt OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+             "The number of packets which passed by the GTS policy."
+        ::= { ruijieIfQosGTSEntry 10 }
+
+    ruijieIfQosGTSPassByte OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The bytes of packets which passed by the GTS policy."
+        ::= { ruijieIfQosGTSEntry 11 }
+
+    ruijieIfQosGTSDiscardPkt OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of packets which discarded by the GTS policy."
+    	::= { ruijieIfQosGTSEntry 12 }
+
+    ruijieIfQosGTSDiscardByte OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The bytes of packets which discarded by the GTS policy."
+        ::= { ruijieIfQosGTSEntry 13 }
+
+
+-- RTPQ statistics on the interface               
+    ruijieIfQosRTPIfQueueRunInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIfQosRTPIfQueueRunInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A table of Running statistics for RTP(Realtime Transport Protocol) Queue applied on the interface."
+        ::= { ruijieIfQoSMIBObjects 7 }
+        
+    ruijieIfQosRTPIfQueueRunInfoEntry OBJECT-TYPE
+        SYNTAX RuijieIfQosRTPIfQueueRunInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "RTP(Realtime Transport Protocol) Queue statistics entry."
+        INDEX { ruijieIfQosRTPIfApplyIfIndex }
+        ::= { ruijieIfQosRTPIfQueueRunInfoTable 1 }
+        
+    RuijieIfQosRTPIfQueueRunInfoEntry ::=
+        SEQUENCE {  
+            ruijieIfQosRTPIfApplyIfIndex
+        	    Integer32,
+            ruijieIfQosRTPIfQueueSize
+                Counter32,
+            ruijieIfQosRTPIfQueueMaxSize
+                Counter32, 
+            ruijieIfQosRTPIfQueueOutputs
+                Counter32,
+            ruijieIfQosRTPIfQueueDiscards
+                Counter32                                                                    
+        }  
+       
+    ruijieIfQosRTPIfApplyIfIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "the inteface index."
+        ::= { ruijieIfQosRTPIfQueueRunInfoEntry 1 } 
+             
+    ruijieIfQosRTPIfQueueSize OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Size of Rtpq Queue."
+        ::= { ruijieIfQosRTPIfQueueRunInfoEntry 2 }    
+                             
+    ruijieIfQosRTPIfQueueMaxSize OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " Max packet number of RTP(Realtime Transport Protocol) Queue."
+        ::= { ruijieIfQosRTPIfQueueRunInfoEntry 3 }
+        
+    ruijieIfQosRTPIfQueueOutputs OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Output packet number of RTP(Realtime Transport Protocol) Queue."
+        ::= { ruijieIfQosRTPIfQueueRunInfoEntry 4 } 
+                 
+    ruijieIfQosRTPIfQueueDiscards OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Discarded packet number of RTP(Realtime Transport Protocol) Queue."
+        ::= { ruijieIfQosRTPIfQueueRunInfoEntry 5 }                   
+       
+
+-- flow-limit statistics on the interface               
+    ruijieIfQosFlowLimitRunInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIfQosFlowLimitRunInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A table of Running statistics for Flow-Limit."
+        ::= { ruijieIfQoSMIBObjects 8 }
+
+    ruijieIfQosFlowLimitRunInfoEntry OBJECT-TYPE
+        SYNTAX RuijieIfQosFlowLimitRunInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Flow limit statistics entry."
+        INDEX { ruijieIfQosFlowLimitLabelNum, ruijieIfQosFlowLimitPktDirection }
+        ::= { ruijieIfQosFlowLimitRunInfoTable 1 }
+            
+    RuijieIfQosFlowLimitRunInfoEntry ::=
+        SEQUENCE { 
+            ruijieIfQosFlowLimitLabelNum
+                Integer32,
+            ruijieIfQosFlowLimitPktDirection
+                INTEGER,
+            ruijieIfQosFlowLimitCIR
+                Integer32,
+            ruijieIfQosFlowLimitBurstSize
+                Integer32,
+            ruijieIfQosFlowLimitExcessBurstSize
+                Integer32,
+            ruijieIfQosFlowLimitConformAction
+                INTEGER,
+            ruijieIfQosFlowLimitExceedAction
+                INTEGER,
+            ruijieIfQosFlowLimitConformNewPrec
+                Integer32,
+            ruijieIfQosFlowLimitExceedNewPrec
+                Integer32,
+            ruijieIfQosFlowLimitConformPkt
+                Counter32,
+            ruijieIfQosFlowLimitConformByte
+                Counter32,
+            ruijieIfQosFlowLimitExceedPkt
+                Counter32,
+            ruijieIfQosFlowLimitExceedByte
+                Counter32    
+         }
+         
+    ruijieIfQosFlowLimitLabelNum OBJECT-TYPE
+        SYNTAX Integer32 (1..16)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This is the label number of flow limit."
+        ::= { ruijieIfQosFlowLimitRunInfoEntry 1 }
+    
+    ruijieIfQosFlowLimitPktDirection OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+            input(1),
+            output(2)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "One of the index of the flow limit table. This is the direction of traffic.
+             There are two directions: input(1) and output(2)  "
+        ::= { ruijieIfQosFlowLimitRunInfoEntry 2 }  
+  
+    ruijieIfQosFlowLimitCIR OBJECT-TYPE
+        SYNTAX Integer32 (8000..155000000)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Committed Information Rate. Unit: bps. This is the target rate which the flow limit policy limits. "
+        ::= { ruijieIfQosFlowLimitRunInfoEntry 3 }
+
+    ruijieIfQosFlowLimitBurstSize OBJECT-TYPE
+        SYNTAX Integer32 (15000..155000000)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Burst traffic size. Unit: bit. This is the amount of traffic in excess of the committed information rate that will be permitted by the flow limit policy."
+        ::= { ruijieIfQosFlowLimitRunInfoEntry 4 }
+
+    ruijieIfQosFlowLimitExcessBurstSize OBJECT-TYPE
+        SYNTAX Integer32 (0..155000000)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Excess Burst Size. Unit: bit. This is the amount of traffic in excess of the burst size, which may be conditionally permitted by the flow limit policy."
+        ::= { ruijieIfQosFlowLimitRunInfoEntry 5 }
+
+    ruijieIfQosFlowLimitConformAction OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+            continue(1),
+            drop(2), 
+            set-dscp-continue(3), 
+            set-dscp-transmit(4),
+            set-prec-continue(5),
+            set-prec-transmit(6),
+            transmit(7),
+            set-mpls-exp-continue(8), 
+            set-mpls-exp-transmit(9)  
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Action to be taken by the traffic, when the traffic conforms CIR. 
+             There are the following actions:
+             Continue(1) -- Continue to be processed by the following 
+                            CAR policy which applied on the interface.
+             drop(2) -- Discard the packet. 
+             set-dscp-continue(3) -- Remark the IP dscp of IP packet,
+                                        and then continue to be processed by 
+                                        the following CAR policy., 
+             set-dscp-transmit(4) -- Remark the IP dscp of IP packet,
+                                    and then send the packet.
+             set-prec-continue(5) -- Remark the IP precedence of IP packet,
+                                        and then continue to be processed by 
+                                        the following CAR policy.
+             set-prec-transmit(6) -- Remark the IP precedence of IP packet,
+                                    and then send the packet.
+             transmit(7) -- Send the packet directly. 
+             set-mpls-exp-continue(8) -- Remark the mpls exp field of mpls packet,
+                                           and then continue to be processed by 
+                                           the following CAR policy.
+             set-mpls-exp-transmit(9) -- Remark the mpls exp field of mpls packet,
+                                       and then send the packet.
+             "
+        ::= { ruijieIfQosFlowLimitRunInfoEntry 6 }
+
+    ruijieIfQosFlowLimitExceedAction OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+            continue(1),
+            drop(2), 
+            set-dscp-continue(3), 
+            set-dscp-transmit(4),
+            set-prec-continue(5),
+            set-prec-transmit(6),
+            transmit(7),
+            set-mpls-exp-continue(8), 
+            set-mpls-exp-transmit(9)  
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Action to be taken by the traffic, when the traffic is exceeds the CIR.
+             There are the following actions:
+             Continue(1) -- Continue to be processed by the following 
+                            CAR policy which applied on the interface.
+             drop(2) -- Discard the packet. 
+             set-dscp-continue(3) -- Remark the IP dscp of IP packet,
+                                        and then continue to be processed by 
+                                        the following CAR policy., 
+             set-dscp-transmit(4) -- Remark the IP dscp of IP packet,
+                                    and then send the packet.
+             set-prec-continue(5) -- Remark the IP precedence of IP packet,
+                                        and then continue to be processed by 
+                                        the following CAR policy.
+             set-prec-transmit(6) -- Remark the IP precedence of IP packet,
+                                    and then send the packet.
+             transmit(7) -- Send the packet directly. 
+             set-mpls-exp-continue(8) -- Remark the mpls exp field of mpls packet,
+                                           and then continue to be processed by 
+                                           the following CAR policy.
+             set-mpls-exp-transmit(9) -- Remark the mpls exp field of mpls packet,
+                                       and then send the packet.
+
+             "
+        ::= { ruijieIfQosFlowLimitRunInfoEntry 7 }
+
+    ruijieIfQosFlowLimitConformNewPrec OBJECT-TYPE
+        SYNTAX Integer32 (0..63)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Rewrite the precedence value on packets when traffic is within the CIR"
+        ::= { ruijieIfQosFlowLimitRunInfoEntry 8 }
+
+    ruijieIfQosFlowLimitExceedNewPrec OBJECT-TYPE
+        SYNTAX Integer32 (0..63)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Rewrite the precedence value on packets when traffic is out of CIR"
+        ::= { ruijieIfQosFlowLimitRunInfoEntry 9 }
+
+    ruijieIfQosFlowLimitConformPkt OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of packets which conformed CIR."
+        ::= { ruijieIfQosFlowLimitRunInfoEntry 10 }
+
+    ruijieIfQosFlowLimitConformByte OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The bytes of packets which conformed CIR."
+        ::= { ruijieIfQosFlowLimitRunInfoEntry 11 }
+
+    ruijieIfQosFlowLimitExceedPkt OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of packets which exceeded CIR."
+        ::= { ruijieIfQosFlowLimitRunInfoEntry 12 }
+
+    ruijieIfQosFlowLimitExceedByte OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "the bytes of packets which exceeded CIR."
+        ::= { ruijieIfQosFlowLimitRunInfoEntry 13 }
+
+-- End of IF QoS MIB
+-- start of hqos mib object, add by tangyoucan
+    ruijieHQoSScalarObjects      OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  1 }
+    ruijieHQoSUserQObjects       OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  2 }
+    ruijieHQoSUserGroupQObjects  OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  3 }
+    ruijieHQoSFlowQObjects       OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  4 }
+    ruijieHQoSFlowMapObjects     OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  5 }
+    ruijieHQoSTClassifierObjects OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  6 }
+    ruijieHQoSTBehaviorObjects   OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  7 }
+    ruijieHQoSTPolicyObjects     OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  8 }
+    ruijieHQoSVoQObjects         OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  9 }
+    ruijieHQoSPortQObjects       OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  10 }
+    ruijieHQoSIfAppObjects       OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  11 }
+	
+-- 通过名称查询节点索引
+    ruijieHQoSNameType OBJECT-TYPE
+        SYNTAX     INTEGER {
+                       unknownName(0),   
+                       userQNameIn(1), 
+                       userQNameOut(2),     
+                       userGroupQInName(3),
+                       userGroupQOutName(4),    
+                       flowQName(5),    
+                       flowMapName(6),    
+                       trafficClassifierName(7),    
+                       trafficBehaviorName(8),    
+                       trafficPolicyName(9),    
+                       portQName(10)
+                       }
+        MAX-ACCESS           read-write
+        STATUS                current
+        DESCRIPTION
+            "Name type of ruijieHQoSNameFind, used to get index of correspond entry." 
+        DEFVAL { unknownName }
+        ::= { ruijieHQoSScalarObjects 1 }
+
+  ruijieHQoSNameFind OBJECT-TYPE
+     SYNTAX        OCTET STRING (SIZE (0..32))
+     MAX-ACCESS    read-write
+     STATUS        current
+     DESCRIPTION
+         "Name of entry to find."
+     ::= { ruijieHQoSScalarObjects 2 }
+
+    ruijieHQoSNameIndex OBJECT-TYPE
+        SYNTAX     INTEGER 
+        MAX-ACCESS           read-only
+        STATUS                current
+        DESCRIPTION
+            "Corresponding entry index." 
+        DEFVAL { 0 }
+        ::= { ruijieHQoSScalarObjects 3 }  
+        
+    -- Next free index in ruijieHQoSUserQTable.
+    ruijieHQoSUserQInIndexNext OBJECT-TYPE
+        SYNTAX                INTEGER
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION   "This object contains an appropriate value to be used
+           for ruijieHQoSUserQIndex when creating entries in the
+           ruijieHQoSUserQTable with in direction. The value 0 indicates that no
+           unassigned entries are available."
+        ::= { ruijieHQoSUserQObjects 1 }
+ 
+     ruijieHQoSUserQOutIndexNext OBJECT-TYPE
+        SYNTAX                INTEGER
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION   "This object contains an appropriate value to be used
+           for ruijieHQoSUserQIndex when creating entries in the
+           ruijieHQoSUserQTable with out direction. The value 0 indicates that no
+           unassigned entries are available."
+        ::= { ruijieHQoSUserQObjects 2 } 
+        
+    ruijieHQoSUserQTable  OBJECT-TYPE
+        SYNTAX            SEQUENCE OF RuijieHQoSUserQEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION "User queue Table."
+         ::= { ruijieHQoSUserQObjects 3 }
+       
+    ruijieHQoSUserQEntry   OBJECT-TYPE
+        SYNTAX        RuijieHQoSUserQEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+          "A row in this table represents the user queue information."
+        INDEX  { ruijieHQoSUserQIndex }
+        ::= { ruijieHQoSUserQTable 1 }
+
+    RuijieHQoSUserQEntry ::= SEQUENCE {
+        ruijieHQoSUserQIndex               Unsigned32,
+        ruijieHQoSUserQName                OCTET STRING,
+        ruijieHQoSUserQDirection           RuijieQDirectionType,
+        ruijieHQoSUserQRowStatus           RowStatus,
+        ruijieHQoSUserQFlowQName           OCTET STRING,
+        ruijieHQoSUserQFlowQIndex          Unsigned32,
+        ruijieHQoSUserQGroupName           OCTET STRING,
+        ruijieHQoSUserQGroupIndex          Unsigned32,
+        ruijieHQoSUserQFlowMapName         OCTET STRING,
+        ruijieHQoSUserQFlowMapIndex        Unsigned32,
+        ruijieHQoSUserQCIR                 Unsigned32,
+        ruijieHQoSUserQPIR                 Unsigned32
+     }
+
+    ruijieHQoSUserQIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            not-accessible
+        STATUS                current
+        DESCRIPTION
+            "User queue table index."
+        ::= { ruijieHQoSUserQEntry 1 }
+
+  ruijieHQoSUserQName OBJECT-TYPE
+     SYNTAX        OCTET STRING (SIZE (0..32))
+     MAX-ACCESS    read-create
+     STATUS        current
+     DESCRIPTION
+         "User queue name."
+     ::= { ruijieHQoSUserQEntry 2 }
+
+    ruijieHQoSUserQDirection OBJECT-TYPE
+        SYNTAX RuijieQDirectionType
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Direction of the user queue.
+             There are two directions: inbound(1) and outbound(2)."
+        ::= { ruijieHQoSUserQEntry 3 }
+
+    ruijieHQoSUserQRowStatus OBJECT-TYPE
+        SYNTAX                RowStatus
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "This variable is used to create, modify, and/or
+             delete a row in this table. When a row in this
+             table has a row in the active(1) state, 
+             ruijieHQoSUserQName, ruijieHQoSUserQDirection
+             objects in this row can not be modified."
+        ::=  { ruijieHQoSUserQEntry 4 }
+        
+    ruijieHQoSUserQFlowQName OBJECT-TYPE
+     SYNTAX        OCTET STRING (SIZE (0..32))
+     MAX-ACCESS    read-create
+     STATUS        current
+     DESCRIPTION
+         "The name of flow queue binding with this user queue."
+     ::= { ruijieHQoSUserQEntry 5 }
+     
+    ruijieHQoSUserQFlowQIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+         "Flow queue index binding with this user queue."
+        ::= { ruijieHQoSUserQEntry 6 }
+
+    ruijieHQoSUserQGroupName OBJECT-TYPE
+     SYNTAX        OCTET STRING (SIZE (0..32))
+     MAX-ACCESS    read-create
+     STATUS        current
+     DESCRIPTION
+         "The name of user group queue binding with this user queue."
+     ::= { ruijieHQoSUserQEntry 7 }
+     
+    ruijieHQoSUserQGroupIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+         "User group index binding with this user."
+        ::= { ruijieHQoSUserQEntry 8 }
+
+    ruijieHQoSUserQFlowMapName OBJECT-TYPE
+     SYNTAX        OCTET STRING (SIZE (0..32))
+     MAX-ACCESS    read-create
+     STATUS        current
+     DESCRIPTION
+         "The name of flow-mapping binding with this user queue."
+     ::= { ruijieHQoSUserQEntry 9 }
+     
+    ruijieHQoSUserQFlowMapIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+         "Flow-mapping index binding with this user queue."
+        ::= { ruijieHQoSUserQEntry 10 }
+
+    ruijieHQoSUserQCIR OBJECT-TYPE
+        SYNTAX         Unsigned32 (0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Commit rate of this user queue."
+        DEFVAL { 0 }
+
+        ::= { ruijieHQoSUserQEntry 11 }
+
+    ruijieHQoSUserQPIR OBJECT-TYPE
+        SYNTAX  Unsigned32(1..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Peak rate of this user queue."
+        DEFVAL { 0 }
+        ::= { ruijieHQoSUserQEntry 12 }
+
+-- end of user table
+
+-- start of user group table
+-- Next free index in ruijieHQoSUserGroupQTable.
+    ruijieHQoSUserGroupQInIndexNext OBJECT-TYPE
+        SYNTAX                INTEGER
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION   "This object contains an appropriate value to be used
+           for ruijieHQoSUserGroupQIndex when creating entries in the
+           ruijieHQoSUserGroupQTable with in direction. The value 0 indicates that no
+           unassigned entries are available."
+        ::= { ruijieHQoSUserGroupQObjects 1 }
+
+    ruijieHQoSUserGroupQOutIndexNext OBJECT-TYPE
+        SYNTAX                INTEGER
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION   "This object contains an appropriate value to be used
+           for ruijieHQoSUserGroupQIndex when creating entries in the
+           ruijieHQoSUserGroupQTable with out direction. The value 0 indicates that no
+           unassigned entries are available."
+        ::= { ruijieHQoSUserGroupQObjects 2 }
+        
+    ruijieHQoSUserGroupQTable  OBJECT-TYPE
+        SYNTAX            SEQUENCE OF RuijieHQoSUserGroupQEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION "User group queue table, a user-group contains a set of users."
+         ::= { ruijieHQoSUserGroupQObjects 3 }
+       
+    ruijieHQoSUserGroupQEntry   OBJECT-TYPE
+        SYNTAX        RuijieHQoSUserGroupQEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+          "A row in this table represents the user group queue information."
+        INDEX  { ruijieHQoSUserGroupQIndex }
+        ::= { ruijieHQoSUserGroupQTable 1 }
+
+  RuijieHQoSUserGroupQEntry ::= SEQUENCE {
+        ruijieHQoSUserGroupQIndex               Unsigned32,
+        ruijieHQoSUserGroupQName                OCTET STRING,
+        ruijieHQoSUserGroupQDirection           RuijieQDirectionType,
+        ruijieHQoSUserGroupQRowStatus           RowStatus,
+        ruijieHQoSUserGroupQShaping             Unsigned32
+     }
+
+    ruijieHQoSUserGroupQIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            not-accessible
+        STATUS                current
+        DESCRIPTION
+            "User group table index."
+        ::= { ruijieHQoSUserGroupQEntry 1 }
+
+  ruijieHQoSUserGroupQName OBJECT-TYPE
+     SYNTAX        OCTET STRING (SIZE (0..32))
+     MAX-ACCESS    read-create
+     STATUS        current
+     DESCRIPTION
+         "User group queue name."
+     ::= { ruijieHQoSUserGroupQEntry 2 }
+
+    ruijieHQoSUserGroupQDirection OBJECT-TYPE
+        SYNTAX RuijieQDirectionType
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Direction of user group queue. 
+             There are two directions: inbound(1) and outbound(2)."
+        ::= { ruijieHQoSUserGroupQEntry 3 }
+
+    ruijieHQoSUserGroupQRowStatus OBJECT-TYPE
+        SYNTAX                RowStatus
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "This variable is used to create, modify, and/or
+             delete a row in this table. When a row in this
+             table has a row in the active(1) state, 
+             ruijieHQoSUserGroupQName,ruijieHQoSUserGroupQDirection
+             objects in this row can not be modified."
+        ::=  { ruijieHQoSUserGroupQEntry 4 }
+
+    ruijieHQoSUserGroupQShaping OBJECT-TYPE
+        SYNTAX  Unsigned32 (0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "User group queue total bandwidth."
+        DEFVAL { 10000000 }
+        ::= { ruijieHQoSUserGroupQEntry 5 }
+        
+-- start of flow queue
+
+-- Next free index in ruijieHQoSFlowQTable.
+    ruijieHQoSFlowQIndexNext OBJECT-TYPE
+        SYNTAX                INTEGER
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION   "This object contains an appropriate value to be used
+           for ruijieHQoSFlowQIndex when creating entries in the
+           ruijieHQoSFlowQTable. The value 0 indicates that no
+           unassigned entries are available."
+        ::= { ruijieHQoSFlowQObjects 1 }
+        
+    ruijieHQoSFlowQTable  OBJECT-TYPE
+        SYNTAX            SEQUENCE OF RuijieHQoSFlowQEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION "Flow queue table."
+         ::= { ruijieHQoSFlowQObjects 2 }
+       
+    ruijieHQoSFlowQEntry   OBJECT-TYPE
+        SYNTAX        RuijieHQoSFlowQEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+          "A row in this table represents the flow queue information."
+        INDEX  { ruijieHQoSFlowQIndex }
+        ::= { ruijieHQoSFlowQTable 1 }
+
+  RuijieHQoSFlowQEntry ::= SEQUENCE {
+        ruijieHQoSFlowQIndex               Unsigned32,
+        ruijieHQoSFlowQName                OCTET STRING,
+        ruijieHQoSFlowQRowStatus           RowStatus,
+        ruijieHQoSFlowQBEQType             RuijieQType,
+        ruijieHQoSFlowQBEQWredWeight       INTEGER,
+        ruijieHQoSFlowQBEQWredName         OCTET STRING,
+        ruijieHQoSFlowQBEQDepth            INTEGER,
+        ruijieHQoSFlowQBEQShaping          INTEGER, 
+        ruijieHQoSFlowQAF1QType             RuijieQType,
+        ruijieHQoSFlowQAF1QWredWeight       INTEGER,
+        ruijieHQoSFlowQAF1QWredName         OCTET STRING,
+        ruijieHQoSFlowQAF1QDepth            INTEGER,
+        ruijieHQoSFlowQAF1QShaping          INTEGER,
+        ruijieHQoSFlowQAF2QType             RuijieQType,
+        ruijieHQoSFlowQAF2QWredWeight       INTEGER,
+        ruijieHQoSFlowQAF2QWredName         OCTET STRING,
+        ruijieHQoSFlowQAF2QDepth            INTEGER,
+        ruijieHQoSFlowQAF2QShaping          INTEGER,
+        ruijieHQoSFlowQAF3QType             RuijieQType,
+        ruijieHQoSFlowQAF3QWredWeight       INTEGER,
+        ruijieHQoSFlowQAF3QWredName         OCTET STRING,
+        ruijieHQoSFlowQAF3QDepth            INTEGER,
+        ruijieHQoSFlowQAF3QShaping          INTEGER,
+        ruijieHQoSFlowQAF4QType             RuijieQType,
+        ruijieHQoSFlowQAF4QWredWeight       INTEGER,
+        ruijieHQoSFlowQAF4QWredName         OCTET STRING,
+        ruijieHQoSFlowQAF4QDepth            INTEGER,
+        ruijieHQoSFlowQAF4QShaping          INTEGER,
+        ruijieHQoSFlowQEFQType             RuijieQType,
+        ruijieHQoSFlowQEFQWredWeight       INTEGER,
+        ruijieHQoSFlowQEFQWredName         OCTET STRING,
+        ruijieHQoSFlowQEFQDepth            INTEGER,
+        ruijieHQoSFlowQEFQShaping          INTEGER,
+        ruijieHQoSFlowQCS6QType             RuijieQType,
+        ruijieHQoSFlowQCS6QWredWeight       INTEGER,
+        ruijieHQoSFlowQCS6QWredName         OCTET STRING,
+        ruijieHQoSFlowQCS6QDepth            INTEGER,
+        ruijieHQoSFlowQCS6QShaping          INTEGER,
+        ruijieHQoSFlowQCS7QType             RuijieQType,
+        ruijieHQoSFlowQCS7QWredWeight       INTEGER,
+        ruijieHQoSFlowQCS7QWredName         OCTET STRING,
+        ruijieHQoSFlowQCS7QDepth            INTEGER,
+        ruijieHQoSFlowQCS7QShaping          INTEGER
+     }
+
+    ruijieHQoSFlowQIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            not-accessible
+        STATUS                current
+        DESCRIPTION "Index of flow queue."
+        ::= { ruijieHQoSFlowQEntry 1 }
+
+  ruijieHQoSFlowQName OBJECT-TYPE
+     SYNTAX        OCTET STRING (SIZE (0..32))
+     MAX-ACCESS    read-create
+     STATUS        current
+     DESCRIPTION
+         "Flow queue name."
+     ::= { ruijieHQoSFlowQEntry 2 }
+
+    ruijieHQoSFlowQRowStatus OBJECT-TYPE
+        SYNTAX                RowStatus
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "This variable is used to create, modify, and/or
+             delete a row in this table. When a row in this
+             table has a row in the active(1) state, 
+             ruijieHQoSFlowQName
+             objects in this row can not be modified."
+        ::=  { ruijieHQoSFlowQEntry 3 }
+ 
+    ruijieHQoSFlowQBEQType OBJECT-TYPE
+        SYNTAX RuijieQType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue BEQ type."
+        DEFVAL { q-wfq }
+        ::= { ruijieHQoSFlowQEntry 4 }  
+                
+    ruijieHQoSFlowQBEQWredWeight OBJECT-TYPE
+        SYNTAX  INTEGER(1..1024)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue BE to wfq wred weight."
+        DEFVAL { 10 }
+        ::= { ruijieHQoSFlowQEntry 5 } 
+        
+    ruijieHQoSFlowQBEQWredName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue BE to wfq wred name."
+        ::= { ruijieHQoSFlowQEntry 6 }
+
+    ruijieHQoSFlowQBEQDepth OBJECT-TYPE
+        SYNTAX   INTEGER(8..2048)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue BE to wfq depth."
+        DEFVAL { 200 }
+        ::= { ruijieHQoSFlowQEntry 7 } 
+
+    ruijieHQoSFlowQBEQShaping OBJECT-TYPE
+        SYNTAX   INTEGER(0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue BE total bandwidth."
+        DEFVAL { 10000000 }
+        ::= { ruijieHQoSFlowQEntry 8 } 
+
+    ruijieHQoSFlowQAF1QType OBJECT-TYPE
+        SYNTAX RuijieQType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF1Q type."
+        DEFVAL { q-wfq }
+        ::= { ruijieHQoSFlowQEntry 9 }  
+                
+    ruijieHQoSFlowQAF1QWredWeight OBJECT-TYPE
+        SYNTAX                INTEGER
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF1 to wfq wred weight."
+        DEFVAL { 10 }
+        ::= { ruijieHQoSFlowQEntry 10 } 
+        
+    ruijieHQoSFlowQAF1QWredName OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF1 to wfq wred name."
+        ::= { ruijieHQoSFlowQEntry 11 }
+
+    ruijieHQoSFlowQAF1QDepth OBJECT-TYPE
+        SYNTAX   INTEGER(1..1024)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF1 to wfq depth."
+        DEFVAL { 200 }
+        ::= { ruijieHQoSFlowQEntry 12 } 
+
+    ruijieHQoSFlowQAF1QShaping OBJECT-TYPE
+        SYNTAX   INTEGER(0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF1 total bandwidth."
+        DEFVAL { 10000000 }
+        ::= { ruijieHQoSFlowQEntry 13 } 
+        
+    ruijieHQoSFlowQAF2QType OBJECT-TYPE
+        SYNTAX RuijieQType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF2 type."
+        DEFVAL { q-wfq}
+        ::= { ruijieHQoSFlowQEntry 14 }  
+                
+    ruijieHQoSFlowQAF2QWredWeight OBJECT-TYPE
+        SYNTAX  INTEGER(8..2048)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF2 to wfq wred weight."
+        DEFVAL { 10 }
+        ::= { ruijieHQoSFlowQEntry 15 } 
+        
+    ruijieHQoSFlowQAF2QWredName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF2 to wfq wred name."
+        ::= { ruijieHQoSFlowQEntry 16 }
+
+    ruijieHQoSFlowQAF2QDepth OBJECT-TYPE
+        SYNTAX INTEGER(1..1024)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF2 to wfq depth."
+        DEFVAL { 200 }
+        ::= { ruijieHQoSFlowQEntry 17 } 
+
+    ruijieHQoSFlowQAF2QShaping OBJECT-TYPE
+        SYNTAX  INTEGER(0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF2 total bandwidth."
+        DEFVAL { 10000000 }
+        ::= { ruijieHQoSFlowQEntry 18 } 
+                
+     ruijieHQoSFlowQAF3QType OBJECT-TYPE
+        SYNTAX RuijieQType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF3 type."
+        DEFVAL { q-wfq }
+        ::= { ruijieHQoSFlowQEntry 19 }  
+                
+    ruijieHQoSFlowQAF3QWredWeight OBJECT-TYPE
+        SYNTAX INTEGER(8..2048)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF3 to wfq wred weight."
+        DEFVAL { 10 }
+        ::= { ruijieHQoSFlowQEntry 20 } 
+        
+    ruijieHQoSFlowQAF3QWredName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF3 to wfq wred name."
+        ::= { ruijieHQoSFlowQEntry 21 }
+
+    ruijieHQoSFlowQAF3QDepth OBJECT-TYPE
+        SYNTAX   INTEGER(1..1024)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF3 to wfq depth."
+        DEFVAL { 200 }
+        ::= { ruijieHQoSFlowQEntry 22 } 
+
+    ruijieHQoSFlowQAF3QShaping OBJECT-TYPE
+        SYNTAX  INTEGER(0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF3 total bandwidth."
+        DEFVAL { 10000000 }
+        ::= { ruijieHQoSFlowQEntry 23 } 
+            
+     ruijieHQoSFlowQAF4QType OBJECT-TYPE
+        SYNTAX RuijieQType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF4 type."
+        DEFVAL { q-wfq }
+        ::= { ruijieHQoSFlowQEntry 24 }  
+                
+    ruijieHQoSFlowQAF4QWredWeight OBJECT-TYPE
+        SYNTAX INTEGER(8..2048)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF4 to wfq wred weight."
+        DEFVAL { 10 }
+        ::= { ruijieHQoSFlowQEntry 25 } 
+        
+    ruijieHQoSFlowQAF4QWredName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF4 to wfq wred name."
+        ::= { ruijieHQoSFlowQEntry 26 }
+
+    ruijieHQoSFlowQAF4QDepth OBJECT-TYPE
+        SYNTAX  INTEGER(1..1024)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF4 to wfq depth."
+        DEFVAL { 200 }
+        ::= { ruijieHQoSFlowQEntry 27 } 
+
+    ruijieHQoSFlowQAF4QShaping OBJECT-TYPE
+        SYNTAX  INTEGER(0..100000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue AF4 total bandwidth."
+        DEFVAL { 10000000 }
+        ::= { ruijieHQoSFlowQEntry 28 }
+         
+     ruijieHQoSFlowQEFQType OBJECT-TYPE
+        SYNTAX RuijieQType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue EF type."
+        DEFVAL { q-pq }
+        ::= { ruijieHQoSFlowQEntry 29 }  
+                
+    ruijieHQoSFlowQEFQWredWeight OBJECT-TYPE
+        SYNTAX   INTEGER(8..2048)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue EF to wfq wred weight."
+        DEFVAL { 15 }
+        ::= { ruijieHQoSFlowQEntry 30 } 
+        
+    ruijieHQoSFlowQEFQWredName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue EF to wfq wred name."
+        ::= { ruijieHQoSFlowQEntry 31 }
+
+    ruijieHQoSFlowQEFQDepth OBJECT-TYPE
+        SYNTAX  INTEGER(1..1024)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue EF to wfq depth."
+        DEFVAL { 200 }
+        ::= { ruijieHQoSFlowQEntry 32 } 
+
+    ruijieHQoSFlowQEFQShaping OBJECT-TYPE
+        SYNTAX  INTEGER(0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue EF total bandwidth."
+        DEFVAL { 10000000 }
+        ::= { ruijieHQoSFlowQEntry 33 } 
+        
+     ruijieHQoSFlowQCS6QType OBJECT-TYPE
+        SYNTAX RuijieQType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue CS6 type."
+        DEFVAL { q-pq }
+        ::= { ruijieHQoSFlowQEntry 34 }  
+                
+    ruijieHQoSFlowQCS6QWredWeight OBJECT-TYPE
+        SYNTAX  INTEGER(8..2048)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue CS6 to wfq wred weight."
+        DEFVAL { 10 }
+        ::= { ruijieHQoSFlowQEntry 35 } 
+        
+    ruijieHQoSFlowQCS6QWredName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue CS6 to wfq wred name."
+        ::= { ruijieHQoSFlowQEntry 36 }
+
+    ruijieHQoSFlowQCS6QDepth OBJECT-TYPE
+        SYNTAX  INTEGER(1..1024)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue CS6 to wfq depth."
+        DEFVAL { 200 }
+        ::= { ruijieHQoSFlowQEntry 37 } 
+
+    ruijieHQoSFlowQCS6QShaping OBJECT-TYPE
+        SYNTAX   INTEGER(0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue CS6 total bandwidth."
+        DEFVAL { 10000000 }
+        ::= { ruijieHQoSFlowQEntry 38 }
+        
+     ruijieHQoSFlowQCS7QType OBJECT-TYPE
+        SYNTAX RuijieQType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue CS7 type."
+        DEFVAL { q-pq }
+        ::= { ruijieHQoSFlowQEntry 39 }  
+                
+    ruijieHQoSFlowQCS7QWredWeight OBJECT-TYPE
+        SYNTAX   INTEGER(8..2048)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue CS7 to wfq wred weight."
+        DEFVAL { 15 }
+        ::= { ruijieHQoSFlowQEntry 40 } 
+        
+    ruijieHQoSFlowQCS7QWredName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue CS7 to wfq wred name."
+        ::= { ruijieHQoSFlowQEntry 41 }
+
+    ruijieHQoSFlowQCS7QDepth OBJECT-TYPE
+        SYNTAX   INTEGER(1..1024)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue CS7 to wfq depth."
+        DEFVAL { 200 }
+        ::= { ruijieHQoSFlowQEntry 42 } 
+
+    ruijieHQoSFlowQCS7QShaping OBJECT-TYPE
+        SYNTAX   INTEGER(0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Flow queue CS7 total bandwidth."
+        DEFVAL { 10000000 }
+        ::= { ruijieHQoSFlowQEntry 43 }
+        
+-- end of flow queue  
+     
+-- Next free index in ruijieHQoSFlowMapTable.
+    ruijieHQoSFlowMapIndexNext OBJECT-TYPE
+        SYNTAX                INTEGER
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION   "This object contains an appropriate value to be used
+           for ruijieHQoSFlowMapIndex when creating entries in the
+           ruijieHQoSFlowMapTable. The value 0 indicates that no
+           unassigned entries are available."
+        ::= { ruijieHQoSFlowMapObjects 1 }
+        
+    ruijieHQoSFlowMapTable  OBJECT-TYPE
+        SYNTAX            SEQUENCE OF RuijieHQoSFlowMapEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION "Flow map table."
+         ::= { ruijieHQoSFlowMapObjects 2 }
+       
+    ruijieHQoSFlowMapEntry   OBJECT-TYPE
+        SYNTAX        RuijieHQoSFlowMapEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+          "A row in this table represents the flow map information."
+        INDEX  { ruijieHQoSFlowMapIndex }
+        ::= { ruijieHQoSFlowMapTable 1 }
+
+  RuijieHQoSFlowMapEntry ::= SEQUENCE {
+        ruijieHQoSFlowMapIndex                Unsigned32,
+        ruijieHQoSFlowMapName                 OCTET STRING,
+        ruijieHQoSFlowMapRowStatus            RowStatus,
+        ruijieHQoSFlowMapBEQ2PortQ            RuijieCosType, 
+        ruijieHQoSFlowMapAF1Q2PortQ           RuijieCosType,
+        ruijieHQoSFlowMapAF2Q2PortQ           RuijieCosType,
+        ruijieHQoSFlowMapAF3Q2PortQ           RuijieCosType,
+        ruijieHQoSFlowMapAF4Q2PortQ           RuijieCosType,
+        ruijieHQoSFlowMapEFQ2PortQ            RuijieCosType,
+        ruijieHQoSFlowMapCS6Q2PortQ           RuijieCosType,
+        ruijieHQoSFlowMapCS7Q2PortQ           RuijieCosType
+     }
+
+    ruijieHQoSFlowMapIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            not-accessible
+        STATUS                current
+        DESCRIPTION
+            "Index of flow map entry."
+        ::= { ruijieHQoSFlowMapEntry 1 }
+
+  ruijieHQoSFlowMapName OBJECT-TYPE
+     SYNTAX        OCTET STRING (SIZE (0..32))
+     MAX-ACCESS    read-create
+     STATUS        current
+     DESCRIPTION
+         "Flow map entry name."
+     ::= { ruijieHQoSFlowMapEntry 2 }
+
+    ruijieHQoSFlowMapRowStatus OBJECT-TYPE
+        SYNTAX                RowStatus
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "This variable is used to create, modify, and/or
+             delete a row in this table. When a row in this
+             table has a row in the active(1) state, 
+             ruijieHQoSFlowMapName
+             objects in this row can not be modified."
+        ::=  { ruijieHQoSFlowMapEntry 3 }
+
+    ruijieHQoSFlowMapBEQ2PortQ OBJECT-TYPE
+        SYNTAX                RuijieCosType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "BE to port queue type."
+        DEFVAL{cos-be}
+        ::= { ruijieHQoSFlowMapEntry 4 }
+
+    ruijieHQoSFlowMapAF1Q2PortQ OBJECT-TYPE
+        SYNTAX                RuijieCosType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "AF1 to port queue type."
+        DEFVAL {cos-af1}
+        ::= { ruijieHQoSFlowMapEntry 5 }
+
+    ruijieHQoSFlowMapAF2Q2PortQ OBJECT-TYPE
+        SYNTAX                RuijieCosType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "AF2 to port queue type."
+        DEFVAL {cos-af2}
+        ::= { ruijieHQoSFlowMapEntry 6 }
+
+    ruijieHQoSFlowMapAF3Q2PortQ OBJECT-TYPE
+        SYNTAX                RuijieCosType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "AF3 to port queue type."
+        DEFVAL {cos-af3}
+        ::= { ruijieHQoSFlowMapEntry 7 }
+
+    ruijieHQoSFlowMapAF4Q2PortQ OBJECT-TYPE
+        SYNTAX                RuijieCosType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "AF4 to port queue type."
+        DEFVAL {cos-af4}
+        ::= { ruijieHQoSFlowMapEntry 8 }
+
+    ruijieHQoSFlowMapEFQ2PortQ OBJECT-TYPE
+        SYNTAX                RuijieCosType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "EF to port queue type."
+        DEFVAL {cos-ef}
+        ::= { ruijieHQoSFlowMapEntry 9 }
+
+    ruijieHQoSFlowMapCS6Q2PortQ OBJECT-TYPE
+        SYNTAX                RuijieCosType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "CS6 to port queue type."
+        DEFVAL {cos-cs6}
+        ::= { ruijieHQoSFlowMapEntry 10 }
+
+    ruijieHQoSFlowMapCS7Q2PortQ OBJECT-TYPE
+        SYNTAX                RuijieCosType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "CS7 to port queue type."
+        DEFVAL {cos-cs7}
+        ::= { ruijieHQoSFlowMapEntry 11 }
+        
+-- end of flow map entry
+
+-- Next free index in ruijieHQoSFlowMapTable.
+    ruijieHQoSTClassifierIndexNext OBJECT-TYPE
+        SYNTAX                INTEGER
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION   "This object contains an appropriate value to be used
+           for ruijieHQoSTClassifierIndex when creating entries in the
+           ruijieHQoSTClassifierTable. The value 0 indicates that no
+           unassigned entries are available."
+        ::= { ruijieHQoSTClassifierObjects 1 }
+
+    ruijieHQoSTClassifierTable  OBJECT-TYPE
+        SYNTAX            SEQUENCE OF RuijieHQoSTClassifierEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION 
+         "Traffic classfier table."
+        ::= { ruijieHQoSTClassifierObjects 2 }
+       
+    ruijieHQoSTClassifierEntry   OBJECT-TYPE
+        SYNTAX        RuijieHQoSTClassifierEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+          "A row in this table represents the traffic classfier information."
+        INDEX  { ruijieHQoSTClassifierIndex,  ruijieHQoSTClassifierInstance}
+        ::= { ruijieHQoSTClassifierTable 1 }
+
+  RuijieHQoSTClassifierEntry ::= SEQUENCE {
+        ruijieHQoSTClassifierIndex           Unsigned32,
+        ruijieHQoSTClassifierInstance        Unsigned32,
+        ruijieHQoSTClassifierName            OCTET STRING,
+        ruijieHQoSTClassifierType            INTEGER,
+        ruijieHQoSTClassifierRowStatus       RowStatus,
+        ruijieHQoSTClassifierMatchMask       BITS,
+        ruijieHQoSTClassifierMatchV4Any      TruthValue,
+        ruijieHQoSTClassifierMatchV4AclID    INTEGER,
+        ruijieHQoSTClassifierV4AclName       OCTET STRING, 
+        ruijieHQoSTClassifierMatchV4Dscp     INTEGER,
+        ruijieHQoSTClassifierMatchV4Tos      INTEGER,
+        ruijieHQoSTClassifierMatchV6Any      TruthValue,
+        ruijieHQoSTClassifierMatchV6AclID    INTEGER,
+        ruijieHQoSTClassifierV6AclName       OCTET STRING, 
+        ruijieHQoSTClassifierMatchV6Dscp     INTEGER,  
+        ruijieHQoSTClassifierMatchCos        INTEGER,
+        ruijieHQoSTClassifierMatchExp        INTEGER,
+        ruijieHQoSTClassifierMatchSrcMac     MacAddress,
+        ruijieHQoSTClassifierMatchDstMac     MacAddress
+        }
+
+    ruijieHQoSTClassifierIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            not-accessible
+        STATUS                current
+        DESCRIPTION
+            "Index of traffic classifier entry."
+        ::= { ruijieHQoSTClassifierEntry 1 }
+
+    ruijieHQoSTClassifierInstance OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            not-accessible
+        STATUS                current
+        DESCRIPTION
+            "Sub index of traffic classifier entry. 
+             It is used for matching more conditions, such as acl, dscp."
+        ::= { ruijieHQoSTClassifierEntry 2 }
+
+  ruijieHQoSTClassifierName OBJECT-TYPE
+     SYNTAX        OCTET STRING (SIZE (0..32))
+     MAX-ACCESS    read-create
+     STATUS        current
+     DESCRIPTION
+         "Traffic classifier name."
+     ::= { ruijieHQoSTClassifierEntry 3 }
+
+    ruijieHQoSTClassifierType OBJECT-TYPE
+        SYNTAX  INTEGER {
+            tc-or(1),
+            tc-and(2)
+        }
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+         "Traffic classifier matching type."
+        DEFVAL {tc-or}
+        ::= { ruijieHQoSTClassifierEntry 4 }
+
+    ruijieHQoSTClassifierRowStatus OBJECT-TYPE
+        SYNTAX                RowStatus
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "This variable is used to create, modify, and/or
+             delete a row in this table. When a row in this
+             table has a row in the active(1) state, 
+             ruijieHQoSTClassifierName, ruijieHQoSTClassifierType
+             objects in this row can not be modified."
+        ::=  { ruijieHQoSTClassifierEntry 5 }
+        
+    ruijieHQoSTClassifierMatchMask OBJECT-TYPE
+        SYNTAX                BITS {
+            tc-v4-any(0),
+            tc-v4-aclID(1),
+            tc-v4-aclName(2),
+            tc-v4-dscp(3),
+            tc-v4-tos(4),
+            tc-v6-any(5),
+            tc-v6-aclID(6),
+            tc-v6-aclName(7),  
+            tc-v6-dscp(8), 
+            tc-vlan-cos(9),
+            tc-exp(10),
+            tc-srcmac(11),
+            tc-dstmac(12)
+            }
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "This bit map indicates which of the fields described
+             next, If a particular bit is set to zero then
+             the corresponding field in the packet MUST be ignored
+             for comparison purposes."
+        ::= { ruijieHQoSTClassifierEntry 6 }
+    
+    ruijieHQoSTClassifierMatchV4Any OBJECT-TYPE
+        SYNTAX                TruthValue
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Traffic classifier matching any ipv4 packet."
+        DEFVAL {false}
+        ::= { ruijieHQoSTClassifierEntry 7 }
+
+    ruijieHQoSTClassifierMatchV4AclID OBJECT-TYPE
+        SYNTAX                INTEGER
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Traffic classifier matching acl id."
+        DEFVAL {0}
+        ::= { ruijieHQoSTClassifierEntry 8 }
+
+    ruijieHQoSTClassifierV4AclName OBJECT-TYPE
+       SYNTAX        OCTET STRING (SIZE (0..32))
+       MAX-ACCESS    read-create
+       STATUS        current
+       DESCRIPTION
+         "Traffic classifier matching acl name."
+     ::= { ruijieHQoSTClassifierEntry 9 }
+     
+     ruijieHQoSTClassifierMatchV4Dscp OBJECT-TYPE
+        SYNTAX                INTEGER (0..63)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Traffic classifier matching ipv4 dscp."
+        DEFVAL {0}
+        ::= { ruijieHQoSTClassifierEntry 10 }
+
+     ruijieHQoSTClassifierMatchV4Tos OBJECT-TYPE
+        SYNTAX                INTEGER (0..7)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Traffic classifier matching ipv4 precedence."
+        DEFVAL {0}
+        ::= { ruijieHQoSTClassifierEntry 11 }
+
+    ruijieHQoSTClassifierMatchV6Any OBJECT-TYPE
+        SYNTAX                TruthValue
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Traffic classifier matching any ipv6 packet."
+        DEFVAL {false}
+        ::= { ruijieHQoSTClassifierEntry 12 }
+
+    ruijieHQoSTClassifierMatchV6AclID OBJECT-TYPE
+        SYNTAX                INTEGER
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Traffic classifier matching ipv6 acl id."
+        ::= { ruijieHQoSTClassifierEntry 13 }
+
+    ruijieHQoSTClassifierV6AclName OBJECT-TYPE
+       SYNTAX        OCTET STRING (SIZE (0..32))
+       MAX-ACCESS    read-create
+       STATUS        current
+       DESCRIPTION
+         "Traffic classifier matching ipv6 acl name."
+     ::= { ruijieHQoSTClassifierEntry 14 }
+     
+     ruijieHQoSTClassifierMatchV6Dscp OBJECT-TYPE
+        SYNTAX                INTEGER (0..255)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Traffic classifier matching ipv6 dscp."
+        DEFVAL {0}
+        ::= { ruijieHQoSTClassifierEntry 15 }
+
+     ruijieHQoSTClassifierMatchCos OBJECT-TYPE
+        SYNTAX  INTEGER(0..7)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Traffic classifier matching Ethernet vlan cos."
+        DEFVAL {0}
+        ::= { ruijieHQoSTClassifierEntry 16 }
+
+     ruijieHQoSTClassifierMatchExp OBJECT-TYPE
+        SYNTAX     INTEGER(0..7)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Traffic classifier matching mpls label exp."
+        DEFVAL {0}
+        ::= { ruijieHQoSTClassifierEntry 17 }
+
+     ruijieHQoSTClassifierMatchSrcMac OBJECT-TYPE
+        SYNTAX                MacAddress
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Traffic classifier matching source mac."
+        ::= { ruijieHQoSTClassifierEntry 18 }
+
+     ruijieHQoSTClassifierMatchDstMac OBJECT-TYPE
+        SYNTAX                MacAddress
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+             "Traffic classifier matching destination mac."
+        ::= { ruijieHQoSTClassifierEntry 19 }
+        
+-- end of tc entry 
+
+-- Next free index in ruijieHQoSTBehaviorTable.
+    ruijieHQoSTBehaviorIndexNext OBJECT-TYPE
+        SYNTAX                INTEGER
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION   "This object contains an appropriate value to be used
+           for ruijieHQoSTBehaviorIndex when creating entries in the
+           ruijieHQoSTBehaviorTable. The value 0 indicates that no
+           unassigned entries are available."
+        ::= { ruijieHQoSTBehaviorObjects 1 }
+        
+    ruijieHQoSTBehaviorTable  OBJECT-TYPE
+        SYNTAX            SEQUENCE OF RuijieHQoSTBehaviorEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION 
+            "Traffic behavior table."
+        ::= { ruijieHQoSTBehaviorObjects 2 }
+       
+    ruijieHQoSTBehaviorEntry   OBJECT-TYPE
+        SYNTAX        RuijieHQoSTBehaviorEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+          "A row in this table represents the traffic behavior information."
+        INDEX  { ruijieHQoSTBehaviorIndex }
+        ::= { ruijieHQoSTBehaviorTable 1 }
+
+  RuijieHQoSTBehaviorEntry ::= SEQUENCE {
+        ruijieHQoSTBehaviorIndex           Unsigned32,
+        ruijieHQoSTBehaviorName            OCTET STRING,
+        ruijieHQoSTBehaviorRowStatus       RowStatus,
+        ruijieHQoSTBehaviorMask            BITS,
+        ruijieHQoSTBehaviorUserQName       OCTET STRING,
+        ruijieHQoSTBehaviorTCos            RuijieCosType,
+        ruijieHQoSTBehaviorTColor          INTEGER,
+        ruijieHQoSTBehaviorRV4Dscp         INTEGER,
+        ruijieHQoSTBehaviorRV4Tos          INTEGER,
+        ruijieHQoSTBehaviorRV6Dscp         INTEGER,
+        ruijieHQoSTBehaviorRVlanCos        INTEGER,
+        ruijieHQoSTBehaviorRExp            INTEGER,
+        ruijieHQoSTBehaviorSubPolicyName   OCTET STRING 
+        }
+
+    ruijieHQoSTBehaviorIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            not-accessible
+        STATUS                current
+        DESCRIPTION
+            "Traffic behavior table index."
+        ::= { ruijieHQoSTBehaviorEntry 1 }
+
+    ruijieHQoSTBehaviorName OBJECT-TYPE
+       SYNTAX        OCTET STRING (SIZE (0..32))
+       MAX-ACCESS    read-create
+       STATUS        current
+       DESCRIPTION
+         "Traffic behavior table name."
+     ::= { ruijieHQoSTBehaviorEntry 2 }
+
+    ruijieHQoSTBehaviorRowStatus OBJECT-TYPE
+        SYNTAX                RowStatus
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "This variable is used to create, modify, and/or
+             delete a row in this table. When a row in this
+             table has a row in the active(1) state, 
+             ruijieHQoSTBehaviorName
+             objects in this row can not be modified."
+        ::=  { ruijieHQoSTBehaviorEntry 3 }
+
+    ruijieHQoSTBehaviorMask OBJECT-TYPE
+        SYNTAX                BITS {
+            user-queue(0),
+            set-cos(1),
+            set-color(2),
+            remark-v4-dscp(3),
+            remark-v4-tos(4),
+            remark-v6-dscp(5),
+            remark-vlan-cos(6),
+            remark-exp(7),
+            sub-policy(8)
+            }
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "This bit map indicates which of the fields described
+             next, If a particular bit is set to zero then
+             the corresponding field in the packet MUST be ignored
+             for comparison purposes."
+        ::= { ruijieHQoSTBehaviorEntry 4 }
+ 
+     ruijieHQoSTBehaviorUserQName OBJECT-TYPE
+       SYNTAX        OCTET STRING (SIZE (0..32))
+       MAX-ACCESS    read-create
+       STATUS        current
+       DESCRIPTION
+         "User queue belong to this traffic behavior."
+     ::= { ruijieHQoSTBehaviorEntry 5 }
+     ruijieHQoSTBehaviorTCos OBJECT-TYPE
+        SYNTAX                RuijieCosType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Set service-class."
+        DEFVAL {cos-be}
+        ::=  { ruijieHQoSTBehaviorEntry 6 }
+
+    ruijieHQoSTBehaviorTColor OBJECT-TYPE
+        SYNTAX  INTEGER {
+            green(1),
+            yellow(2),
+            red(3)
+        }
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Set color." 
+        DEFVAL {green}
+        ::= { ruijieHQoSTBehaviorEntry 7 }
+
+    ruijieHQoSTBehaviorRV4Dscp OBJECT-TYPE
+        SYNTAX  INTEGER (0..63)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Remark traffic ipv4 dscp" 
+        DEFVAL {0}
+        ::= { ruijieHQoSTBehaviorEntry 8 }
+
+    ruijieHQoSTBehaviorRV4Tos OBJECT-TYPE
+        SYNTAX  INTEGER (0..7)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Remark traffic ipv4 precedence"  
+        DEFVAL {0}
+        ::= { ruijieHQoSTBehaviorEntry 9 }
+
+    ruijieHQoSTBehaviorRV6Dscp OBJECT-TYPE
+        SYNTAX  INTEGER (0..255)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Remark traffic ipv6 dscp."  
+        DEFVAL {0}
+        ::= { ruijieHQoSTBehaviorEntry 10 }
+
+    ruijieHQoSTBehaviorRVlanCos OBJECT-TYPE
+        SYNTAX  INTEGER (0..7)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Remark traffic ethernet vlan cos."  
+        DEFVAL {0}
+        ::= { ruijieHQoSTBehaviorEntry 11 }
+
+    ruijieHQoSTBehaviorRExp OBJECT-TYPE
+        SYNTAX  INTEGER (0..7)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Remark traffic mpls label exp." 
+        DEFVAL {0}
+        ::= { ruijieHQoSTBehaviorEntry 12 }
+
+     ruijieHQoSTBehaviorSubPolicyName OBJECT-TYPE
+       SYNTAX        OCTET STRING (SIZE (0..32))
+       MAX-ACCESS    read-create
+       STATUS        current
+       DESCRIPTION
+         "Sub traffic policy under this traffic behavior."
+     ::= { ruijieHQoSTBehaviorEntry 13 }        
+--end of traffic behavior entry
+
+-- Next free index in ruijieHQoSTPolicyTable. 
+    ruijieHQoSTPolicyIndexNext OBJECT-TYPE
+        SYNTAX                INTEGER
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION   "This object contains an appropriate value to be used
+           for ruijieHQoSTPolicyIndex when creating entries in the
+           ruijieHQoSTPolicyTable. The value 0 indicates that no
+           unassigned entries are available."
+        ::= { ruijieHQoSTPolicyObjects 1 }
+
+    ruijieHQoSTPolicyTable  OBJECT-TYPE
+        SYNTAX            SEQUENCE OF RuijieHQoSTPolicyEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION 
+         "Traffic policy table."
+        ::= { ruijieHQoSTPolicyObjects 2 }
+       
+    ruijieHQoSTPolicyEntry   OBJECT-TYPE
+        SYNTAX        RuijieHQoSTPolicyEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+          "A row in this table represents the traffic policy information."
+        INDEX  { ruijieHQoSTPolicyIndex }
+        ::= { ruijieHQoSTPolicyTable 1 }
+
+  RuijieHQoSTPolicyEntry ::= SEQUENCE {
+        ruijieHQoSTPolicyIndex           Unsigned32,
+        ruijieHQoSTPolicyName            OCTET STRING,
+        ruijieHQoSTPolicyRowStatus       RowStatus
+        }
+
+    ruijieHQoSTPolicyIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            not-accessible
+        STATUS                current
+        DESCRIPTION
+            "Traffic policy entry index."
+        ::= { ruijieHQoSTPolicyEntry 1 }
+
+    ruijieHQoSTPolicyName OBJECT-TYPE
+       SYNTAX        OCTET STRING (SIZE (0..32))
+       MAX-ACCESS    read-create
+       STATUS        current
+       DESCRIPTION
+         "Traffic policy entry name."
+       ::= { ruijieHQoSTPolicyEntry 2 }
+
+    ruijieHQoSTPolicyRowStatus OBJECT-TYPE
+        SYNTAX                RowStatus
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "This variable is used to create, modify, and/or
+             delete a row in this table. When a row in this
+             table has a row in the active(1) state, 
+             ruijieHQoSTPolicyName
+             objects in this row can not be modified."
+        ::=  { ruijieHQoSTPolicyEntry 3 }
+
+    ruijieHQoSTPolicyMapIndexNext OBJECT-TYPE
+        SYNTAX                INTEGER
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION   "This object contains an appropriate value to be used
+           for ruijieHQoSTPolicyMapIndex when creating entries in the
+           ruijieHQoSTPolicyMapTable. The value 0 indicates that no
+           unassigned entries are available."
+        ::= { ruijieHQoSTPolicyObjects 3 }
+
+    ruijieHQoSTPolicyMapTable  OBJECT-TYPE
+        SYNTAX            SEQUENCE OF RuijieHQoSTPolicyMapEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION 
+        "Traffic policy map table. Contains policy,classfier,behavior."
+         ::= { ruijieHQoSTPolicyObjects 4 }
+       
+    ruijieHQoSTPolicyMapEntry   OBJECT-TYPE
+        SYNTAX        RuijieHQoSTPolicyMapEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+          "A row in this table represents the traffic policy map information."
+        INDEX  { ruijieHQoSTPolicyMapIndex }
+        ::= { ruijieHQoSTPolicyMapTable 1 }
+
+  RuijieHQoSTPolicyMapEntry ::= SEQUENCE {
+        ruijieHQoSTPolicyMapIndex             Unsigned32,
+        ruijieHQoSTPolicyMapPolicyName        OCTET STRING,
+        ruijieHQoSTPolicyMapPolicyIndex       Unsigned32,
+        ruijieHQoSTPolicyMapTClassfierName    OCTET STRING,
+        ruijieHQoSTPolicyMapTClassfierIndex   Unsigned32,
+        ruijieHQoSTPolicyMapTBehaviorName     OCTET STRING,
+        ruijieHQoSTPolicyMapTBehaviorIndex    Unsigned32,
+        ruijieHQoSTPolicyMapPrecedence        Unsigned32,
+        ruijieHQoSTPolicyMapRowStatus         RowStatus
+        }
+
+    ruijieHQoSTPolicyMapIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            not-accessible
+        STATUS                current
+        DESCRIPTION
+            "Traffic policy map entry index."
+        ::= { ruijieHQoSTPolicyMapEntry 1 }
+        
+    ruijieHQoSTPolicyMapPolicyName OBJECT-TYPE
+       SYNTAX        OCTET STRING (SIZE (0..32))
+       MAX-ACCESS    read-create
+       STATUS        current
+       DESCRIPTION
+         "Traffic policy entry name."
+       ::= { ruijieHQoSTPolicyMapEntry 2 }
+       
+    ruijieHQoSTPolicyMapPolicyIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Traffic policy entry index."
+        ::=  { ruijieHQoSTPolicyMapEntry 3 }
+
+    ruijieHQoSTPolicyMapTClassfierName OBJECT-TYPE
+       SYNTAX        OCTET STRING (SIZE (0..32))
+       MAX-ACCESS    read-create
+       STATUS        current
+       DESCRIPTION
+         "Traffic classifier entry name."
+       ::= { ruijieHQoSTPolicyMapEntry 4 }
+       
+    ruijieHQoSTPolicyMapTClassfierIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Traffic classifier entry index."
+        ::=  { ruijieHQoSTPolicyMapEntry 5 }
+
+    ruijieHQoSTPolicyMapTBehaviorName OBJECT-TYPE
+       SYNTAX        OCTET STRING (SIZE (0..32))
+       MAX-ACCESS    read-create
+       STATUS        current
+       DESCRIPTION
+         "Traffic behavior entry name."
+       ::= { ruijieHQoSTPolicyMapEntry 6 }
+       
+    ruijieHQoSTPolicyMapTBehaviorIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Traffic behavior entry index."
+        ::=  { ruijieHQoSTPolicyMapEntry 7 }
+
+    ruijieHQoSTPolicyMapPrecedence OBJECT-TYPE
+        SYNTAX    Unsigned32(1..200)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Precedence of traffic Policy. Set by user."
+        ::=  { ruijieHQoSTPolicyMapEntry 8 }
+
+    ruijieHQoSTPolicyMapRowStatus OBJECT-TYPE
+        SYNTAX                RowStatus
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "This variable is used to create, modify, and/or
+             delete a row in this table. When a row in this
+             table has a row in the active(1) state, 
+             ruijieHQoSTPolicyMapPolicyName,ruijieHQoSTPolicyMapTClassfierName
+             ruijieHQoSTPolicyMapTBehaviorName
+             objects in this row can not be modified."
+
+        ::=  { ruijieHQoSTPolicyMapEntry 9 }
+-- end of policy entry
+
+-- start of VoQ
+    ruijieHQoSVoQEnable OBJECT-TYPE
+        SYNTAX                TruthValue
+        MAX-ACCESS            read-write
+        STATUS                current
+        DESCRIPTION
+            "Config VoQ of device."
+        DEFVAL {false}
+        ::= { ruijieHQoSVoQObjects 1}
+
+    ruijieHQoSVoQDeviceTable  OBJECT-TYPE
+        SYNTAX            SEQUENCE OF RuijieHQoSVoQDeviceEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION 
+         "Device credite table."
+         ::= { ruijieHQoSVoQObjects 2 }
+       
+    ruijieHQoSVoQDeviceEntry   OBJECT-TYPE
+        SYNTAX        RuijieHQoSVoQDeviceEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+          "A row in this table represents the device credite information."
+        INDEX  { ruijieHQoSVoQDeviceId }
+        ::= { ruijieHQoSVoQDeviceTable 1 }
+
+  RuijieHQoSVoQDeviceEntry ::= SEQUENCE {
+        ruijieHQoSVoQDeviceId                 Unsigned32,
+        ruijieHQoSVoQDeviceCredit             Unsigned32
+        }
+
+    ruijieHQoSVoQDeviceId OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            not-accessible
+        STATUS                current
+        DESCRIPTION
+            "Device ID, devid=slot*3+subslot."
+        ::= { ruijieHQoSVoQDeviceEntry 1 } 
+
+    ruijieHQoSVoQDeviceCredit OBJECT-TYPE
+        SYNTAX   Unsigned32
+        UNITS "Mbit/s"
+        MAX-ACCESS            read-write
+        STATUS                current
+        DESCRIPTION
+            "Credite of this device."
+        ::= { ruijieHQoSVoQDeviceEntry 2 }
+-- end of VoQ
+
+-- Next free index in ruijieHQoSFlowQTable.
+    ruijieHQoSPortQIndexNext OBJECT-TYPE
+        SYNTAX                INTEGER
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION   "This object contains an appropriate value to be used
+           for ruijieHQoSPortQIndex when creating entries in the
+           ruijieHQoSPortQTable. The value 0 indicates that no
+           unassigned entries are available."
+        ::= { ruijieHQoSPortQObjects 1 }
+
+    ruijieHQoSPortQTable  OBJECT-TYPE
+        SYNTAX            SEQUENCE OF RuijieHQoSPortQEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION 
+         "Port queue table."
+         ::= { ruijieHQoSPortQObjects 2 }
+       
+    ruijieHQoSPortQEntry   OBJECT-TYPE
+        SYNTAX        RuijieHQoSPortQEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+          "A row in this table represents the port queue information."
+        INDEX  { ruijieHQoSPortQIndex }
+        ::= { ruijieHQoSPortQTable 1 }
+
+  RuijieHQoSPortQEntry ::= SEQUENCE {
+        ruijieHQoSPortQIndex               Unsigned32,
+        ruijieHQoSPortQName                OCTET STRING,
+        ruijieHQoSPortQRowStatus           RowStatus,
+        ruijieHQoSPortQBEQType             RuijieQType,
+        ruijieHQoSPortQBEQWredWeight       INTEGER,
+        ruijieHQoSPortQBEQWredName         OCTET STRING,
+        ruijieHQoSPortQBEQDepth            INTEGER,
+        ruijieHQoSPortQBEQShaping          INTEGER, 
+        ruijieHQoSPortQAF1QType             RuijieQType,
+        ruijieHQoSPortQAF1QWredWeight       INTEGER,
+        ruijieHQoSPortQAF1QWredName         OCTET STRING,
+        ruijieHQoSPortQAF1QDepth            INTEGER,
+        ruijieHQoSPortQAF1QShaping          INTEGER,
+        ruijieHQoSPortQAF2QType             RuijieQType,
+        ruijieHQoSPortQAF2QWredWeight       INTEGER,
+        ruijieHQoSPortQAF2QWredName         OCTET STRING,
+        ruijieHQoSPortQAF2QDepth            INTEGER,
+        ruijieHQoSPortQAF2QShaping          INTEGER,
+        ruijieHQoSPortQAF3QType             RuijieQType,
+        ruijieHQoSPortQAF3QWredWeight       INTEGER,
+        ruijieHQoSPortQAF3QWredName         OCTET STRING,
+        ruijieHQoSPortQAF3QDepth            INTEGER,
+        ruijieHQoSPortQAF3QShaping          INTEGER,
+        ruijieHQoSPortQAF4QType             RuijieQType,
+        ruijieHQoSPortQAF4QWredWeight       INTEGER,
+        ruijieHQoSPortQAF4QWredName         OCTET STRING,
+        ruijieHQoSPortQAF4QDepth            INTEGER,
+        ruijieHQoSPortQAF4QShaping          INTEGER,
+        ruijieHQoSPortQEFQType             RuijieQType,
+        ruijieHQoSPortQEFQWredWeight       INTEGER,
+        ruijieHQoSPortQEFQWredName         OCTET STRING,
+        ruijieHQoSPortQEFQDepth            INTEGER,
+        ruijieHQoSPortQEFQShaping          INTEGER,
+        ruijieHQoSPortQCS6QType             RuijieQType,
+        ruijieHQoSPortQCS6QWredWeight       INTEGER,
+        ruijieHQoSPortQCS6QWredName         OCTET STRING,
+        ruijieHQoSPortQCS6QDepth            INTEGER,
+        ruijieHQoSPortQCS6QShaping          INTEGER,
+        ruijieHQoSPortQCS7QType             RuijieQType,
+        ruijieHQoSPortQCS7QWredWeight       INTEGER,
+        ruijieHQoSPortQCS7QWredName         OCTET STRING,
+        ruijieHQoSPortQCS7QDepth            INTEGER,
+        ruijieHQoSPortQCS7QShaping          INTEGER
+     }
+
+    ruijieHQoSPortQIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            not-accessible
+        STATUS                current
+        DESCRIPTION
+            "Index of port queue."
+        ::= { ruijieHQoSPortQEntry 1 }
+
+  ruijieHQoSPortQName OBJECT-TYPE
+     SYNTAX        OCTET STRING (SIZE (0..32))
+     MAX-ACCESS    read-create
+     STATUS        current
+     DESCRIPTION
+         "Port queue name."
+     ::= { ruijieHQoSPortQEntry 2 }
+
+    ruijieHQoSPortQRowStatus OBJECT-TYPE
+        SYNTAX                RowStatus
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "This variable is used to create, modify, and/or
+             delete a row in this table. When a row in this
+             table has a row in the active(1) state, 
+             ruijieHQoSPortQName
+             objects in this row can not be modified."
+        ::=  { ruijieHQoSPortQEntry 3 }
+ 
+    ruijieHQoSPortQBEQType OBJECT-TYPE
+        SYNTAX RuijieQType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue BEQ type."
+        DEFVAL { q-wfq }
+        ::= { ruijieHQoSPortQEntry 4 }  
+                
+    ruijieHQoSPortQBEQWredWeight OBJECT-TYPE
+        SYNTAX   INTEGER(8..2048)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue BEQ to wfq wred weight."
+        DEFVAL { 10 }
+        ::= { ruijieHQoSPortQEntry 5 } 
+        
+    ruijieHQoSPortQBEQWredName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue BEQ to wfq wred name."
+        ::= { ruijieHQoSPortQEntry 6 }
+
+    ruijieHQoSPortQBEQDepth OBJECT-TYPE
+        SYNTAX   INTEGER(1..1024)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue BEQ to wfq depth."
+        DEFVAL { 200 }
+        ::= { ruijieHQoSPortQEntry 7 } 
+
+    ruijieHQoSPortQBEQShaping OBJECT-TYPE
+        SYNTAX   INTEGER(0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue BEQ total bandwidth."
+        DEFVAL { 10000000 }
+        ::= { ruijieHQoSPortQEntry 8 } 
+
+    ruijieHQoSPortQAF1QType OBJECT-TYPE
+        SYNTAX RuijieQType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF1 type."
+        DEFVAL { q-wfq }
+        ::= { ruijieHQoSPortQEntry 9 }  
+                
+    ruijieHQoSPortQAF1QWredWeight OBJECT-TYPE
+        SYNTAX   INTEGER(8..2048)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF1 to wfq wred weight."
+        DEFVAL { 10 }
+        ::= { ruijieHQoSPortQEntry 10 } 
+        
+    ruijieHQoSPortQAF1QWredName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF1 to wfq wred name."
+        ::= { ruijieHQoSPortQEntry 11 }
+
+    ruijieHQoSPortQAF1QDepth OBJECT-TYPE
+        SYNTAX  INTEGER(1..1024)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF1 to wfq depth."
+        DEFVAL { 200 }
+        ::= { ruijieHQoSPortQEntry 12 } 
+
+    ruijieHQoSPortQAF1QShaping OBJECT-TYPE
+        SYNTAX   INTEGER(0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF1 total bandwidth."
+        DEFVAL { 10000000 }
+        ::= { ruijieHQoSPortQEntry 13 } 
+        
+    ruijieHQoSPortQAF2QType OBJECT-TYPE
+        SYNTAX RuijieQType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF2 type."
+        DEFVAL { q-wfq }
+        ::= { ruijieHQoSPortQEntry 14 }  
+                
+    ruijieHQoSPortQAF2QWredWeight OBJECT-TYPE
+        SYNTAX  INTEGER(1..2048)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF2 to wfq wred weight."
+        DEFVAL { 10 }
+        ::= { ruijieHQoSPortQEntry 15 } 
+        
+    ruijieHQoSPortQAF2QWredName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF2 to wfq wred name."
+        ::= { ruijieHQoSPortQEntry 16 }
+
+    ruijieHQoSPortQAF2QDepth OBJECT-TYPE
+        SYNTAX  INTEGER(1..1024)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF2 to wfq depth."
+        DEFVAL { 200 }
+        ::= { ruijieHQoSPortQEntry 17 } 
+
+    ruijieHQoSPortQAF2QShaping OBJECT-TYPE
+        SYNTAX    INTEGER(0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF2 total bandwidth."
+        DEFVAL { 10000000 }
+        ::= { ruijieHQoSPortQEntry 18 } 
+                
+     ruijieHQoSPortQAF3QType OBJECT-TYPE
+        SYNTAX RuijieQType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF3 type."
+        DEFVAL { q-wfq }
+        ::= { ruijieHQoSPortQEntry 19 }  
+                
+    ruijieHQoSPortQAF3QWredWeight OBJECT-TYPE
+        SYNTAX  INTEGER(8..2048)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF3 to wfq wred weight."
+        DEFVAL { 10 }
+        ::= { ruijieHQoSPortQEntry 20 } 
+        
+    ruijieHQoSPortQAF3QWredName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF3 to wfq wred name."
+        ::= { ruijieHQoSPortQEntry 21 }
+
+    ruijieHQoSPortQAF3QDepth OBJECT-TYPE
+        SYNTAX   INTEGER(1..1024)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue BEQ to wfq depth."
+        DEFVAL {200 }
+        ::= { ruijieHQoSPortQEntry 22 } 
+
+    ruijieHQoSPortQAF3QShaping OBJECT-TYPE
+        SYNTAX  INTEGER(0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF3 total bandwidth."
+        DEFVAL { 10000000 }
+        ::= { ruijieHQoSPortQEntry 23 } 
+            
+     ruijieHQoSPortQAF4QType OBJECT-TYPE
+        SYNTAX RuijieQType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF4 type."
+        DEFVAL { q-wfq }
+        ::= { ruijieHQoSPortQEntry 24 }  
+                
+    ruijieHQoSPortQAF4QWredWeight OBJECT-TYPE
+        SYNTAX  INTEGER(8..2048)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF4 to wfq wred weight."
+        DEFVAL { 10 }
+        ::= { ruijieHQoSPortQEntry 25 } 
+        
+    ruijieHQoSPortQAF4QWredName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF4 to wfq wred name."
+        ::= { ruijieHQoSPortQEntry 26 }
+
+    ruijieHQoSPortQAF4QDepth OBJECT-TYPE
+        SYNTAX  INTEGER(1..1024)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF4 to wfq depth."
+        DEFVAL { 200 }
+        ::= { ruijieHQoSPortQEntry 27 } 
+
+    ruijieHQoSPortQAF4QShaping OBJECT-TYPE
+        SYNTAX  INTEGER(0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue AF4 total bandwidth."
+        DEFVAL { 10000000 }
+        ::= { ruijieHQoSPortQEntry 28 }
+         
+     ruijieHQoSPortQEFQType OBJECT-TYPE
+        SYNTAX RuijieQType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue EF type."
+        DEFVAL { q-pq }
+        ::= { ruijieHQoSPortQEntry 29 }  
+                
+    ruijieHQoSPortQEFQWredWeight OBJECT-TYPE
+        SYNTAX    INTEGER(8..2048)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue EF to wfq wred weight."
+        DEFVAL { 15 }
+        ::= { ruijieHQoSPortQEntry 30 } 
+        
+    ruijieHQoSPortQEFQWredName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue EF to wfq wred name."
+        ::= { ruijieHQoSPortQEntry 31 }
+
+    ruijieHQoSPortQEFQDepth OBJECT-TYPE
+        SYNTAX INTEGER(1..1024)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue EF to wfq depth."
+        DEFVAL { 200 }
+        ::= { ruijieHQoSPortQEntry 32 } 
+
+    ruijieHQoSPortQEFQShaping OBJECT-TYPE
+        SYNTAX  INTEGER(0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue EF total bandwidth."
+        DEFVAL { 10000000 }
+        ::= { ruijieHQoSPortQEntry 33 } 
+        
+     ruijieHQoSPortQCS6QType OBJECT-TYPE
+        SYNTAX RuijieQType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue CS6 type."
+        DEFVAL { q-pq }
+        ::= { ruijieHQoSPortQEntry 34 }  
+                
+    ruijieHQoSPortQCS6QWredWeight OBJECT-TYPE
+        SYNTAX  INTEGER(8..2048)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue CS6 to wfq wred weight."
+        DEFVAL { 15 }
+        ::= { ruijieHQoSPortQEntry 35 } 
+        
+    ruijieHQoSPortQCS6QWredName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue CS6 to wfq wred name."
+        ::= { ruijieHQoSPortQEntry 36 }
+
+    ruijieHQoSPortQCS6QDepth OBJECT-TYPE
+        SYNTAX   INTEGER(1..1024)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue CS6 to wfq depth."
+        DEFVAL { 200 }
+        ::= { ruijieHQoSPortQEntry 37 } 
+
+    ruijieHQoSPortQCS6QShaping OBJECT-TYPE
+        SYNTAX  INTEGER(0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue CS6 total bandwidth."
+        DEFVAL { 10000000 }
+        ::= { ruijieHQoSPortQEntry 38 }
+        
+     ruijieHQoSPortQCS7QType OBJECT-TYPE
+        SYNTAX RuijieQType
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue CS7 type."
+        DEFVAL { q-pq }
+        ::= { ruijieHQoSPortQEntry 39 }  
+                
+    ruijieHQoSPortQCS7QWredWeight OBJECT-TYPE
+        SYNTAX   INTEGER(8..2048)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue CS7 to wfq wred weight."
+        DEFVAL { 15 }
+        ::= { ruijieHQoSPortQEntry 40 } 
+        
+    ruijieHQoSPortQCS7QWredName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue CS7 to wfq wred name."
+        ::= { ruijieHQoSPortQEntry 41 }
+
+    ruijieHQoSPortQCS7QDepth OBJECT-TYPE
+        SYNTAX   INTEGER(1..1024)
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue CS7 to wfq depth."
+        DEFVAL { 200 }
+        ::= { ruijieHQoSPortQEntry 42 } 
+
+    ruijieHQoSPortQCS7QShaping OBJECT-TYPE
+        SYNTAX  INTEGER(0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-create
+        STATUS                current
+        DESCRIPTION
+            "Port queue CS7 total bandwidth."
+        DEFVAL { 10000000 }
+        ::= { ruijieHQoSPortQEntry 43 }
+-- end of port queue
+
+-- start of HQoS interface application object
+    ruijieHQoSIfAppTable  OBJECT-TYPE
+        SYNTAX            SEQUENCE OF RuijieHQoSIfAppEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION 
+         "The HQoS config with this table."
+         ::= { ruijieHQoSIfAppObjects 1 }
+       
+    ruijieHQoSIfAppEntry   OBJECT-TYPE
+        SYNTAX        RuijieHQoSIfAppEntry
+        MAX-ACCESS    not-accessible
+        STATUS        current
+        DESCRIPTION
+          "A row in this table represents the interface HQoS config information."
+        INDEX  { ruijieHQoSIfAppIndex }
+        ::= { ruijieHQoSIfAppTable 1 }
+
+  RuijieHQoSIfAppEntry ::= SEQUENCE {
+        ruijieHQoSIfAppIndex             InterfaceIndex,
+        ruijieHQoSIfAppInPolicyName      OCTET STRING,
+        ruijieHQoSIfAppInPolicyIndex     Unsigned32,
+        ruijieHQoSIfAppInPolicyLayer     RuijieLayerType,       
+        ruijieHQoSIfAppOutPolicyName     OCTET STRING,
+        ruijieHQoSIfAppOutPolicyIndex    Unsigned32,
+        ruijieHQoSIfAppOutPolicyLayer    RuijieLayerType,  
+        ruijieHQoSIfAppPortQueueName     OCTET STRING,
+        ruijieHQoSIfAppPortQueueIndex    Unsigned32, 
+        ruijieHQoSIfAppPortQueueShaping  INTEGER
+        }
+
+    ruijieHQoSIfAppIndex OBJECT-TYPE
+        SYNTAX                InterfaceIndex
+        MAX-ACCESS            not-accessible
+        STATUS                current
+        DESCRIPTION
+            "Interface index ."
+        ::= { ruijieHQoSIfAppEntry 1 } 
+
+    ruijieHQoSIfAppInPolicyName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-write
+        STATUS                current
+        DESCRIPTION
+            "Inbound policy name with this interface."
+        ::= { ruijieHQoSIfAppEntry 2 }
+
+    ruijieHQoSIfAppInPolicyIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+            "Inbound policy index with this interface."
+        ::= { ruijieHQoSIfAppEntry 3 }
+
+    ruijieHQoSIfAppInPolicyLayer OBJECT-TYPE
+        SYNTAX                RuijieLayerType
+        MAX-ACCESS            read-write
+        STATUS                current
+        DESCRIPTION
+            "Inbound policy layer with this interface."
+        DEFVAL {all-layer}
+        ::= { ruijieHQoSIfAppEntry 4 }
+
+    ruijieHQoSIfAppOutPolicyName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-write
+        STATUS                current
+        DESCRIPTION
+            "Outbound policy name with this interface."
+        ::= { ruijieHQoSIfAppEntry 5 }
+
+    ruijieHQoSIfAppOutPolicyIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+            "Outbound policy index with this interface."
+        ::= { ruijieHQoSIfAppEntry 6 }
+
+    ruijieHQoSIfAppOutPolicyLayer OBJECT-TYPE
+        SYNTAX                RuijieLayerType
+        MAX-ACCESS            read-write
+        STATUS                current
+        DESCRIPTION
+            "Outbound policy layer with this interface."
+        DEFVAL {all-layer}
+        ::= { ruijieHQoSIfAppEntry 7 }
+
+    ruijieHQoSIfAppPortQueueName OBJECT-TYPE
+        SYNTAX                OCTET STRING (SIZE (0..32))
+        MAX-ACCESS            read-write
+        STATUS                current
+        DESCRIPTION
+            "Port queue name with this interface."
+        ::= { ruijieHQoSIfAppEntry 8 }
+
+    ruijieHQoSIfAppPortQueueIndex OBJECT-TYPE
+        SYNTAX                Unsigned32
+        MAX-ACCESS            read-only
+        STATUS                current
+        DESCRIPTION
+            "Port queue index with this interface."
+        ::= { ruijieHQoSIfAppEntry 9 }
+
+    ruijieHQoSIfAppPortQueueShaping OBJECT-TYPE
+        SYNTAX   INTEGER(0..10000000)
+        UNITS          "kilobits per second"
+        MAX-ACCESS            read-write
+        STATUS                current
+        DESCRIPTION
+            "Port queue total bandwidth with this interface."
+        DEFVAL {10000000}
+        ::= { ruijieHQoSIfAppEntry 10 }
+-- end of HQoS interface appliction table
+
+END
+-- End module
+

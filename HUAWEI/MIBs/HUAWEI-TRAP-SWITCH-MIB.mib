@@ -1,0 +1,137 @@
+--      ==================================================================
+-- Copyright (C) 2011 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- 
+-- Description: HUAWEI TRAP SWITCH MIB
+-- Reference:
+-- Version: V1.0
+-- History: 
+--  V1.0      2011-05-12   publish
+-- ==================================================================
+
+	HUAWEI-TRAP-SWITCH-MIB DEFINITIONS ::= BEGIN
+ 
+		IMPORTS
+			hwDatacomm			
+				FROM HUAWEI-MIB	
+			
+			OBJECT-GROUP, MODULE-COMPLIANCE, NOTIFICATION-GROUP            
+                                FROM SNMPv2-CONF
+                                				
+			Integer32, Unsigned32, Counter64, OBJECT-TYPE, MODULE-IDENTITY, 
+			NOTIFICATION-TYPE			
+				FROM SNMPv2-SMI;
+			
+	
+	
+		hwTrapSwitchMIB MODULE-IDENTITY 
+			LAST-UPDATED "201105121130Z"		-- May 12, 2011 at 11:30 GMT
+			ORGANIZATION 
+				"Huawei Technologies Co.,Ltd."
+			CONTACT-INFO 
+				"Huawei Industrial Base
+                                  Bantian, Longgang
+                                   Shenzhen 518129
+                                   People's Republic of China
+                                   Website: http://www.huawei.com
+                                   Email: support@huawei.com
+                                 "
+			DESCRIPTION 
+				"This MIB is used to enable or disable a trap function."
+			REVISION "201105121150Z"		-- May 12, 2011 at 11:50 GMT
+			DESCRIPTION
+				"The initial revision of this MIB module ."
+			::= { hwDatacomm 236 }
+		
+	
+	
+--
+-- Node definitions
+--
+		hwTrapSwitchObjects OBJECT IDENTIFIER ::= { hwTrapSwitchMIB 1 }
+									
+		hwTrapSwitchSpecialTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwTrapSwitchSpecialEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This table is used to set the enabling or disabling status of a specified trap."
+			::= { hwTrapSwitchObjects 1 }
+		
+		hwTrapSwitchSpecialEntry OBJECT-TYPE
+			SYNTAX HwTrapSwitchSpecialEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This talbe is used to set the enabling or disabling status of a specified trap."
+			INDEX { hwTrapSwitchSpecialName }
+			::= { hwTrapSwitchSpecialTable 1 }
+		
+		HwTrapSwitchSpecialEntry ::=
+		    SEQUENCE { 
+			hwTrapSwitchSpecialName
+			OCTET STRING,
+		        hwTrapSwitchSpecialDescription
+	                OCTET STRING,
+			hwTrapSwitchSpecialState
+			INTEGER
+		    }
+
+		hwTrapSwitchSpecialName OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (1..127))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"This object indicates a trap name."
+			::= { hwTrapSwitchSpecialEntry 1 }
+			
+		hwTrapSwitchSpecialDescription OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..255))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"This object indicates trap description."
+			::= { hwTrapSwitchSpecialEntry 2 }			
+		
+		hwTrapSwitchSpecialState OBJECT-TYPE
+			SYNTAX INTEGER
+			{
+				enable(1),
+				disable(2)
+			}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The value of this object indicates that a trap is enabled or disabled.
+                                     enable(1): Enables the trap.
+                                     disable(2): Disables the trap."
+			::= { hwTrapSwitchSpecialEntry 3 }
+		
+	
+	hwTrapSwitchConformance OBJECT IDENTIFIER ::= { hwTrapSwitchMIB 2 }
+	
+	hwTrapSwitchCompliances OBJECT IDENTIFIER ::= { hwTrapSwitchConformance 1 }
+
+ 	hwTrapSwitchCompliance MODULE-COMPLIANCE
+		STATUS current
+		DESCRIPTION 
+			"The compliance statement for entities which 
+				implement the Huawei Trap Switch mib."
+		MODULE -- this module
+		MANDATORY-GROUPS { hwTrapSwitchGroup }
+			::= { hwTrapSwitchCompliances 1 }  
+	
+	hwTrapSwitchGroups OBJECT IDENTIFIER ::= { hwTrapSwitchConformance 2 }
+	hwTrapSwitchGroup OBJECT-GROUP
+			OBJECTS { hwTrapSwitchSpecialName,hwTrapSwitchSpecialState }
+			STATUS current
+			DESCRIPTION 
+				"All information of a speial trap."
+			::= { hwTrapSwitchGroups 1 }
+	
+	
+	
+END
+
+--
+-- HUAWEI-TRAP-SWITCH-MIB
+--

@@ -1,0 +1,597 @@
+
+
+--  =================================================================
+-- Copyright (C) 2018 by HUAWEI TECHNOLOGIES. All rights reserved.
+-- 
+-- Description: Huawei DNS MIB File for Dnsv4 and Dnsv6             
+--              that show host Dynamic Entry
+-- Reference:    
+--
+-- Version:     V2.02  
+--
+-- History:           
+--     Lu qingingqiang 67320 and Wang fengmei 61077 Initial Version V1.00 
+-- =================================================================
+
+HUAWEI-DNS-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        hwDatacomm
+            FROM HUAWEI-MIB
+        OBJECT-TYPE, MODULE-IDENTITY, IpAddress, Integer32
+            FROM SNMPv2-SMI
+        OBJECT-GROUP, MODULE-COMPLIANCE
+            FROM SNMPv2-CONF
+        TEXTUAL-CONVENTION, DisplayString
+            FROM SNMPv2-TC
+        EnabledStatus
+            FROM P-BRIDGE-MIB;
+
+                       
+    hwDnsMIB MODULE-IDENTITY 
+        LAST-UPDATED "201803291615Z"
+        ORGANIZATION 
+            "Huawei Technologies Co.,Ltd."
+        CONTACT-INFO       
+            "Huawei Industrial Base
+              Bantian, Longgang
+               Shenzhen 518129
+               People's Republic of China
+               Website: http://www.huawei.com
+               Email: support@huawei.com
+             "
+        DESCRIPTION 
+            "The private mib file includes the general extent 
+            information of the device.hwDatacomm(25).hwDnsMib(194)"
+		
+		REVISION  "201803291615Z" 
+		DESCRIPTION 
+			"Add mib table hwDnsPrivateHostsDynamicTable and hwDns6PrivateHostsDynamicTable"					
+			
+        REVISION  "201411061558Z" 
+		DESCRIPTION 
+			"The private mib file includes the general extent 
+			information of the device.hwDatacomm(25).hwDnsMib(194)"
+        ::= { hwDatacomm 194 }          
+
+
+-- Top-level structure of the MIB
+hwDnsObjects OBJECT IDENTIFIER ::= { hwDnsMIB 1 }
+-- OBJECT IDENTIFIER definitions                     
+     
+--=====================================================================
+--First table
+--=====================================================================
+
+-- Begin define dnsv4 showHostDynamic Entry
+    hwDnsHostsDynamicTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwDnsHostsDynamicEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table is a list of domain names mapped to IPv4 addresses."
+        ::= { hwDnsObjects 1 }
+    
+    hwDnsHostsDynamicEntry OBJECT-TYPE
+        SYNTAX HwDnsHostsDynamicEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table contains four rows, the first is the domain name
+            which named DnsDomainName, the second is the IP address of host 
+            which named DnsIpAddress, the third is the DNS dynamic entry
+            age time which names DnsTtl, and the last one is the host 
+            alias which named DnsAlias."
+        INDEX { hwDnsDomainName }
+        ::= { hwDnsHostsDynamicTable 1 }
+        
+    HwDnsHostsDynamicEntry ::=
+        SEQUENCE { 
+            hwDnsDomainName
+                DisplayString, 
+            hwDnsIpAddress  
+                IpAddress,
+            hwDnsTtl   
+                Integer32,
+            hwDnsAlias
+                DisplayString    
+         }
+
+    hwDnsDomainName OBJECT-TYPE
+        SYNTAX DisplayString 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "DnsDomainName indicates a domain name."
+        ::= { hwDnsHostsDynamicEntry 1 }
+    
+    hwDnsIpAddress OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "DnsIpAddress indicates an IP address mapped to a domain name."
+        ::= { hwDnsHostsDynamicEntry 2 }      
+        
+    hwDnsTtl OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "DnsTtl indicates the TTL of a mapping entry, which is a 32-bit integer,in seconds."
+        ::= { hwDnsHostsDynamicEntry 3 } 
+        
+    hwDnsAlias OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "DnsAlias indicates a domain name alias."
+        ::= { hwDnsHostsDynamicEntry 4 }    
+-- End define dnsv4        
+               
+--=====================================================================
+--Second table
+--=====================================================================
+
+-- Dnsv6 define begin        
+
+    hwDns6HostsDynamicTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwDns6HostsDynamicEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table is a list of domain names mapped to IPv6 address."
+        ::= { hwDnsObjects 2 }
+    
+    hwDns6HostsDynamicEntry OBJECT-TYPE
+        SYNTAX HwDns6HostsDynamicEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table contains four rows, the first is the domain name
+            which named Dns6DomainName, the second is the IP address of host 
+            which named Dns6Ipv6Address, the third is the DNS dynamic entry
+            age time which names Dns6Ttl, and the last one is the host 
+            alias which named Dns6Alias."
+        INDEX { hwDns6DomainName }
+        ::= { hwDns6HostsDynamicTable 1 }
+        
+    HwDns6HostsDynamicEntry ::=
+        SEQUENCE { 
+            hwDns6DomainName
+                DisplayString, 
+            hwDns6Ipv6Address  
+                DisplayString,
+            hwDns6Ttl   
+                Integer32,
+            hwDns6Alias
+                DisplayString    
+         }
+
+    hwDns6DomainName OBJECT-TYPE
+        SYNTAX DisplayString 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Dns6DomainName indicates the domain name of an IPv6 DNS."
+        ::= { hwDns6HostsDynamicEntry 1 }
+    
+    hwDns6Ipv6Address OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Dns6Ipv6Address indicates an IPv6 address mapped to a domain name."
+        ::= { hwDns6HostsDynamicEntry 2 }      
+        
+    hwDns6Ttl OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Dns6Ttl values indicates the TTL of a mapping entry, which is a 32-bit integer,in seconds."
+        ::= { hwDns6HostsDynamicEntry 3 }        
+        
+    hwDns6Alias OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Dns6Alias indicates a IPv6 domain name alias."
+        ::= { hwDns6HostsDynamicEntry 4 }  
+                      
+-- end begin                         
+        
+--=====================================================================
+--Third table
+--=====================================================================
+
+-- Begin define ddns Entry
+    hwDdnsConfigTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwDdnsConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table is a list of ddns policy names ,username,domain and 
+interface index."
+        ::= { hwDnsObjects 3 }
+    
+    hwDdnsConfigEntry OBJECT-TYPE
+        SYNTAX HwDdnsConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table contains five rows, the first is the policy name
+            which named hwDdnsPolicyName, the second is the interfece index 
+            which named hwDdnsIfindex, the third is the ddns service type
+            which names hwService, and the fourth is the username which named 
+hwDdnsUserName
+             and the last one is domain name which named hwDdnsFqdn."
+        INDEX { hwDdnsPolicyName , hwDdnsIfindex}
+        ::= { hwDdnsConfigTable 1 }
+        
+    HwDdnsConfigEntry ::=
+        SEQUENCE { 
+            hwDdnsPolicyName
+                DisplayString, 
+            hwDdnsIfindex  
+                Integer32,
+            hwService  
+                Integer32,
+            hwDdnsUserName   
+                DisplayString,
+            hwDdnsFqdn
+                DisplayString    
+         }
+
+    hwDdnsPolicyName OBJECT-TYPE
+        SYNTAX DisplayString 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Ddns policy name."
+        ::= { hwDdnsConfigEntry 1 }
+    
+    hwDdnsIfindex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Ifindex of the interface which apply ddns policy."
+        ::= { hwDdnsConfigEntry 2 }      
+        
+    hwService OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Ddns Service type."
+        ::= { hwDdnsConfigEntry 3 } 
+        
+    hwDdnsUserName OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Ddns policy user name."
+        ::= { hwDdnsConfigEntry 4 }    
+        
+    hwDdnsFqdn OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Fqdn name."
+        ::= { hwDdnsConfigEntry 5 }          
+    
+--=====================================================================
+--Four table
+--=====================================================================
+
+-- Begin define dns server entry
+    hwDnsServerAddrTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwDnsServerAddrEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table is a list of server addresses."
+        ::= { hwDnsObjects 4 }
+    
+    hwDnsServerAddrEntry OBJECT-TYPE
+        SYNTAX HwDnsServerAddrEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table contains two rows, the first is the server address, 
+            the second is the status of server address 
+            which include static and dynamic."
+        INDEX { hwServerAddr }
+        ::= { hwDnsServerAddrTable 1 }
+        
+    HwDnsServerAddrEntry ::=
+        SEQUENCE { 
+            hwServerAddr
+                IpAddress, 
+            hwServerStatus  
+                Integer32      
+         }
+
+    hwServerAddr OBJECT-TYPE
+        SYNTAX IpAddress 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "hwServerAddr indicates a server address."
+        ::= { hwDnsServerAddrEntry 1 }
+    
+    hwServerStatus OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "hwServerStatus indicates the status of server address."
+        ::= { hwDnsServerAddrEntry 2 }       
+-- End define dns server entry  
+     
+--=====================================================================
+--Five table
+--=====================================================================
+
+-- Begin define dns domain suffix entry
+    hwDnsDomainSuffixTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwDnsDomainSuffixEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table is a list of domain suffix."
+        ::= { hwDnsObjects 5 }
+    
+    hwDnsDomainSuffixEntry OBJECT-TYPE
+        SYNTAX HwDnsDomainSuffixEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table contains one row, it is the domain suffix."
+        INDEX { hwDomainSuffix }
+        ::= { hwDnsDomainSuffixTable 1 }
+        
+    HwDnsDomainSuffixEntry ::=
+        SEQUENCE { 
+            hwDomainSuffix
+                DisplayString      
+         }
+
+    hwDomainSuffix OBJECT-TYPE
+        SYNTAX DisplayString 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "hwDomainSuffix indicates a domain suffix."
+        ::= { hwDnsDomainSuffixEntry 1 }
+    
+-- End define dns domain suffix entry 
+
+--=====================================================================
+-- global node
+--=====================================================================
+    
+-- Begin define dns proxy global node
+    hwDnsProxyEnable OBJECT-TYPE 
+	SYNTAX EnabledStatus
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Globally enable or disable the DNS proxy configuration. If the 
+hwDnsProxyEnable 
+        is 1, DNS proxy is enabled. If the hwDnsProxyEnable is 2, DNS proxy 
+is disabled. 
+        By default, DNS proxy is disabled."   
+	DEFVAL { 2 }
+	::= { hwDnsObjects 6 }       
+        
+-- End define dns proxy global node 
+        
+--=====================================================================
+--Six table
+--=====================================================================
+
+-- Begin define dnsv4 showPrivateHostDynamic Entry
+    hwDnsPrivateHostsDynamicTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwDnsPrivateHostsDynamicEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table is a list of domain names mapped to IPv4 addresses in private network."
+        ::= { hwDnsObjects 7 }
+    
+    hwDnsPrivateHostsDynamicEntry OBJECT-TYPE
+        SYNTAX HwDnsPrivateHostsDynamicEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table contains five rows, the first is the domain name in private network
+            which named DnsPrivateDomainName, the second is the IP address of host in private network
+            which named DnsPrivateIpAddress, the third is the DNS dynamic entry
+            age time in private network which names DnsPrivateTtl, the fourth one is the host 
+            alias in private network which named DnsPrivateAlias, and the last one is the vpn name 
+			in private network which named DnsVpnName."
+        INDEX { hwDnsPrivateDomainName , hwDnsVpnName }
+        ::= { hwDnsPrivateHostsDynamicTable 1 }
+        
+    HwDnsPrivateHostsDynamicEntry ::=
+        SEQUENCE { 
+            hwDnsPrivateDomainName
+                DisplayString, 
+            hwDnsPrivateIpAddress  
+                IpAddress,
+            hwDnsPrivateTtl   
+                Integer32,
+            hwDnsPrivateAlias
+                DisplayString,  
+			hwDnsVpnName
+				DisplayString
+         }
+
+    hwDnsPrivateDomainName OBJECT-TYPE
+        SYNTAX DisplayString 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "DnsPrivateDomainName indicates a domain name in private network."
+        ::= { hwDnsPrivateHostsDynamicEntry 1 }
+    
+    hwDnsPrivateIpAddress OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "DnsPrivateIpAddress indicates an IP address mapped to a domain name in private network."
+        ::= { hwDnsPrivateHostsDynamicEntry 2 }      
+        
+    hwDnsPrivateTtl OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "DnsPrivateTtl indicates the TTL of a mapping entry in private network, which is a 32-bit integer,in seconds."
+        ::= { hwDnsPrivateHostsDynamicEntry 3 } 
+        
+    hwDnsPrivateAlias OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "DnsPrivateAlias indicates a domain name alias in private network."
+        ::= { hwDnsPrivateHostsDynamicEntry 4 }   
+
+	hwDnsVpnName OBJECT-TYPE
+        SYNTAX DisplayString 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "DnsVpnName indicates a vpn name in private network."
+        ::= { hwDnsPrivateHostsDynamicEntry 5 }		
+-- End define    
+               
+--=====================================================================
+--Seven table
+--=====================================================================
+
+-- Dnsv6 private define begin        
+
+    hwDns6PrivateHostsDynamicTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwDns6PrivateHostsDynamicEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table is a list of domain names mapped to IPv6 address in private network."
+        ::= { hwDnsObjects 8 }
+    
+    hwDns6PrivateHostsDynamicEntry OBJECT-TYPE
+        SYNTAX HwDns6PrivateHostsDynamicEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table contains five rows, the first is the domain name
+            which named Dns6PrivateDomainName in private network, the second is the IP address of host 
+            which named Dns6PrivateIpv6Address in private network, the third is the DNS dynamic entry
+            age time which names Dns6PrivateTtl in private network, the fourth one is the host alias 
+			which named Dns6PrivateAlias in private network, and the last one is the vpn name which 
+			named Dns6VpnName in private network."
+        INDEX { hwDns6PrivateDomainName , hwDns6VpnName }
+        ::= { hwDns6PrivateHostsDynamicTable 1 }
+        
+    HwDns6PrivateHostsDynamicEntry ::=
+        SEQUENCE { 
+            hwDns6PrivateDomainName
+                DisplayString, 
+            hwDns6PrivateIpv6Address  
+                DisplayString,
+            hwDns6PrivateTtl   
+                Integer32,
+            hwDns6PrivateAlias
+                DisplayString,
+            hwDns6VpnName
+                DisplayString				
+         }
+
+    hwDns6PrivateDomainName OBJECT-TYPE
+        SYNTAX DisplayString 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Dns6PrivateDomainName indicates the domain name of an IPv6 DNS in private network."
+        ::= { hwDns6PrivateHostsDynamicEntry 1 }
+    
+    hwDns6PrivateIpv6Address OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Dns6PrivateIpv6Address indicates an IPv6 address mapped to a domain name in private network."
+        ::= { hwDns6PrivateHostsDynamicEntry 2 }      
+        
+    hwDns6PrivateTtl OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Dns6PrivateTtl values indicates the TTL of a mapping entry in private network, which is a 32-bit integer,in seconds."
+        ::= { hwDns6PrivateHostsDynamicEntry 3 }        
+        
+    hwDns6PrivateAlias OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Dns6PrivateAlias indicates a IPv6 domain name alias in private network."
+        ::= { hwDns6PrivateHostsDynamicEntry 4 }  
+    
+    hwDns6VpnName OBJECT-TYPE
+        SYNTAX DisplayString 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Dns6VpnName indicates the vpn name of an IPv6 DNS in private network."
+        ::= { hwDns6PrivateHostsDynamicEntry 5 }	
+-- end begin  		
+		
+		
+-- end begin
+              
+-- Type definitions
+-- conformance information  
+    hwDnsConformance OBJECT IDENTIFIER ::= { hwDnsMIB 3 } 
+    hwDnsGroups      OBJECT IDENTIFIER ::= { hwDnsConformance 1 }     
+    hwDnsCompliances OBJECT IDENTIFIER ::= { hwDnsConformance 2 }
+-- compliance statements
+
+    hwDnsCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for SNMPv2 entities
+        which implement the HUAWEI DNS MIB."
+    MODULE  -- this module
+    MANDATORY-GROUPS { hwDnsExtGroup}
+    ::= { hwDnsCompliances 1 }         
+    
+-- units of conformance
+hwDnsExtGroup OBJECT-GROUP
+    OBJECTS {hwDnsDomainName,hwDnsIpAddress, hwDnsTtl, hwDnsAlias,hwDns6DomainName,
+    hwDns6Ipv6Address,hwDns6Ttl,hwDns6Alias,hwDdnsPolicyName,hwDdnsIfindex,hwService,hwDdnsUserName,
+    hwDdnsFqdn,hwServerAddr,hwServerStatus,hwDomainSuffix,hwDnsProxyEnable,hwDnsPrivateDomainName,hwDnsPrivateIpAddress, 
+	hwDnsPrivateTtl, hwDnsPrivateAlias,hwDnsVpnName,hwDns6PrivateDomainName,hwDns6PrivateIpv6Address,
+	hwDns6PrivateTtl,hwDns6PrivateAlias,hwDns6VpnName}
+    STATUS  current
+    DESCRIPTION
+       "The HUAWEI DNS Table."
+    ::= { hwDnsGroups 1 } 
+    
+END
+
+
+
+
+
+

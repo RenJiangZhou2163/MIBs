@@ -1,0 +1,242 @@
+DEFINITIONS ::= BEGIN
+
+rip2  OBJECT IDENTIFIER ::= {mib-2 23}
+
+rip2Globals  OBJECT IDENTIFIER ::= {rip2 1}
+
+rip2GlobalRouteChanges  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of route changes made to the IP Route Database by RIP.  This does not include the refresh of a route's age."
+    ::= {rip2Globals 1}
+
+rip2GlobalQueries  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of responses sent to RIP queries from other systems."
+    ::= {rip2Globals 2}
+
+rip2IfStatTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Rip2IfStatEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A list of subnets which require separate status monitoring in RIP."
+    ::= {rip2 2}
+
+rip2IfStatEntry  OBJECT-TYPE
+    SYNTAX  rip2IfStatEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A Single Routing Domain in a single Subnet."
+    INDEX   {rip2IfStatAddress}
+    ::= {rip2IfStatTable 1}
+
+rip2IfStatAddress  OBJECT-TYPE
+    SYNTAX  IpAddress
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The IP Address of this system on the indicated subnet. For unnumbered interfaces, the value 0.0.0.N, where the least significant 24 bits (N) is the ifIndex for the IP Interface in network byte order."
+    ::= {rip2IfStatEntry 1}
+
+rip2IfStatRcvBadPackets  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of RIP response packets received by the RIP process which were subsequently discarded for any reason (e.g. a version 0 packet, or an unknown command type)."
+    ::= {rip2IfStatEntry 2}
+
+rip2IfStatRcvBadRoutes  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of routes, in valid RIP packets, which were ignored for any reason (e.g. unknown address family, or invalid metric)."
+    ::= {rip2IfStatEntry 3}
+
+rip2IfStatSentUpdates  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of triggered RIP updates actually sent on this interface.  This explicitly does NOT include full updates sent containing new information."
+    ::= {rip2IfStatEntry 4}
+
+rip2IfStatStatus  OBJECT-TYPE
+    SYNTAX  RowStatus
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Writing invalid has the effect of deleting this interface."
+    ::= {rip2IfStatEntry 5}
+
+rip2IfConfTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Rip2IfConfEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A list of subnets which require separate configuration in RIP."
+    ::= {rip2 3}
+
+rip2IfConfEntry  OBJECT-TYPE
+    SYNTAX  rip2IfConfEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A Single Routing Domain in a single Subnet."
+    INDEX   {rip2IfConfAddress}
+    ::= {rip2IfConfTable 1}
+
+rip2IfConfAddress  OBJECT-TYPE
+    SYNTAX  IpAddress
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The IP Address of this system on the indicated subnet.  For unnumbered interfaces, the value 0.0.0.N, where the least significant 24 bits (N) is the ifIndex for the IP Interface in network byte order."
+    ::= {rip2IfConfEntry 1}
+
+rip2IfConfDomain  OBJECT-TYPE
+    SYNTAX  RouteTag
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Value inserted into the Routing Domain field of all RIP packets sent on this interface."
+    ::= {rip2IfConfEntry 2}
+
+rip2IfConfAuthType  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The type of Authentication used on this interface."
+    ::= {rip2IfConfEntry 3}
+
+rip2IfConfAuthKey  OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE(0..16))
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value to be used as the Authentication Key whenever the corresponding instance of rip2IfConfAuthType has a value other than noAuthentication.  A modification of the corresponding instance of rip2IfConfAuthType does not modify the rip2IfConfAuthKey value.  If a string shorter than 16 octets is supplied, it will be left- justified and padded to 16 octets, on the right, with nulls (0x00). Reading this object always results in an  OCTET STRING of length zero; authentication may not be bypassed by reading the MIB object."
+    ::= {rip2IfConfEntry 4}
+
+rip2IfConfSend  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "What the router sends on this interface. ripVersion1 implies sending RIP updates compliant with  RFC  1058.   rip1Compatible implies broadcasting RIP-2 updates using RFC 1058 route subsumption rules.  ripVersion2 implies multicasting RIP-2 updates.  ripV1Demand indicates the use of Demand RIP on a WAN interface under RIP Version 1 rules.  ripV2Demand indicates the use of Malkin & Baker                                                 [Page 10] RFC 1724                  RIP-2 MIB Extension              November 1994 Demand RIP on a WAN interface under Version 2 rules."
+    ::= {rip2IfConfEntry 5}
+
+rip2IfConfReceive  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This indicates which version of RIP updates are to be accepted.  Note that rip2 and rip1OrRip2 implies reception of multicast packets."
+    ::= {rip2IfConfEntry 6}
+
+rip2IfConfDefaultMetric  OBJECT-TYPE
+    SYNTAX  INTEGER ( 0..15 )
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This variable indicates the metric that is to be used for the default route entry in RIP updates originated on this interface.  A value of zero indicates that no default route should be originated; in this case, a default route via another router may be propagated."
+    ::= {rip2IfConfEntry 7}
+
+rip2IfConfStatus  OBJECT-TYPE
+    SYNTAX  RowStatus
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Writing invalid has  the  effect  of  deleting this interface."
+    ::= {rip2IfConfEntry 8}
+
+rip2IfConfSrcAddress  OBJECT-TYPE
+    SYNTAX  IpAddress
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Malkin & Baker                                                 [Page 11] RFC 1724                  RIP-2 MIB Extension              November 1994 "The IP Address this system will use as a source address on this interface.  If it is a numbered interface, this MUST be the same value as rip2IfConfAddress.  On unnumbered interfaces, it must be the value of rip2IfConfAddress for some interface on the system.""
+    ::= {rip2IfConfEntry 9}
+
+rip2PeerTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Rip2PeerEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A list of RIP Peers."
+    ::= {rip2 4}
+
+rip2PeerEntry  OBJECT-TYPE
+    SYNTAX  rip2PeerEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Information regarding a single routing peer."
+    INDEX   {rip2PeerAddress, rip2PeerDomain}
+    ::= {rip2PeerTable 1}
+
+rip2PeerAddress  OBJECT-TYPE
+    SYNTAX  IpAddress
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The IP Address that the peer is using as its source address.  Note that on an unnumbered link, this may not be a member of any subnet on the system."
+    ::= {rip2PeerEntry 1}
+
+rip2PeerDomain  OBJECT-TYPE
+    SYNTAX  RouteTag
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value in the Routing Domain field  in  RIP packets received from the peer.  As domain suuport is deprecated, this must be zero."
+    ::= {rip2PeerEntry 2}
+
+rip2PeerLastUpdate  OBJECT-TYPE
+    SYNTAX  TimeTicks
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value of sysUpTime when the most recent RIP update was received from this system."
+    ::= {rip2PeerEntry 3}
+
+rip2PeerVersion  OBJECT-TYPE
+    SYNTAX  INTEGER ( 0..255 )
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The RIP version number in the header of the last RIP packet received."
+    ::= {rip2PeerEntry 4}
+
+rip2PeerRcvBadPackets  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Malkin & Baker                                                 [Page 13] RFC 1724                  RIP-2 MIB Extension              November 1994 "The number of RIP response packets from this peer discarded as invalid.""
+    ::= {rip2PeerEntry 5}
+
+rip2PeerRcvBadRoutes  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of routes from this peer that were ignored because the entry format was invalid."
+    ::= {rip2PeerEntry 6}
+
+rip2Conformance  OBJECT IDENTIFIER ::= {rip2 5}
+
+rip2Groups  OBJECT IDENTIFIER ::= {rip2Conformance 1}
+
+rip2Compliances  OBJECT IDENTIFIER ::= {rip2Conformance 2}
+END

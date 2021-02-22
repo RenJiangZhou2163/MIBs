@@ -1,0 +1,1997 @@
+--  ********************************************************
+--  $Id: ZXR10-MSTP.mib 2010-03-01 01:34:21Z Jiashurui $
+--
+--  ZXR10-MSTP.mib: ZXR10 MSTP MIB file
+--
+--  Mar. 2010, Jia Shurui
+--  modify by yuly 187517
+--  Copyright(c) 2010 by ZTE Corporation
+--  All rights reserved
+--
+--  ********************************************************
+    ZXR10-MSTP-MIB DEFINITIONS ::= BEGIN
+        IMPORTS
+            ifIndex            
+                FROM RFC1213-MIB            
+            OBJECT-GROUP            
+                FROM SNMPv2-CONF            
+            Unsigned32, Integer32, OBJECT-TYPE, MODULE-IDENTITY            
+                FROM SNMPv2-SMI            
+            RowStatus, DisplayString, TEXTUAL-CONVENTION            
+                FROM SNMPv2-TC            
+            zxr10            
+                FROM ZXR10-SMI;
+    
+    
+        -- 1.3.6.1.4.1.3902.3.127
+        mstpMIB MODULE-IDENTITY 
+            LAST-UPDATED "201811211400Z"        -- November 21, 2018 at 14:00 GMT
+            ORGANIZATION 
+                "ZTE Corporation"
+            CONTACT-INFO 
+                "ZTE Corporation
+                
+                Nanjing Institute of ZTE Corporation
+                
+                No.68 ZiJinghua Rd. YuHuatai District, Nanjing, China
+                
+                Tel: +86-25-52870000"
+            DESCRIPTION 
+                "ZXROSNG 30R2 MSTP MIB"
+            
+            REVISION  "201811211400Z"   
+            DESCRIPTION     
+            "add:    zxr10MstpRcvdInfoHoldingTHR"
+
+            REVISION  "201807051600Z"   
+            DESCRIPTION     
+            "add:    zxr10MstpMibObjects
+                     zxr10MstpNotifications
+                     zxr10MstpConformance"
+
+            REVISION "201511111000Z"        -- November 11, 2015 at 10:00 GMT
+            DESCRIPTION 
+                "modify mstpInstanceEntry.stpInstanceID node's SIZElist"
+            ::= { zxr10 127 }
+
+-- Node definitions
+--
+    
+        -- 1.3.6.1.4.1.3902.3.127.1
+        mstpMibObjects OBJECT IDENTIFIER ::= { mstpMIB 1 }
+
+        
+--  groups in mstpMibObjects
+        -- 1.3.6.1.4.1.3902.3.127.1.1
+        mstpGlobalPara OBJECT IDENTIFIER ::= { mstpMibObjects 1 }
+
+        
+-- -mstpGlobalPara
+        -- 1.3.6.1.4.1.3902.3.127.1.1.1
+        stpProtocolEnable OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                disabled(0),
+                enabled(1)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "STP protocol state."
+            ::= { mstpGlobalPara 1 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.1.2
+        stpProtocolSpecification OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                sstp(1),
+                rstp(2),
+                mstp(3)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "STP protocol type."
+            ::= { mstpGlobalPara 2 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.1.3
+        stpMaxAge OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Root bridge max age."
+            ::= { mstpGlobalPara 3 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.1.4
+        stpHelloTime OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Root bridge hello time."
+            ::= { mstpGlobalPara 4 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.1.5
+        stpHoldTime OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Root bridge hold time."
+            ::= { mstpGlobalPara 5 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.1.6
+        stpForwardDelay OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Root bridge forward delay time."
+            ::= { mstpGlobalPara 6 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.1.7
+        stpBridgeMaxAge OBJECT-TYPE
+            SYNTAX Unsigned32 (6..40)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Bridge max age."
+            ::= { mstpGlobalPara 7 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.1.8
+        stpBridgeHelloTime OBJECT-TYPE
+            SYNTAX Unsigned32 (1..10)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Bridge hello time."
+            ::= { mstpGlobalPara 8 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.1.9
+        stpBridgeForwardDelay OBJECT-TYPE
+            SYNTAX Unsigned32 (4..30)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Bridge forward delay time."
+            ::= { mstpGlobalPara 9 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.1.10
+        stpTransparentEnable OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                untransparent(0),
+                transparent(1)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Packet transparent state."
+            ::= { mstpGlobalPara 10 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.1.11
+        stpRevision OBJECT-TYPE
+            SYNTAX Unsigned32 (0..65535)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Revision."
+            ::= { mstpGlobalPara 11 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.1.12
+        stpConfigName OBJECT-TYPE
+            SYNTAX OCTET STRING(SIZE(0..33))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Bridge name in region."
+            ::= { mstpGlobalPara 12 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.1.13
+        stpCiscoHmd5Digest OBJECT-TYPE
+            SYNTAX OCTET STRING(SIZE(0..35))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Hmd5 digest."
+            ::= { mstpGlobalPara 13 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.1.14
+        stpCiscoHmd5Key OBJECT-TYPE
+            SYNTAX OCTET STRING(SIZE(0..35))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Hmd5 key."
+            ::= { mstpGlobalPara 14 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.1.15
+        stpHuaWeiHmd5Digest OBJECT-TYPE
+            SYNTAX OCTET STRING(SIZE(0..35))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Hmd5 digest."
+            ::= { mstpGlobalPara 15 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.1.16
+        stpHuaWeiHmd5Key OBJECT-TYPE
+            SYNTAX OCTET STRING(SIZE(0..35))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Hmd5 key."
+            ::= { mstpGlobalPara 16 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.2
+        mstpInstance OBJECT IDENTIFIER ::= { mstpMibObjects 2 }
+
+        
+-- -mstpInstance
+        -- 1.3.6.1.4.1.3902.3.127.1.2.1
+        mstpInstanceTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF MstpInstanceEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP instance parameters."
+            ::= { mstpInstance 1 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.2.1.1
+        mstpInstanceEntry OBJECT-TYPE
+            SYNTAX MstpInstanceEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP instance parameters."
+            INDEX { stpInstanceID }
+            ::= { mstpInstanceTable 1 }
+
+        
+        MstpInstanceEntry ::=
+            SEQUENCE { 
+                stpInstanceID
+                    Unsigned32,
+                stpBridgePriority
+                    Unsigned32,
+                stpBridgeMac
+                    OCTET STRING,
+                stpInstanceRootPriority
+                    Unsigned32,
+                stpInstanceRootMac
+                    OCTET STRING,
+                stpRemainHops
+                    Unsigned32,
+                stpVlanMaps
+                    OCTET STRING,
+                stpMAXHops
+                    Unsigned32,
+                stpBridgeMAXHops
+                    Unsigned32
+             }
+
+        -- 1.3.6.1.4.1.3902.3.127.1.2.1.1.1
+        stpInstanceID OBJECT-TYPE
+            SYNTAX Unsigned32 (0..64)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Instance ID."
+            ::= { mstpInstanceEntry 1 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.2.1.1.2
+        stpBridgePriority OBJECT-TYPE
+            SYNTAX Unsigned32 (0..61440)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Bridge priority."
+            ::= { mstpInstanceEntry 2 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.2.1.1.3
+        stpBridgeMac OBJECT-TYPE
+            SYNTAX OCTET STRING
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Bridge MAC."
+            ::= { mstpInstanceEntry 3 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.2.1.1.4
+        stpInstanceRootPriority OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Instance root bridge priority."
+            ::= { mstpInstanceEntry 4 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.2.1.1.5
+        stpInstanceRootMac OBJECT-TYPE
+            SYNTAX OCTET STRING
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Instance root bridge mac."
+            ::= { mstpInstanceEntry 5 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.2.1.1.6
+        stpRemainHops OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "BPDU packet remain hops."
+            ::= { mstpInstanceEntry 6 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.2.1.1.7
+        stpVlanMaps OBJECT-TYPE
+            SYNTAX OCTET STRING(SIZE(100))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "VLAN tag spearated by ',' or '-'."
+            ::= { mstpInstanceEntry 7 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.2.1.1.8
+        stpMAXHops OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Root bridge max hops."
+            ::= { mstpInstanceEntry 8 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.2.1.1.9
+        stpBridgeMAXHops OBJECT-TYPE
+            SYNTAX Unsigned32 (1..40)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Bridge max hops."
+            ::= { mstpInstanceEntry 9 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.3
+        mstpPort OBJECT IDENTIFIER ::= { mstpMibObjects 3 }
+
+        
+-- -mstpPort
+        -- 1.3.6.1.4.1.3902.3.127.1.3.1
+        mstpPortTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF MstpPortEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP port parameters."
+            ::= { mstpPort 1 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.3.1.1
+        mstpPortEntry OBJECT-TYPE
+            SYNTAX MstpPortEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP port parameters."
+            INDEX { ifIndex }
+            ::= { mstpPortTable 1 }
+
+        
+        MstpPortEntry ::=
+            SEQUENCE { 
+                stpPortEnable
+                    INTEGER,
+                stpLinkType
+                    INTEGER,
+                stpEdgedPortEnable
+                    INTEGER,
+                stpBPDUGuardEnable
+                    INTEGER,
+                stpPacketType
+                    INTEGER,
+                stpIfName
+                    OCTET STRING
+             }
+
+        -- 1.3.6.1.4.1.3902.3.127.1.3.1.1.1
+        stpPortEnable OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                portStpUnused(0),
+                portStpUsed(1)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "STP protocol status on port."
+            ::= { mstpPortEntry 1 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.3.1.1.2
+        stpLinkType OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                share(0),
+                p2p(1),
+                auto(2)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Link type."
+            ::= { mstpPortEntry 2 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.3.1.1.3
+        stpEdgedPortEnable OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                edgeDisable(0),
+                edgeEnable(1)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Whether edged port."
+            ::= { mstpPortEntry 3 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.3.1.1.4
+        stpBPDUGuardEnable OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                bpduGuardDisable(0),
+                bpduGuardEnable(1)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "BPDU guard function status."
+            ::= { mstpPortEntry 4 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.3.1.1.5
+        stpPacketType OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                ieee(0),
+                cisco(1),
+                hammer(2),
+                huawei(3)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "BPDU packet type."
+            ::= { mstpPortEntry 5 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.3.1.1.6
+        stpIfName OBJECT-TYPE
+            SYNTAX OCTET STRING
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Interface name."
+            ::= { mstpPortEntry 6 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.4
+        mstpPortInstance OBJECT IDENTIFIER ::= { mstpMibObjects 4 }
+
+        
+-- -mstpPortInstance
+        -- 1.3.6.1.4.1.3902.3.127.1.4.1
+        mstpPortInstanceTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF MstpPortInstanceEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP port instance parameters."
+            ::= { mstpPortInstance 1 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.4.1.1
+        mstpPortInstanceEntry OBJECT-TYPE
+            SYNTAX MstpPortInstanceEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP port instance parameters."
+            INDEX { stpPortInstanceID, ifIndex }
+            ::= { mstpPortInstanceTable 1 }
+
+        
+        MstpPortInstanceEntry ::=
+            SEQUENCE { 
+                stpPortInstanceID
+                    Unsigned32,
+                stpPortName
+                    OCTET STRING,
+                stpPortPriority
+                    Unsigned32,
+                stpPortPathCost
+                    Unsigned32,
+                stpPortState
+                    INTEGER,
+                stpPortDesignatedCost
+                    Unsigned32,
+                stpPortDesignatedBridgePriority
+                    Unsigned32,
+                stpPortDesignatedBridgeMac
+                    OCTET STRING,
+                stpPortDesignatedPort
+                    Unsigned32,
+                stpRootGuardEnable
+                    INTEGER,
+                stpLoopGuardEnable
+                    INTEGER
+             }
+
+        -- 1.3.6.1.4.1.3902.3.127.1.4.1.1.1
+        stpPortInstanceID OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Instance ID."
+            ::= { mstpPortInstanceEntry 1 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.4.1.1.2
+        stpPortName OBJECT-TYPE
+            SYNTAX OCTET STRING
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Interface name."
+            ::= { mstpPortInstanceEntry 2 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.4.1.1.3
+        stpPortPriority OBJECT-TYPE
+            SYNTAX Unsigned32 (0..240)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Port priority."
+            ::= { mstpPortInstanceEntry 3 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.4.1.1.4
+        stpPortPathCost OBJECT-TYPE
+            SYNTAX Unsigned32 (1..2000000)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Port cost."
+            ::= { mstpPortInstanceEntry 4 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.4.1.1.5
+        stpPortState OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                disabled(0),
+                blocking(1),
+                listening(2),
+                learning(3),
+                forwarding(4),
+                broken(5)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Port status."
+            ::= { mstpPortInstanceEntry 5 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.4.1.1.6
+        stpPortDesignatedCost OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Cost to designated bridge."
+            ::= { mstpPortInstanceEntry 6 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.4.1.1.7
+        stpPortDesignatedBridgePriority OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Priority of designated bridge."
+            ::= { mstpPortInstanceEntry 7 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.4.1.1.8
+        stpPortDesignatedBridgeMac OBJECT-TYPE
+            SYNTAX OCTET STRING
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "MAC address of designated bridge."
+            ::= { mstpPortInstanceEntry 8 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.4.1.1.9
+        stpPortDesignatedPort OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Port ID."
+            ::= { mstpPortInstanceEntry 9 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.4.1.1.10
+        stpRootGuardEnable OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                rootGuardDisable(0),
+                rootGuardEnable(1)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Root guard function status."
+            ::= { mstpPortInstanceEntry 10 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.1.4.1.1.11
+        stpLoopGuardEnable OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                loopGuardDisable(0),
+                loopGuardEnable(1)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Loop guard function status."
+            ::= { mstpPortInstanceEntry 11 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.2
+        zxr10MstpMibObjects OBJECT IDENTIFIER ::= { mstpMIB 2 }
+        
+--  groups in zxr10MstpMibObjects
+        -- 1.3.6.1.4.1.3902.3.127.2.1
+        zxr10MstpGlobalObjects OBJECT IDENTIFIER ::= { zxr10MstpMibObjects 1 }
+
+--  groups in zxr10MstpObjects
+        -- 1.3.6.1.4.1.3902.3.127.2.2
+        zxr10MstpObjects OBJECT IDENTIFIER ::= { zxr10MstpMibObjects 2 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1
+        zxr10MstpGlobalConfigObjects OBJECT IDENTIFIER ::= { zxr10MstpObjects 1 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1
+        zxr10MstpGlobalConfigTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF Zxr10MstpGlobalConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP global parameters."
+            ::= { zxr10MstpGlobalConfigObjects 1 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1
+        zxr10MstpGlobalConfigEntry OBJECT-TYPE
+            SYNTAX Zxr10MstpGlobalConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP global parameters."
+            INDEX { zxr10MstpGlobalConfigProcessId }
+            ::= { zxr10MstpGlobalConfigTable 1 }
+        
+        Zxr10MstpGlobalConfigEntry ::=
+            SEQUENCE { 
+                zxr10MstpGlobalConfigProcessId
+                    Unsigned32,
+                zxr10MstpGlobalState
+                    INTEGER,
+                zxr10MstpTransparentState
+                    INTEGER,
+                zxr10MstpMode
+                    INTEGER,
+                zxr10MstpForwardDelay
+                    Unsigned32,
+                zxr10MstpHelloTime
+                    Unsigned32,
+                zxr10MstpMaxAge
+                    Unsigned32,
+                zxr10MstpCiscoDigestAdapt
+                    INTEGER,
+                zxr10MstpMstName
+                    DisplayString,
+                zxr10MstpMstRevision
+                    Unsigned32,
+                zxr10MstpMstMaxHops
+                    Unsigned32,
+                zxr10MstpMstHuaweiHMD5Digest
+                    DisplayString,
+                zxr10MstpMstHuaweiHMD5Key
+                    DisplayString,
+                zxr10MstpMstCiscoHMD5Digest
+                    DisplayString,
+                zxr10MstpMstCiscoHMD5Key
+                    DisplayString,
+                zxr10MstpRcvdInfoHoldingTHR
+                    Unsigned32,
+                zxr10MstpGlobalConfigRowStatus
+                    RowStatus
+             }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1.1
+        zxr10MstpGlobalConfigProcessId OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Process ID, its maximum value depends on the product. The row can't be destroyed when the process ID is 0."
+            ::= { zxr10MstpGlobalConfigEntry 1 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1.2
+        zxr10MstpGlobalState OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                disabled(1),
+                enabled(2)
+                }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Global STP protocol state, which is mutually exclusive to transparent state."
+            ::= { zxr10MstpGlobalConfigEntry 2 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1.3
+        zxr10MstpTransparentState OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                disabled(1),
+                enabled(2)
+                }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Packet transparent state, which is mutually exclusive to global state."
+            ::= { zxr10MstpGlobalConfigEntry 3 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1.4
+        zxr10MstpMode OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                sstp(1),
+                rstp(2),
+                mstp(3)
+                }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "STP version."
+            ::= { zxr10MstpGlobalConfigEntry 4 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1.5
+        zxr10MstpForwardDelay OBJECT-TYPE
+            SYNTAX Unsigned32 (4..30)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Forward delay time, default 15(s)."
+            ::= { zxr10MstpGlobalConfigEntry 5 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1.6
+        zxr10MstpHelloTime OBJECT-TYPE
+            SYNTAX Unsigned32 (1..10)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Hello time, default 2(s)."
+            ::= { zxr10MstpGlobalConfigEntry 6 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1.7
+        zxr10MstpMaxAge OBJECT-TYPE
+            SYNTAX Unsigned32 (6..40)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Max age, default 20(s)."
+            ::= { zxr10MstpGlobalConfigEntry 7 }        
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1.8
+        zxr10MstpCiscoDigestAdapt OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                disabled(1),
+                enabled(2)
+                }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "CISCO digest-self-adapt function."
+            ::= { zxr10MstpGlobalConfigEntry 8 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1.9
+        zxr10MstpMstName OBJECT-TYPE
+            SYNTAX DisplayString (SIZE (0..32))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Mst name in region."
+            ::= { zxr10MstpGlobalConfigEntry 9 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1.10
+        zxr10MstpMstRevision OBJECT-TYPE
+            SYNTAX Unsigned32 (0..65535)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Revision number, default 0."
+            ::= { zxr10MstpGlobalConfigEntry 10 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1.11
+        zxr10MstpMstMaxHops OBJECT-TYPE
+            SYNTAX Unsigned32 (1..40)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Max hops, default 20."
+            ::= { zxr10MstpGlobalConfigEntry 11 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1.12
+        zxr10MstpMstHuaweiHMD5Digest OBJECT-TYPE
+            SYNTAX DisplayString (SIZE (0..34))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "HUAWEI HMAC-MD5 digest."
+            ::= { zxr10MstpGlobalConfigEntry 12 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1.13
+        zxr10MstpMstHuaweiHMD5Key OBJECT-TYPE
+            SYNTAX DisplayString (SIZE (0..34))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "HUAWEI HMAC-MD5 key."
+            ::= { zxr10MstpGlobalConfigEntry 13 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1.14
+        zxr10MstpMstCiscoHMD5Digest OBJECT-TYPE
+            SYNTAX DisplayString (SIZE (0..34))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "CISCO HMAC-MD5 digest."
+            ::= { zxr10MstpGlobalConfigEntry 14 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1.15
+        zxr10MstpMstCiscoHMD5Key OBJECT-TYPE
+            SYNTAX DisplayString (SIZE (0..34))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "CISCO HMAC-MD5 key."
+            ::= { zxr10MstpGlobalConfigEntry 15 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1.16
+        zxr10MstpRcvdInfoHoldingTHR OBJECT-TYPE
+            SYNTAX Unsigned32 (180..18000)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Graceful-restart rcvdInfo holding-threshold, unit is second."
+            ::= { zxr10MstpGlobalConfigEntry 16 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.1.1.1.100
+        zxr10MstpGlobalConfigRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Row status."
+            ::= { zxr10MstpGlobalConfigEntry 100 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.2
+        zxr10MstpInstanceObjects OBJECT IDENTIFIER ::= { zxr10MstpObjects 2 }
+        
+-- -zxr10MstpInstanceTable
+        -- 1.3.6.1.4.1.3902.3.127.2.2.2.1
+        zxr10MstpInstanceTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF Zxr10MstpInstanceEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP instance parameters."
+            ::= { zxr10MstpInstanceObjects 1 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.2.1.1
+        zxr10MstpInstanceEntry OBJECT-TYPE
+            SYNTAX Zxr10MstpInstanceEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP instance parameters."
+            INDEX { zxr10MstpInstanceProcessId, zxr10MstpInstanceId }
+            ::= { zxr10MstpInstanceTable 1 }
+        
+        Zxr10MstpInstanceEntry ::=
+            SEQUENCE {
+                zxr10MstpInstanceProcessId
+                    Unsigned32,
+                zxr10MstpInstanceId
+                    Unsigned32,
+                zxr10MstpInstancePriority
+                    INTEGER,
+                zxr10MstpInstanceVlanMaps
+                    DisplayString,
+                zxr10MstpInstanceRowStatus
+                    RowStatus
+             }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.2.1.1.1
+        zxr10MstpInstanceProcessId OBJECT-TYPE
+            SYNTAX Unsigned32 
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Process ID, its maximum value depends on the product."
+            ::= { zxr10MstpInstanceEntry 1 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.2.1.1.2
+        zxr10MstpInstanceId OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Instance ID, its maximum value depends on the product. VLAN map must be set when instance is created."
+            ::= { zxr10MstpInstanceEntry 2}
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.2.1.1.3
+        zxr10MstpInstancePriority OBJECT-TYPE
+            SYNTAX INTEGER (0|4096|8192|12288|16384|20480|24576|28672|32768|36864|40960|45056|49152|53248|57344|61440)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Instance priority, default 32768(8*4096)."
+            ::= { zxr10MstpInstanceEntry 3 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.2.1.1.4
+        zxr10MstpInstanceVlanMaps OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "VLAN tag spearated by ',' or '-'. VLAN map can't be configured in instance 0."
+            ::= { zxr10MstpInstanceEntry 4 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.2.1.1.100
+        zxr10MstpInstanceRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Row status."
+            ::= { zxr10MstpInstanceEntry 100 }
+        
+-- -zxr10MstpMacFlushFastTable
+        -- 1.3.6.1.4.1.3902.3.127.2.2.2.2
+        zxr10MstpMacFlushFastTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF Zxr10MstpMacFlushFastEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP instance parameters."
+            ::= { zxr10MstpInstanceObjects 2 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.2.2.1
+        zxr10MstpMacFlushFastEntry OBJECT-TYPE
+            SYNTAX Zxr10MstpMacFlushFastEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP instance parameters."
+            INDEX { zxr10MstpMacFlushFastProcessId, zxr10MstpMacFlushFastInstanceId }
+            ::= { zxr10MstpMacFlushFastTable 1 }
+        
+        Zxr10MstpMacFlushFastEntry ::=
+            SEQUENCE { 
+                zxr10MstpMacFlushFastProcessId
+                    Unsigned32,
+                zxr10MstpMacFlushFastInstanceId
+                    Unsigned32,
+                zxr10MstpMacFlushFastFirstPort
+                    DisplayString,
+                zxr10MstpMacFlushFastSecondPort
+                    DisplayString,
+                zxr10MstpMacFlushFastRowStatus
+                    RowStatus
+             }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.2.2.1.1
+        zxr10MstpMacFlushFastProcessId OBJECT-TYPE
+            SYNTAX Unsigned32 
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Process ID, its maximum value depends on the product."
+            ::= { zxr10MstpMacFlushFastEntry 1 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.2.2.1.2
+        zxr10MstpMacFlushFastInstanceId OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Instance ID, its maximum value depends on the product. The instance should already exist."
+            ::= { zxr10MstpMacFlushFastEntry 2 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.2.2.1.3        
+        zxr10MstpMacFlushFastFirstPort OBJECT-TYPE
+            SYNTAX DisplayString(SIZE(0..31))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "First interface name, the port should be bound to the process, zxr10MstpMacFlushFastFirstPort and zxr10MstpMacFlushFastSecondPort should be set together."
+            ::= { zxr10MstpMacFlushFastEntry 3 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.2.2.1.4
+        zxr10MstpMacFlushFastSecondPort OBJECT-TYPE
+            SYNTAX DisplayString(SIZE(0..31))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Second interface name, the port should be bound to the process, zxr10MstpMacFlushFastFirstPort and zxr10MstpMacFlushFastSecondPort should be set together."
+            ::= { zxr10MstpMacFlushFastEntry 4 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.2.2.1.100
+        zxr10MstpMacFlushFastRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Row status."
+            ::= { zxr10MstpMacFlushFastEntry 100 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3
+        zxr10MstpPortObjects OBJECT IDENTIFIER ::= { zxr10MstpObjects 3 }
+        
+-- -zxr10MstpPortConfigTable
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.1
+        zxr10MstpPortConfigTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF Zxr10MstpPortConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP port parameters."
+            ::= { zxr10MstpPortObjects 1 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.1.1
+        zxr10MstpPortConfigEntry OBJECT-TYPE
+            SYNTAX Zxr10MstpPortConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP port parameters."
+            INDEX { zxr10MstpPortProcessId, zxr10MstpPortName }
+            ::= { zxr10MstpPortConfigTable 1 }
+        
+        Zxr10MstpPortConfigEntry ::=
+            SEQUENCE { 
+                zxr10MstpPortProcessId
+                    Unsigned32,
+                zxr10MstpPortName
+                    DisplayString,
+                zxr10MstpPortAdminState
+                    INTEGER,
+                zxr10MstpPortPacketType
+                    INTEGER,
+                zxr10MstpPortBpduGuard
+                    INTEGER,
+                zxr10MstpPortEdgedPortState
+                    INTEGER,
+                zxr10MstpPortCiscoDigestAdapt
+                    INTEGER,
+                zxr10MstpPortVplsSubIntfNotify
+                    INTEGER,
+                zxr10MstpPortBpduVlanId
+                    Unsigned32,
+                zxr10MstpPortBpduPriority
+                    Unsigned32,
+                zxr10MstpPortLinkType
+                    INTEGER,
+                zxr10MstpPortRowStatus
+                    RowStatus
+             }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.1.1.1
+        zxr10MstpPortProcessId OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Process ID, its maximum value depends on the product."
+            ::= { zxr10MstpPortConfigEntry 1 }
+
+        zxr10MstpPortName OBJECT-TYPE
+            SYNTAX DisplayString(SIZE(0..31))
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Interface name, other attributes can be set after the port has been bound to the process."
+            ::= { zxr10MstpPortConfigEntry 2 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.1.1.3
+        zxr10MstpPortAdminState OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                disabled(1),
+                enabled(2)
+                }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Port protocol state."
+            ::= { zxr10MstpPortConfigEntry 3 }
+               
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.1.1.4
+        zxr10MstpPortPacketType OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                ieee(1),
+                cisco(2),
+                hammer(3),
+                huawei(4)
+                }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "BPDU packet type."
+            ::= { zxr10MstpPortConfigEntry 4 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.1.1.5
+        zxr10MstpPortBpduGuard OBJECT-TYPE
+            SYNTAX INTEGER
+                {        
+                unconfigure(1),
+                shutdown(2),
+                discard(3)
+                }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "BPDU guard function, which is mutually exclusive to loop-guard."
+            ::= { zxr10MstpPortConfigEntry 5 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.1.1.6
+        zxr10MstpPortEdgedPortState OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                disabled(1),
+                enabled(2)
+                }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Edged port function."
+            ::= { zxr10MstpPortConfigEntry 6 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.1.1.7
+        zxr10MstpPortCiscoDigestAdapt OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                disabled(1),
+                enabled(2)
+                }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "CISCO digest-self-adapt."
+            ::= { zxr10MstpPortConfigEntry 7 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.1.1.8
+        zxr10MstpPortVplsSubIntfNotify OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                disabled(1),
+                enabled(2)
+                }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "VPLS subinterface notify."
+            ::= { zxr10MstpPortConfigEntry 8 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.1.1.9
+        zxr10MstpPortBpduVlanId OBJECT-TYPE
+            SYNTAX Unsigned32 (0..4094)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "VLAN ID, the port should be bound to the VLAN."
+            ::= { zxr10MstpPortConfigEntry 9 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.1.1.10
+        zxr10MstpPortBpduPriority OBJECT-TYPE
+            SYNTAX Unsigned32 (0..7)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "VLAN 802.1p priority, default 0. zxr10MstpPortBpduPriority should be set with zxr10MstpPortBpduVlanId together."
+            ::= { zxr10MstpPortConfigEntry 10 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.1.1.11
+        zxr10MstpPortLinkType OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                share(1),
+                p2p(2),
+                auto(3)
+                }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Link type."
+            ::= { zxr10MstpPortConfigEntry 11 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.1.1.100
+        zxr10MstpPortRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Row status."
+            ::= { zxr10MstpPortConfigEntry 100 }
+        
+-- -zxr10MstpPortInstanceTable
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.2
+        zxr10MstpPortInstanceTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF Zxr10MstpPortInstanceEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP port instance parameters."
+            ::= { zxr10MstpPortObjects 2 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.2.1
+        zxr10MstpPortInstanceEntry OBJECT-TYPE
+            SYNTAX Zxr10MstpPortInstanceEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP port instance parameters."
+            INDEX { zxr10MstpPortInstanceProcessId, zxr10MstpPortInstancePortName, zxr10MstpPortInstanceId }
+            ::= { zxr10MstpPortInstanceTable 1 }
+        
+        Zxr10MstpPortInstanceEntry ::=
+            SEQUENCE { 
+                zxr10MstpPortInstanceProcessId
+                    Unsigned32,
+                zxr10MstpPortInstancePortName
+                    DisplayString,
+                zxr10MstpPortInstanceId
+                    Unsigned32,
+                zxr10MstpPortInstancePathCost
+                    Unsigned32,
+                zxr10MstpPortInstancePriority
+                    INTEGER,
+                zxr10MstpPortInstanceGuardType
+                    INTEGER,
+                zxr10MstpPortInstanceRowStatus
+                    RowStatus
+             }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.2.1.1
+        zxr10MstpPortInstanceProcessId OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Process ID, its maximum value depends on the product."
+            ::= { zxr10MstpPortInstanceEntry 1 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.2.1.2
+        zxr10MstpPortInstancePortName OBJECT-TYPE
+            SYNTAX DisplayString(SIZE(0..31))
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Interface name, the port should be bound to the process."
+            ::= { zxr10MstpPortInstanceEntry 2 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.2.1.3
+        zxr10MstpPortInstanceId OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Instance ID, its maximum value depends on the product. The instance should already exist."
+            ::= { zxr10MstpPortInstanceEntry 3 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.2.1.4
+        zxr10MstpPortInstancePathCost OBJECT-TYPE
+            SYNTAX Unsigned32 (1..2000000)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Interface path-cost for instance."
+            ::= { zxr10MstpPortInstanceEntry 4 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.2.1.5
+        zxr10MstpPortInstancePriority OBJECT-TYPE
+            SYNTAX INTEGER (0|16|32|48|64|80|96|112|128|144|160|176|192|208|224|240)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Interface priority for instance, default 128(8*16)."
+            ::= { zxr10MstpPortInstanceEntry 5 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.2.1.6
+        zxr10MstpPortInstanceGuardType OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                unconfigure(1),
+                loop(2),
+                root(3)
+                }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Guard type, loop-guard is mutually exclusive to bpdu-guard."
+            ::= { zxr10MstpPortInstanceEntry 6 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.2.1.100
+        zxr10MstpPortInstanceRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Row status."
+            ::= { zxr10MstpPortInstanceEntry 100 }
+        
+--  -zxr10MstpPortInstanceTable
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.3
+        zxr10MstpPortMcheckTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF Zxr10MstpPortMcheckEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP port instance parameters."
+            ::= { zxr10MstpPortObjects 3 }
+     
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.3.1
+        zxr10MstpPortMcheckEntry OBJECT-TYPE
+            SYNTAX Zxr10MstpPortMcheckEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP port instance parameters."
+            INDEX { zxr10MstpPortMcheckProcessId, zxr10MstpPortMcheckPortName}
+            ::= { zxr10MstpPortMcheckTable 1 }
+        
+        Zxr10MstpPortMcheckEntry ::=
+            SEQUENCE { 
+                zxr10MstpPortMcheckProcessId
+                    Unsigned32,
+                zxr10MstpPortMcheckPortName
+                    DisplayString
+             }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.3.1.1
+        zxr10MstpPortMcheckProcessId OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Process ID, its maximum value depends on the product."
+            ::= { zxr10MstpPortMcheckEntry 1 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.3.3.1.2
+        zxr10MstpPortMcheckPortName OBJECT-TYPE
+            SYNTAX DisplayString (SIZE (0..31))
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Interface name, the port should be bound to the process."
+            ::= { zxr10MstpPortMcheckEntry 2 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4
+        zxr10MstpStateObjects OBJECT IDENTIFIER ::= { zxr10MstpObjects 4 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.1
+        zxr10MstpInstanceStateTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF Zxr10MstpInstanceStateEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP instance information."
+            ::= { zxr10MstpStateObjects 1 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.1.1
+        zxr10MstpInstanceStateEntry OBJECT-TYPE
+            SYNTAX Zxr10MstpInstanceStateEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP instance information."
+            INDEX { zxr10MstpInstProcessId, zxr10MstpInstInstanceId }
+            ::= { zxr10MstpInstanceStateTable 1 }
+        
+        Zxr10MstpInstanceStateEntry ::=
+            SEQUENCE { 
+                zxr10MstpInstProcessId
+                    Unsigned32,
+                zxr10MstpInstInstanceId
+                    Unsigned32,
+                zxr10MstpInstForceVersion
+                    INTEGER,
+                zxr10MstpInstRootPriority
+                    Unsigned32,
+                zxr10MstpInstRootMac
+                    OCTET STRING,
+                zxr10MstpInstHelloTime
+                    Unsigned32,
+                zxr10MstpInstMaxAge
+                    Unsigned32,
+                zxr10MstpInstForwardDelay
+                    Unsigned32,
+                zxr10MstpInstRegionRootPriority
+                    Unsigned32,
+                zxr10MstpInstRegionRootMac
+                    OCTET STRING,
+                zxr10MstpInstBridgeMac
+                    OCTET STRING,
+                zxr10MstpInstBridgeMessageAge
+                    Unsigned32,
+                zxr10MstpInstBridgeRemainHops
+                    Unsigned32
+             }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.1.1.1
+        zxr10MstpInstProcessId OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Process ID."
+            ::= { zxr10MstpInstanceStateEntry 1 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.1.1.2
+        zxr10MstpInstInstanceId OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Instance ID."
+            ::= { zxr10MstpInstanceStateEntry 2 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.1.1.3
+        zxr10MstpInstForceVersion OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                sstp(1),
+                rstp(2),
+                mstp(3)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The force version."
+            ::= { zxr10MstpInstanceStateEntry 3 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.1.1.4
+        zxr10MstpInstRootPriority OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The priority of root."
+            ::= { zxr10MstpInstanceStateEntry 4 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.1.1.5
+        zxr10MstpInstRootMac OBJECT-TYPE
+            SYNTAX OCTET STRING
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The MAC of root bridge."
+            ::= { zxr10MstpInstanceStateEntry 5 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.1.1.6
+        zxr10MstpInstHelloTime OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Hello time."
+            ::= { zxr10MstpInstanceStateEntry 6 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.1.1.7
+        zxr10MstpInstMaxAge OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The time of max age."
+            ::= { zxr10MstpInstanceStateEntry 7 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.1.1.8
+        zxr10MstpInstForwardDelay OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The time of forward delay."
+            ::= { zxr10MstpInstanceStateEntry 8 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.1.1.9
+        zxr10MstpInstRegionRootPriority OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The priority of region root."
+            ::= { zxr10MstpInstanceStateEntry 9 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.1.1.10
+        zxr10MstpInstRegionRootMac OBJECT-TYPE
+            SYNTAX OCTET STRING
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The MAC of region root."
+            ::= { zxr10MstpInstanceStateEntry 10 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.1.1.11
+        zxr10MstpInstBridgeMac OBJECT-TYPE
+            SYNTAX OCTET STRING
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The MAC of bridge."
+            ::= { zxr10MstpInstanceStateEntry 11 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.1.1.12
+        zxr10MstpInstBridgeMessageAge OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The message ageing time of bridge."
+            ::= { zxr10MstpInstanceStateEntry 12 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.1.1.13
+        zxr10MstpInstBridgeRemainHops OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The remain-hop of bridge."
+            ::= { zxr10MstpInstanceStateEntry 13 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.2
+        zxr10MstpPortInstanceStateTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF Zxr10MstpPortInstanceStateEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP port instance information."
+            ::= { zxr10MstpStateObjects 2 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.2.1
+        zxr10MstpPortInstanceStateEntry OBJECT-TYPE
+            SYNTAX Zxr10MstpPortInstanceStateEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "MSTP port instance information."
+            INDEX { zxr10MstpPortInstProcessId, zxr10MstpPortInstInstanceId, zxr10MstpPortInstPortName }
+            ::= { zxr10MstpPortInstanceStateTable 1 }
+        
+        Zxr10MstpPortInstanceStateEntry ::=
+            SEQUENCE { 
+                zxr10MstpPortInstProcessId
+                    Unsigned32,
+                zxr10MstpPortInstInstanceId
+                    Unsigned32,
+                zxr10MstpPortInstPortName
+                    DisplayString,
+                zxr10MstpPortInstPortId
+                    DisplayString,
+                zxr10MstpPortInstPathCost
+                    Unsigned32,
+                zxr10MstpPortInstPortState
+                    INTEGER,
+                zxr10MstpPortInstPortRole
+                    INTEGER,
+                zxr10MstpPortInstLinkType
+                    INTEGER,
+                zxr10MstpPortInstBound
+                    INTEGER,
+                zxr10MstpPortInstDSGNMac
+                    OCTET STRING,
+                zxr10MstpPortInstDSGNPriority
+                    Unsigned32,
+                zxr10MstpPortInstDSGNPathCost
+                    Unsigned32,
+                zxr10MstpPortInstDSGNPortId
+                    Unsigned32,
+                zxr10MstpPortInstInconsistent
+                    INTEGER
+             }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.2.1.1
+        zxr10MstpPortInstProcessId OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Process ID."
+            ::= { zxr10MstpPortInstanceStateEntry 1 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.2.1.2
+        zxr10MstpPortInstInstanceId OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Instance ID."
+            ::= { zxr10MstpPortInstanceStateEntry 2 }
+
+    
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.2.1.3
+        zxr10MstpPortInstPortName OBJECT-TYPE
+            SYNTAX DisplayString (SIZE (0..31))
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Interface name."
+            ::= { zxr10MstpPortInstanceStateEntry 3 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.2.1.4
+        zxr10MstpPortInstPortId OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Port ID."
+            ::= { zxr10MstpPortInstanceStateEntry 4 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.2.1.5
+        zxr10MstpPortInstPathCost OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Path cost of the port in specified instance."
+            ::= { zxr10MstpPortInstanceStateEntry 5 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.2.1.6
+        zxr10MstpPortInstPortState OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                learn(2),
+                forward(3),
+                discard(4),
+                discardByInconsistent(5)                
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "State of the port in specified instance."
+            ::= { zxr10MstpPortInstanceStateEntry 6 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.2.1.7
+        zxr10MstpPortInstPortRole OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                alternate(1),
+                backup(2),
+                root(3),
+                designated(4),
+                master(5)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Role of the port in specified instance."
+            ::= { zxr10MstpPortInstanceStateEntry 7 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.2.1.8
+        zxr10MstpPortInstLinkType OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                edge(1),
+                p2p(2),
+                share(3)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Port link type."
+            ::= { zxr10MstpPortInstanceStateEntry 8 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.2.1.9
+        zxr10MstpPortInstBound OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                sstp(1),
+                rstp(2),
+                mstp(3)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "STP mode of the neighbour."
+            ::= { zxr10MstpPortInstanceStateEntry 9 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.2.1.10
+        zxr10MstpPortInstDSGNMac OBJECT-TYPE
+            SYNTAX OCTET STRING
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Designated MAC address."
+            ::= { zxr10MstpPortInstanceStateEntry 10 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.2.1.11
+        zxr10MstpPortInstDSGNPriority OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Designated priority."
+            ::= { zxr10MstpPortInstanceStateEntry 11 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.2.1.12
+        zxr10MstpPortInstDSGNPathCost OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Designated cost of path."
+            ::= { zxr10MstpPortInstanceStateEntry 12 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.2.1.13
+        zxr10MstpPortInstDSGNPortId OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Designated port ID."
+            ::= { zxr10MstpPortInstanceStateEntry 13 }
+
+        -- 1.3.6.1.4.1.3902.3.127.2.2.4.2.1.14
+        zxr10MstpPortInstInconsistent OBJECT-TYPE
+            SYNTAX INTEGER
+                {                
+                noInconsistent(1),
+                loopInconsistent(2),
+                rootInconsistent(3)
+                } 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Inconsistent state."
+            ::= { zxr10MstpPortInstanceStateEntry 14 }
+
+        -- 1.3.6.1.4.1.3902.3.127.3
+        zxr10MstpNotifications OBJECT IDENTIFIER ::= { mstpMIB 3 }
+        
+--  groups in mstpMibObjects
+        -- 1.3.6.1.4.1.3902.3.127.4
+        zxr10MstpConformance OBJECT IDENTIFIER ::= { mstpMIB 4 }
+
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.1
+        zxr10MstpTransparentStateGrp OBJECT-GROUP
+            OBJECTS { zxr10MstpTransparentState, zxr10MstpGlobalConfigRowStatus }
+            STATUS current
+            DESCRIPTION 
+                "Packet transparent function group."
+            ::= { zxr10MstpConformance 1 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.2
+        zxr10MstpGlobalCfgGrp OBJECT-GROUP
+            OBJECTS { zxr10MstpGlobalState, zxr10MstpMode, zxr10MstpForwardDelay, zxr10MstpHelloTime, 
+                zxr10MstpMaxAge, zxr10MstpRcvdInfoHoldingTHR, zxr10MstpGlobalConfigRowStatus }
+            STATUS current
+            DESCRIPTION 
+                "Global basic configuration group."
+            ::= { zxr10MstpConformance 2 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.3
+        zxr10MstpGlblCiscoDigestAdaptGrp OBJECT-GROUP
+            OBJECTS { zxr10MstpCiscoDigestAdapt, zxr10MstpGlobalConfigRowStatus }
+            STATUS current
+            DESCRIPTION 
+                "Global CISCO digest-self-adapt group."
+            ::= { zxr10MstpConformance 3 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.4
+        zxr10MstpMstCfgGrp OBJECT-GROUP
+            OBJECTS { zxr10MstpMstName, zxr10MstpMstRevision, zxr10MstpMstMaxHops, zxr10MstpGlobalConfigRowStatus }
+            STATUS current
+            DESCRIPTION 
+                "Global basic mst configuration group."
+            ::= { zxr10MstpConformance 4 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.5
+        zxr10MstpMstHMD5Grp OBJECT-GROUP
+            OBJECTS { zxr10MstpMstHuaweiHMD5Digest, zxr10MstpMstHuaweiHMD5Key, zxr10MstpMstCiscoHMD5Digest, zxr10MstpMstCiscoHMD5Key, zxr10MstpGlobalConfigRowStatus }
+            STATUS current
+            DESCRIPTION 
+                "Global mst HMAC-MD5 configuration group."
+            ::= { zxr10MstpConformance 5 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.6
+        zxr10MstpInstCfgGrp OBJECT-GROUP
+            OBJECTS { zxr10MstpInstancePriority, zxr10MstpInstanceVlanMaps, zxr10MstpInstanceRowStatus}
+            STATUS current
+            DESCRIPTION 
+                "Instance configuration group."
+            ::= { zxr10MstpConformance 6 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.7
+        zxr10MstpMacFlushFastGrp OBJECT-GROUP
+            OBJECTS { zxr10MstpMacFlushFastFirstPort, zxr10MstpMacFlushFastSecondPort, zxr10MstpMacFlushFastRowStatus}
+            STATUS current
+            DESCRIPTION 
+                "Mac-flush-fast for instance group."
+            ::= { zxr10MstpConformance 7 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.8
+        zxr10MstpPortCfgGrp OBJECT-GROUP
+            OBJECTS { zxr10MstpPortAdminState, zxr10MstpPortPacketType, zxr10MstpPortEdgedPortState, 
+                zxr10MstpPortLinkType, zxr10MstpPortRowStatus }
+            STATUS current
+            DESCRIPTION 
+                "Port configuration group."
+            ::= { zxr10MstpConformance 8 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.9
+        zxr10MstpPortBpduGuardGrp OBJECT-GROUP
+            OBJECTS { zxr10MstpPortBpduGuard, zxr10MstpPortRowStatus }
+            STATUS current
+            DESCRIPTION 
+                "BPDU guard for port group."
+            ::= { zxr10MstpConformance 9 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.10
+        zxr10MstpPortCiscoDigestAdaptGrp OBJECT-GROUP
+            OBJECTS { zxr10MstpPortCiscoDigestAdapt, zxr10MstpPortRowStatus }
+            STATUS current
+            DESCRIPTION 
+                "CISCO digest-self-adapt for port group."
+            ::= { zxr10MstpConformance 10 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.11
+        zxr10MstpPortVplsSubIfNotifyGrp OBJECT-GROUP
+            OBJECTS { zxr10MstpPortVplsSubIntfNotify, zxr10MstpPortRowStatus }
+            STATUS current
+            DESCRIPTION 
+                "Vpls subinterface notify for port group."
+            ::= { zxr10MstpConformance 11 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.12
+        zxr10MstpPortBpduGrp OBJECT-GROUP
+            OBJECTS { zxr10MstpPortBpduVlanId, zxr10MstpPortBpduPriority, zxr10MstpPortRowStatus }
+            STATUS current
+            DESCRIPTION 
+                "VLAN tag configuration for port group."
+            ::= { zxr10MstpConformance 12 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.13
+        zxr10MstpPortInstCfgGrp OBJECT-GROUP
+            OBJECTS { zxr10MstpPortInstancePathCost, zxr10MstpPortInstancePriority, 
+                zxr10MstpPortInstanceGuardType, zxr10MstpPortInstanceRowStatus }
+            STATUS current
+            DESCRIPTION 
+                "Port-instance configuration group."
+            ::= { zxr10MstpConformance 13 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.14
+        zxr10MstpPortMcheckGrp OBJECT-GROUP
+            OBJECTS { zxr10MstpPortMcheckPortName }
+            STATUS current
+            DESCRIPTION 
+                "Mcheck for port group."
+            ::= { zxr10MstpConformance 14 }
+
+        -- 1.3.6.1.4.1.3902.3.127.4.15
+        zxr10MstpInstanceStateGrp OBJECT-GROUP
+            OBJECTS { zxr10MstpInstForceVersion, zxr10MstpInstRootPriority, zxr10MstpInstRootMac, 
+                zxr10MstpInstHelloTime, zxr10MstpInstMaxAge, zxr10MstpInstForwardDelay, zxr10MstpInstRegionRootPriority, zxr10MstpInstRegionRootMac, 
+                zxr10MstpInstBridgeMac, zxr10MstpInstBridgeMessageAge, zxr10MstpInstBridgeRemainHops }
+            STATUS current
+            DESCRIPTION 
+                "Instance state group."
+            ::= { zxr10MstpConformance 15 }
+
+        -- 1.3.6.1.4.1.3902.3.127.4.16
+        zxr10MstpPortInstanceStateGrp OBJECT-GROUP
+            OBJECTS { zxr10MstpPortInstPortId, zxr10MstpPortInstPathCost, 
+                zxr10MstpPortInstPortState, zxr10MstpPortInstPortRole, zxr10MstpPortInstLinkType, zxr10MstpPortInstBound, zxr10MstpPortInstDSGNMac, 
+                zxr10MstpPortInstDSGNPriority, zxr10MstpPortInstDSGNPathCost, zxr10MstpPortInstDSGNPortId, zxr10MstpPortInstInconsistent }
+            STATUS current
+            DESCRIPTION 
+                "Port-instance state group."
+            ::= { zxr10MstpConformance 16 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.17
+        zxr10MstpGlobalParaGrp OBJECT-GROUP
+            OBJECTS { stpProtocolEnable, stpProtocolSpecification, stpMaxAge, stpHelloTime, stpHoldTime, 
+                stpForwardDelay, stpBridgeMaxAge, stpBridgeHelloTime, stpBridgeForwardDelay, stpTransparentEnable, 
+                stpRevision, stpConfigName, stpCiscoHmd5Digest, stpCiscoHmd5Key, stpHuaWeiHmd5Digest, 
+                stpHuaWeiHmd5Key }
+            STATUS current
+            DESCRIPTION 
+                "Global parameter group."
+            ::= { zxr10MstpConformance 17 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.18
+        zxr10MstpInstanceGrp OBJECT-GROUP
+            OBJECTS { stpInstanceID, stpBridgePriority, stpBridgeMac, stpInstanceRootPriority, stpInstanceRootMac, 
+                stpRemainHops, stpVlanMaps, stpMAXHops, stpBridgeMAXHops }
+            STATUS current
+            DESCRIPTION 
+                "Instance parameter group."
+            ::= { zxr10MstpConformance 18 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.19
+        zxr10MstpPortGrp OBJECT-GROUP
+            OBJECTS { stpPortEnable, stpLinkType, stpEdgedPortEnable, stpBPDUGuardEnable, stpPacketType, 
+                stpIfName }
+            STATUS current
+            DESCRIPTION 
+                "Port parameter group."
+            ::= { zxr10MstpConformance 19 }
+        
+        -- 1.3.6.1.4.1.3902.3.127.4.20
+        zxr10MstpPortInstanceGrp OBJECT-GROUP
+            OBJECTS { stpPortInstanceID, stpPortName, stpPortPriority, stpPortPathCost, stpPortState, 
+                stpPortDesignatedCost, stpPortDesignatedBridgePriority, stpPortDesignatedBridgeMac, stpPortDesignatedPort, stpRootGuardEnable, 
+                stpLoopGuardEnable }
+            STATUS current
+            DESCRIPTION 
+                "Port-instance parameter group."
+            ::= { zxr10MstpConformance 20 }
+
+        
+    
+    END
+
+--
+-- ZXR10-MSTP-MIB.mib
+--

@@ -1,0 +1,208 @@
+-- *****************************************************************
+-- ZXR10-CONFIG-MAN-MIB.mib
+-- Copyright (c) 1985-2012 by ZTE Corp.
+-- All rights reserved.
+-- *****************************************************************
+--
+ZXR10-CONFIG-MAN-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,IpAddress,Unsigned32,
+        enterprises
+            FROM SNMPv2-SMI 
+        Ipv6Address    
+            FROM IPV6-TC
+        DateAndTime                        
+            FROM SNMPv2-TC ;        
+
+
+    
+    zxr10ConfigManMIB MODULE-IDENTITY
+        LAST-UPDATED "201709041030Z"   --2017/9/4 10:30
+        ORGANIZATION "ZTE Corp."
+        CONTACT-INFO
+            "
+            Address: 68 hao, Zijinghua road, Yuhuatai District, Nanjing City,
+                     Jiangsu Province, P.R. China 
+            Zip    : 210012
+            E-mail : hou.xiaoyan@zte.com.cn
+            "
+        DESCRIPTION 
+            "this MIB intends to include only such operations as clearly
+            relate to configuration.  Its primary emphasis is to
+            track changes and saves of the running configuration.
+            
+            Information from zxcmConfigTraceTable can be used
+            to track the exact configuration changes that took
+            place within a particular Configuration History
+            event. NMS' can use this information to update 
+            the related components." 
+              
+        REVISION "201709041030Z"      --2017/9/4 10:30
+        DESCRIPTION 
+        " Add the state which indicates whether the trap can be sent
+         add:       zxr10ConfigGlobalObjects
+                    zxr10ConfigurationTrapSwtich
+        "
+        
+        REVISION "201410161030Z"
+        DESCRIPTION 
+        "add:       zxr10cmRunLstChngedTmnlIpv4Addr
+                    zxr10cmRunLstChngedTmnlIpv6Addr
+                    zxr10cmRunLstChngedTmnlIpAddrTp
+                    zxr10cmRunLstChngedTmnlTp
+         modify:    zxr10cmRunningConfigChanged
+        "
+        
+        REVISION "201304091600Z"       --2013/4/9 16:00
+        DESCRIPTION "Initial version of this MIB module."
+
+        
+
+    ::= { zxr10RosngMIB 90 }
+                                 
+    zte             OBJECT IDENTIFIER ::= {enterprises 3902}
+    zte10           OBJECT IDENTIFIER ::= {zte 3} 
+    zxr10RosngMIB   OBJECT IDENTIFIER ::= {zte10 6000}  
+
+                      
+    --*********************************
+    -- objects begin
+    --*********************************                           
+                           
+    zxr10ConfigManGlobalObjects  OBJECT IDENTIFIER ::= {zxr10ConfigManMIB 1}      
+    zxr10ConfigManObjects        OBJECT IDENTIFIER ::= {zxr10ConfigManMIB 2} 
+    zxr10ConfigManGlobalTraps    OBJECT IDENTIFIER ::= {zxr10ConfigManMIB 3}     
+    zxr10ConfigManConformance    OBJECT IDENTIFIER ::= {zxr10ConfigManMIB 4}       
+                                               
+                                               
+    --*********************************
+    -- 1.global objects
+    --*********************************    
+                
+    zxr10cmRunningLastChanged OBJECT-TYPE
+        SYNTAX        DateAndTime
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   
+            "The value of sysUpTime when the running configuration was 
+            last changed.
+            
+            If the value of zxr10cmRunningLastChanged is greater than 
+            zxr10cmRunningLastSaved, the configuration has been changed but 
+            not saved."
+        ::= { zxr10ConfigManGlobalObjects 1 }
+   
+    zxr10cmRunningLastSavedTxt OBJECT-TYPE
+        SYNTAX        DateAndTime
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   
+            "The value of sysUpTime when the running configuration
+            was last saved (written) by TXT.   
+            
+            If the value of zxr10cmRunningLastChanged is greater than 
+            zxr10cmRunningLastSaved, the configuration has been changed but 
+            not saved."
+        ::= { zxr10ConfigManGlobalObjects 2 }   
+
+    zxr10cmRunningLastSavedZdb OBJECT-TYPE
+        SYNTAX        DateAndTime
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION   
+            "The value of sysUpTime when the running configuration
+            was last saved (written) by ZDB.   
+            
+            If the value of zxr10cmRunningLastChanged is greater than 
+            zxr10cmRunningLastSaved, the configuration has been changed but 
+            not saved."
+        ::= { zxr10ConfigManGlobalObjects 3 }    
+
+     zxr10cmRunLstChngedTmnlIpv4Addr OBJECT-TYPE
+        SYNTAX        IpAddress
+        MAX-ACCESS    accessible-for-notify
+        STATUS        current
+        DESCRIPTION   
+            "The ip addr (ipv4) of the terminal which changed the configuration."
+        ::= { zxr10ConfigManGlobalObjects 4 }       
+
+     zxr10cmRunLstChngedTmnlIpv6Addr OBJECT-TYPE
+        SYNTAX        Ipv6Address 
+        MAX-ACCESS    accessible-for-notify
+        STATUS        current
+        DESCRIPTION   
+            "The ip addr (ipv6) of the terminal which changed the configuration."
+        ::= { zxr10ConfigManGlobalObjects 5 } 
+
+     zxr10cmRunLstChngedTmnlIpAddrTp OBJECT-TYPE
+        SYNTAX        INTEGER
+                    { 
+                        ipv4(4),
+                        ipv6(6)
+                    }
+        MAX-ACCESS    accessible-for-notify
+        STATUS        current
+        DESCRIPTION   
+            "The ip addr type of the terminal which changed the configuration."
+        ::= { zxr10ConfigManGlobalObjects 6 } 
+
+     zxr10cmRunLstChngedTmnlTp OBJECT-TYPE
+        SYNTAX        INTEGER
+                    { 
+                        app(1),
+                        cli(2),
+                        snmp(3),
+                        web(4),
+                        xml(5),
+                        qx(6),
+                        cwmp(7),
+                        mimload(8),
+                        txtload(9),
+                        appreg(10)
+                    }
+        MAX-ACCESS    accessible-for-notify
+        STATUS        current
+        DESCRIPTION   
+            "The type of the terminal which changed the configuration."
+        ::= { zxr10ConfigManGlobalObjects 7 }  
+     
+     --*********************************
+    -- 1. MIM configuration node
+    --*********************************     
+     zxr10ConfigGlobalObjects  OBJECT IDENTIFIER ::= {zxr10ConfigManGlobalObjects 8}   
+     zxr10ConfigurationTrapSwtich  OBJECT-TYPE
+        SYNTAX      INTEGER
+                    { 
+                        disable(1),
+                        enable(2)
+                    }
+        MAX-ACCESS read-write    
+        STATUS        current
+        DESCRIPTION   
+              "The state which indicates whether the trap can be sent."    
+        DEFVAL        {enable}
+        ::= { zxr10ConfigGlobalObjects 1 }  
+
+    --*********************************
+    -- 2. objects
+    --********************************* 
+     
+    
+                                        
+
+    --*********************************
+    -- 3.traps
+    --********************************* 
+
+    zxr10cmRunningConfigChanged NOTIFICATION-TYPE 
+        OBJECTS  { zxr10cmRunLstChngedTmnlIpv4Addr, 
+                   zxr10cmRunLstChngedTmnlIpv6Addr, 
+                   zxr10cmRunLstChngedTmnlIpAddrTp,
+                   zxr10cmRunLstChngedTmnlTp }
+        STATUS  current
+        DESCRIPTION            
+            "This notification indicates that the running
+            configuration of the managed system has changed."
+        ::= { zxr10ConfigManGlobalTraps 1 }
+END        

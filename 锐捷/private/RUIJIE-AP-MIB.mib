@@ -1,0 +1,721 @@
+-- *****************************************************************
+-- RUIJIE-AP-MIB.mib:  Ruijie AP MIB file
+--
+-- March 2002, Wuzg
+--
+-- Copyright (c) 2002 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-AP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32
+                FROM SNMPv2-SMI
+        PortList
+                FROM Q-BRIDGE-MIB
+        DisplayString,
+        TruthValue
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+--        ConfigStatus,
+        MemberMap,
+        IfIndex
+                FROM RUIJIE-TC
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieApMIB MODULE-IDENTITY
+        LAST-UPDATED "200203200000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie aggregate port(AP) mibs."
+        REVISION      "200203200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 7}
+
+ruijieApMIBObjects OBJECT IDENTIFIER ::= { ruijieApMIB 1 }
+
+
+ruijieApMaxNumber OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of MAX aggregate ports this system supported."
+        ::= { ruijieApMIBObjects 1 }
+
+ruijieApCurrentNumber OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of current aggregate ports this system have."
+        ::= { ruijieApMIBObjects 2 }
+    
+    
+ruijieApPortConfigTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieApPortConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS obsolete
+        DESCRIPTION
+            "aggregate port table."
+        ::= { ruijieApMIBObjects 3 }
+    
+ruijieApPortConfigEntry OBJECT-TYPE
+        SYNTAX RuijieApPortConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS obsolete
+        DESCRIPTION
+            "list of aggregate port and it's port group table."
+        INDEX { ruijieApPortConfigPortIndex }
+        ::= { ruijieApPortConfigTable 1 }
+    
+RuijieApPortConfigEntry ::=
+        SEQUENCE {
+        ruijieApPortConfigPortIndex IfIndex,
+        ruijieApPortConfigApIndex IfIndex
+        }    
+    
+ruijieApPortConfigPortIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS not-accessible
+        STATUS obsolete
+        DESCRIPTION
+            " "
+        ::= { ruijieApPortConfigEntry 1 }  
+        
+ruijieApPortConfigApIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-write
+        STATUS obsolete
+        DESCRIPTION
+            "Set this value to 1 бл ruijieApMaxNumber indicate that add this value
+            to that aggregate port which this aggregate port must be valid. 
+            It separates this port from aggregate port to set this value to 0 "
+        ::= { ruijieApPortConfigEntry 2 }          
+    
+    
+ruijieApTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieApEntry
+        MAX-ACCESS not-accessible
+        STATUS obsolete
+        DESCRIPTION
+            "Aggregate ports table."
+        ::= { ruijieApMIBObjects 4 }
+    
+ruijieApEntry OBJECT-TYPE
+        SYNTAX RuijieApEntry
+        MAX-ACCESS not-accessible
+        STATUS obsolete
+        DESCRIPTION
+            "list of aggregate ports and it's distribution table."
+        INDEX { ruijieApIndex }
+        ::= { ruijieApTable 1 }
+    
+RuijieApEntry ::=
+        SEQUENCE {
+        ruijieApIndex IfIndex,
+        ruijieApMemberAction MemberMap,
+        ruijieApPossibleMember MemberMap, 
+        ruijieApMaxPtNumber Integer32
+--        ruijieApEntryStatus ConfigStatus
+        }
+    
+ruijieApIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS obsolete
+        DESCRIPTION
+            "Aggregate ports index."
+        ::= { ruijieApEntry 1 }
+ 
+ruijieApMemberAction OBJECT-TYPE
+        SYNTAX MemberMap
+        MAX-ACCESS read-only
+        STATUS obsolete
+        DESCRIPTION
+            "Each octet in this member action map assigned to a port,
+            when the octet's value is 1 indicates the port of this octect
+            is in the aggregate port. and 0 indicates the port is not in the aggregate port.
+            this object can be modified only when the status of this entry 
+            is invalid."
+        ::= { ruijieApEntry 2 }
+
+ruijieApPossibleMember OBJECT-TYPE
+        SYNTAX MemberMap
+        MAX-ACCESS read-only
+        STATUS obsolete
+        DESCRIPTION
+           "Each octet in this member action map assigned to a port,
+            when the octet's value is 1 indicates the port of this octect
+            can be set in the aggregate port. and 0 indicates the port is not 
+            possible be set in the aggregate port."
+        ::= { ruijieApEntry 3 }
+                
+ruijieApMaxPtNumber OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS obsolete
+        DESCRIPTION
+            "Max number of ports this aggregate port can include."
+        ::= { ruijieApEntry 4 }
+                     
+--ruijieApEntryStatus OBJECT-TYPE
+--        SYNTAX ConfigStatus
+--        MAX-ACCESS read-create
+--        STATUS obsolete
+--        DESCRIPTION
+--            "Status of this entry, set this object to valid will create a aggregate port, 
+--             and set its value to invalid will delete the aggregate port of this entry."
+--        ::= { ruijieApEntry 5 }
+        
+
+ruijieApFlowBalance OBJECT-TYPE
+        SYNTAX INTEGER {
+          unknown(0),
+          source-mac(1),
+          destination-mac(2),
+          src-dest-mac(3),
+          source-ip(4),
+          destination-ip(5),
+          src-dest-ip(6),
+          src-dest-port(7),
+          src-dst-ip-l4port(8),
+          enhanced-profile(9),
+          src-l4port(10),
+          dest-l4port(11),
+          src-dest-l4port(12),
+          src-ip-l4port(13),
+          dest-ip-l4port(14),
+          src-ip-dest-l4port(15),
+          dest-ip-src-l4port(16),
+	  src-dest-ip-src-l4port(17),
+          src-dest-ip-dest-l4port(18),
+          src-ip-src-dest-l4port(19),
+          dest-ip-src-dest-l4port(20)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Set the AP traffic balancing algorithm.You can choose enhanced-profile after create a Enhanced 
+             mode profile"
+        ::= { ruijieApMIBObjects 5 }
+       
+-- ruijieApConfigTable from the 10.3(5) was started to support.       
+ruijieApConfigTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieApConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Aggregate ports table."
+        ::= { ruijieApMIBObjects 6 }
+        
+ruijieApConfigEntry OBJECT-TYPE
+        SYNTAX RuijieApConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of aggregate ports and it's distribution table."
+        INDEX { ruijieApConfigNumber }
+        ::= { ruijieApConfigTable 1 }
+            
+RuijieApConfigEntry ::=
+        SEQUENCE {
+        ruijieApConfigNumber Integer32,
+        ruijieApConfigIndex IfIndex,
+        ruijieApConfigMaxPtNumber Integer32,
+        ruijieApConfigCurrentPtNumber Integer32,
+        ruijieApConfigPortMember PortList,
+        ruijieApConfigAction Integer32
+        }
+
+ruijieApConfigNumber OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Aggregate ports number.Set this value to 1 бл ruijieApMaxNumber."
+        ::= { ruijieApConfigEntry 1 }
+ 
+ruijieApConfigIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Aggregate ports index."
+        ::= { ruijieApConfigEntry 2 }
+
+ruijieApConfigMaxPtNumber OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of MAX aggregate ports this system supported."
+        ::= { ruijieApConfigEntry 3 }
+        
+ruijieApConfigCurrentPtNumber OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of current ports this aggregate port have."
+        ::= { ruijieApConfigEntry 4 }        
+ 
+ruijieApConfigPortMember OBJECT-TYPE
+        SYNTAX PortList
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Each octet in this member action map assigned to a port,
+            when the octet's value is 1 indicates the port of this octect
+            is in the aggregate port. and 0 indicates the port is not in the aggregate port.
+            this object can be modified only when the status of this entry 
+            is invalid."
+        ::= { ruijieApConfigEntry 5 }
+       
+ruijieApConfigAction OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The value 1 to add an aggregate port, 0 to delete an aggregate port."
+        ::= { ruijieApConfigEntry 6 }
+
+-- ruijieApPortMemberTable from the 10.3(5) was started to support.   
+ruijieApPortMemberTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieApPortMemberEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Aggregate port table."
+        ::= { ruijieApMIBObjects 7 }
+    
+ruijieApPortMemberEntry OBJECT-TYPE
+        SYNTAX RuijieApPortMemberEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of aggregate port and it's port group table."
+        INDEX { ruijieApPortMemberPortIndex }
+        ::= { ruijieApPortMemberTable 1 }
+    
+RuijieApPortMemberEntry ::=
+        SEQUENCE {
+        ruijieApPortMemberPortIndex IfIndex,
+        ruijieApPortMemberApNumber Integer32,
+        ruijieApPortMemberAction Integer32
+        }    
+  
+ruijieApPortMemberPortIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " a switch port index. "
+        ::= { ruijieApPortMemberEntry 1 }  
+      
+ruijieApPortMemberApNumber OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Set this value to 1 бл ruijieApMaxNumber indicate that add this value
+            to that aggregate port."
+        ::= { ruijieApPortMemberEntry 2 }   
+       
+ruijieApPortMemberAction OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The value 1 indcate add to an aggregate port, 0 to delete from an aggregate port."
+        ::= { ruijieApPortMemberEntry 3 }        
+
+-- ruijieApBalcProfName from the 10.4(3b17) was started to support.
+ruijieApBalcProfName OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Enhanced mode profile name."
+        ::= { ruijieApMIBObjects 8 }
+
+-- ruijieApProfTable from the 10.4(3b17) was started to support. 
+ruijieApProfTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieApProfEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Configure the enhanced mode profile."
+        ::= { ruijieApMIBObjects 9 }
+
+ruijieApProfEntry OBJECT-TYPE
+        SYNTAX RuijieApProfEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Enhanced mode profile configuration entry."
+        INDEX { ruijieApProfIdx }
+        ::= { ruijieApProfTable 1 }
+
+RuijieApProfEntry ::=
+        SEQUENCE {
+        ruijieApProfIdx Integer32,
+        ruijieApProfName DisplayString,
+-- L2 field
+        ruijieApProfL2SrcMac TruthValue,
+        ruijieApProfL2DestMac TruthValue,
+        ruijieApProfL2Pro TruthValue,
+        ruijieApProfL2Vlan TruthValue,
+        ruijieApProfL2SrcPort TruthValue,
+-- Ipv4 field
+        ruijieApProfIpv4SrcIp TruthValue,
+        ruijieApProfIpv4DestIp TruthValue,
+        ruijieApProfIpv4Pro TruthValue,
+        ruijieApProfIpv4L4SrcPort TruthValue,
+        ruijieApProfIpv4L4DestPort TruthValue,
+        ruijieApProfIpv4Vlan TruthValue,
+    	ruijieApProfIpv4SrcPort TruthValue,
+-- Ipv6 field
+        ruijieApProfIpv6SrcIp TruthValue,
+        ruijieApProfIpv6DestIp TruthValue,
+        ruijieApProfIpv6Pro TruthValue,
+        ruijieApProfIpv6L4SrcPort TruthValue,
+        ruijieApProfIpv6L4DestPort TruthValue,
+        ruijieApProfIpv6Vlan TruthValue,
+        ruijieApProfIpv6SrcPort TruthValue,
+-- mpls field
+        ruijieApProfMplsTopLabel TruthValue,
+        ruijieApProfMpls2ndLabel TruthValue,
+        ruijieApProfMplsSrcIp TruthValue,
+        ruijieApProfMplsDestIp TruthValue,
+        ruijieApProfMplsVlan TruthValue,
+        ruijieApProfMplsSrcPort TruthValue
+        }         
+
+ruijieApProfIdx OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Enhanced mode profile index."
+        ::= { ruijieApProfEntry 1 }  
+        
+ruijieApProfName OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Enhanced mode profile name."
+        ::= { ruijieApProfEntry 2 }
+        
+-- L2 field
+ruijieApProfL2SrcMac OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the source MAC address 
+             of incoming layer2 packet."
+        ::= { ruijieApProfEntry 3 }  
+
+ruijieApProfL2DestMac OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the destination MAC address 
+             of incoming layer2 packet."
+        ::= { ruijieApProfEntry 4 }  
+
+ruijieApProfL2Pro OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the Ethernet type
+             of the incoming layer2 packet."
+        ::= { ruijieApProfEntry 5 }  
+
+ruijieApProfL2Vlan OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the VLAN ID
+             of the incoming layer2 packet."
+        ::= { ruijieApProfEntry 6 }  
+
+ruijieApProfL2SrcPort OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the source port 
+             of incoming layer2 packet."
+        ::= { ruijieApProfEntry 7 }  
+
+-- Ipv4 field
+ruijieApProfIpv4SrcIp OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the source 
+             IP address of incoming IPv4 packet."
+        ::= { ruijieApProfEntry 8 }
+
+ruijieApProfIpv4DestIp OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the destination IP 
+             address of incoming IPv4 packet."
+    ::= { ruijieApProfEntry 9 }
+
+ruijieApProfIpv4Pro OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to protocol type
+             of the incoming IPv4 packet."
+        ::= { ruijieApProfEntry 10 }  
+
+ruijieApProfIpv4L4SrcPort OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the L4 layer source 
+             port of incoming IPv4 packet."
+        ::= { ruijieApProfEntry 11 } 
+        
+ruijieApProfIpv4L4DestPort OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the L4 layer destination 
+             port of incoming IPv4 packet."
+        ::= { ruijieApProfEntry 12 }
+
+ruijieApProfIpv4Vlan OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the VLAN ID of the 
+             incoming IPv4 packet."
+        ::= { ruijieApProfEntry 13 } 
+
+ruijieApProfIpv4SrcPort OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the source port
+             of incoming IPv4 packet."
+        ::= { ruijieApProfEntry 14 } 
+
+-- IPv6 field
+ruijieApProfIpv6SrcIp OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the source IP 
+             address of incoming IPv6 packet."
+        ::= { ruijieApProfEntry 15 }
+
+ruijieApProfIpv6DestIp OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the destination 
+             IP address of incoming IPv6 packet."
+        ::= { ruijieApProfEntry 16 }
+
+ruijieApProfIpv6Pro OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to protocol type of 
+             the incoming IPv6 packet."
+        ::= { ruijieApProfEntry 17 }  
+
+ruijieApProfIpv6L4SrcPort OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the L4 layer source 
+             port of incoming IPv6 packet."
+        ::= { ruijieApProfEntry 18 } 
+        
+ruijieApProfIpv6L4DestPort OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the L4 layer destination 
+             port of incoming IPv6 packet."
+        ::= { ruijieApProfEntry 19 } 
+
+ruijieApProfIpv6Vlan OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the VLAN ID of the 
+             incoming IPv6 packet."
+        ::= { ruijieApProfEntry 20 } 
+
+ruijieApProfIpv6SrcPort OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the source port of 
+             incoming IPv6 packet."
+        ::= { ruijieApProfEntry 21 } 
+
+-- mpls field
+ruijieApProfMplsTopLabel OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the top-label of the 
+             incoming mpls packet."
+        ::= { ruijieApProfEntry 22 } 
+
+ruijieApProfMpls2ndLabel OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the 2nd-label of the 
+             incoming mpls packet."
+        ::= { ruijieApProfEntry 23 } 
+
+ruijieApProfMplsSrcIp OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the source IP address 
+             of incoming mpls packet."
+        ::= { ruijieApProfEntry 24 } 
+
+ruijieApProfMplsDestIp OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the destination IP address 
+             of incoming mpls packet."
+        ::= { ruijieApProfEntry 25 } 
+
+ruijieApProfMplsVlan OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the VLAN ID of the incoming mpls packet."
+        ::= { ruijieApProfEntry 26 } 
+
+ruijieApProfMplsSrcPort OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Perform traffic balancing distribution according to the source port of incoming mpls packet."
+        ::= { ruijieApProfEntry 27 }
+        
+ruijieApMIBConformance OBJECT IDENTIFIER ::= { ruijieApMIB 2 }
+ruijieApMIBCompliances OBJECT IDENTIFIER ::= { ruijieApMIBConformance 1 }
+ruijieApMIBGroups      OBJECT IDENTIFIER ::= { ruijieApMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieApMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie Ap MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieApMIBGroup
+                 }
+        ::= { ruijieApMIBCompliances 1 }
+                
+-- units of conformance
+
+ruijieApMIBGroup OBJECT-GROUP
+        OBJECTS {
+           ruijieApMaxNumber,
+           ruijieApCurrentNumber,
+           ruijieApPortConfigApIndex,
+           ruijieApIndex,
+           ruijieApMemberAction,
+           ruijieApMaxPtNumber,
+           ruijieApFlowBalance,          
+--           ruijieApEntryStatus,
+           ruijieApConfigNumber,
+           ruijieApConfigIndex,
+           ruijieApConfigMaxPtNumber,           
+           ruijieApConfigCurrentPtNumber,
+           ruijieApConfigPortMember,
+           ruijieApConfigAction, 
+           ruijieApPortMemberPortIndex,
+           ruijieApPortMemberApNumber,
+           ruijieApPortMemberAction,
+           ruijieApProfL2SrcMac,
+           ruijieApProfL2DestMac,
+           ruijieApProfL2Pro,
+           ruijieApProfL2Vlan,
+           ruijieApProfL2SrcPort,
+           ruijieApProfIpv4SrcIp,
+           ruijieApProfIpv4DestIp,
+           ruijieApProfIpv4Pro,
+           ruijieApProfIpv4L4SrcPort,
+           ruijieApProfIpv4L4DestPort,
+           ruijieApProfIpv4Vlan,
+           ruijieApProfIpv4SrcPort,	
+           ruijieApProfIpv6SrcIp,
+           ruijieApProfIpv6DestIp,
+           ruijieApProfIpv6Pro,
+           ruijieApProfIpv6L4SrcPort,
+           ruijieApProfIpv6L4DestPort,
+           ruijieApProfIpv6Vlan,
+           ruijieApProfIpv6SrcPort,	
+           ruijieApProfMplsTopLabel,
+           ruijieApProfMpls2ndLabel,
+           ruijieApProfMplsSrcIp,
+           ruijieApProfMplsDestIp,
+           ruijieApProfMplsVlan,
+           ruijieApProfMplsSrcPort
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing aggregate port configure."
+        ::= { ruijieApMIBGroups 1 }                
+        
+END

@@ -1,0 +1,1752 @@
+-- *******************************************************************
+-- RUIJIE-WLAN-FIT-AP-IN-MIB.mib : Ruijie MIB
+-- May 2010, ruanyucheng
+--
+-- Copyright (c) 2010 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- *******************************************************************
+RUIJIE-WLAN-FIT-AP-IN-MIB DEFINITIONS ::= BEGIN
+    IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32,
+        Counter32,
+        IpAddress,
+        TimeTicks,
+        Unsigned32
+            FROM SNMPv2-SMI
+        TruthValue,
+        DisplayString,
+        MacAddress,
+        RowStatus
+            FROM SNMPv2-TC
+        Gauge
+            FROM RFC1155-SMI
+        MODULE-COMPLIANCE,
+        NOTIFICATION-GROUP,
+        OBJECT-GROUP
+            FROM SNMPv2-CONF
+        ruijieStaMacAddr,    
+        ruijieApApName,
+        ruijieApCfgRadioId,    
+        ruijieApMacAddr,
+        ruijieApgWlanId
+            FROM RUIJIE-AC-MGMT-MIB
+        ifIndex
+            FROM RFC1213-MIB
+        ruijieMgmt
+            FROM RUIJIE-SMI;
+--*******************************************
+--* module definition
+--*******************************************
+ruijieFitApMibModule MODULE-IDENTITY
+    LAST-UPDATED    "201002260000Z"
+    ORGANIZATION
+        "Ruijie Networks Co.,Ltd."
+    CONTACT-INFO
+        "Tel: 4008-111-000
+           E-mail: service@ruijie.com.cn "
+
+    DESCRIPTION
+       "
+       Wlan software private MIB for Ruijie SNC according to the China
+       Mobile standard. This is device manage MIB.
+       "
+    REVISION      "201002280000Z"
+    DESCRIPTION
+       "Initial version of this MIB module."
+
+    ::= { ruijieMgmt  83 }
+
+ruijieAlarmTrapsObjects       OBJECT IDENTIFIER  ::= { ruijieFitApMibModule 10 }
+ruijieAlarmTraps              OBJECT IDENTIFIER  ::= { ruijieFitApMibModule 0 }
+--**************************************************
+--* apRuijieTrapObjects begins * 
+--**************************************************
+ruijieWIDSIllegalAlarmTrap NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieWIDSSuspiciousType,
+        ruijieWIDSSuspiciousDeviceMac,
+        ruijieWIDSSuspiciousDeviceExtensionInfo
+    }
+    STATUS  current
+    DESCRIPTION
+            " This trap will be sent at once when detecting an suspicious AP."
+    ::= { ruijieAlarmTraps 1 }  
+    
+ruijieTelMtWorkModeChgTrap    NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieAPCurrentPMMode,
+        ruijieChgWorkModeAPMac
+    }
+    STATUS  current
+    DESCRIPTION
+            " This trap will be sent when the ap monitor workMode Change."
+    ::= { ruijieAlarmTraps 2 }    
+
+    
+ruijieAttackAlarm   NOTIFICATION-TYPE
+		OBJECTS {
+        ruijieAttackType,
+        ruijieAttackCilentIP,
+        ruijieAttackCilentExternInfo
+    }
+    STATUS  current
+    DESCRIPTION
+            " This trap will be sent when Attack has Appeared ."
+    ::= { ruijieAlarmTraps 4 }         
+----------------------------------------------------
+----------------------------------------------------
+ruijieWIDSSuspiciousType  OBJECT-TYPE
+    SYNTAX      DisplayString  (SIZE(1..40))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " Suspicious ap type , eg: nonlicet AP   or disturb AP."
+    ::= { ruijieAlarmTrapsObjects 1 }
+
+ruijieWIDSSuspiciousDeviceMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " The macaddress of the suspicious device."
+    ::= { ruijieAlarmTrapsObjects 2 }
+
+ruijieWIDSSuspiciousDeviceExtensionInfo OBJECT-TYPE
+    SYNTAX      DisplayString  (SIZE(1..40))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " The information left for the future extension."
+    ::= { ruijieAlarmTrapsObjects 3 }  
+    
+ruijieAPCurrentPMMode     OBJECT-TYPE
+    SYNTAX      DisplayString  (SIZE(1..40))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " The information for the current ap monitor workMode ."
+    ::= { ruijieAlarmTrapsObjects 4 }        
+    
+ruijieChgWorkModeAPMac  OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " The macaddress of the ap device."
+    ::= { ruijieAlarmTrapsObjects 7 }  
+    
+ruijieAttackType  OBJECT-TYPE
+    SYNTAX      DisplayString  (SIZE(1..40))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " The attack type string ."
+    ::= { ruijieAlarmTrapsObjects 8 } 
+    
+ruijieAttackCilentIP OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            " The ipaddress of the attack client."
+    ::= { ruijieAlarmTrapsObjects 9 }
+    
+ruijieAttackCilentExternInfo  OBJECT-TYPE
+    SYNTAX      DisplayString  (SIZE(1..40))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " The attack extern info string ."
+    ::= { ruijieAlarmTrapsObjects 10 }   
+   
+--**************************************************
+--* apRuijieTrapObjects ends * 
+--**************************************************
+ruijieSystemInfoConfigObjects     OBJECT IDENTIFIER  ::= { ruijieFitApMibModule 1 }
+ruijieDomain   OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The Product Domain."
+    ::= { ruijieSystemInfoConfigObjects 1 }
+    
+ruijiePhySeparatedEnable   OBJECT-TYPE
+    SYNTAX INTEGER {
+          off(0),
+          on(1)
+    }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "virtual phy separated enable config ,0:off 1:on."
+    ::= { ruijieSystemInfoConfigObjects 2 }      
+    
+ruijieForfendDosAttackEnable   OBJECT-TYPE
+    SYNTAX INTEGER {
+          off(0),
+          on(1)
+    }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "Forfend DOS Attack config ,0:off 1:on."
+    ::= { ruijieSystemInfoConfigObjects 3 } 
+    
+ruijieAcTrafficLoadBalancing OBJECT-TYPE
+    SYNTAX TruthValue 
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION         
+        " AC Traffic Load Balancing enable. "
+    ::= { ruijieSystemInfoConfigObjects 4 }  
+    
+ruijieAcTrafficLoadBalanceThreshold    OBJECT-TYPE
+    SYNTAX Integer32 
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION         
+        " AC Traffic Load Balancing Threshold value . "
+    ::= { ruijieSystemInfoConfigObjects 5 }  
+    
+ruijieAcTrafficOtherAPThresholdValue   OBJECT-TYPE
+    SYNTAX Integer32 
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION         
+        " other AP Traffic Threshold value . "
+    ::= { ruijieSystemInfoConfigObjects 6 }    
+
+ruijieAcAPWIDSScanningMode   OBJECT-TYPE
+    SYNTAX INTEGER 
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION         
+        " config AP WIDS scanning mode , 
+        0: all channel scanning  1: auto select channel scanning . "
+    ::= { ruijieSystemInfoConfigObjects 7 }  
+    
+ruijieAcAPLegitimateMode    OBJECT-TYPE
+    SYNTAX INTEGER 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION         
+        " config AP Legitimate Mode value 
+         0:legal ap 1: Illegal ap 2: Disturb AP . "
+    ::= { ruijieSystemInfoConfigObjects 8 }    
+    
+ruijieAcAPTreatMode     OBJECT-TYPE
+    SYNTAX INTEGER 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION         
+        " config Illegal AP Process mode 0:DOS attrack  1: disturb AP. "
+    ::= { ruijieSystemInfoConfigObjects 9 }  
+    
+ruijieAcAssociationFailureTotalTimes  OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The total times the association fails on AC."
+    ::= { ruijieSystemInfoConfigObjects 10 }
+    
+ruijieAcAirIfRxTotalDataFrams  OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The air interface total Rx Data Farms on AC."
+    ::= { ruijieSystemInfoConfigObjects 11 }   
+
+ruijieAcAirIfTxTotalDataFrams  OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The air interface total Tx Data Farms on AC."
+    ::= { ruijieSystemInfoConfigObjects 12 }  
+    
+ruijieAcAirIfTxTotalLostFrams  OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The air interface total Tx Losted Data Farms on AC."
+    ::= { ruijieSystemInfoConfigObjects 13 } 
+    
+ruijieAcAirIfTxAssociateFrams   OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The air interface total Tx Associate  Farms on AC."
+    ::= { ruijieSystemInfoConfigObjects 14 } 
+    
+ruijieAcAirIfRxAssociateFrams   OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The air interface total Rx Associate  Farms on AC."
+    ::= { ruijieSystemInfoConfigObjects 15 } 
+ 
+ruijieAcAirIfBeaconTotalFrams  OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The air interface total Beacon Farms on AC."
+    ::= { ruijieSystemInfoConfigObjects 16 } 
+    
+ruijieAcAirIfRxTotalDataBytes   OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The air interface total Rx right Data Bytes on AC."
+    ::= { ruijieSystemInfoConfigObjects 17 }   
+    
+ruijieAcAirIfTxTotalDataBytes   OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The air interface total Tx right Data Bytes on AC."
+    ::= { ruijieSystemInfoConfigObjects 18 } 
+    
+ruijieAcAirRxFlux   OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The air interface Uplink Flux  on AC."
+    ::= { ruijieSystemInfoConfigObjects 19 }               
+    
+ruijieAcAirTxFlux   OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The air interface Downlink Flux  on AC."
+    ::= { ruijieSystemInfoConfigObjects 20 }  
+        
+    
+--*******************************************
+--   apAPInfoConfigTable starts
+--******************************************* 
+ruijieInfoConfigObjects  OBJECT IDENTIFIER  ::= { ruijieFitApMibModule 2 } 
+ruijieInfoConfigTable  OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieApInfoConfigTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "ap configuration Info table."
+    ::={ ruijieInfoConfigObjects 1 } 
+    
+ruijieInfoConfigTableEntry    OBJECT-TYPE
+    SYNTAX  RuijieApInfoConfigTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "ap configuration Info table."
+    INDEX   { ruijieApMacAddr }
+    ::= { ruijieInfoConfigTable 1 }    
+    
+RuijieApInfoConfigTableEntry  ::=
+    SEQUENCE {
+        ruijieAcAPWIDSWorkMode              INTEGER
+    }  
+    
+ruijieAcAPWIDSWorkMode  OBJECT-TYPE
+    SYNTAX INTEGER 
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION         
+        " config AP WIDS work mode, 0: WIDS disabled  1:only support monitor 
+        2:support AP monotor and access . "
+    ::= { ruijieInfoConfigTableEntry 1 }       
+--*******************************************
+--   apAPInfoConfigTable ends
+--*******************************************          
+
+ruijieStationConfigObjects        OBJECT IDENTIFIER  ::= { ruijieFitApMibModule 4 } 
+--**************************************************
+--* apapAC Station CONFIG starts * 
+--**************************************************
+ruijieConfigStaInfoTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieApConfigStaInfoTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "AC Config Station."
+    ::={ ruijieStationConfigObjects 1 }
+
+ruijieConfigStaInfoTableEntry OBJECT-TYPE
+    SYNTAX  RuijieApConfigStaInfoTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "AC Config AP Bandwith max."
+    INDEX   { ruijieStaMacAddr }
+    ::= { ruijieConfigStaInfoTable 1 }
+    
+RuijieApConfigStaInfoTableEntry ::=
+    SEQUENCE {
+    		ruijieACconfigAPBandwith         Integer32
+    }  
+
+ruijieACconfigAPBandwith   OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "AC Config AP Bandwith max."
+    ::= { ruijieConfigStaInfoTableEntry 1 }  
+--**************************************************
+--* apapAC Station CONFIG ends * 
+--**************************************************    
+
+--apWlanIdSecurityCfgObjects        OBJECT IDENTIFIER  ::= { ruijieFitApMibModule 5 } 
+
+--**************************************************
+--* apapAC WlanIdSecurity CONFIG starts * 
+--**************************************************  
+--apSecurityCfgTable OBJECT-TYPE
+--    SYNTAX SEQUENCE OF ApSecurityCfgTableEntry
+--    MAX-ACCESS not-accessible
+--    STATUS current
+--    DESCRIPTION
+--      "AP security  config."
+--    ::={ apWlanIdSecurityCfgObjects 1 }
+
+--apSecurityCfgTableEntry OBJECT-TYPE
+--    SYNTAX  ApSecurityCfgTableEntry
+--    MAX-ACCESS  not-accessible
+--    STATUS  current
+--    DESCRIPTION
+--        "AP security  config."
+--    INDEX   { ruijiegWlanId }
+--    ::= { apSecurityCfgTable 1 }
+    
+--ApSecurityCfgTableEntry ::=
+--    SEQUENCE {
+--    		apsecurityMode                        INTEGER,       in china mobile node ApSSIDConfigTableEntry 
+--    		apAuthenMode                          INTEGER,       in china mobile node apSSIDConfigTableEntry
+--    		apSecurityCiphers                     INTEGER,       in china mobile node apSSIDConfigTableEntry
+--    		apWEPCipherKeyIndex                   INTEGER,       in china mobile node apSecurityConfigTableEntry
+--        apWEPCipherKeyValue                   DisplayString, in china mobile node apSecurityConfigTableEntry
+--        apWEPCipherKeyCharType                INTEGER,       in china mobile node apSecurityConfigTableEntry
+--        apPSKCipherKeyValue                   DisplayString, in china mobile node apSecurityConfigTableEntry
+--        apPSKCipherKeyCharType                INTEGER,       in china mobile node apSecurityConfigTableEntry
+--        apWAPIASIPAddress                     IpAddress,     in china mobile node apSecurityConfigTableEntry
+--        apWAPIIsInstalledCer                  TruthValue,    in china mobile node apSecurityConfigTableEntry
+--        apWAPIConfigVersion                   Integer32,     in china mobile node apWAPIExternInfoConfigTableEntry
+--        apWAPIControlledAuthControl           TruthValue,    in china mobile node apWAPIExternInfoConfigTableEntry
+--        apWAPIControlledPortControl           INTEGER,       in china mobile node apWAPIExternInfoConfigTableEntry
+--        apWAPIOptionImplemented               TruthValue,    in china mobile node apWAPIExternInfoConfigTableEntry
+--        apWAPIPreauthenticationImplemented    TruthValue,
+--        apWAPIEnabled                         TruthValue,
+--        apWAPIPreauthEnabled                  TruthValue,
+--        apWAPIUnicastKeysSupported            Unsigned32,
+--        apWAPIUnicastRekeyMethod              INTEGER,
+--        apWAPIUnicastRekeyTime                Unsigned32,
+--        apWAPIUnicastRekeyPackets             Unsigned32,
+--        apWAPIMulticastCipher                 OCTET STRING,
+--        apWAPIMulticastRekeyMethod            INTEGER,
+--        apWAPIMulticastRekeyTime              Unsigned32,
+--        apWAPIMulticastRekeyPackets  	        Unsigned32,
+--        apWAPIMulticastRekeyStrict  	        TruthValue,
+--        apWAPIPSKValue 	                      OCTET STRING,
+--        apWAPICertificateUpdateCount 	        Unsigned32,
+--        apWAPIUnicastUpdateCount  	          Unsigned32,
+--        apWAPIMulticastCipherSize 	          Unsigned32,
+--        apWAPIBKReauthThreshold 	            Unsigned32,
+--        apWAPISATimeout 	                    Unsigned32,
+--        apWAPIAuthSuiteSelected 	            OCTET STRING,
+--        apWAPIUnicastCipherSelected 	        OCTET STRING,
+--        apWAPIMulticastCipherSelected 	      OCTET STRING,
+--        apWAPIBKIDUsed 	                      OCTET STRING,
+--        apWAPIAuthSuiteRequested 	            OCTET STRING,
+--        apWAPIUnicastCipherRequested 	        OCTET STRING,
+--        apWAPIMulticastCipherRequested 	      OCTET STRING,
+--        apWAPIUnicastCipher                   OCTET STRING,
+--        apWAPIUnicastCipherEnabled            TruthValue,
+--        apWAPIUnicastCipherSize               Unsigned32,
+--        apWAPIAuthenticationSuite             OCTET STRING,
+--        apWAPIAuthenticationSuiteEnabled      TruthValue      in china mobile node apWAPIExternInfoConfigTableEntry
+--    }  
+        
+--**************************************************
+--* apapAC Security CONFIG ends * 
+--**************************************************  
+--**************************************************
+--* apapAirIfInfoStatisticsTable starts * 
+--************************************************** 
+ruijieAirIfStatisticsObjects     OBJECT IDENTIFIER  ::= { ruijieFitApMibModule 6 }
+ruijieAirIfInfoStatisticsTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieApAirIfInfoStatisticsTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "get air interface parameters statistics."
+    ::={ ruijieAirIfStatisticsObjects 1 }
+  
+ruijieAirIfInfoStatisticsTableEntry OBJECT-TYPE
+    SYNTAX  RuijieApAirIfInfoStatisticsTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "get  AP Associa Fail times "
+    INDEX   { ruijieApgWlanId,ruijieApMacAddr }
+    ::= { ruijieAirIfInfoStatisticsTable 1 }
+
+RuijieApAirIfInfoStatisticsTableEntry ::=
+    SEQUENCE {
+       ruijieRxTotalDataFrams     Counter32,
+       ruijieTxTotalDataFrams     Counter32,
+       ruijieTxLostDataFrams      Counter32,   
+       ruijieTxAssociateFrams     Counter32,
+       ruijieRxAssociateFrams     Counter32,
+       ruijieBeaconFrams          Counter32,
+       ruijieRxTotalDataBytes     Counter32,
+       ruijieTxTotalDataBytes     Counter32,
+       ruijieRESUtilization       INTEGER
+    }
+    
+ruijieRxTotalDataFrams  OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap total Rx Data Frams."
+    ::= { ruijieAirIfInfoStatisticsTableEntry 1 }  
+    
+ruijieTxTotalDataFrams   OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap total Tx Data Frams."
+    ::= { ruijieAirIfInfoStatisticsTableEntry 2 }  
+    
+ruijieTxLostDataFrams   OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap total Tx Lost Data Frams."
+    ::= { ruijieAirIfInfoStatisticsTableEntry 3 }   
+    
+ruijieTxAssociateFrams  OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap total Tx Associate Frams."
+    ::= { ruijieAirIfInfoStatisticsTableEntry 4 } 
+    
+ruijieRxAssociateFrams   OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap total Rx Associate Frams."
+    ::= { ruijieAirIfInfoStatisticsTableEntry 5 }    
+    
+ruijieBeaconFrams    OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap Beacon Total Frams."
+    ::= { ruijieAirIfInfoStatisticsTableEntry 6 }  
+    
+ruijieRxTotalDataBytes   OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap total Rx Data Bytes."
+    ::= { ruijieAirIfInfoStatisticsTableEntry 7 }  
+    
+ruijieTxTotalDataBytes   OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap total Tx Data Bytes."
+    ::= { ruijieAirIfInfoStatisticsTableEntry 8 }    
+    
+ruijieRESUtilization   OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap Resource Utilization."
+    ::= { ruijieAirIfInfoStatisticsTableEntry 9 }
+---------------------------------------------------------
+---------------------------------------------------------    
+--**************************************************
+--* apAirIfInfoStatisticsTable starts * 
+--************************************************** 
+ruijieAirIfTxResendDataTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieApAirIfTxResendDataTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "get air interface Resend Data frames."
+    ::={ ruijieAirIfStatisticsObjects 2 }
+    
+ruijieAirIfTxResendDataTableEntry OBJECT-TYPE
+    SYNTAX  RuijieApAirIfTxResendDataTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "get air interface Resend Data frames"
+    INDEX   { ruijieStaMacAddr }
+    ::= { ruijieAirIfTxResendDataTable 1 }
+
+RuijieApAirIfTxResendDataTableEntry ::=
+    SEQUENCE {
+          ruijieStaResendDataFrams  Counter32
+    }   
+   
+ruijieStaResendDataFrams    OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "station total Resend Data Frams."
+    ::= { ruijieAirIfTxResendDataTableEntry 1 }
+    
+            
+--**************************************************
+--* apapAirIfInfoStatisticsTable ends * 
+--************************************************** 
+
+--**************************************************
+--* apTermServiceStatistics starts * 
+--************************************************** 
+
+ruijieTermServiceStatistics              OBJECT IDENTIFIER  ::= { ruijieFitApMibModule 7 }
+ruijieTermServiceStatisticsWithSSID      OBJECT IDENTIFIER  ::= { ruijieTermServiceStatistics 1 } 
+ruijieTermServiceStatisticsWithAP        OBJECT IDENTIFIER  ::= { ruijieTermServiceStatistics 2 } 
+ruijieTermServiceSTatisticsWithStation   OBJECT IDENTIFIER  ::= { ruijieTermServiceStatistics 3 } 
+
+ruijieTermServiceStaticWithSSIDTable  OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieApTermServiceStaticWithSSIDTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "get Term Service Statistics With SSID."
+    ::={ ruijieTermServiceStatisticsWithSSID 1 }
+  
+ruijieTermServiceStaticWithSSIDTableEntry OBJECT-TYPE
+    SYNTAX  RuijieApTermServiceStaticWithSSIDTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "get Term Service Statistics With SSID"
+    INDEX   { ruijieApgWlanId }
+    ::= { ruijieTermServiceStaticWithSSIDTable 1 }
+
+RuijieApTermServiceStaticWithSSIDTableEntry ::=
+    SEQUENCE { 
+           ruijieTotalUserNum                                INTEGER,  
+           ruijieCurrentUserNum                              INTEGER,  
+           ruijieStaReqAccessTimes                           INTEGER,
+           ruijieRspStaAccessReqTimes                        INTEGER,
+           ruijieStaAccessSucessTimes                        INTEGER,
+           ruijieIneffiLinkVerifyFailTime                    INTEGER,
+           ruijieTimeoutLinkVerifyFailTime                   INTEGER,
+           ruijieInefficiencyLinkVerifyFailTime              INTEGER,
+           ruijieOtherReasonLinkVerifyFailTime               INTEGER,
+           ruijieIneffiAssociationFailTime                   INTEGER,
+           ruijieTimeoutAssociationFailTime                  INTEGER,
+           ruijieInefficiencyAssociationFailTime             INTEGER,
+           ruijieOtherReasonAssociationFailTime              INTEGER,
+           ruijieTotalReassociationAtmptTimes                INTEGER,
+           ruijieTotalReassociationSuccessTimes              INTEGER,
+           ruijieIneffiReassociationFailTime                 INTEGER,
+           ruijieTimeoutReassociationFailTime                INTEGER,
+           ruijieInefficiencyReassociationFailTime           INTEGER,
+           ruijieOtherReasonReassociationFailTime            INTEGER,
+           ruijieTotalIdentificationAtmptTimes               INTEGER,
+           ruijieTotalIdentificationSuccessTimes             INTEGER,
+           ruijiePwdErrorIdentifyFailTime                    INTEGER,
+           ruijieIneffiIdentificationFailTime                INTEGER,
+           ruijieTimeoutIdentificationFailTime               INTEGER,
+           ruijieInefficiencyIdentificationFailTime          INTEGER,
+           ruijieOtherReasonIdentificationFailTime           INTEGER,
+           ruijieTotalRemoveLinkVerifyFailTimes              INTEGER,
+           ruijieLeaveAPCoverageRemoveLinkVerifyFailTimes    INTEGER,
+           ruijieInefficiencyRemoveLinkVerifyFailTime        INTEGER,
+           ruijieLinkVerifyFailRemoveLinkVerifyFailTime      INTEGER,
+           ruijieOtherReasonRemoveLinkVerifyFailTime         INTEGER,
+           ruijieTotalRemoveLinkAssociationTimes             INTEGER,
+           ruijieLeaveAPCoverageRemoveAssociationFailTimes   INTEGER,
+           ruijieInefficiencyRemoveAssociationFailTime       INTEGER,
+           ruijieAssociationFailRemoveAssociationFailTime    INTEGER,
+           ruijieOtherReasonRemoveAssociationFailTime        INTEGER         
+    }
+
+ruijieTotalUserNum OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total user number that have connected to the AP."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 1}
+    
+ruijieCurrentUserNum   OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total current user number that have connected to the AP."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 2}  
+    
+ruijieStaReqAccessTimes OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "station request to access to AP times."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 3}    
+
+ruijieRspStaAccessReqTimes  OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap response station access request times."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 4}    
+    
+ruijieStaAccessSucessTimes  OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "sta success to connet to ap times."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 5}      
+
+ruijieIneffiLinkVerifyFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total link verify failure times due to algorithm or transform SN discrepancy."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 6}
+
+ruijieTimeoutLinkVerifyFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total link verify failure times due to timeout."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 7}
+    
+ruijieInefficiencyLinkVerifyFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total link verify failure times due to inefficiency."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 8}
+    
+ruijieOtherReasonLinkVerifyFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total link verify failure times due to other reason."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 9}
+    
+ruijieIneffiAssociationFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total Association failure times due to algorithm or transform SN discrepancy."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 10}
+
+ruijieTimeoutAssociationFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total Association failure times due to timeout."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 11}
+    
+ruijieInefficiencyAssociationFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total Association failure times due to inefficiency."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 12}
+    
+ruijieOtherReasonAssociationFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total Association failure times due to other reason."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 13}
+    
+ruijieTotalReassociationAtmptTimes OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total re-association attempt times."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 14}
+    
+ruijieTotalReassociationSuccessTimes OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total re-association success times."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 15}
+
+ruijieIneffiReassociationFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total Reassociation failure times due to algorithm or transform SN discrepancy."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 16}
+
+ruijieTimeoutReassociationFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total Reassociation failure times due to timeout."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 17}
+    
+ruijieInefficiencyReassociationFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total Reassociation failure times due to inefficiency."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 18}
+    
+ruijieOtherReasonReassociationFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total Reassociation failure times due to other reason."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 19}
+    
+ruijieTotalIdentificationAtmptTimes OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total Identification attempt times."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 20}
+    
+ruijieTotalIdentificationSuccessTimes OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total Identification success times."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 21}
+    
+ruijiePwdErrorIdentifyFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total identification failure times due to password error."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 22}    
+
+ruijieIneffiIdentificationFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total Identification failure times due to algorithm or transform SN discrepancy."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 23}
+
+ruijieTimeoutIdentificationFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total Identification failure times due to timeout."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 24}
+    
+ruijieInefficiencyIdentificationFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total Identification failure times due to inefficiency."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 25}
+    
+ruijieOtherReasonIdentificationFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total Identification failure times due to other reason."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 26}
+    
+ruijieTotalRemoveLinkVerifyFailTimes OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total failure times of removing link verification."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 27} 
+    
+ruijieLeaveAPCoverageRemoveLinkVerifyFailTimes OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total failure times due to leaving AP coverage area."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 28}   
+    
+ruijieInefficiencyRemoveLinkVerifyFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total remove link failure times due to inefficiency."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 29}  
+    
+ruijieLinkVerifyFailRemoveLinkVerifyFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total remove link failure times due to link verify failure."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 30}      
+
+ruijieOtherReasonRemoveLinkVerifyFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total remove link failure times due to other reason."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 31} 
+
+ruijieTotalRemoveLinkAssociationTimes OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total failure times of removing association."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 32}  
+    
+ruijieLeaveAPCoverageRemoveAssociationFailTimes OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total remove association failure times due to leaving AP coverage area."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 33}   
+    
+ruijieInefficiencyRemoveAssociationFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total remove association failure times due to inefficiency."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 34}  
+    
+ruijieAssociationFailRemoveAssociationFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total remove association failure times due to link verify failure."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 35}      
+
+ruijieOtherReasonRemoveAssociationFailTime OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total remove association failure times due to other reason."
+    ::= { ruijieTermServiceStaticWithSSIDTableEntry 36}
+--*************************************************   
+--*************************************************
+ruijieTermServiceStationWithStationTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieTermServiceStationWithStationTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Statistic of user MAC address by SSID."
+    ::= { ruijieTermServiceSTatisticsWithStation 1	 }
+
+ruijieTermServiceStationWithStationTableEntry OBJECT-TYPE
+    SYNTAX RuijieTermServiceStationWithStationTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The entry of apTermServiceStationWithStationTable."
+    INDEX
+    { ruijieApgWlanId,ruijieStaMacAddr}
+    ::= { ruijieTermServiceStationWithStationTable 1 }
+
+RuijieTermServiceStationWithStationTableEntry ::=
+    SEQUENCE {
+        ruijieStaAssociateTime         Counter32,
+        ruijieRxStaDataFrams           Counter32,
+        ruijieRXStaErrorFrams          Counter32,
+        ruijieTxStaDataFrams           Counter32,
+        ruijieReSendDataFrams          Counter32,
+        ruijieStaRxAvgSpeed            INTEGER,
+        ruijieStaTxAvgSpeed            INTEGER,
+        ruijieStaThroughput            INTEGER,
+        ruijieStaSignalStrength        INTEGER,
+        ruijieStaSignalNoise           INTEGER
+    } 
+  
+   
+ruijieStaAssociateTime  OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "station Associate to ap time ,unit is minute."
+    ::= { ruijieTermServiceStationWithStationTableEntry 2}   
+    
+ruijieRxStaDataFrams   OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap Rx station Data Frames ."
+    ::= { ruijieTermServiceStationWithStationTableEntry 3}   
+    
+ruijieRXStaErrorFrams   OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap Rx station Error Frames ."
+    ::= { ruijieTermServiceStationWithStationTableEntry 4} 
+    
+ruijieTxStaDataFrams    OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap Tx station Data Frames ."
+    ::= { ruijieTermServiceStationWithStationTableEntry 5}     
+    
+ruijieReSendDataFrams    OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap Resend station Data Frames ."
+    ::= { ruijieTermServiceStationWithStationTableEntry 6}    
+    
+ruijieStaRxAvgSpeed OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap Send  to station average DATA speed ."
+    ::= { ruijieTermServiceStationWithStationTableEntry 7}  
+    
+ruijieStaTxAvgSpeed   OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap Send  from station average DATA speed ."
+    ::= { ruijieTermServiceStationWithStationTableEntry 8}  
+    
+ruijieStaThroughput  OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "station Throughput ."
+    ::= { ruijieTermServiceStationWithStationTableEntry 9}  
+    
+ruijieStaSignalStrength  OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap receive station signal strength ."
+    ::= { ruijieTermServiceStationWithStationTableEntry 10}   
+    
+ruijieStaSignalNoise  OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap receive station signal noise ."
+    ::= { ruijieTermServiceStationWithStationTableEntry 11}                    
+--*************************************************
+
+---------------------------------------------------
+---------------------------------------------------
+ruijieTermServiceStaticWithAPTable  OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieTermServiceStaticWithAPTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "get Term Service Statistics With AP."
+    ::={ ruijieTermServiceStatisticsWithAP 1 }
+  
+ruijieTermServiceStaticWithAPTableEntry OBJECT-TYPE
+    SYNTAX  RuijieTermServiceStaticWithAPTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "get Term Service Statistics With AP"
+    INDEX   { ruijieApMacAddr }
+    ::= { ruijieTermServiceStaticWithAPTable 1 }
+
+RuijieTermServiceStaticWithAPTableEntry ::=
+    SEQUENCE {     
+          ruijieUserAccumulateTime     Counter32,
+          ruijieAssociaFailTimes       Counter32
+          
+    }
+ruijieUserAccumulateTime OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total accumulation time of all users that have connected to the AP."
+    ::= { ruijieTermServiceStaticWithAPTableEntry 1}
+    
+ruijieAssociaFailTimes   OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Total Associate Fail times for the AP."
+    ::= { ruijieTermServiceStaticWithAPTableEntry 2}  
+--**************************************************
+--* apTermServiceStatistics ends * 
+--**************************************************
+
+ruijieDOT11WIDSParamObjects     OBJECT IDENTIFIER  ::= { ruijieFitApMibModule 8 }
+--**************************************************
+--* apDot11WIDSInfoTable begins
+--**************************************************
+ruijieDot11WIDSInfoTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieDot11WIDSInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "The table used to acac the configuration information of ac/ac."
+    ::={ ruijieDOT11WIDSParamObjects 1 }
+
+ruijieDot11WIDSInfoEntry OBJECT-TYPE
+    SYNTAX RuijieDot11WIDSInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "The entry of the table used to acac the configuration information of ac/ac."
+    INDEX { ruijieDot11WIDSLocalIndex }
+    ::={ ruijieDot11WIDSInfoTable 1 }
+
+RuijieDot11WIDSInfoEntry ::=
+    SEQUENCE {
+        ruijieDot11WIDSLocalIndex                       INTEGER,
+        ruijieDot11WIDSpermittedSSID                    DisplayString,
+        ruijieDot11WIDSpermitBSSID                      MacAddress,
+        ruijieDot11WIDSDeviceOUI                        DisplayString,
+        ruijieDot11WIDSSuspiciousAPBSS                  MacAddress,
+        ruijieDot11WIDSSuspiciousAPCount                INTEGER,
+        ruijieDot11WIDSMomentFirstTimeDetectedSusAP     TimeTicks,
+        ruijieDot11WIDSMomentLastTimeDetectedSusAP      TimeTicks,
+        ruijieDot11WIDSSuspiciousAPSSID                 DisplayString,
+        ruijieDot11WIDSSuspiciousAPMaxSignalStrength    INTEGER,
+        ruijieDot11WIDSSuspiciousAPUsingChannel         INTEGER,
+        ruijieDot11WIDSSuspiciousAPFrameEncrption       INTEGER,
+        ruijieDot11WIDSSuspiciousAPNeedsDealingTag      TruthValue,
+        ruijieDot11WIDSSuspiciousAPIgnoredTag           TruthValue,
+        ruijieDot11WIDSSuspiciousSTAMAC                 MacAddress,
+        ruijieDot11WIDSAPCountDetectingSuspiciousSTA    INTEGER,
+        ruijieDot11WIDSMomentFirstTimeDetectedSusSTA    TimeTicks,
+        ruijieDot11WIDSMomentLastTimeDetectedSusSTA     TimeTicks,
+        ruijieDot11WIDSBSSIDSuspiciousSTAAccessing      MacAddress,
+        ruijieDot11WIDSSuspiciousSTAMaxSignalStrength   INTEGER,
+        ruijieDot11WIDSSuspiciousSTAUsingChannel        INTEGER,
+        ruijieDot11WIDSSuspiciousSTAWorksInAdhocMode    TruthValue,
+        ruijieDot11WIDSSuspiciousSTANeedsDealingTag     TruthValue,
+        ruijieDot11WIDSSuspiciousSTAIgnoredTag          TruthValue,
+        ruijieDot11WIDSFloodAttackDetectSwitch          TruthValue,
+        ruijieDot11WIDSSpoofAttackDetectSwitch          TruthValue,
+        ruijieDot11WIDSWeakIVDetectSwitch               TruthValue,
+        ruijieDot11WIDSClearIllegalEquipmentHistroyTag  TruthValue,
+        ruijieDot11WIDSClearAttackDetectionHistroyTag   TruthValue,
+        ruijieDot11WIDSClearAttackDetectionStaticsTag   TruthValue
+    }
+    
+ruijieDot11WIDSLocalIndex  OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        " The dot11 wids local index num ."
+    ::= { ruijieDot11WIDSInfoEntry 1 }
+
+ruijieDot11WIDSpermittedSSID OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The ssid permitted to access the service."
+    ::= { ruijieDot11WIDSInfoEntry 2 }
+
+ruijieDot11WIDSpermitBSSID OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The bssid permitted to access the service."
+    ::= { ruijieDot11WIDSInfoEntry 3 }
+
+ruijieDot11WIDSDeviceOUI OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The OUI whose device is permitted to provide the service."
+    ::= { ruijieDot11WIDSInfoEntry 4 }
+
+ruijieDot11WIDSSuspiciousAPBSS OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The BSS MAC of the Suspicious AP."
+    ::= { ruijieDot11WIDSInfoEntry 5 }
+
+ruijieDot11WIDSSuspiciousAPCount OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The count of the Suspicious AP."
+    ::= { ruijieDot11WIDSInfoEntry 6 }
+
+ruijieDot11WIDSMomentFirstTimeDetectedSusAP OBJECT-TYPE
+    SYNTAX  TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The moment when the AP is detected as the Suspicious AP at the first time."
+    ::= { ruijieDot11WIDSInfoEntry 7 }
+
+ruijieDot11WIDSMomentLastTimeDetectedSusAP OBJECT-TYPE
+    SYNTAX  TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The moment when the AP is detected as the Suspicious AP at the last time."
+    ::= { ruijieDot11WIDSInfoEntry 8 }
+
+ruijieDot11WIDSSuspiciousAPSSID OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The SSID of the Suspicious AP."
+    ::= { ruijieDot11WIDSInfoEntry 9 }
+
+ruijieDot11WIDSSuspiciousAPMaxSignalStrength OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The max signal strength of the Suspicious AP."
+    ::= { ruijieDot11WIDSInfoEntry 10 }
+
+ruijieDot11WIDSSuspiciousAPUsingChannel OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The channel the Suspicious AP is in."
+    ::= { ruijieDot11WIDSInfoEntry 11 }
+
+ruijieDot11WIDSSuspiciousAPFrameEncrption OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The frame encrption of the Suspicious AP."
+    ::= { ruijieDot11WIDSInfoEntry 12 }
+
+ruijieDot11WIDSSuspiciousAPNeedsDealingTag OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The tag telling whether it needs to deal the Suspicious AP."
+    ::= { ruijieDot11WIDSInfoEntry 13 }
+
+ruijieDot11WIDSSuspiciousAPIgnoredTag OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The tag telling whether to ignore the Suspicious AP."
+    ::= { ruijieDot11WIDSInfoEntry 14 }
+
+ruijieDot11WIDSSuspiciousSTAMAC OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The MAC of the the Suspicious STA."
+    ::= { ruijieDot11WIDSInfoEntry 15 }
+
+ruijieDot11WIDSAPCountDetectingSuspiciousSTA OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The AP count which is detecting the Suspicious STA."
+    ::= { ruijieDot11WIDSInfoEntry 16 }
+
+ruijieDot11WIDSMomentFirstTimeDetectedSusSTA OBJECT-TYPE
+    SYNTAX  TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The moment when the STA is detected as the Suspicious STA at the first time."
+    ::= { ruijieDot11WIDSInfoEntry 17 }
+
+ruijieDot11WIDSMomentLastTimeDetectedSusSTA OBJECT-TYPE
+    SYNTAX  TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The moment when the AP is detected as the Suspicious AP at the last time."
+    ::= { ruijieDot11WIDSInfoEntry 18 }
+
+ruijieDot11WIDSBSSIDSuspiciousSTAAccessing OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The BSSID which the the Suspicious STA is trying to access."
+    ::= { ruijieDot11WIDSInfoEntry 19 }
+
+ruijieDot11WIDSSuspiciousSTAMaxSignalStrength OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The max signal strength of the Suspicious STA."
+    ::= { ruijieDot11WIDSInfoEntry 20 }
+
+ruijieDot11WIDSSuspiciousSTAUsingChannel OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The channel the Suspicious sta is in."
+    ::= { ruijieDot11WIDSInfoEntry 21 }
+
+ruijieDot11WIDSSuspiciousSTAWorksInAdhocMode OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The tag whether the Suspicious STA is working in the Ad hoc mode."
+    ::= { ruijieDot11WIDSInfoEntry 22 }
+
+
+ruijieDot11WIDSSuspiciousSTANeedsDealingTag OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The tag telling whether it needs to deal the Suspicious STA."
+    ::= { ruijieDot11WIDSInfoEntry 23 }
+
+ruijieDot11WIDSSuspiciousSTAIgnoredTag OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " The tag telling whether to ignore the Suspicious STA."
+    ::= { ruijieDot11WIDSInfoEntry 24 }
+
+ruijieDot11WIDSFloodAttackDetectSwitch OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " This tag tells whether to enable flooding attack detecting."
+    ::= { ruijieDot11WIDSInfoEntry 25 }
+
+ruijieDot11WIDSSpoofAttackDetectSwitch OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " This tag tells whether to enable spoof attack detecting."
+    ::= { ruijieDot11WIDSInfoEntry 26 }
+
+ruijieDot11WIDSWeakIVDetectSwitch OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "This tag tells whether to enable weak IV detecting."
+    ::= { ruijieDot11WIDSInfoEntry 27 }
+
+ruijieDot11WIDSClearIllegalEquipmentHistroyTag OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " This tag tells whether to clear the illegal equipment history."
+    ::= { ruijieDot11WIDSInfoEntry 28 }
+
+ruijieDot11WIDSClearAttackDetectionHistroyTag OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " This tag tells whether to clear the attack detection history."
+    ::= { ruijieDot11WIDSInfoEntry 29 }
+
+ruijieDot11WIDSClearAttackDetectionStaticsTag OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " This tag tells whether to clear the attack detection statics."
+    ::= { ruijieDot11WIDSInfoEntry 30 }
+
+--**************************************************
+--* apDot11WIDSInfoTable ends
+--**************************************************
+--**************************************************
+--* apDot11LawlessApInfoTable   starts
+--**************************************************
+ruijieDot11LawlessApInfoTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieDot11LawlessApInfoTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "The table used to display Lawless AP info t"
+    ::={ ruijieDOT11WIDSParamObjects 2 }
+
+ruijieDot11LawlessApInfoTableEntry OBJECT-TYPE
+    SYNTAX RuijieDot11LawlessApInfoTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "The table used to display Lawless AP info "
+    INDEX { ruijieLawlessAPIndex }
+    ::={ ruijieDot11LawlessApInfoTable 1 }
+
+RuijieDot11LawlessApInfoTableEntry ::=
+    SEQUENCE {
+          ruijieLawlessAPIndex               INTEGER,   
+          ruijieLawlessAPSignalStrength      Integer32,
+          ruijieLawlessAPSignalSNR           Integer32,
+          ruijieLawlessAPChannelNum          INTEGER,
+          ruijieLawlessAPSSIDName            DisplayString,   
+          ruijieLawlessAPMacaddr             MacAddress,
+          ruijieLawlessAPTreatMode           INTEGER
+                        
+    }
+    
+ruijieLawlessAPIndex     OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        " This is Lawless AP local Index number ."
+    ::= { ruijieDot11LawlessApInfoTableEntry 1 }
+    
+ruijieLawlessAPSignalStrength    OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Lawless AP signal Strength ."
+    ::= { ruijieDot11LawlessApInfoTableEntry 2 } 
+    
+ruijieLawlessAPSignalSNR   OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Lawless AP signal SNR ."
+    ::= { ruijieDot11LawlessApInfoTableEntry 3 }   
+    
+ruijieLawlessAPChannelNum    OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Lawless AP Channel Number ."
+    ::= { ruijieDot11LawlessApInfoTableEntry 4 }   
+    
+ruijieLawlessAPSSIDName  OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Lawless AP SSID Name display ."
+    ::= { ruijieDot11LawlessApInfoTableEntry 5 }  
+    
+ruijieLawlessAPMacaddr  OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Lawless AP BSSID <MAC_ADDRESS> ."
+    ::= { ruijieDot11LawlessApInfoTableEntry 6 }     
+
+ruijieLawlessAPTreatMode   OBJECT-TYPE
+    SYNTAX  INTEGER 
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Lawless AP Treat mode detail 1: DosAttack state
+          2: disturb User connect to lawless AP ."
+    ::= { ruijieDot11LawlessApInfoTableEntry 7 }     
+         
+--**************************************************
+--* apLawlessApInfoTable   ends
+--**************************************************
+
+--**************************************************
+--* apDot11UndefinedApInfoTable   starts
+--**************************************************
+ruijieDot11UndefinedApInfoTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieDot11UndefinedApInfoTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "The table used to display Undefined AP info t"
+    ::={ ruijieDOT11WIDSParamObjects 3 }
+
+ruijieDot11UndefinedApInfoTableEntry OBJECT-TYPE
+    SYNTAX RuijieDot11UndefinedApInfoTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "The table used to display Undefined AP info "
+    INDEX { ruijieUndefinedAPIndex }
+    ::={ ruijieDot11UndefinedApInfoTable 1 }
+
+RuijieDot11UndefinedApInfoTableEntry ::=
+    SEQUENCE {
+          ruijieUndefinedAPIndex               INTEGER,   
+          ruijieUndefinedAPSignalStrength      Integer32,
+          ruijieUndefinedAPSignalSNR           Integer32,
+          ruijieUndefinedAPChannelNum          INTEGER,
+          ruijieUndefinedAPSSIDName            DisplayString,   
+          ruijieUndefinedAPMacaddr             MacAddress,
+          ruijieUndefinedAPTreatMode           INTEGER
+                        
+    }
+    
+ruijieUndefinedAPIndex     OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        " This is Undefined AP local Index number ."
+    ::= { ruijieDot11UndefinedApInfoTableEntry 1 }
+    
+ruijieUndefinedAPSignalStrength    OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Undefined AP signal Strength ."
+    ::= { ruijieDot11UndefinedApInfoTableEntry 2 } 
+    
+ruijieUndefinedAPSignalSNR   OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Undefined AP signal SNR ."
+    ::= { ruijieDot11UndefinedApInfoTableEntry 3 }   
+    
+ruijieUndefinedAPChannelNum    OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Undefined AP Channel Number ."
+    ::= { ruijieDot11UndefinedApInfoTableEntry 4 }   
+    
+ruijieUndefinedAPSSIDName  OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Undefined AP SSID Name display ."
+    ::= { ruijieDot11UndefinedApInfoTableEntry 5 }  
+    
+ruijieUndefinedAPMacaddr  OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Undefined AP BSSID <MAC_ADDRESS> ."
+    ::= { ruijieDot11UndefinedApInfoTableEntry 6 }     
+
+ruijieUndefinedAPTreatMode   OBJECT-TYPE
+    SYNTAX  INTEGER 
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Undefined AP Treat mode detail 1: DosAttack state
+          2: disturb User connect to lawless AP ."
+    ::= { ruijieDot11UndefinedApInfoTableEntry 7 }     
+         
+--**************************************************
+--* ruijieUndefinedApInfoTable   ends
+--**************************************************
+
+--**************************************************
+--* apDot11LegalityApInfoTable   starts
+--**************************************************
+ruijieDot11LegalityApInfoTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieDot11LegalityApInfoTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "The table used to display Legality AP info t"
+    ::={ ruijieDOT11WIDSParamObjects 4 }
+
+ruijieDot11LegalityApInfoTableEntry OBJECT-TYPE
+    SYNTAX RuijieDot11LegalityApInfoTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "The table used to display Legality AP info "
+    INDEX { ruijieLegalityAPIndex }
+    ::={ ruijieDot11LegalityApInfoTable 1 }
+
+RuijieDot11LegalityApInfoTableEntry ::=
+    SEQUENCE {
+          ruijieLegalityAPIndex               INTEGER,   
+          ruijieLegalityAPSignalStrength      Integer32,
+          ruijieLegalityAPSignalSNR           Integer32,
+          ruijieLegalityAPChannelNum          INTEGER,
+          ruijieLegalityAPSSIDName            DisplayString,   
+          ruijieLegalityAPMacaddr             MacAddress,
+          ruijieLegalityAPTreatMode           INTEGER
+                        
+    }
+    
+ruijieLegalityAPIndex     OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        " This is Legality AP local Index number ."
+    ::= { ruijieDot11LegalityApInfoTableEntry 1 }
+    
+ruijieLegalityAPSignalStrength    OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Legality AP signal Strength ."
+    ::= { ruijieDot11LegalityApInfoTableEntry 2 } 
+    
+ruijieLegalityAPSignalSNR   OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Legality AP signal SNR ."
+    ::= { ruijieDot11LegalityApInfoTableEntry 3 }   
+    
+ruijieLegalityAPChannelNum    OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Legality AP Channel Number ."
+    ::= { ruijieDot11LegalityApInfoTableEntry 4 }   
+    
+ruijieLegalityAPSSIDName  OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Legality AP SSID Name display ."
+    ::= { ruijieDot11LegalityApInfoTableEntry 5 }  
+    
+ruijieLegalityAPMacaddr  OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Legality AP BSSID <MAC_ADDRESS> ."
+    ::= { ruijieDot11LegalityApInfoTableEntry 6 }     
+
+ruijieLegalityAPTreatMode   OBJECT-TYPE
+    SYNTAX  INTEGER 
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " This is Legality AP Treat mode detail 1: DosAttack state
+          2: disturb User connect to lawless AP ."
+    ::= { ruijieDot11LegalityApInfoTableEntry 7 }     
+         
+--**************************************************
+--* ruijieLegalityApInfoTable   ends
+--**************************************************
+
+--**********************************************
+--*  apSSIDListCreateTable starts
+--**********************************************
+--apSSIDConfigObjects              OBJECT IDENTIFIER  ::= { ruijieFitApMibModule 9 }   please see china mobile node ApSSIDListCreateTableEntry
+--apSSIDListCreateTable OBJECT-TYPE
+--    SYNTAX SEQUENCE OF ApSSIDListCreateTableEntry
+--    MAX-ACCESS not-accessible
+--    STATUS current
+--    DESCRIPTION
+--      "The SSID list manegment for ap."
+--    ::={ apSSIDConfigObjects 1 }
+
+--apSSIDListCreateTableEntry OBJECT-TYPE
+--    SYNTAX  ApSSIDListCreateTableEntry
+--    MAX-ACCESS  not-accessible
+--    STATUS  current
+--    DESCRIPTION
+--        "The SSID list manegment for ap"
+--    INDEX   {ruijiegWlanId} 
+--    ::= { apSSIDListCreateTable 1 }
+    
+--ApSSIDListCreateTableEntry ::=
+--    SEQUENCE {
+--         apListBSSIDAddr   MacAddress,
+--         apSSIDRadioNum    INTEGER,
+--         apSSIDApMACaddr   MacAddress
+--    }
+--**********************************************
+--*apSSIDListCreateTable ends
+--**********************************************
+END
+

@@ -1,0 +1,1245 @@
+-- *****************************************************************
+-- ZXR10_CONFIG_COPY_MIB.mib MIB for copying a ZTE router's  config
+--
+-- 2007-02-1 ninggang ZTE corp. 
+--
+-- Copyright (c) 2007 by ZTE corporation. 
+-- All rights reserved.
+-- *****************************************************************
+--
+
+
+ZXR10-CONFIG-COPY-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+        IpAddress, Unsigned32 , Integer32, enterprises
+                FROM SNMPv2-SMI
+        TEXTUAL-CONVENTION, DisplayString, TimeStamp, RowStatus,
+        TruthValue
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+                FROM SNMPv2-CONF
+        Ipv6Address   FROM IPV6-TC;
+
+zxr10ConfigCopyMIB  MODULE-IDENTITY
+        LAST-UPDATED    "201811070000Z"
+        ORGANIZATION    "ZTE Corp."
+        CONTACT-INFO
+                " ZTE Corp."
+        DESCRIPTION
+               "This MIB facilitates writing of configuration files
+                of an SNMP Agent running ZTE's ROS in the following
+                ways: to and from the net, copying running
+                configurations to startup configurations and 
+                vice-versa, and copying a configuration
+                (running or startup) to and from the local file system." 
+        
+        REVISION "201811070000Z"
+        DESCRIPTION
+                "1.Add zxr10CopyProcess and zxr10CopyFinishRemainTime to 
+                 the zxr10CopyTable.
+                2.Add zxr10TFTPCopyProcess and zxr10TFTPCopyFinishRemainTime 
+                 to the zxr10TFTPCopyTable.
+                3.Add zxr10SftpCopyProcess and zxr10SftpCopyFinishRemainTime 
+                 to the zxr10SftpCopyTable."
+
+        
+        REVISION "201807130000Z"
+        DESCRIPTION
+                "Add FTP/SFTP/TFTP IPv6 address and interface."
+        REVISION "201801030000Z"
+        DESCRIPTION 
+                "Modify SFTP SFTPCopyFailCause value." 
+      
+        REVISION "201712210000Z"
+        DESCRIPTION 
+                "Modify SFTP zxr10SftpCopyVrfName and add SFTP zxr10SftpCopyMng." 
+
+        REVISION "201711080000Z"
+        DESCRIPTION 
+                "Add SFTP zxr10SFTPCopyTable." 
+ 
+        REVISION "201508210000Z"
+        DESCRIPTION 
+                "Add TFTP zxr10TFTPCopyTable and zxr10TFTPCopyMIBTraps." 
+
+       REVISION    "201503030000Z" -- Marcy 3, 2013
+       DESCRIPTION  "Adds the ConfigCopyFailCause."  
+
+       REVISION    "201310150000Z" -- October 15, 2013
+       DESCRIPTION
+                "1:Modifies the ConfigCopyFailCause. 
+                2:Modifies the description."                   
+                                                     
+       REVISION    "201309160000Z" -- September 16, 2013
+       DESCRIPTION
+                "1:Adds two variables which are used for file check:
+                - zxr10CopyFileCheckSumType: Specifies the type of file check.
+                - zxr10CopyFileCheckSumString: The key of file check.
+                2:Replaces the description about TFTP with FTP.   
+                3:Adds and modifies the ConfigCopyFailCause."                   
+                
+        REVISION "200702010000Z"
+        DESCRIPTION
+                " Initial created" 
+       ::= { zxr10MGMT 1 }
+
+    zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+    zxr10 OBJECT IDENTIFIER ::= { zte 3}
+    zxr10MGMT OBJECT IDENTIFIER ::= { zxr10 202}
+   
+ConfigCopyProtocol ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+                "The protocol file transfer protocol that should be used
+                to copy the configuration file over the network. If the
+                config file transfer is to occur locally on the SNMP
+                agent, the method of transfer is left upto the 
+                implementation, and is not restricted to the 
+                protocols below."
+        SYNTAX INTEGER {
+                tftp(1),
+                ftp(2)
+        }
+
+ConfigCopyState ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+                "The state of a copy operation.
+                The description of each state is given below:
+                waiting:        only one copy request can run at any time.
+                                A newly activated copy request is placed
+                                in this state if another request has already 
+                                been activated.
+                running:        this state signifies that the copy
+                                request is running.
+                successsful:    the state when a copy request is
+                                successfully completed.
+                failed:         the copy request was unsuccesful."
+        SYNTAX  INTEGER {
+                waiting(1),
+                running(2),
+                successful(3),
+                failed(4)
+        }
+
+ConfigCopyFailCause ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+                "The reason a copy request failed."
+        SYNTAX    INTEGER {
+            unknown(1),             -- Very descriptive.
+            localSourceFileUnavailable(2),
+                                    -- Check your file name/path/permissions.
+            connectionTimeout(3),   -- The network may be overloaded, or the
+                                    -- remote file server may not be responding.
+            insufficientMemory(4),  -- The Agent wasn't able to allocate 
+                                    -- memory for the copy operation.
+            noConfig(5),            -- The agent-config selected as the 
+                                    -- source was non-existant.
+            unsupportedProtocol(6),     -- The protocol is not supported
+                                        -- by the agent.
+            someConfigApplyFailed(7),   -- Config apply failed.
+            localDestFileExist(8),      -- File exists.
+            fileChecksumErr(9),         -- File check failed.
+            ftpLoginFail(10),           -- Login failed.
+            localDestFileCreateErr(11), -- Create file failed.
+            serverFileAccessErr(12),
+                                  -- File not exsit in server or no privileage.
+            serverCancelTrance(13),    -- File transmission aborted.  
+            insufficientStorage(14),   -- File too big or flash insufficient.
+            vrfInvalid(15),            -- VRF name invalid.
+            unsupportedChecksumType(16)  -- The checksum type is not supported. 
+         }
+
+ConfigFileType ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+                "The various types of files on which a copy operation
+                can be performed."
+        SYNTAX INTEGER {
+                networkFile(1), -- file on another network device, e.g.
+                                -- a file-server on the net
+                localFile(2),   -- a file on the local agent, other than
+                                -- startup or running config
+                startupConfig(3),
+                runningConfig(4),
+                version(5)
+        }
+
+ChecksumType ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+                "The various types of file check."
+        SYNTAX INTEGER {
+                none(1),  -- need not check
+                md5(2),   -- check file with MD5 algorithm
+                sha1(3)   -- check file with SHA1 algorithm
+        }
+
+TFTPCopyFailCause ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+            "The reason a copy request failed."
+    SYNTAX    INTEGER {
+        unknown(1),                 -- Very descriptive.
+        vrfInvalid(2),              -- VRF name invalid.
+        serverIPAddressInvalid(3),  -- IP address invalid.
+        localFileUnavailable(4),    -- Check local file name/path/permissions.
+        localDestFileExist(5),      -- File exists.
+        localSourceFileNotExist(6), -- File not exists.
+        localFileOperateError(7),   -- Local file create failed or open error.
+        remotFileOperateError(8),   -- Remot file format error or not found.
+        resourceNotAvailable(9),    -- There is no resource to allocate memory
+                                    -- for the copy operation.
+        netWorkError(10),           -- The network may be overloaded, or the
+                                    -- Remote file server may not be responding.
+        accessViolation(11),        -- Access violation.
+        illegalOperation(12),       -- Illegal TFTP operation.
+        unknownTransferID(13),      -- Unknown transfer ID.
+        insufficientStorage(14),    -- File too big or flash insufficient.
+        someConfigApplyFailed(15),  -- Config apply failed.
+        fileChecksumErr(16),        -- File check failed.
+        unsupportedChecksumType(17), -- The checksum type is not supported. 
+        transmissionAborted(18),     -- File transmission aborted.
+        timeoutOccurred(19),         -- Timeout occurred.
+        noFailCause(255)             -- No fail cause.
+    } 
+    
+SFTPConfigFileType ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+                "The various types of files on which a copy operation
+                can be performed."
+        SYNTAX INTEGER {
+                networkFile(1), -- file on another network device, e.g.
+                localFile(2)    -- a file on the local agent.
+        }
+  
+SFTPCopyFailCause ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+            "The reason a copy request failed."
+    SYNTAX    INTEGER {
+        errUnknown(17),              -- Error unkonwn.
+        vrfInvalid(18),              -- VRF name invalid.
+        localFileUnavailable(19),    -- Check local file name/path/permissions.
+        localDestFileExist(20),      -- File exists.
+        localFileOperateError(21),   -- Please check the file name or file path.
+        localFileOpenError(22),      -- Can't open local file.
+        fileSizeExceedLimit(23),     -- The file size exceeds limit(4G).        
+        resourceAllocFail(24),       -- There is no resource to allocate memory.
+        createSshError(25),          -- Fail to create ssh connection.
+        setSshError(26),             -- Please check the ssh,or connect failed.
+        fileIsTransmit(27),          -- The file is being transmitted.  
+        resourceNotEnough(28),       -- Local resource not enough.
+        sftpLoginFail(29),           -- Login failed.
+        serverFileAccessErr(30),     -- File not exsit in server or no privileage.     
+        inputParaError(31),          -- Input para illegal.
+        transmissionAborted(32),     -- File transmission aborted.
+        copyNoError(255)             -- Copy no error.
+    }
+
+zxr10ConfigCopyMIBObjects OBJECT IDENTIFIER ::= { zxr10ConfigCopyMIB 1 }
+
+zxr10Copy        OBJECT IDENTIFIER ::= { zxr10ConfigCopyMIBObjects 1 }
+
+zxr10CopyTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF Zxr10CopyEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "A table of config-copy requests."
+        ::= { zxr10Copy 1 }
+
+zxr10CopyEntry OBJECT-TYPE
+        SYNTAX Zxr10CopyEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "A config-copy request.
+                A management station wishing to create an entry should
+                first generate a random serial number to be used
+                as the index to this sparse table.  The station should
+                then create the associated instance of the row status
+                and row index objects.  It __MUST__ in the same PDUs, 
+                create an instance of copySourceFileType and copyDestFileType.
+                At least one of the FileTypes must be an agent-config
+                file type (i.e.        startupConfig or runningConfig).
+                If one of the file types is a networkFile, a valid
+                copyServerAddress and copyFileName must be created as well.
+                For a file type of localFile, only a valid fileName needs to
+                be created as an extra parameter.
+
+                It should also modify the default values for the other
+                configuration objects if the defaults are not appropriate.
+                
+                Once the appropriate instance of all the configuration
+                objects have been created, the row status will automatically 
+                be set to active to initiate the request. Note that this entire
+                procedure __MUST__ be initiated via a single set request which
+                specifies a row status of createAndGo as well as specifies
+                valid values for the non-defaulted configuration objects.
+
+                Once the config-copy request has been created (i.e. the
+                copyEntryRowStatus has been made active), the entry
+                cannot be modified - the only operation possible
+                after this is to delete the row.
+
+                Once the request completes, the management station 
+                should retrieve the values of the status objects of 
+                interest, and should then delete the entry.  In order 
+                to prevent old entries from clogging the table, 
+                entries will be aged out, but an entry will never be 
+                deleted within 5 minutes of completing."
+        INDEX { zxr10CopyIndex }
+        ::= { zxr10CopyTable 1 }
+
+Zxr10CopyEntry ::=
+        SEQUENCE {
+                zxr10CopyIndex                       Unsigned32,
+                zxr10CopyProtocol                    ConfigCopyProtocol,
+                zxr10CopySourceFileType              ConfigFileType,
+                zxr10CopyDestFileType                ConfigFileType,
+                zxr10CopyServerAddress               IpAddress,
+                zxr10CopySrcFileName                 DisplayString,
+                zxr10CopyDstFileName                 DisplayString,
+                zxr10CopyUserName                    DisplayString,
+                zxr10CopyUserPassword                DisplayString,
+                zxr10CopyNotificationOnCompletion    TruthValue,
+                zxr10CopyState                       ConfigCopyState,
+                zxr10CopyTimeStarted                 TimeStamp,
+                zxr10CopyTimeCompleted               TimeStamp,
+                zxr10CopyFailCause                   ConfigCopyFailCause,
+                zxr10CopyRowStatus                   RowStatus,
+                zxr10CopyVrfName                     DisplayString,
+                zxr10CopyMng                         TruthValue,
+                zxr10CopyFileCheckSumType            INTEGER,
+                zxr10CopyFileCheckSumString          DisplayString,
+                zxr10CopyServerV6Address             Ipv6Address,
+                zxr10CopyInterface                   DisplayString,
+                zxr10CopyProgress                    Integer32,
+                zxr10CopyFinishRemainTime            TimeStamp
+
+        }
+
+zxr10CopyIndex  OBJECT-TYPE
+        SYNTAX     Unsigned32(1..2147483647)
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "Object which specifies a unique entry in the copyTable.
+            A management station wishing to initiate a config-copy operation
+            should use a random value for this object when creating or
+            modifying an instance of a copyEntry.
+            The RowStatus semantics of the copyEntryRowStatus
+            object will prevent access conflicts."
+        ::= { zxr10CopyEntry 1 }
+
+zxr10CopyProtocol      OBJECT-TYPE
+        SYNTAX     ConfigCopyProtocol
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+                "The protocol to be used for any copy.
+                Will default to FTP if not specified.
+                If the copy operation occurs locally on the SNMP agent
+                (e.g. runningConfigToStartupConfig), this object may
+                be ignored by the implementation."
+        DEFVAL        { ftp }
+        ::= { zxr10CopyEntry 2 }
+
+zxr10CopySourceFileType OBJECT-TYPE
+        SYNTAX     ConfigFileType
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+                "specifies the type of file to copy from. Either the
+                copySourceFileType or the copyDestFileType (or both)
+                must be of type runningConfig or startupConfig. Also,the
+                copySourceFileType must be different from the copyDestFileType.
+        
+                If the copySourceFileType has the value of networkFile,
+                the copyServerAddress and copyFileName must also be created,
+                and these 3 objects together
+                (copySourceFileType, copyServerAddress, copyFileName)
+                will uniquely identify the source file.
+
+                If the copySourceFileType is localFile, the copyFileName
+                must also be created, and the 2 objects together
+                (copySourceFileType,copyFileName)
+                will uniquely identify the source file."
+        ::= { zxr10CopyEntry 3 }
+
+zxr10CopyDestFileType  OBJECT-TYPE
+        SYNTAX     ConfigFileType
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+                "specifies the type of file to copy to. Either the
+                copySourceFileType or the copyDestFileType (or both)
+                must be of type runningConfig or startupConfig. Also,
+                the copySourceFileType must be different from the
+                copyDestFileType.
+        
+                If the copyDestFileType has the value of 
+                networkFile, the copyServerAddress and 
+                copyFileName must also be created, and these 3 objects together
+                (copyDestFileType, copyServerAddress, 
+                copyFileName) will uniquely identify the destination file.
+
+                If the copyDestFileType is localFile, the copyFileName
+                must also be created, and the 2 objects together
+                (copyDestFileType, copyFileName) will uniquely
+                identify the destination file."
+        ::= { zxr10CopyEntry 4 }
+
+zxr10CopyServerAddress  OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+                "The IPv4 address of the FTP server from (or to) 
+                which to copy the configuration file. This object
+                can not be used with zxr10CopyServerV6Address at the 
+                same time. Values of 0.0.0.0 or FF.FF.FF.FF for
+                copyServerAddress are not allowed."
+        ::= { zxr10CopyEntry 5 }
+
+zxr10CopySrcFileName  OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (1..80))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+                "The source file name (including the path, if applicable) of
+                the file. This object must be created when either the
+                copySourceFileType or copyDestFileType has the value
+                networkFile or localFile."
+        ::= { zxr10CopyEntry 6 }
+        
+zxr10CopyDstFileName  OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (1..80))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+                "The destination file name (including the path, if applicable)
+                of the file. This object must be created when either the
+                copySourceFileType or copyDestFileType has the value
+                networkFile or localFile."
+        ::= { zxr10CopyEntry 7 }
+        
+
+zxr10CopyUserName  OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (1..40))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+                "Remote user name for copy via FTP protocol.
+                This object must be created when the copyProtocol
+                is FTP."
+                ::= { zxr10CopyEntry 8 }
+
+zxr10CopyUserPassword OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (1..40))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION      
+                "Password used by FTP for copying a 
+                file to/from the FTP server. This object must 
+                be created when the copyProtocol is FTP."
+        ::= { zxr10CopyEntry 9 }
+
+zxr10CopyNotificationOnCompletion OBJECT-TYPE
+        SYNTAX     TruthValue
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+                "Specifies whether or not a copyCompletion
+                notification should be issued on completion of the FTP
+                transfer. If such a notification is desired, it is the
+                responsibility of the management entity to ensure
+                that the SNMP administrative model is configured in
+                such a way as to allow the notification to be 
+                delivered."
+        DEFVAL { false }
+        ::= { zxr10CopyEntry 10 }
+
+zxr10CopyState  OBJECT-TYPE
+        SYNTAX     ConfigCopyState
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "Specifies the state of this config-copy request.
+                This value of this object is instantiated only after
+                the row has been instantiated, i.e. after the
+                copyEntryRowStatus has been made active."
+        ::= { zxr10CopyEntry 11 }
+
+zxr10CopyTimeStarted  OBJECT-TYPE
+        SYNTAX     TimeStamp
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "Specifies the time the copyState last transitioned
+                to running, or 0 if the state has never transitioned to
+                running        (for e.g., stuck in waiting state).
+                This object is instantiated only after the row has been
+                instantiated."
+        ::= { zxr10CopyEntry 12 }
+
+zxr10CopyTimeCompleted OBJECT-TYPE
+        SYNTAX     TimeStamp
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "Specifies the time the copyState last transitioned
+                from running to successful or failed states. This
+                object is instantiated only after the row has been 
+                instantiated.
+                Its value will remain 0 until the request has completed."
+        ::= { zxr10CopyEntry 13 }
+
+zxr10CopyFailCause  OBJECT-TYPE
+        SYNTAX     ConfigCopyFailCause
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The reason why the config-copy operation failed.
+                This object is instantiated only when the copyState
+                for this entry is in the failed state."
+        ::= { zxr10CopyEntry 14 }
+
+zxr10CopyRowStatus  OBJECT-TYPE
+        SYNTAX     RowStatus
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+                "The status of this table entry.  Once the entry
+                status is set to active, the associated entry cannot
+                be modified until the request completes (copyState
+                transitions to successful or failed state)."
+        ::= { zxr10CopyEntry 15 }
+
+zxr10CopyVrfName OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (1..32))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "The VRF name for copy."
+        ::= { zxr10CopyEntry 16 }
+        
+
+zxr10CopyMng  OBJECT-TYPE
+        SYNTAX     TruthValue
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "Specifies whether or not choose the mng port."
+        DEFVAL { false }
+        ::= { zxr10CopyEntry 17 }
+        
+zxr10CopyFileCheckSumType  OBJECT-TYPE
+        SYNTAX     INTEGER(0..2)
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "Specifies the type of file check.The value 0 means no check,
+            1 means checking file with MD5,2 means checking file with SHA1."
+        DEFVAL { 0 }
+        ::= { zxr10CopyEntry 18 }
+
+zxr10CopyFileCheckSumString  OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (1..80))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "The key of check."
+         ::= { zxr10CopyEntry 19 }
+
+zxr10CopyServerV6Address  OBJECT-TYPE
+         SYNTAX     Ipv6Address
+         MAX-ACCESS read-create
+         STATUS     current
+         DESCRIPTION
+             "The IPv6 address of the FTP server from (or to) 
+                which to copy the configuration file. This object
+                can not be used with zxr10CopyServerAddress at the 
+                same time."
+         ::= { zxr10CopyEntry 20 }
+
+zxr10CopyInterface  OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (0..31))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "The interface name. This object is used only when
+             the remote address is a link-local address."
+         ::= { zxr10CopyEntry 21 }
+
+zxr10CopyProgress   OBJECT-TYPE
+        SYNTAX     Integer32 (0..100)
+        UNITS      "percent" 
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "The progress of copy operation."
+         ::= { zxr10CopyEntry 22 } 
+         
+zxr10CopyFinishRemainTime   OBJECT-TYPE
+        SYNTAX     TimeStamp
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "Remaining time of copy completion."
+         ::= { zxr10CopyEntry 23 }
+
+
+zxr10TFTPCopyTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF Zxr10TFTPCopyEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "A table of tftp copy requests."
+        ::= { zxr10Copy 2 }
+
+zxr10TFTPCopyEntry OBJECT-TYPE
+        SYNTAX Zxr10TFTPCopyEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "A tftp copy request.
+                A management station wishing to create an entry should
+                first generate a random serial number to be used
+                as the index to this sparse table.  The station should
+                then create the associated instance of the row status
+                and row index objects.  It __MUST__ in the same PDUs, 
+                create an instance of copySourceFileType and copyDestFileType.
+                At least one of the FileTypes must be an agent-config
+                file type (i.e.        startupConfig or runningConfig).
+                If one of the file types is a networkFile, a valid
+                copyServerAddress and copyFileName must be created as well.
+                For a file type of localFile, only a valid fileName needs to
+                be created as an extra parameter.
+
+                It should also modify the default values for the other
+                configuration objects if the defaults are not appropriate.
+                
+                Once the appropriate instance of all the configuration
+                objects have been created, the row status will automatically 
+                be set to active to initiate the request. Note that this entire
+                procedure __MUST__ be initiated via a single set request which
+                specifies a row status of createAndGo as well as specifies
+                valid values for the non-defaulted configuration objects.
+
+                Once the tftp copy request has been created (i.e. the
+                copyEntryRowStatus has been made active), the entry
+                cannot be modified - the only operation possible
+                after this is to delete the row.
+
+                Once the request completes, the management station 
+                should retrieve the values of the status objects of 
+                interest, and should then delete the entry.  In order 
+                to prevent old entries from clogging the table, 
+                entries will be aged out, but an entry will never be 
+                deleted within 5 minutes of completing."
+        INDEX { zxr10CopyIndex }
+        ::= { zxr10TFTPCopyTable 1 }
+
+Zxr10TFTPCopyEntry ::=
+        SEQUENCE {
+                zxr10TFTPCopyIndex                       Unsigned32,
+                zxr10TFTPCopySourceFileType              ConfigFileType,
+                zxr10TFTPCopyDestFileType                ConfigFileType,
+                zxr10TFTPCopyServerAddress               IpAddress,
+                zxr10TFTPCopySrcFileName                 DisplayString,
+                zxr10TFTPCopyDstFileName                 DisplayString,
+                zxr10TFTPCopyFinishNotify                TruthValue,
+                zxr10TFTPCopyState                       ConfigCopyState,
+                zxr10TFTPCopyTimeStarted                 TimeStamp,
+                zxr10TFTPCopyTimeCompleted               TimeStamp,
+                zxr10TFTPCopyFailCause                   TFTPCopyFailCause,
+                zxr10TFTPCopyVrfName                     DisplayString,
+                zxr10TFTPCopyMng                         TruthValue,
+                zxr10TFTPCopyFileCheckSumType            ChecksumType,
+                zxr10TFTPCopyFileCheckSumString          OCTET STRING,
+                zxr10TFTPCopyServerV6Address             Ipv6Address,
+                zxr10TFTPCopyInterface                   DisplayString,
+                zxr10TFTPCopyProgress                    Integer32,
+                zxr10TFTPCopyFinishRemainTime            TimeStamp,
+                zxr10TFTPCopyRowStatus                   RowStatus
+        }
+
+zxr10TFTPCopyIndex  OBJECT-TYPE
+        SYNTAX     Unsigned32(1..16)
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "Object which specifies a unique entry in the copyTable.
+            A management station wishing to initiate a tftp copy operation
+            should use a random value for this object when creating or
+            modifying an instance of a copyEntry.
+            The RowStatus semantics of the copyEntryRowStatus
+            object will prevent access conflicts."
+        ::= { zxr10TFTPCopyEntry 1 }
+
+zxr10TFTPCopySourceFileType  OBJECT-TYPE
+        SYNTAX     ConfigFileType
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "specifies the type of file to copy from. Either the
+            copySourceFileType or the copyDestFileType (or both)
+            must be of type runningConfig or startupConfig. Also,
+            the copySourceFileType must be different from the copyDestFileType.
+        
+            If the copySourceFileType has the value of networkFile,
+            the copyServerAddress and copyFileName must also be created,
+            and these 3 objects together (copySourceFileType, copyServerAddress,
+            copyFileName) will uniquely identify the source file.
+
+            If the copySourceFileType is localFile, the copyFileName must
+            also be created, and the 2 objects together (copySourceFileType,
+            copyFileName) will uniquely identify the source file."
+        ::= { zxr10TFTPCopyEntry 2 }
+
+zxr10TFTPCopyDestFileType  OBJECT-TYPE
+        SYNTAX     ConfigFileType
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "specifies the type of file to copy to. Either the
+            copySourceFileType or the copyDestFileType (or both)
+            must be of type runningConfig or startupConfig. Also,
+            the copySourceFileType must be different from the copyDestFileType.
+        
+            If the copyDestFileType has the value of networkFile,
+            the copyServerAddress and copyFileName must also be created,
+            and these 3 objects together
+            (copyDestFileType, copyServerAddress, copyFileName)
+            will uniquely identify the destination file.
+
+            If the copyDestFileType is localFile, the copyFileName
+            must also be created, and the 2 objects together
+            (copyDestFileType, copyFileName) will uniquely
+            identify the destination file."
+        ::= { zxr10TFTPCopyEntry 3 }
+
+zxr10TFTPCopyServerAddress  OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "The IPv4 address of the TFTP server from (or to) 
+            which to copy the configuration file. This object 
+            can not be used with zxr10TFTPCopyServerV6Address
+            at the same time. Values of 0.0.0.0 or FF.FF.FF.FF 
+            for copyServerAddress are not allowed."
+        ::= { zxr10TFTPCopyEntry 4 }
+
+zxr10TFTPCopySrcFileName  OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (1..159))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "The source file name (including the path, if applicable) of
+            the file. This object must be created when either the
+            copySourceFileType or copyDestFileType has the value
+            networkFile or localFile."
+        ::= { zxr10TFTPCopyEntry 5 }
+        
+zxr10TFTPCopyDstFileName  OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (1..159))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "The destination file name (including the path, if applicable) of
+            the file. This object must be created when either the
+            copySourceFileType or copyDestFileType has the value
+            networkFile or localFile."
+        ::= { zxr10TFTPCopyEntry 6 }
+        
+
+zxr10TFTPCopyFinishNotify  OBJECT-TYPE
+        SYNTAX     TruthValue
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "Specifies whether or not a copyCompletion
+            notification should be issued on completion of the TFTP
+            transfer. If such a notification is desired, it is the
+            responsibility of the management entity to ensure
+            that the SNMP administrative model is configured in
+            such a way as to allow the notification to be delivered."
+        DEFVAL        { false }
+        ::= { zxr10TFTPCopyEntry 7 }
+
+zxr10TFTPCopyState  OBJECT-TYPE
+        SYNTAX     ConfigCopyState
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "Specifies the state of this tftp copy request.
+            This value of this object is instantiated only after
+            the row has been instantiated, i.e. after the
+            copyEntryRowStatus has been made active."
+        ::= { zxr10TFTPCopyEntry 8 }
+
+zxr10TFTPCopyTimeStarted  OBJECT-TYPE
+        SYNTAX     TimeStamp
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "Specifies the time the copyState last transitioned to running,
+            or 0 if the state has never transitioned to running
+            (for e.g., stuck in waiting state). This object is instantiated
+            only after the row has been instantiated.
+            The value is system uptime."
+        ::= { zxr10TFTPCopyEntry 9 }
+
+zxr10TFTPCopyTimeCompleted  OBJECT-TYPE
+        SYNTAX     TimeStamp
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "Specifies the time the copyState last transitioned from running
+            to successful or failed states. This object is instantiated
+            only after the row has been instantiated.
+            Its value will remain 0 until the request has completed.
+            The value is system uptime."
+        ::= { zxr10TFTPCopyEntry 10 }
+
+zxr10TFTPCopyFailCause  OBJECT-TYPE
+        SYNTAX     TFTPCopyFailCause
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "The reason why the tftp copy operation failed.
+            This object is instantiated only when the copyState
+            for this entry is in the failed state."
+        ::= { zxr10TFTPCopyEntry 11 }
+
+zxr10TFTPCopyVrfName  OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (1..32))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "The VRF name for copy."
+        ::= { zxr10TFTPCopyEntry 12 }
+        
+zxr10TFTPCopyMng  OBJECT-TYPE
+        SYNTAX     TruthValue
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "Specifies whether or not choose the mng port."
+        DEFVAL { false }
+        ::= { zxr10TFTPCopyEntry 13 }
+        
+zxr10TFTPCopyFileCheckSumType  OBJECT-TYPE
+        SYNTAX     ChecksumType
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "Specifies the type of file check.
+            You can check file with MD5 or SHA1 algorithm."
+        DEFVAL { 1 }
+        ::= { zxr10TFTPCopyEntry 14 }
+
+zxr10TFTPCopyFileCheckSumString  OBJECT-TYPE
+        SYNTAX     OCTET STRING(SIZE (1..80))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "The key of check."
+         ::= { zxr10TFTPCopyEntry 15 }
+
+zxr10TFTPCopyServerV6Address  OBJECT-TYPE
+         SYNTAX     Ipv6Address
+         MAX-ACCESS read-create
+         STATUS     current
+         DESCRIPTION
+             "The IPv6 address of the TFTP server from (or to) 
+              which to copy the configuration file. This object
+              can not be used with zxr10CopyTFTPServerAddress 
+              at the same time."
+         ::= { zxr10TFTPCopyEntry 16 }
+
+zxr10TFTPCopyInterface  OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (0..31))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "The interface name."
+         ::= { zxr10TFTPCopyEntry 17 }
+         
+zxr10TFTPCopyProgress   OBJECT-TYPE
+        SYNTAX     Integer32 (0..100)
+        UNITS       "percent" 
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "The progress of copy operation.
+             When downloading file, the process can not get."
+         ::= { zxr10TFTPCopyEntry 18 } 
+         
+zxr10TFTPCopyFinishRemainTime   OBJECT-TYPE
+        SYNTAX     TimeStamp
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "Remaining time of copy completion."
+         ::= { zxr10TFTPCopyEntry 19 }
+
+zxr10TFTPCopyRowStatus  OBJECT-TYPE
+        SYNTAX     RowStatus
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "The status of this table entry.  Once the entry
+            status is set to active, the associated entry cannot
+            be modified until the request completes (copyState
+            transitions to successful or failed state)."
+        ::= { zxr10TFTPCopyEntry 100}
+
+zxr10SftpCopyTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF Zxr10SftpCopyEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "A table of SFTP copy requests."
+        ::= { zxr10Copy 3 }
+
+zxr10SftpCopyEntry OBJECT-TYPE
+        SYNTAX Zxr10SftpCopyEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "A SFTP copy request.
+                A management station wishing to create an entry should
+                first generate a random serial number to be used
+                as the index to this sparse table.  The station should
+                then create the associated instance of the row status
+                and row index objects.  It must in the same PDUs, 
+                create an instance of copySourceFileType and copyDestFileType.
+                If one of the file types is a networkFile, a valid
+                copyServerAddress and copyFileName must be created as well.
+                For a file type of localFile, only a valid fileName needs to
+                be created as an extra parameter.
+
+                It should also modify the default values for the other
+                configuration objects if the defaults are not appropriate.
+                
+                Once the appropriate instance of all the configuration
+                objects have been created, the row status will automatically 
+                be set to active to initiate the request. Note that this entire
+                procedure __MUST__ be initiated via a single set request which
+                specifies a row status of createAndGo as well as specifies
+                valid values for the non-defaulted configuration objects.
+
+                Once the sftp copy request has been created (i.e. the
+                copyEntryRowStatus has been made active), the entry
+                cannot be modified - the only operation possible
+                after this is to delete the row.
+
+                Once the request completes, the management station 
+                should retrieve the values of the status objects of 
+                interest, and should then delete the entry.  In order 
+                to prevent old entries from clogging the table, 
+                entries will be aged out, but an entry will never be 
+                deleted within 5 minutes of completing."
+        INDEX { zxr10SftpCopyIndex }
+        ::= { zxr10SftpCopyTable 1 }
+    
+Zxr10SftpCopyEntry ::=
+        SEQUENCE {
+                zxr10SftpCopyIndex                       Unsigned32,
+                zxr10SftpCopySourceFileType              SFTPConfigFileType,
+                zxr10SftpCopyDestFileType                SFTPConfigFileType,
+                zxr10SftpCopyServerAddress               IpAddress,
+                zxr10SftpCopySrcFileName                 DisplayString,
+                zxr10SftpCopyDstFileName                 DisplayString,
+                zxr10SftpCopyUserName                    DisplayString,
+                zxr10SftpCopyUserPassword                DisplayString, 
+                zxr10SftpCopyState                       ConfigCopyState,
+                zxr10SftpCopyTimeStarted                 TimeStamp,
+                zxr10SftpCopyTimeCompleted               TimeStamp,
+                zxr10SftpCopyFailCause                   SFTPCopyFailCause,   
+                zxr10SftpCopyVrfName                     DisplayString,  
+                zxr10SftpCopyMng                         TruthValue,
+                zxr10SftpCopyServerV6Address             Ipv6Address,
+                zxr10SftpCopyInterface                   DisplayString,
+                zxr10SftpCopyProgress                    Integer32,
+                zxr10SftpCopyFinishRemainTime            TimeStamp,
+                zxr10SftpCopyRowStatus                   RowStatus
+        }
+
+zxr10SftpCopyIndex  OBJECT-TYPE
+        SYNTAX     Unsigned32(1..32)
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "Object which specifies a unique entry in the copyTable.
+            A management station wishing to initiate a sftp copy operation
+            should use a random value for this object when creating or
+            modifying an instance of a copyEntry.
+            The RowStatus semantics of the copyEntryRowStatus
+            object will prevent access conflicts."
+        ::= { zxr10SftpCopyEntry 1 }
+
+zxr10SftpCopySourceFileType OBJECT-TYPE
+        SYNTAX     SFTPConfigFileType
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+                "specifies the type of file to copy from. Either the
+                copySourceFileType or the copyDestFileType (or both)
+                must be of type runningConfig or startupConfig. Also,the
+                copySourceFileType must be different from the copyDestFileType.
+        
+                If the copySourceFileType has the value of networkFile,
+                the copyServerAddress and copyFileName must also be created,
+                and these 3 objects together
+                (copySourceFileType, copyServerAddress, copyFileName)
+                will uniquely identify the source file.
+
+                If the copySourceFileType is localFile, the copyFileName
+                must also be created, and the 2 objects together
+                (copySourceFileType,copyFileName)
+                will uniquely identify the source file."
+        ::= { zxr10SftpCopyEntry 2 }
+
+zxr10SftpCopyDestFileType  OBJECT-TYPE
+        SYNTAX     SFTPConfigFileType
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+                "specifies the type of file to copy to. Either the
+                copySourceFileType or the copyDestFileType (or both)
+                must be of type runningConfig or startupConfig. Also,
+                the copySourceFileType must be different from the
+                copyDestFileType.
+        
+                If the copyDestFileType has the value of 
+                networkFile, the copyServerAddress and 
+                copyFileName must also be created, and these 3 objects together
+                (copyDestFileType, copyServerAddress, 
+                copyFileName) will uniquely identify the destination file.
+
+                If the copyDestFileType is localFile, the copyFileName
+                must also be created, and the 2 objects together
+                (copyDestFileType, copyFileName) will uniquely
+                identify the destination file."
+        ::= { zxr10SftpCopyEntry 3 }
+
+zxr10SftpCopyServerAddress  OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+                "The IP address of the SFTP server from (or to) 
+                which to copy the configuration file. This object
+                can not be used with zxr10SftpCopyServerV6Address 
+                at the same time.Values of 0.0.0.0 or FF.FF.FF.FF 
+                for copyServerAddress are not allowed."
+        ::= { zxr10SftpCopyEntry 4 }
+
+zxr10SftpCopySrcFileName  OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (1..159))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+                "The source file name (including the path, if applicable) of
+                the file. This object must be created when either the
+                copySourceFileType or copyDestFileType has the value
+                networkFile or localFile."
+        ::= { zxr10SftpCopyEntry 5 }
+        
+zxr10SftpCopyDstFileName  OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (1..159))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+                "The destination file name (including the path, if applicable)
+                of the file. This object must be created when either the
+                copySourceFileType or copyDestFileType has the value
+                networkFile or localFile."
+        ::= { zxr10SftpCopyEntry 6 }
+        
+
+zxr10SftpCopyUserName  OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (1..65))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+                "Remote user name for copy via SFTP protocol.
+                This object must be created when the copyProtocol
+                is SFTP."
+                ::= { zxr10SftpCopyEntry 7 }
+
+zxr10SftpCopyUserPassword OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (1..32))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION                "Password used by SFTP for copying a 
+                file to/from the SFTP server. This object must 
+                be created when the copyProtocol is SFTP."
+        ::= { zxr10SftpCopyEntry 8 }  
+                
+zxr10SftpCopyState  OBJECT-TYPE
+        SYNTAX     ConfigCopyState
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "Specifies the state of this sftp copy request.
+                This value of this object is instantiated only after
+                the row has been instantiated, i.e. after the
+                copyEntryRowStatus has been made active."
+        ::= { zxr10SftpCopyEntry 10 }
+
+zxr10SftpCopyTimeStarted  OBJECT-TYPE
+        SYNTAX     TimeStamp
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "Specifies the time the copyState last transitioned
+                to running, or 0 if the state has never transitioned to
+                running        (for e.g., stuck in waiting state).
+                This object is instantiated only after the row has been
+                instantiated."
+        ::= { zxr10SftpCopyEntry 11 }
+
+zxr10SftpCopyTimeCompleted OBJECT-TYPE
+        SYNTAX     TimeStamp
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "Specifies the time the copyState last transitioned
+                from running to successful or failed states. This
+                object is instantiated only after the row has been 
+                instantiated.
+                Its value will remain 0 until the request has completed."
+        ::= { zxr10SftpCopyEntry 12 }
+
+zxr10SftpCopyFailCause  OBJECT-TYPE
+        SYNTAX     SFTPCopyFailCause
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+                "The reason why the config-copy operation failed.
+                This object is instantiated only when the copyState
+                for this entry is in the failed state."
+        ::= { zxr10SftpCopyEntry 13 }  
+        
+zxr10SftpCopyVrfName OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (1..32))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "The VRF name for sftp copy."
+        ::= { zxr10SftpCopyEntry 14 }    
+        
+zxr10SftpCopyMng  OBJECT-TYPE
+        SYNTAX     TruthValue
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "Specifies whether or not choose the mng port."
+        DEFVAL { false }
+        ::= { zxr10SftpCopyEntry 15 }
+
+zxr10SftpCopyServerV6Address  OBJECT-TYPE
+         SYNTAX     Ipv6Address
+         MAX-ACCESS read-create
+         STATUS     current
+         DESCRIPTION
+             "The IPv6 address of the SFTP server from (or to)
+              which to copy the configuration file. This 
+              object can not be used with zxr10SftpCopyServerAddress
+              at the same time."
+         ::= { zxr10SftpCopyEntry 16 }
+
+zxr10SftpCopyInterface  OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE (0..31))
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+            "The interface name. This object is used only when
+             the remote address is a link-local address."
+         ::= { zxr10SftpCopyEntry 17 }
+         
+zxr10SftpCopyProgress   OBJECT-TYPE
+        SYNTAX     Integer32(0..100)
+        UNITS      "percent" 
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "The progress of copy operation."
+         ::= { zxr10SftpCopyEntry 18 } 
+         
+zxr10SftpCopyFinishRemainTime   OBJECT-TYPE
+        SYNTAX     TimeStamp
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION
+            "Remaining time of copy completion."
+         ::= { zxr10SftpCopyEntry 19 }
+
+
+zxr10SftpCopyRowStatus  OBJECT-TYPE
+        SYNTAX     RowStatus
+        MAX-ACCESS read-create
+        STATUS     current
+        DESCRIPTION
+                "The status of this table entry.  Once the entry
+                status is set to active, the associated entry cannot
+                be modified until the request completes (copyState
+                transitions to successful or failed state)."
+        ::= { zxr10SftpCopyEntry 50 }
+
+zxr10ConfigCopyMIBTrapPrefix  OBJECT IDENTIFIER 
+                              ::= { zxr10ConfigCopyMIB 2 }
+zxr10CopyMIBTraps      OBJECT IDENTIFIER 
+                              ::= { zxr10ConfigCopyMIBTrapPrefix 1 }
+
+zxr10TFTPCopyMIBTraps  OBJECT IDENTIFIER 
+                              ::= { zxr10ConfigCopyMIBTrapPrefix 2 }
+
+zxr10CopyCompletion NOTIFICATION-TYPE
+        OBJECTS
+        {
+            zxr10copyServerAddress,
+            zxr10copySrcFileName,
+            zxr10copyState,
+            zxr10copyTimeStarted,
+            zxr10copyTimeCompleted,
+            zxr10copyFailCause,
+            zxr10copyServerV6Address
+        }
+        STATUS      current
+        DESCRIPTION
+                "A copyCompletion trap is sent at the completion
+                of a config-copy request. The copyFailCause is not
+                instantiated, and hence not included in a trap, when 
+                the copyState is success."
+        ::= { zxr10CopyMIBTraps 1 }
+               
+zxr10TFTPCopyCompletion NOTIFICATION-TYPE
+        OBJECTS
+        {
+            zxr10TFTPCopyServerAddress,
+            zxr10TFTPCopySrcFileName,
+            zxr10TFTPCopyState,
+            zxr10TFTPCopyTimeStarted,
+            zxr10TFTPCopyTimeCompleted,
+            zxr10TFTPCopyFailCause,
+            zxr10TFTPCopyServerV6Address
+        }
+        STATUS      current
+        DESCRIPTION
+                "A copyCompletion trap is sent at the completion of a tftp
+                copy request. The copyFailCause is not instantiated, and hence
+                not included in a trap, when the copyState is success."
+        ::= { zxr10TFTPCopyMIBTraps 1 }
+
+END

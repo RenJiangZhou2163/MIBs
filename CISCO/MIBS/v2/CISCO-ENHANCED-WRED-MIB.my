@@ -1,0 +1,516 @@
+-- *****************************************************************
+-- CISCO ENHANCED WEIGHTED RANDOM EARLY DETECTION MIB
+-- Copyright (c) 2001 by Cisco Systems, Inc.
+-- All rights reserved.
+--
+-- *****************************************************************
+
+CISCO-ENHANCED-WRED-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Gauge32,
+        Counter32,
+        Counter64,
+        Unsigned32
+                FROM SNMPv2-SMI
+        TEXTUAL-CONVENTION,
+        RowStatus
+                FROM SNMPv2-TC
+        SnmpAdminString
+                FROM SNMP-FRAMEWORK-MIB
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ifIndex
+                FROM IF-MIB
+        entPhysicalIndex,
+        PhysicalIndex
+                FROM ENTITY-MIB
+        ciscoMgmt
+                FROM CISCO-SMI;
+
+ciscoEnhancedWredMIB MODULE-IDENTITY
+        LAST-UPDATED    "200112210000Z"
+        ORGANIZATION    "Cisco Systems, Inc."
+        CONTACT-INFO
+                "       Cisco Systems
+                        Customer Service
+
+                Postal: 170 W. Tasman Drive
+                        San Jose, CA  95134-1706
+                        USA
+
+                   Tel: +1 800 553-NETS
+
+                E-mail: cs-wredmib@cisco.com"
+
+        DESCRIPTION
+                "Cisco WRED MIB - Overview
+                 Cisco Weighted Random Early Detection/Drop (WRED)
+                 is a method which avoids traffic congestion on an
+                 output interface. Congestion is detected by computing
+                 the average output queue size against queue
+                 thresholds, which can be configured either per IP
+                 precedence or differentiated services code point
+                 (DSCP) based. WRED support are on the IP fast
+                 switching and IP flow switching only. It does not
+                 apply to IP process switching.
+
+                 The purpose of this MIB is to provide Weighted Random
+                 Early Detection/Drop packet configuration and packet
+                 filtering information. This MIB provides the WRED
+                 information about  the transmit (Tx) side and 
+                 receive (Rx) side of the modules, for the managed
+                 systems that support WRED on both transmit side 
+                 and receive side." 
+    
+        REVISION        "200112210000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ciscoMgmt 222 }
+
+ciscoEnhancedWredMIBObjects 
+       OBJECT IDENTIFIER ::= { ciscoEnhancedWredMIB 1 }
+
+-- Subgroups:
+--              Random Early Detection/Drop
+--
+
+cewredTx        OBJECT IDENTIFIER ::= { ciscoEnhancedWredMIBObjects 1 }
+cewredRx        OBJECT IDENTIFIER ::= { ciscoEnhancedWredMIBObjects 2 }
+cewredConfig    OBJECT IDENTIFIER ::= { ciscoEnhancedWredMIBObjects 3 }
+cewredQueue     OBJECT IDENTIFIER ::= { ciscoEnhancedWredMIBObjects 4 }
+cewredStat      OBJECT IDENTIFIER ::= { ciscoEnhancedWredMIBObjects 5 }
+
+--  Textual Conventions
+
+CewredQueueNumber ::= TEXTUAL-CONVENTION
+        STATUS        current
+        DESCRIPTION
+                "An unique value, for each distributed round robin
+                queue in the managed system."
+        SYNTAX     Unsigned32
+
+CewredRedMechanism ::= TEXTUAL-CONVENTION
+        STATUS         current
+        DESCRIPTION
+                "This denotes the Random Early Detection mechanisms
+                 to be used by WRED. The possible mechanisms are as
+                 follows:
+
+                precedence      Based on IP precedence
+                dscp            Based on DSCP values
+                "
+        SYNTAX  INTEGER { 
+                          precedence(1), 
+                          dscp(2) 
+                        }
+
+CewredRedProfile ::= TEXTUAL-CONVENTION
+        STATUS       current
+        DESCRIPTION
+                "A value which identifies the mapping between the
+                precedence or DSCP value to a Random Early Detection
+                profile." 
+        SYNTAX     Unsigned32
+
+CewredIndex       ::= TEXTUAL-CONVENTION
+        STATUS        current
+        DESCRIPTION
+                "An unique value, greater than zero, which identifies
+                unique entry in cewredConfigGlobTable." 
+        SYNTAX     Unsigned32 (1..4294967295)
+
+cewredTxTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF CewredTxEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "This table contains the mapping entries that
+                associate WRED configuration with an egress 
+                interface. This table is used for creating or
+                modifying or retrieving transmit side WRED
+                information."
+        ::= { cewredTx 1 }
+
+cewredTxEntry OBJECT-TYPE
+        SYNTAX CewredTxEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Entries used for providing transmit side
+                WRED information. If this entry got deleted,
+                the corresponding cewredConfigGlobIndex 
+                (identified by cewredTxValue) associated entry
+                in cewredConfigGlobTable is also deleted.
+                
+                If a entry corresponding to the value of 
+                cewredTxValue does not exist in the
+                cewredConfigGlobTable, the value of
+                cewredTxValue can be (re)used as an index to
+                create a new entry in the 
+                cewredConfigGlobTable for building association
+                between this mapping table and the
+                cewredConfigGlobTable."
+                
+        INDEX { ifIndex }
+        ::= { cewredTxTable 1 }	
+
+CewredTxEntry ::=
+        SEQUENCE {
+                cewredTxValue        CewredIndex,
+                cewredTxRowStatus    RowStatus
+        }
+
+cewredTxValue OBJECT-TYPE
+        SYNTAX  CewredIndex
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+                "This object specifies the value of
+                cewredConfigGlobIndex which associates the WRED
+                configuration with ifIndex associated egress
+                interface. This value can not be modified when
+                cewredTxRowStatus is active(1). 
+
+                The value of this object must not be same as the
+                values of the following objects:
+                cewredRxIfValue,
+                cewredRxValue,
+                cewredRxMulticastValue.
+                "  
+        ::= { cewredTxEntry 1 }
+
+cewredTxRowStatus OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+                "The status of this conceptual row.
+                This object is used for creating, modifying
+                and deleting entries in the cewredTxTable."  
+        ::= { cewredTxEntry 2 }
+
+cewredRxIfTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF CewredRxIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "This table contains the mapping entries that
+                associate WRED configuration with a source
+                module and destination interface combination."
+        ::= { cewredRx 1 }
+
+cewredRxIfEntry OBJECT-TYPE
+        SYNTAX CewredRxIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Entries containing the mapping that associate the
+                receive side WRED configuration  to the physical
+                entity of type PhysicalClass module(9) which supports
+                WRED with per interface queueing on the receive side.
+                If this entry got deleted, the corresponding
+                cewredConfigGlobIndex (identified by cewredRxIfValue)
+                associated entry in cewredConfigGlobTable is also
+                deleted.
+          
+                If a entry corresponding to the value of
+                cewredRxIfValue does not exist in the
+                cewredConfigGlobTable, the value of cewredRxIfValue 
+                can be (re)used as an index to create a new entry
+                in the cewredConfigGlobTable for building
+                association between this mapping table and the
+                cewredConfigGlobTable."
+
+        INDEX { entPhysicalIndex, ifIndex }
+        ::= { cewredRxIfTable 1 }	
+
+CewredRxIfEntry ::=
+        SEQUENCE {
+                cewredRxIfValue             CewredIndex,
+                cewredRxIfRowStatus         RowStatus
+        }
+
+cewredRxIfValue OBJECT-TYPE
+        SYNTAX  CewredIndex
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+                "This object specifies the value of
+                cewredConfigGlobIndex which associates the WRED 
+                configuration with the source module (identified by
+                entPhysicalIndex) and destination interface
+                (identified by the ifIndex) combination.This value
+                can't be modified when cewredRxRowStatus is active(1).
+
+                The value of this object must not be same as the
+                values of the following objects:
+                cewredTxValue,
+                cewredRxValue,
+                cewredRxMulticastValue.
+                "  
+        ::= { cewredRxIfEntry 1 }
+
+cewredRxIfRowStatus OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+                "The status of this conceptual row.
+                This object is used for creating, modifying
+                and deleting entries in the cewredRxIfTable."  
+        ::= { cewredRxIfEntry 2 }
+
+
+cewredRxTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF CewredRxEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "This table contains the mapping entries that
+                associate WRED configuration with a source
+                module and destination module combination."
+        ::= { cewredRx 2 }
+
+cewredRxEntry OBJECT-TYPE
+        SYNTAX CewredRxEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Entries containing the mapping that associate the
+                receive side WRED configuration  to the physical
+                entity of type PhysicalClass module(9) which supports
+                WRED with per module queueing on the receive side.
+                If this entry got deleted, the corresponding
+                cewredConfigGlobIndex (identified by cewredRxValue)
+                associated entry in cewredConfigGlobTable is also
+                deleted.
+
+                If a entry corresponding to the value of 
+                cewredRxValue does not exist in the
+                cewredConfigGlobTable, the value of cewredRxValue 
+                can be (re)used as an index to create a new entry
+                in the cewredConfigGlobTable for building 
+                association between this mapping table and the
+                cewredConfigGlobTable."
+
+        INDEX { cewredRxSourceId, cewredRxDestId }
+        ::= { cewredRxTable 1 }	
+
+CewredRxEntry ::=
+        SEQUENCE {
+                cewredRxSourceId          PhysicalIndex,
+                cewredRxDestId            PhysicalIndex,
+                cewredRxValue             CewredIndex,
+                cewredRxRowStatus         RowStatus
+        }
+
+cewredRxSourceId OBJECT-TYPE
+        SYNTAX  PhysicalIndex
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "The entPhysicalIndex of the source module,
+                supporting per module queueing on receive side
+                to which WRED configuration was attached."
+        ::= { cewredRxEntry 1 }
+
+cewredRxDestId OBJECT-TYPE
+        SYNTAX  PhysicalIndex
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "On the receive side, WRED configuration is applied on
+                the traffic going from a source module to a destination
+                module. This object represents the entPhysicalIndex of
+                the destination module where source module is being 
+                represented by cewredRxSourceId."
+        ::= { cewredRxEntry 2 }
+
+cewredRxValue OBJECT-TYPE
+        SYNTAX  CewredIndex
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+                "This object specifies the value which can be used by 
+                cewredConfigGlobIndex object, which associates WRED
+                configuration with the source module (identified by 
+                cewredRxSourceId) and destination module
+                (identified by cewredRxDestId) combination. This 
+                value can't be modified when cewredRxRowStatus is
+                active(1).
+                
+                The value of this object must not be same as the values
+                of the following objects:
+                cewredTxValue,
+                cewredRxIfValue,
+                cewredRxMulticastValue.
+                "
+        ::= { cewredRxEntry 3 }
+
+cewredRxRowStatus OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+                "The status of this conceptual row.
+                This object is used for creating, modifying
+                and deleting entries in the cewredRxTable."  
+        ::= { cewredRxEntry 4 }
+
+cewredRxMulticastTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF CewredRxMulticastEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "This table contains the mapping entries that
+                associate WRED configuration on the multicast
+                traffic of a module on the receive side."
+        ::= { cewredRx 3 }
+
+cewredRxMulticastEntry OBJECT-TYPE
+        SYNTAX CewredRxMulticastEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Entries used to provide WRED information
+                for the physical entities of type PhysicalClass 
+                module(9) that support WRED on multicast traffic
+                on the receive side. If this entry got deleted,
+                the corresponding cewredConfigGlobIndex 
+                (identified by cewredRxMulticastValue) associated
+                entry in cewredConfigGlobTable is also deleted.
+
+                If a entry corresponding to the value of 
+                cewredRxMulticastValue does not exist in the
+                cewredConfigGlobTable, the value of 
+                cewredRxMulticastValue can be (re)used as an
+                index to create a new entry in the 
+                cewredConfigGlobTable for building association
+                between this mapping table and the
+                cewredConfigGlobTable."
+
+        INDEX { entPhysicalIndex }
+        ::= { cewredRxMulticastTable 1 }	
+
+CewredRxMulticastEntry ::=
+        SEQUENCE {
+                cewredRxMulticastValue       CewredIndex,
+                cewredRxMulticastRowStatus   RowStatus
+        }
+
+cewredRxMulticastValue OBJECT-TYPE
+        SYNTAX  CewredIndex
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+                "This object specifies the value which can be used by 
+                cewredConfigGlobIndex object, which associates 
+                WRED configuration on the multicast traffic of the 
+                source module (identified by entPhysicalIndex) on the 
+                receive side. This value can't be modified when 
+                cewredRxMulticastRowStatus is active(1).
+
+                The value of this object must not be same as the values
+                of the following objects:
+                cewredTxValue,
+                cewredRxIfValue,
+                cewredRxValue.
+                "
+        ::= { cewredRxMulticastEntry 1 }
+
+cewredRxMulticastRowStatus OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+                "The status of this conceptual row.
+                This object is used for creating, modifying
+                and deleting entries in the cewredRxMulticastTable."  
+        ::= { cewredRxMulticastEntry 2 }
+
+cewredConfigGlobTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF CewredConfigGlobEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "A table of WRED global configuration variables."
+        ::= { cewredConfig 1 }
+
+cewredConfigGlobEntry OBJECT-TYPE
+        SYNTAX CewredConfigGlobEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "A collection of configuration entries. 
+                On the transmit side of a module an Entry of 
+                this table is created/deleted  when the interface
+                is associated/disassociated respectively with random
+                early detection. On the receive side, an entry of
+                this table is created or deleted when the entries
+                representing cewredConfigGlobIndex is 
+                associated/disassociated respectively with 
+                random early detection.
+              
+                An entry in this table created only when
+                the corresponding entry providing the value for
+                cewredConfigGlobIndex is created in one of the
+                following mapping tables:
+                cewredTxTable,
+                cewredRxIfTable,
+                cewredRxTable,
+                cewredRxMulticastTable.
+               
+                Deletion of this entry will not cause the deletion
+                of the corresponding entry (entry providing 
+                cewredConfigGlobIndex) in the mapping 
+                tables."
+
+        INDEX { cewredConfigGlobIndex }
+        ::= { cewredConfigGlobTable 1 }
+
+CewredConfigGlobEntry ::=
+        SEQUENCE {
+                cewredConfigGlobIndex             CewredIndex,	
+                cewredConfigGlobCosGroupName      SnmpAdminString,      
+                cewredConfigGlobQueueWeight       Unsigned32,
+                cewredConfigGlobDscpPrec          CewredRedMechanism,
+                cewredConfigGlobRowStatus         RowStatus
+        }
+
+cewredConfigGlobIndex OBJECT-TYPE
+        SYNTAX  CewredIndex 
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Index into the cewredConfigGlobTable. For 
+                the managed systems which support WRED configuration
+                on both transmit side and receive side,
+                this index will be obtained by one of the following
+                mapping table entries:
+                cewredTxTable,
+                cewredRxIfTable,
+                cewredRxTable,
+                cewredRxMulticastTable.
+
+                This index will be obtained through cewredTxValue
+                object in case of WRED applied on an interface on the 
+                transmit side. If WRED is applied on the
+                receive side, this index will be obtained
+                through cewredRxIfvalue if the module supports
+                per module/interface queueing on the receive side, 
+                otherwise this index will be obtained through
+                to cewredRxValue. For multicast on the receive side,
+                this index will be obtained through
+                cewredRxMulticastValue.
+
+                For the managed systems, which only support interface
+                level WRED configuration, this value can be equal to
+                the ifIndex associated with the interface."
+        ::= { cewredConfigGlobEntry 1 }
+
+cewredConfigGlobCosGroupName OBJECT-TYPE
+ 

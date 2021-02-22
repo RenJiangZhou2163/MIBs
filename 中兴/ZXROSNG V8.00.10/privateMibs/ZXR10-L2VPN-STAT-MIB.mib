@@ -1,0 +1,1051 @@
+--  ************************************************
+--  $Id: ZXR10-L2VPN.mib 3 2010-7-27 01:34:21Z wangcx $
+--
+--  ZXR10-L2VPN.mib: ZXR10 L2VPN query  MIB file
+--
+--  Nov. 2009, Wang chunxia
+--  Jul. 2010, kbhuang 
+--
+--  Copyright(c) 2010 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+
+ZXR10-L2VPN-STAT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Unsigned32,
+    enterprises,
+    Counter64,
+    IpAddress
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION,
+    DisplayString
+        FROM SNMPv2-TC;
+
+
+zte MODULE-IDENTITY
+    LAST-UPDATED "201405131500Z"
+    ORGANIZATION "ZTE Corporation"
+    CONTACT-INFO
+        "ZTE Corporation
+         Nanjing Institute of ZTE Corporation
+
+         No.68 Zijinghua Rd. Yuhuatai District, Nanjing, China
+
+         Tel: +86-25-52870000"
+
+    DESCRIPTION
+        "This MIB describes statistics objects for ZXROSNG L2vpn instances 
+        and interfaces."
+
+    REVISION "201405131500Z"
+    DESCRIPTION
+       "Add leaf objects for dropped/unicast/multicast/broadcast packets/bytes:
+       zxr10L2vpnStatisInDropPkts, zxr10L2vpnStatisOutDropPkts,
+       zxr10L2vpnStatisInDropBytes, zxr10L2vpnStatisOutDropBytes,
+       zxr10L2vpnStatisRecvMcPkts, zxr10L2vpnStatisRecvMcBytes,
+       zxr10L2vpnStatisSndMcPkts, zxr10L2vpnStatisSndMcBytes,
+       zxr10L2vpnStatisRecvBcPkts, zxr10L2vpnStatisRecvBcBytes,
+       zxr10L2vpnStatisSndBcPkts, zxr10L2vpnStatisSndBcBytes,
+       zxr10L2vpnStatisRecvUcPkts, zxr10L2vpnStatisRecvUcBytes,
+       zxr10L2vpnStatisRecvUkUcPkts, zxr10L2vpnStatisRecvUkUcBytes,
+       zxr10L2vpnStatisPwRecvMcPkts, zxr10L2vpnStatisPwRecvMcBytes,
+       zxr10L2vpnStatisPwSndMcPkts, zxr10L2vpnStatisPwSndMcBytes,
+       zxr10L2vpnStatisPwRecvBcPkts, zxr10L2vpnStatisPwRecvBcBytes,
+       zxr10L2vpnStatisPwSndBcPkts, zxr10L2vpnStatisPwSndBcBytes,
+       zxr10L2vpnStatisPwRecvUcPkts, zxr10L2vpnStatisPwRecvUcBytes,
+       zxr10L2vpnStatisPwRecvUkUcPkts, zxr10L2vpnStatisPwRecvUkUcBytes,
+       zxr10L2vpnStatisAcInDropBytes, zxr10L2vpnStatisAcOutDropBytes,
+       zxr10L2vpnStatisAcRecvMcPkts, zxr10L2vpnStatisAcRecvMcBytes,
+       zxr10L2vpnStatisAcSndMcPkts, zxr10L2vpnStatisAcSndMcBytes,
+       zxr10L2vpnStatisAcRecvBcPkts, zxr10L2vpnStatisAcRecvBcBytes,
+       zxr10L2vpnStatisAcSndBcPkts, zxr10L2vpnStatisAcSndBcBytes,
+       zxr10L2vpnStatisAcRecvUcPkts, zxr10L2vpnStatisAcRecvUcBytes,
+       zxr10L2vpnStatisAcRecvUkUcPkts, zxr10L2vpnStatisAcRecvUkUcBytes."
+
+    REVISION "201307151200Z"
+    DESCRIPTION
+       "Modify syntax of zxr10L2vpnStatisVpnName object:
+       from DisplayString (SIZE(0..31)) to DisplayString (SIZE(0..32))."
+            
+    REVISION "201305131200Z"
+    DESCRIPTION
+       "Add leaf objects for dropped packets/bytes and bandwidth parameter:
+       zxr10L2vpnStatisPwInDropPkts, zxr10L2vpnStatisPwOutDropPkts,
+       zxr10L2vpnStatisPwInDropBytes, zxr10L2vpnStatisPwOutDropBytes,
+       zxr10L2vpnStatisPwInBandWidth, zxr10L2vpnStatisPwOutBandWidth,
+       zxr10L2vpnStatisPwInBandUsage, zxr10L2vpnStatisPwOutBandUsage."
+
+    REVISION "201303181700Z"
+    DESCRIPTION
+       "Add description for all objects."
+
+    REVISION "200911130000Z"  -- Nov 13, 2009
+    DESCRIPTION
+       ""
+
+    ::= { enterprises 3902 }
+            
+    zxr10 OBJECT IDENTIFIER ::= { zte 3}  
+    zxr10l2vpn OBJECT IDENTIFIER ::= { zxr10 104} 
+    zxr10L2vpnNewMIB OBJECT IDENTIFIER ::= { zxr10l2vpn 7} 
+
+    zxr10L2vpnStatisObjects      OBJECT IDENTIFIER ::= { zxr10L2vpnNewMIB 5 }
+
+    L2vpnInstType ::= TEXTUAL-CONVENTION
+        STATUS       current
+        DESCRIPTION
+            "L2vpn inst type"
+        SYNTAX INTEGER {
+            null(0),
+            vpls(1),
+            vpws(2),
+            mspw(3),
+            vlss(4),
+            vlanvll(5)
+        }
+
+    L2vpnPWType ::= TEXTUAL-CONVENTION
+        STATUS       current
+        DESCRIPTION
+            "L2vpn PW Type. Assigned values are specified in 'IANA Allocations 
+             for Pseudowire Edge to Edge Emulation (PWE3)"
+        SYNTAX INTEGER {
+            unknown(0),
+            dlciOld(1),
+            atmSdu(2),
+            atmCell(3),
+            vlan(4),
+            ethernet(5),
+            hdlc(6),
+            ppp(7),
+            sdhCESoM(8),
+            atmVCCn(9),
+            atmVPCn(10),
+            ipL2(11),
+            atmVCC1(12),
+            atmVPC1(13),
+            atmPDU(14),
+            frPort(15),
+            sdhCEoP(16),
+            saTopE1(17),
+            saTopT1(18),
+            saTopE3(19),
+            saTopT3(20),
+            ceSoPSNB(21),
+            tdmAAL1(22),
+            ceSoPSNC(23),
+            tdmAAL2(24),
+            dlciNew(25)            
+         }
+                  
+ --Inst/VC/AC statistic 
+ 
+     zxr10L2vpnStatisInstTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10L2vpnStatisInstEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "L2vpn instance statistic table"
+        ::= { zxr10L2vpnStatisObjects 1 }
+
+    zxr10L2vpnStatisInstEntry  OBJECT-TYPE
+        SYNTAX  Zxr10L2vpnStatisInstEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Information of L2vpn instance statistic"
+        INDEX  { zxr10L2vpnStatisVpnName}
+        ::= { zxr10L2vpnStatisInstTable 1 }
+
+    Zxr10L2vpnStatisInstEntry ::=
+        SEQUENCE {
+            zxr10L2vpnStatisVpnName
+                DisplayString,
+            zxr10L2vpnStatisVpnType
+                L2vpnInstType,
+            zxr10L2vpnStatisRecvPkts
+                Counter64,
+            zxr10L2vpnStatisRecvBytes
+                Counter64,
+            zxr10L2vpnStatisSndPkts
+                Counter64,
+            zxr10L2vpnStatisSndBytes
+                Counter64,
+            zxr10L2vpnStatisRecvPktsRates
+                Counter64,
+            zxr10L2vpnStatisRecvBytesRates
+                Counter64,
+            zxr10L2vpnStatisSndPktsRates
+                Counter64,
+            zxr10L2vpnStatisSndBytesRates
+                Counter64,
+            zxr10L2vpnStatisInDropPkts
+                Counter64,
+            zxr10L2vpnStatisOutDropPkts
+                Counter64,
+            zxr10L2vpnStatisInDropBytes
+                Counter64,
+            zxr10L2vpnStatisOutDropBytes
+                Counter64,
+            zxr10L2vpnStatisRecvMcPkts
+                Counter64,
+            zxr10L2vpnStatisRecvMcBytes
+                Counter64,
+            zxr10L2vpnStatisSndMcPkts
+                Counter64,
+            zxr10L2vpnStatisSndMcBytes
+                Counter64,
+            zxr10L2vpnStatisRecvBcPkts
+                Counter64,
+            zxr10L2vpnStatisRecvBcBytes
+                Counter64,
+            zxr10L2vpnStatisSndBcPkts
+                Counter64,
+            zxr10L2vpnStatisSndBcBytes
+                Counter64,
+            zxr10L2vpnStatisRecvUcPkts
+                Counter64,
+            zxr10L2vpnStatisRecvUcBytes
+                Counter64,
+            zxr10L2vpnStatisRecvUkUcPkts
+                Counter64,
+            zxr10L2vpnStatisRecvUkUcBytes
+                Counter64
+            }
+
+    zxr10L2vpnStatisVpnName  OBJECT-TYPE
+        SYNTAX   DisplayString (SIZE(0..32))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The name of the instance."
+        ::= { zxr10L2vpnStatisInstEntry 1 }
+        
+    zxr10L2vpnStatisVpnType  OBJECT-TYPE
+        SYNTAX  L2vpnInstType
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VPN type of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 2 }
+
+    zxr10L2vpnStatisRecvPkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received packets count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 3 }
+
+    zxr10L2vpnStatisRecvBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received bytes count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 4 }
+
+    zxr10L2vpnStatisSndPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent packets count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 5 }
+
+    zxr10L2vpnStatisSndBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent bytes count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 6 }
+
+     zxr10L2vpnStatisRecvPktsRates  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received packets rate of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 7 }
+         
+     zxr10L2vpnStatisRecvBytesRates  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received bytes rate of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 8 }
+         
+     zxr10L2vpnStatisSndPktsRates  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent packets rate of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 9 }
+
+     zxr10L2vpnStatisSndBytesRates  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent bytes rate of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 10 } 
+
+     zxr10L2vpnStatisInDropPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The input dropped packets count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 11 } 
+
+     zxr10L2vpnStatisOutDropPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The output dropped packets count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 12 } 
+
+     zxr10L2vpnStatisInDropBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The input dropped bytes count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 13 } 
+
+     zxr10L2vpnStatisOutDropBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The output dropped bytes count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 14 } 
+
+     zxr10L2vpnStatisRecvMcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received multicast packets count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 15 } 
+
+     zxr10L2vpnStatisRecvMcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received multicast bytes count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 16 } 
+
+     zxr10L2vpnStatisSndMcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent multicast packets count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 17 } 
+
+     zxr10L2vpnStatisSndMcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent multicast bytes count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 18 } 
+
+     zxr10L2vpnStatisRecvBcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received broadcast packets count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 19 } 
+
+     zxr10L2vpnStatisRecvBcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received broadcast bytes count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 20 } 
+
+     zxr10L2vpnStatisSndBcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent broadcast packets count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 21 } 
+
+     zxr10L2vpnStatisSndBcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent broadcast bytes count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 22 } 
+
+     zxr10L2vpnStatisRecvUcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received unicast packets count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 23 } 
+
+     zxr10L2vpnStatisRecvUcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received unicast bytes count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 24 } 
+
+     zxr10L2vpnStatisRecvUkUcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received unknown unicast packets count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 25 } 
+
+     zxr10L2vpnStatisRecvUkUcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received unknown unicast bytes count of the instance."
+         ::= { zxr10L2vpnStatisInstEntry 26 } 
+
+--pw statistics
+
+     zxr10L2vpnStatisVcTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10L2vpnStatisVcEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "L2vpn PW statistic table"
+        ::= { zxr10L2vpnStatisObjects 2 }
+
+     zxr10L2vpnStatisVcEntry  OBJECT-TYPE
+        SYNTAX  Zxr10L2vpnStatisVcEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Information of L2vpn PW statistics"
+        INDEX  { zxr10L2vpnStatisPwName }
+        ::= { zxr10L2vpnStatisVcTable 1 }    
+
+     Zxr10L2vpnStatisVcEntry ::=
+        SEQUENCE {
+            zxr10L2vpnStatisPwName
+                DisplayString,
+            zxr10L2vpnStatisPwInlabel
+                Unsigned32,    
+            zxr10L2vpnStatisVcRecvPkts
+                Counter64,
+            zxr10L2vpnStatisVcRecvBytes
+                Counter64,
+            zxr10L2vpnStatisVcSndPkts
+                Counter64,
+            zxr10L2vpnStatisVcSndBytes
+                Counter64,
+            zxr10L2vpnStatisVcRecvPktsRates
+                Counter64,
+            zxr10L2vpnStatisVcRecvBytesRates
+                Counter64,
+            zxr10L2vpnStatisVcSndPktsRates
+                Counter64,
+            zxr10L2vpnStatisVcSndBytesRates
+                Counter64,
+            zxr10L2vpnStatisPwPeer
+                IpAddress,
+            zxr10L2vpnStatisPwVcid
+                Unsigned32,
+            zxr10L2vpnStatisPwVcType
+                L2vpnPWType,
+            zxr10L2vpnStatisPwInDropPkts
+                Counter64,
+            zxr10L2vpnStatisPwOutDropPkts
+                Counter64,
+            zxr10L2vpnStatisPwInDropBytes
+                Counter64,
+            zxr10L2vpnStatisPwOutDropBytes
+                Counter64,
+            zxr10L2vpnStatisPwInBandWidth
+                Unsigned32,
+            zxr10L2vpnStatisPwOutBandWidth
+                Unsigned32,
+            zxr10L2vpnStatisPwInBandUsage
+                Unsigned32,
+            zxr10L2vpnStatisPwOutBandUsage
+                Unsigned32,
+            zxr10L2vpnStatisPwRecvMcPkts
+                Counter64,
+            zxr10L2vpnStatisPwRecvMcBytes
+                Counter64,
+            zxr10L2vpnStatisPwSndMcPkts
+                Counter64,
+            zxr10L2vpnStatisPwSndMcBytes
+                Counter64,
+            zxr10L2vpnStatisPwRecvBcPkts
+                Counter64,
+            zxr10L2vpnStatisPwRecvBcBytes
+                Counter64,
+            zxr10L2vpnStatisPwSndBcPkts
+                Counter64,
+            zxr10L2vpnStatisPwSndBcBytes
+                Counter64,
+            zxr10L2vpnStatisPwRecvUcPkts
+                Counter64,
+            zxr10L2vpnStatisPwRecvUcBytes
+                Counter64,
+            zxr10L2vpnStatisPwRecvUkUcPkts
+                Counter64,
+            zxr10L2vpnStatisPwRecvUkUcBytes
+                Counter64
+            }
+
+    zxr10L2vpnStatisPwName  OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The name of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 1 }
+
+    zxr10L2vpnStatisPwInlabel OBJECT-TYPE
+        SYNTAX       Unsigned32(16..1048575)
+        MAX-ACCESS   read-only
+        STATUS       obsolete
+        DESCRIPTION
+            "The input label of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 2 } 
+
+    zxr10L2vpnStatisVcRecvPkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received packets count of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 3 }
+
+    zxr10L2vpnStatisVcRecvBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received bytes count of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 4 }
+
+    zxr10L2vpnStatisVcSndPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent packets count of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 5 }
+
+    zxr10L2vpnStatisVcSndBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent bytes count of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 6 }
+
+    zxr10L2vpnStatisVcRecvPktsRates  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received packets rate of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 7 }
+         
+    zxr10L2vpnStatisVcRecvBytesRates  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received bytes rate of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 8 }   
+         
+    zxr10L2vpnStatisVcSndPktsRates  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent packets rate of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 9 }
+
+    zxr10L2vpnStatisVcSndBytesRates  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent bytes rate of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 10 } 
+         
+    zxr10L2vpnStatisPwPeer  OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "The peer's IP address of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 11 }
+         
+    zxr10L2vpnStatisPwVcid  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "The VCID of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 12 }
+         
+    zxr10L2vpnStatisPwVcType  OBJECT-TYPE
+        SYNTAX   L2vpnPWType
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "The encapsulation type of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 13 }         
+    
+    zxr10L2vpnStatisPwInDropPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The input dropped packets of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 14 } 
+
+    zxr10L2vpnStatisPwOutDropPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The output dropped packets of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 15 } 
+
+     zxr10L2vpnStatisPwInDropBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The input dropped bytes of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 16 } 
+
+    zxr10L2vpnStatisPwOutDropBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The output dropped bytes of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 17 } 
+
+     zxr10L2vpnStatisPwInBandWidth  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The input bandwidth parameter of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 18 } 
+
+      zxr10L2vpnStatisPwOutBandWidth  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The output bandwidth parameter of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 19 } 
+
+      zxr10L2vpnStatisPwInBandUsage  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The input bandwidth usage percent of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 20 } 
+
+      zxr10L2vpnStatisPwOutBandUsage  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The output bandwidth usage percent of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 21 } 
+
+     zxr10L2vpnStatisPwRecvMcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received multicast packets count of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 22 } 
+
+     zxr10L2vpnStatisPwRecvMcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received multicast bytes count of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 23 } 
+
+     zxr10L2vpnStatisPwSndMcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent multicast packets count of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 24 } 
+
+     zxr10L2vpnStatisPwSndMcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent multicast bytes count of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 25 } 
+
+     zxr10L2vpnStatisPwRecvBcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received broadcast packets count of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 26 } 
+
+     zxr10L2vpnStatisPwRecvBcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received broadcast bytes count of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 27 } 
+
+     zxr10L2vpnStatisPwSndBcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent broadcast packets count of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 28 } 
+
+     zxr10L2vpnStatisPwSndBcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent broadcast bytes count of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 29 } 
+
+     zxr10L2vpnStatisPwRecvUcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received unicast packets count of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 30 } 
+
+     zxr10L2vpnStatisPwRecvUcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received unicast bytes count of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 31 } 
+
+     zxr10L2vpnStatisPwRecvUkUcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received unknown unicast packets count of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 32 } 
+
+     zxr10L2vpnStatisPwRecvUkUcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received unknown unicast bytes count of the PW."
+         ::= { zxr10L2vpnStatisVcEntry 33 } 
+
+--AC statistics
+    zxr10L2vpnStatisAcTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10L2vpnStatisAcEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "L2vpn AC statistic table."
+        ::= { zxr10L2vpnStatisObjects 3 }
+
+    zxr10L2vpnStatisAcEntry  OBJECT-TYPE
+        SYNTAX  Zxr10L2vpnStatisAcEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Information of L2vpn AC statistics"
+        INDEX  { zxr10L2vpnStatisAcIndex }
+        ::= { zxr10L2vpnStatisAcTable 1 }    
+
+    Zxr10L2vpnStatisAcEntry ::=
+        SEQUENCE {
+            zxr10L2vpnStatisAcIndex
+                Unsigned32,
+            zxr10L2vpnStatisAcRecvPkts
+                Counter64,
+            zxr10L2vpnStatisAcRecvBytes
+                Counter64,
+            zxr10L2vpnStatisAcSndPkts
+                Counter64,
+            zxr10L2vpnStatisAcSndBytes
+                Counter64,
+            zxr10L2vpnStatisAcRecvPktsRates
+                Counter64,
+            zxr10L2vpnStatisAcRecvBytesRates
+                Counter64,
+            zxr10L2vpnStatisAcSndPktsRates
+                Counter64,
+            zxr10L2vpnStatisAcSndBytesRates
+                Counter64, 
+            zxr10L2vpnStatisAcInDropPkts
+                Counter64,
+            zxr10L2vpnStatisAcOutDropPkts
+                Counter64,
+            zxr10L2vpnStatisAcInDropBytes
+                Counter64,
+            zxr10L2vpnStatisAcOutDropBytes
+                Counter64,
+            zxr10L2vpnStatisAcRecvMcPkts
+                Counter64,
+            zxr10L2vpnStatisAcRecvMcBytes
+                Counter64,
+            zxr10L2vpnStatisAcSndMcPkts
+                Counter64,
+            zxr10L2vpnStatisAcSndMcBytes
+                Counter64,
+            zxr10L2vpnStatisAcRecvBcPkts
+                Counter64,
+            zxr10L2vpnStatisAcRecvBcBytes
+                Counter64,
+            zxr10L2vpnStatisAcSndBcPkts
+                Counter64,
+            zxr10L2vpnStatisAcSndBcBytes
+                Counter64,
+            zxr10L2vpnStatisAcRecvUcPkts
+                Counter64,
+            zxr10L2vpnStatisAcRecvUcBytes
+                Counter64,
+            zxr10L2vpnStatisAcRecvUkUcPkts
+                Counter64,
+            zxr10L2vpnStatisAcRecvUkUcBytes
+                Counter64
+            }
+    zxr10L2vpnStatisAcIndex  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The interface index of the AC."
+        ::= { zxr10L2vpnStatisAcEntry 1 }
+
+    zxr10L2vpnStatisAcRecvPkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received packets count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 2 }
+
+    zxr10L2vpnStatisAcRecvBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received bytes count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 3 }
+
+    zxr10L2vpnStatisAcSndPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent packets count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 4 }
+
+    zxr10L2vpnStatisAcSndBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent bytes count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 5 }
+
+    zxr10L2vpnStatisAcRecvPktsRates  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received packets rate of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 6 }
+         
+    zxr10L2vpnStatisAcRecvBytesRates  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received bytes rate of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 7 }   
+         
+    zxr10L2vpnStatisAcSndPktsRates  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent packets rate of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 8 }
+
+    zxr10L2vpnStatisAcSndBytesRates  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent bytes rate of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 9 } 
+
+    zxr10L2vpnStatisAcInDropPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The input dropped packets count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 10 }
+
+    zxr10L2vpnStatisAcOutDropPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The output dropped packets count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 11 }  
+
+     zxr10L2vpnStatisAcInDropBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The input dropped bytes count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 12 } 
+
+     zxr10L2vpnStatisAcOutDropBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The output dropped bytes count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 13 } 
+
+     zxr10L2vpnStatisAcRecvMcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received multicast packets count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 14 } 
+
+     zxr10L2vpnStatisAcRecvMcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received multicast bytes count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 15 } 
+
+     zxr10L2vpnStatisAcSndMcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent multicast packets count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 16 } 
+
+     zxr10L2vpnStatisAcSndMcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent multicast bytes count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 17 } 
+
+     zxr10L2vpnStatisAcRecvBcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received broadcast packets count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 18 } 
+
+     zxr10L2vpnStatisAcRecvBcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received broadcast bytes count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 19 } 
+
+     zxr10L2vpnStatisAcSndBcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent broadcast packets count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 20 } 
+
+     zxr10L2vpnStatisAcSndBcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sent broadcast bytes count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 21 } 
+
+     zxr10L2vpnStatisAcRecvUcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received unicast packets count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 22 } 
+
+     zxr10L2vpnStatisAcRecvUcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received unicast bytes count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 23 } 
+
+     zxr10L2vpnStatisAcRecvUkUcPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received unknown unicast packets count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 24 } 
+
+     zxr10L2vpnStatisAcRecvUkUcBytes  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The received unknown unicast bytes count of the AC."
+         ::= { zxr10L2vpnStatisAcEntry 25 } 
+END

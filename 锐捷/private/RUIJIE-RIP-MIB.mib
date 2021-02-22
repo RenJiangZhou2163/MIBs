@@ -1,0 +1,633 @@
+-- *****************************************************************
+-- RUIJIE-RIP-MIB.mib:  Ruijie RIP MIB file
+--
+-- March 2002, Wuzg
+--
+-- Copyright (c) 2002 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-RIP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        TimeTicks,
+        Unsigned32,
+        Integer32,
+        Counter32,
+        IpAddress
+                FROM SNMPv2-SMI
+        DisplayString,
+        RowStatus
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP 
+                FROM SNMPv2-CONF
+        IfIndex
+                FROM RUIJIE-TC
+        EnabledStatus 
+                FROM P-BRIDGE-MIB
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieRIPMIB MODULE-IDENTITY
+        LAST-UPDATED "200203200000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie Rip mibs."
+        REVISION      "200203200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 13}
+
+ruijieRIPMIBObjects OBJECT IDENTIFIER ::= { ruijieRIPMIB 1 }
+
+---
+---RIP GROUP
+---
+ruijieRipEnable OBJECT-TYPE
+    SYNTAX EnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+          "Rip management function status"
+    DEFVAL { disabled }
+          ::={ ruijieRIPMIBObjects 1 } 
+
+ruijieRipUpdateTime OBJECT-TYPE
+    SYNTAX Integer32 (0..2147483647)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION 
+                "The rate (time in seconds between updates) at which routing updates are sent."
+    DEFVAL {30}
+        ::={ ruijieRIPMIBObjects 2 } 
+
+ruijieRipInvalidTime OBJECT-TYPE
+    SYNTAX Integer32 (1..2147483647)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION 
+                "The interval of time (in seconds) after which a route is declared invalid."
+    DEFVAL {180}        
+        ::={ ruijieRIPMIBObjects 3 } 
+
+ruijieRipHolddownTime OBJECT-TYPE
+    SYNTAX Integer32 (0..2147483647)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION 
+         "The amount of time (in seconds) that must pass before a route 
+         is removed from the routing table"
+    DEFVAL {120}
+    ::={ ruijieRIPMIBObjects 4 }
+    
+ruijieRipRecommendSetting OBJECT-TYPE
+    SYNTAX INTEGER{ 
+            ripv1(1),
+            ripv2(2),
+            compatible(3)
+        }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+              "User can set this object to 1,2,3.
+               1 means that the system sending and receiving RIP version1 packets,
+               2 means that the system sending and receiving RIP version2 packets,
+               3 means that the system sending RIP version1 packets and receiving both
+                 RIP version1 and RIP version2 packets.
+                 
+               If the system RIP interface configuration has been modified by user,this 
+               object will be 4."
+    DEFVAL {3}
+        ::={ruijieRIPMIBObjects 5}
+ 
+ 
+-- The RIP Interface Status Table.
+
+ruijieRipIfStatTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF RuijieRipIfStatEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+           "A list of subnets which require separate
+           status monitoring in RIP."
+       ::= { ruijieRIPMIBObjects 6 }
+
+ruijieRipIfStatEntry OBJECT-TYPE
+       SYNTAX   RuijieRipIfStatEntry
+       MAX-ACCESS   not-accessible
+       STATUS   current
+       DESCRIPTION
+          "A Single Routing Domain in a single Subnet."
+      INDEX { ruijieRipIfStatIfIndex }
+      ::= { ruijieRipIfStatTable 1 }
+
+RuijieRipIfStatEntry ::=
+        SEQUENCE {
+        ruijieRipIfStatIfIndex
+                IfIndex,
+        ruijieRipIfStatRcvBadPackets
+                Counter32,
+        ruijieRipIfStatRcvBadRoutes
+                Counter32,
+        ruijieRipIfStatSentUpdates
+                Counter32
+            }
+
+ruijieRipIfStatIfIndex OBJECT-TYPE
+        SYNTAX   IfIndex
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+               "VID of vlan which each net interface associate."
+       ::= { ruijieRipIfStatEntry 1 }
+
+ruijieRipIfStatRcvBadPackets OBJECT-TYPE
+        SYNTAX   Counter32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The number of RIP response packets received by
+           the RIP process which were subsequently discarded
+           for any reason (e.g. a version 0 packet, or an
+           unknown command type)."
+       ::= { ruijieRipIfStatEntry 2 }
+
+ruijieRipIfStatRcvBadRoutes OBJECT-TYPE
+        SYNTAX   Counter32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The number of routes, in valid RIP packets,
+           which were ignored for any reason (e.g. unknown
+           address family, or invalid metric)."
+       ::= { ruijieRipIfStatEntry 3 }
+
+ruijieRipIfStatSentUpdates OBJECT-TYPE
+        SYNTAX   Counter32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The number of triggered RIP updates actually
+           sent on this interface.  This explicitly does
+           NOT include full updates sent containing new
+           information."
+       ::= { ruijieRipIfStatEntry 4 }
+ 
+-- The RIP Interface Configuration Table.
+
+ruijieRipIfConfTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF RuijieRipIfConfEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+           "A list of interfaces which require separate
+           configuration in RIP."
+       ::= { ruijieRIPMIBObjects  7 }
+
+ruijieRipIfConfEntry OBJECT-TYPE
+       SYNTAX   RuijieRipIfConfEntry
+       MAX-ACCESS   not-accessible
+       STATUS   current
+       DESCRIPTION
+          "A Single Routing Domain in a single interface."
+      INDEX { ruijieRipIfConfIfIndex }
+      ::= { ruijieRipIfConfTable 1 }
+
+    RuijieRipIfConfEntry ::=
+        SEQUENCE {
+         ruijieRipIfConfIfIndex
+                IfIndex,
+         ruijieRipIfConfAuthType
+                INTEGER,
+         ruijieRipIfConfAuthKeyChain
+                DisplayString,
+         ruijieRipIfConfSend
+                INTEGER,
+         ruijieRipIfConfReceive
+                INTEGER,
+         ruijieRipIfPassiveStatus
+                EnabledStatus,
+         ruijieRipIfBroadcastEnable       
+                EnabledStatus,
+         ruijieRipIfAdminStat 
+                EnabledStatus               
+     }
+
+ruijieRipIfConfIfIndex OBJECT-TYPE
+        SYNTAX   IfIndex
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+               "IfIndex vale of vlan interface."
+       ::= { ruijieRipIfConfEntry 1 }
+
+ 
+ruijieRipIfConfAuthType OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    noAuthentication(1),
+                    simplePassword (2),
+                    md5(3)    
+                 }
+        MAX-ACCESS   read-write
+        STATUS   current
+        DESCRIPTION
+           "The type of Authentication used on this
+           interface."
+       DEFVAL { noAuthentication }
+       ::= { ruijieRipIfConfEntry 2 }
+
+ruijieRipIfConfAuthKeyChain OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..32))
+        MAX-ACCESS   read-write
+        STATUS   current
+        DESCRIPTION
+           "The key chain name which interface associated. It indicate that 
+            this interface doesn't match any key chain which this string is null"
+        REFERENCE
+           "ruijieAuthenKeyChainName in RUIJIE-AUTHEN-KEY-MIB."   
+       ::= { ruijieRipIfConfEntry 3 }
+
+ruijieRipIfConfSend OBJECT-TYPE
+        SYNTAX   INTEGER {
+                    ripVersion1 (1),
+                    rip1Compatible (2),
+                    ripVersion2 (3)                     
+                 }
+        MAX-ACCESS   read-write
+        STATUS   current
+        DESCRIPTION
+           "What the router sends on this interface.
+           ripVersion1 implies sending RIP updates compliant
+           with  RFC  1058.   rip1Compatible implies
+           broadcasting RIP-2 updates using RFC 1058 route
+           subsumption rules.  ripVersion2 implies
+           multicasting RIP-2 updates.  ripV1Demand indicates
+           the use of Demand RIP on a WAN interface under RIP
+           Version 1 rules.  ripV2Demand indicates the use of
+           Demand RIP on a WAN interface under Version 2 rules."
+       DEFVAL { rip1Compatible }
+       ::= { ruijieRipIfConfEntry 4 }
+
+ruijieRipIfConfReceive OBJECT-TYPE
+        SYNTAX   INTEGER {
+                    rip1 (1),
+                    rip2 (2),
+                    rip1OrRip2 (3)
+                 }
+        MAX-ACCESS   read-write
+        STATUS   current
+        DESCRIPTION
+           "This indicates which version of RIP updates
+           are to be accepted.  Note that rip2 and
+           rip1OrRip2 implies reception of multicast
+           packets."
+       DEFVAL { rip1OrRip2 }
+       ::= { ruijieRipIfConfEntry 5 }
+
+ruijieRipIfPassiveStatus  OBJECT-TYPE
+       SYNTAX EnabledStatus
+       MAX-ACCESS read-write
+       STATUS current
+       DESCRIPTION
+             " The interface will not send routing updates if this value is 'enabled'"
+       DEFVAL { disabled }
+             ::={ ruijieRipIfConfEntry 6 } 
+
+ruijieRipIfBroadcastEnable OBJECT-TYPE
+       SYNTAX EnabledStatus
+       MAX-ACCESS read-write
+       STATUS current
+       DESCRIPTION
+             "Enable or disable broadcast updats of RIP in this interface"
+       DEFVAL { disabled }
+             ::={ ruijieRipIfConfEntry 7 }
+
+ruijieRipIfAdminStat OBJECT-TYPE
+        SYNTAX   EnabledStatus
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The RIP  interface's  administrative  status.
+           The  value formed on the interface, and the in-
+           terface will be advertised as an internal route
+           to  some  area.   The  value 'disabled' denotes
+           that the interface is external to RIP."
+       ::= { ruijieRipIfConfEntry 8 }
+
+                   
+ruijieRipOffsetMetric OBJECT-TYPE
+    SYNTAX Integer32 (1..15)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION 
+         "This object means the value of increasing incoming 
+           and outgoing metrics to routes learned via RIP "
+    DEFVAL {1}
+    ::={ ruijieRIPMIBObjects 8 }
+
+ruijieRipAdministrativeDistance OBJECT-TYPE
+    SYNTAX Integer32 (0..255)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION 
+                "This object specified the priority of route information learned via RIP."
+    ::={ ruijieRIPMIBObjects 9}  
+
+ruijieRipValidateUpdateSrcEnable  OBJECT-TYPE
+    SYNTAX EnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+          "This object allow of enabling or disabling validate the
+           source IP address of incoming RIP routing updates."
+    DEFVAL { enabled }
+          ::={ ruijieRIPMIBObjects 10 } 
+
+ruijieRipPassiveStatus  OBJECT-TYPE
+       SYNTAX EnabledStatus
+       MAX-ACCESS read-write
+       STATUS current
+       DESCRIPTION
+             "The ruijieRipIfPassiveStatus of a interface equal to this object value
+              when this interface is created. If you change this object value to 'enabled'
+              or 'disabled'all interfaces which have exist will also change their 
+              ruijieRipIfPassiveStatus to 'enabled' or 'disabled'."
+       DEFVAL { disabled }
+             ::={ ruijieRIPMIBObjects 11 } 
+
+
+ruijieRipNextDueIn  OBJECT-TYPE
+       SYNTAX TimeTicks
+       MAX-ACCESS read-only
+       STATUS current
+       DESCRIPTION
+             "Waitting time interval before next update packet generatting 
+             in units of second"
+             ::={ ruijieRIPMIBObjects 12 }
+
+-- The RIP Interface Offset Table.
+ruijieRipIfOffsetTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF RuijieRipIfOffsetEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+           "The interface configuration about offset.
+            Apply an offset list to routing metrics to increase incoming and 
+            outgoing metrics to routes learned through RIP. You can limit 
+            the offset list with an access list or an interface."
+       ::= { ruijieRIPMIBObjects 13 }
+
+ruijieRipIfOffsetEntry OBJECT-TYPE
+       SYNTAX   RuijieRipIfOffsetEntry
+       MAX-ACCESS   not-accessible
+       STATUS   current
+       DESCRIPTION
+          "the entry of this table."
+      INDEX { ruijieRipIfOffsetIfIndex,ruijieRipIfOffsetMethod }
+      ::= { ruijieRipIfOffsetTable 1 }
+
+RuijieRipIfOffsetEntry ::=
+        SEQUENCE {
+        ruijieRipIfOffsetIfIndex
+                Integer32,
+        ruijieRipIfOffsetMethod
+                INTEGER,
+        ruijieRipIfOffsetAclName
+                DisplayString,
+        ruijieRipIfOffsetMetric
+                Unsigned32,                
+        ruijieRipIfOffsetStatus
+                RowStatus
+            }
+
+ruijieRipIfOffsetIfIndex OBJECT-TYPE
+        SYNTAX   Integer32 (0..2147483647)
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+               "the interface that this offset list apply to.
+               
+                If this value is 0,it indicate that this offset list apply in all 
+                interfaces except the interfaceswhich which have not Offset configure.
+                
+                Other value is equal to TEXTUAL-CONVENTION IfIndex meaning,this offset
+                list will apply in only the designate interface"
+       ::= { ruijieRipIfOffsetEntry 1 }
+
+ruijieRipIfOffsetMethod OBJECT-TYPE
+        SYNTAX   INTEGER{
+                         out(1),
+                         in(2)
+                        }
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "the offset list apply to incoming routes or 
+           outgoing routes."
+       ::= { ruijieRipIfOffsetEntry 2 }
+
+ruijieRipIfOffsetAclName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..32))
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           " the offset list with Access list name ."
+       ::= { ruijieRipIfOffsetEntry 3 }
+       
+ruijieRipIfOffsetMetric OBJECT-TYPE
+        SYNTAX   Unsigned32(0..16)
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           "the offset list with offset value,
+            in condition the value will be added to route metric."
+       ::= { ruijieRipIfOffsetEntry 4 }
+
+ruijieRipIfOffsetStatus OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           " if this value is setted destroy,
+             the entry will be deleted ."
+       ::= { ruijieRipIfOffsetEntry 5 }                    
+
+
+--network table
+ruijieRipNetworkTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF RuijieRipNetworkEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+           "the network for rip routing."
+       ::= { ruijieRIPMIBObjects 14 }
+
+ruijieRipNetworkEntry OBJECT-TYPE
+       SYNTAX   RuijieRipNetworkEntry
+       MAX-ACCESS   not-accessible
+       STATUS   current
+       DESCRIPTION
+          "the entry of this table."
+      INDEX { ruijieRipNetworkAddr }
+      ::= { ruijieRipNetworkTable 1 }
+
+RuijieRipNetworkEntry ::=
+        SEQUENCE {
+        ruijieRipNetworkAddr
+                IpAddress,
+        ruijieRipNetworkMask
+                IpAddress,                
+        ruijieRipNetworkStatus
+                RowStatus
+            }
+
+ruijieRipNetworkAddr OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+               "define a network for rip routing ."
+       ::= { ruijieRipNetworkEntry 1 }
+
+ruijieRipNetworkMask OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+               "define a network's mask for rip routing ."
+       ::= { ruijieRipNetworkEntry 2 }
+              
+ruijieRipNetworkStatus OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+               "if destroy is setted,
+                this entry will be deleted ."
+       ::= { ruijieRipNetworkEntry 3 }
+
+--neighbor table
+ruijieRipNeighborTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF RuijieRipNeighborEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+           "the neighbor for rip routing."
+       ::= { ruijieRIPMIBObjects 15 }
+
+ruijieRipNeighborEntry OBJECT-TYPE
+       SYNTAX   RuijieRipNeighborEntry
+       MAX-ACCESS   not-accessible
+       STATUS   current
+       DESCRIPTION
+          "the entry of this table."
+      INDEX { ruijieRipNeighborIndex }
+      ::= { ruijieRipNeighborTable 1 }
+
+RuijieRipNeighborEntry ::=
+        SEQUENCE {
+        ruijieRipNeighborIndex
+                IpAddress,
+        ruijieRipNeighborStatus
+                RowStatus
+            }
+
+ruijieRipNeighborIndex OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+               "define a neighbor for rip  ."
+       ::= { ruijieRipNeighborEntry 1 }
+       
+ruijieRipNeighborStatus OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+               "if destroy is setted,
+                this entry will be deleted."
+       ::= { ruijieRipNeighborEntry 2 }
+             
+ruijieRIPMIBConformance OBJECT IDENTIFIER ::= { ruijieRIPMIB 2 }
+ruijieRIPMIBCompliances OBJECT IDENTIFIER ::= { ruijieRIPMIBConformance 1 }
+ruijieRIPMIBGroups      OBJECT IDENTIFIER ::= { ruijieRIPMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieRIPMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie Snooping Dhcp MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieRipMIBGroup,
+                                   ruijieRIPExtendMIBGroup  
+                 }
+        ::= { ruijieRIPMIBCompliances 1 }
+                
+-- units of conformance
+
+ruijieRipMIBGroup OBJECT-GROUP
+        OBJECTS {
+           ruijieRipEnable,
+           ruijieRipUpdateTime,
+           ruijieRipInvalidTime,
+           ruijieRipHolddownTime,
+           ruijieRipRecommendSetting,
+           ruijieRipIfStatIfIndex,
+           ruijieRipIfStatRcvBadPackets,
+           ruijieRipIfStatRcvBadRoutes,
+           ruijieRipIfStatSentUpdates,           
+           ruijieRipIfConfIfIndex,
+           ruijieRipIfConfAuthType,
+           ruijieRipIfConfAuthKeyChain,
+           ruijieRipIfConfSend,
+           ruijieRipIfConfReceive,
+           ruijieRipIfPassiveStatus,
+           ruijieRipIfBroadcastEnable,
+           ruijieRipIfAdminStat,
+           ruijieRipOffsetMetric,
+           ruijieRipAdministrativeDistance,
+           ruijieRipValidateUpdateSrcEnable
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing rip managment."
+        ::= { ruijieRIPMIBGroups 1 }
+
+ruijieRIPExtendMIBGroup OBJECT-GROUP
+        OBJECTS {
+           ruijieRipNextDueIn,
+           
+           ruijieRipIfOffsetIfIndex,
+           ruijieRipIfOffsetMethod,
+           ruijieRipIfOffsetAclName,
+           ruijieRipIfOffsetMetric,                
+           ruijieRipIfOffsetStatus,
+           
+           ruijieRipNetworkAddr,
+           ruijieRipNetworkMask,
+           ruijieRipNetworkStatus,
+           
+           ruijieRipNeighborIndex,
+           ruijieRipNeighborStatus        
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing rip extend managment."
+        ::= { ruijieRIPMIBGroups 2 }
+                
+        
+END

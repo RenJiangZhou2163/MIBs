@@ -1,0 +1,258 @@
+-- *******************************************************************
+-- RUIJIE-VSF-MIB.mib: Ruijie VSF MIB file
+-- June 2015, lishengcao
+--
+-- Copyright (c) 2015 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- *******************************************************************
+--
+RUIJIE-VSF-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        OBJECT-TYPE,
+        MODULE-IDENTITY,
+        IpAddress,
+        NOTIFICATION-TYPE
+                FROM SNMPv2-SMI
+        Gauge
+                FROM RFC1155-SMI
+        MacAddress,
+        DisplayString
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        NOTIFICATION-GROUP,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieVsfMIB MODULE-IDENTITY
+        LAST-UPDATED "201506010000Z"
+        ORGANIZATION "$Company$"
+        CONTACT-INFO
+            " 
+        Tel: $Telephone$
+
+        E-mail: $E-mail$"
+        DESCRIPTION
+            "This module defines VSF management mibs."
+        REVISION "201506010000Z"
+        DESCRIPTION
+            "Initial version of this MIB module."
+    ::= { ruijieMgmt 140 }
+
+--********************************************************************
+--                                                                  **
+--                         VSF objects root                         **
+--                                                                  **
+--********************************************************************
+ruijieVsfMIBObjects OBJECT IDENTIFIER ::= { ruijieVsfMIB 1 }
+
+
+--***************** the VSF device nodes *********************
+ruijieVsfDeviceInfo OBJECT IDENTIFIER ::= { ruijieVsfMIBObjects 1 }
+
+ruijieVsfDeviceTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF  RuijieVsfDeviceEntry
+        MAX-ACCESS          not-accessible 
+        STATUS              current         
+        DESCRIPTION     
+            "The whole device information in VSF system"
+    ::= { ruijieVsfDeviceInfo 1 }
+
+ruijieVsfDeviceEntry OBJECT-TYPE
+        SYNTAX      RuijieVsfDeviceEntry 
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The device information entry"
+        INDEX       { ruijieVsfDeviceID }
+    ::= { ruijieVsfDeviceTable 1 }
+
+RuijieVsfDeviceEntry ::=
+        SEQUENCE {
+            ruijieVsfDeviceID           INTEGER,   
+            ruijieVsfDeviceMac          MacAddress,
+            ruijieVsfDeviceDescr        DisplayString,
+            ruijieVsfDeviceStatus       INTEGER
+        }
+
+ruijieVsfDeviceID OBJECT-TYPE
+        SYNTAX      INTEGER 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSF system member device identifier"
+    ::= { ruijieVsfDeviceEntry 1 }
+
+ruijieVsfDeviceMac OBJECT-TYPE
+        SYNTAX      MacAddress 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSF system member device mac address"
+    ::= { ruijieVsfDeviceEntry 2 }
+
+ruijieVsfDeviceDescr OBJECT-TYPE
+        SYNTAX      DisplayString 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSF system member device description information"
+    ::= { ruijieVsfDeviceEntry 3 }
+
+ruijieVsfDeviceStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        ok(1),
+                        recovery(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSF system member device status information"
+    ::= { ruijieVsfDeviceEntry 4 }
+
+--***************** the VSF PORT nodes *********************
+ruijieVsf OBJECT IDENTIFIER ::= { ruijieVsfMIBObjects 2 }
+
+ruijieVsfPortTable OBJECT-TYPE 
+        SYNTAX SEQUENCE OF  RuijieVsfPortEntry
+        MAX-ACCESS          not-accessible 
+        STATUS              current
+        DESCRIPTION
+            "The VSF port members table"
+    ::= { ruijieVsf 1 }
+
+ruijieVsfPortEntry OBJECT-TYPE
+        SYNTAX      RuijieVsfPortEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The VSF port members entry"
+        INDEX       { ruijieVsfPortIfIndex } 
+    ::= { ruijieVsfPortTable 1 }
+
+RuijieVsfPortEntry ::=
+        SEQUENCE {
+            ruijieVsfPortIfIndex     INTEGER,       
+            ruijieVsfApIf            DisplayString,
+            ruijieVsfPortState       INTEGER,
+            ruijieVsfPortPeerIfIndex INTEGER
+        }
+
+ruijieVsfPortIfIndex OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSF  port index"
+    ::= { ruijieVsfPortEntry 1 }
+    
+ruijieVsfApIf OBJECT-TYPE    
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSF  port ap"
+    ::= { ruijieVsfPortEntry 2 }
+
+ruijieVsfPortState OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        down(1),        
+                        up(2),
+                        ok(3),
+                        disable(4),
+                        aged(5)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSF  port's state"
+    ::= { ruijieVsfPortEntry 3 }
+
+ruijieVsfPortPeerIfIndex OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSF  port's peer port index"
+    ::= { ruijieVsfPortEntry 4 }
+    
+ruijieVsfApTable OBJECT-TYPE 
+        SYNTAX SEQUENCE OF  RuijieVsfApEntry
+        MAX-ACCESS          not-accessible 
+        STATUS              current
+        DESCRIPTION
+            "The VSF AP table"
+    ::= { ruijieVsf 2 }
+
+ruijieVsfApEntry OBJECT-TYPE
+        SYNTAX      RuijieVsfApEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The VSF AP entry"
+        INDEX       { ruijieVsfApIndex } 
+    ::= { ruijieVsfApTable 1 }
+
+RuijieVsfApEntry ::=
+        SEQUENCE {   
+            ruijieVsfApIndex         INTEGER,
+            ruijieVsfApUptime        DisplayString
+        }
+    
+ruijieVsfApIndex OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSF AP index"
+    ::= { ruijieVsfApEntry 1 }
+
+ruijieVsfApUptime OBJECT-TYPE    
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VSF AP UP time"
+    ::= { ruijieVsfApEntry 2 }
+    
+--********************************************************************
+--                                                                  **
+--                conformance information                           **
+--                                                                  **
+--********************************************************************
+ruijieVsfMIBConformance OBJECT IDENTIFIER ::= { ruijieVsfMIB 3}
+ruijieVsfMIBCompliances OBJECT IDENTIFIER ::= { ruijieVsfMIBConformance 1}
+ruijieVsfMIBGroups OBJECT IDENTIFIER ::= { ruijieVsfMIBConformance 2}   
+
+--***************** compliance information ********************
+ruijieVsfMIBCompliance MODULE-COMPLIANCE
+        STATUS current
+        DESCRIPTION
+            "The compliance statement for entities which implement the Ruijie VSF"
+        MODULE 
+            MANDATORY-GROUPS { ruijieVsfMIBObjectsGroup }  
+    ::= { ruijieVsfMIBCompliances 1 }
+
+--***************** units of conformance ********************
+ruijieVsfMIBObjectsGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieVsfDeviceID,
+            ruijieVsfDeviceMac,
+            ruijieVsfDeviceDescr,
+            ruijieVsfDeviceStatus,
+            ruijieVsfPortIfIndex,
+            ruijieVsfApIf,
+            ruijieVsfPortState,
+            ruijieVsfPortPeerIfIndex,
+            ruijieVsfApIndex,
+            ruijieVsfApUptime
+        }
+        STATUS  current
+        DESCRIPTION
+            "A collection of objects providing VSF running status to a Ruijie agent"
+    ::= { ruijieVsfMIBGroups 1 } 
+
+END
+

@@ -1,0 +1,2797 @@
+-- 
+--  $Id: ZXR10-MPLS-L3VPN-STATIS.mib 3 2005-07-26 01:34:21Z taowq $
+--
+--  ZXR10-MPLS-L3VPN.mib: ZXR10-IF-STAT-MIB  MIB file
+--
+--  Jul. 2005, Tao wenqiang
+--
+--  Copyright(c) 2005 by ZTE Corporaton
+--  All rights reservered
+--
+--  
+
+ZXR10-IF-STAT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Unsigned32,
+    Integer32,
+    Counter32,
+    Counter64
+        FROM SNMPv2-SMI
+    zxr10RosngMIB
+        FROM ZXR10-SMI
+    DisplayString,
+    TEXTUAL-CONVENTION
+        FROM SNMPv2-TC 
+    RowStatus                           
+        FROM SNMPv2-TC;
+
+    zxr10IfStatMIB MODULE-IDENTITY
+    LAST-UPDATED "201809120000Z"  
+    ORGANIZATION "ZTE Corporation"
+    CONTACT-INFO
+        "ZTE Corporation
+         Nanjing Institute of ZTE Corporation
+
+         No.68 Zijinghua Rd. Yuhuatai District, Nanjing, China
+
+         Tel: +86-25-52870000"
+
+    DESCRIPTION
+        ""
+    REVISION "201809120000Z"
+    DESCRIPTION
+    "Add a new table called zxr10IPsecTunnelStatTable."
+    REVISION "201707250000Z"
+    DESCRIPTION
+    "Add new node zxr10IfPerfGlobalRateStatPeriod in zxr10IfPerfGlobalSwitchObject."
+    REVISION "201702140000Z"
+    DESCRIPTION
+    "Add new node zxr10TeIfTrafficStatInPNBytes in zxr10TeIfTrafficStatTable.
+     Add new node zxr10TeIfTrafficStatInPNPkts in zxr10TeIfTrafficStatTable.
+     Add new node zxr10TeIfTrafficStatOutPNBytes in zxr10TeIfTrafficStatTable.
+     Add new node zxr10TeIfTrafficStatOutPNPkts in zxr10TeIfTrafficStatTable."
+    REVISION "201701180000Z"
+    DESCRIPTION
+    "Add a new table called zxr10IfRateStatTable."
+    REVISION "201609140000Z"
+    DESCRIPTION
+    "Add new node zxr10SpiStatInDropPkts in zxr10SpiStatTable.
+     Add new node zxr10SpiStatOutDropPkts in zxr10SpiStatTable."
+    REVISION "201606220000Z"
+    DESCRIPTION
+       "Add a new table called zxr10SpiStatTable."
+    REVISION "201604050000Z"
+    DESCRIPTION
+    "Add new node zxr10IfSpeedGatherInBitSpeed in zxr10IfSpeedGatherTable.
+    Add new node zxr10IfSpeedGatherOutBitSpeed in zxr10IfSpeedGatherTable."
+    REVISION "201508210000Z"
+    DESCRIPTION
+       "Add a new table called zxr10VxLanTunnelStatTable."
+    REVISION "201505040000Z"
+    DESCRIPTION
+       "Add a new table called zxr10IfSpeedGatherTable."        
+    REVISION "201503110000Z"
+    DESCRIPTION
+       "Add a new table called zxr10IfRatioGatherTable."
+    REVISION "201501290000Z"
+    DESCRIPTION
+        "Change the name from zxr10IfTrafficStatInUrpfDrpPkts into zxr10IfTrafficStatInV4UrpfDrpPkts
+         Change the name from zxr10IfTrafficStatOutUrpfDrpPkts into zxr10IfTrafficStatInV6UrpfDrpPkts
+         in the table zxr10IfTrafficStatTable"
+    REVISION "201412230000Z"
+    DESCRIPTION
+       "Add a new table called zxr10PhyIfStatTable;
+        Add a new table called zxr10IPLogicIfStatTable;
+        Add a new table called zxr10NoIPLogicIfStatTable."        
+    REVISION "201410150000Z"
+    DESCRIPTION
+       "Add a new table called zxr10GreTunnelStatTable."
+    REVISION "201406160000Z"   
+    DESCRIPTION
+       "Add new interface performance items about URPF in zxr10IfTrafficStatTable"
+    REVISION "201405290000Z"
+    DESCRIPTION
+       "Add a new table called zxr10WlanBssCountersTable.
+        Add a new table called zxr10IfHwCountersTable"
+    REVISION "201403130000Z"
+    DESCRIPTION
+       "Change SYNTAX Integer32 into Unsigned32 in Zxr10IfPerfLimitEntry"
+    REVISION "201311150000Z"
+    DESCRIPTION
+       "Add a new table called zxr10IfIPv6StatsTable"
+    REVISION "201310310000Z"
+    DESCRIPTION
+       "Add new node zxr10IfTrafficStatOutUpCarDrop in zxr10IfTrafficStatTable"
+    REVISION "201307020000Z"
+    DESCRIPTION
+       "Add new interface performance items in zxr10TeIfTrafficStatTable"      
+    REVISION "201305030000Z"
+    DESCRIPTION
+       "Import SNMP data type:Integer32,TEXTUAL-CONVENTION;
+        Delete data type definition:DisplayString;
+        Correct the definition of Type Switch;
+        Change SEQUENCE identifier to startwith upper case;
+        Change SYNTAX INTEGER into Integer32;
+        The identifier 'zxr10IfPerfSwitchRowStatus' is already present in this module, change the second one into zxr10IfPerfSpecialIfSwitchRowStatus"
+    REVISION "201304020000Z"
+    DESCRIPTION
+       "Add interface performance item for SNMP according with CLI"      
+    REVISION "200509260000Z"  -- September 26, 2005
+    DESCRIPTION
+       ""
+    ::= { zxr10RosngMIB 150 }
+
+
+    InterfaceIndex ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "d"
+        STATUS       current
+        DESCRIPTION
+            "A unique value, greater than zero, for each interface or
+            interface sub-layer in the managed system.  It is
+            recommended that values are assigned contiguously starting
+            from 1.  The value for each interface sub-layer must remain
+            constant at least from one re-initialization of the entity's
+            network management system to the next re-initialization."
+        SYNTAX       Integer32 (1..2147483647)
+        
+     Switch ::= TEXTUAL-CONVENTION
+        STATUS       current
+        DESCRIPTION
+            "A switching value, the value of 0 indicates that the closure, 
+             the value of 1 indicates that the open."
+        SYNTAX       INTEGER{disable(0),enable(1)}
+        
+
+    zxr10IfTrafficStatTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IfTrafficStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10IfStatMIB 1 }
+
+    zxr10IfTrafficStatEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IfTrafficStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10IfTrafficStatIfIndex }
+        ::= { zxr10IfTrafficStatTable 1 }
+
+    Zxr10IfTrafficStatEntry ::=
+        SEQUENCE {
+            zxr10IfTrafficStatIfIndex
+                InterfaceIndex,     
+            zxr10IfTrafficStatIfName
+                DisplayString,
+            zxr10IfTrafficStatInPkts
+                Counter64,
+            zxr10IfTrafficStatOutPkts
+                Counter64, 
+            zxr10IfTrafficStatInReceivesV4 
+                Counter64,       
+            zxr10IfTrafficStatInOctetsV4
+                Counter64,          
+            zxr10IfTrafficStatInHdrErrorsV4
+                Counter64,      
+            zxr10IfTrafficStatInAddrErrorsV4
+                Counter64,      
+            zxr10IfTrafficStatInTruncatedPktsV4
+                Counter64,   
+            zxr10IfTrafficStatInBcastPktsV4
+                Counter64,    
+            zxr10IfTrafficStatInNoRoutesV4
+                Counter64,        
+            zxr10IfTrafficStatInUnknownProtosV4
+                Counter64,   
+            zxr10IfTrafficStatInDiscardsV4 
+                Counter64,       
+            zxr10IfTrafficStatInForwDatagramsV4
+                Counter64,   
+            zxr10IfTrafficStatInReceivesV6
+                Counter64,        
+            zxr10IfTrafficStatInOctetsV6
+                Counter64,          
+            zxr10IfTrafficStatInHdrErrorsV6
+                Counter64,       
+            zxr10IfTrafficStatInTruncatedPktsV6 
+                Counter64,  
+            zxr10IfTrafficStatInAddrErrorsV6
+                Counter64,      
+            zxr10IfTrafficStatInBcastPktsV6
+                Counter64,     
+            zxr10IfTrafficStatInNoRoutesV6
+                Counter64,        
+            zxr10IfTrafficStatInUnknownProtosV6
+                Counter64,   
+            zxr10IfTrafficStatInDiscardsV6
+                Counter64,
+            zxr10IfTrafficStatInForwDatagramsV6
+                Counter64,   
+            zxr10IfTrafficStatOutDiscardsV4
+                Counter64,       
+            zxr10IfTrafficStatOutForwDatagramsV4
+                Counter64,  
+            zxr10IfTrafficStatOutFragReqdsV4
+                Counter64,                   
+            zxr10IfTrafficStatOutDiscardsV6 
+                Counter64,                   
+            zxr10IfTrafficStatOutForwDatagramsV6 
+                Counter64,  
+            zxr10IfTrafficStatOutFragReqdsV6
+                Counter64,            
+            zxr10IfTrafficStatInUpsendCarDrop
+                Counter64,    
+            zxr10IfTrafficStatOutV4
+                Counter64, 
+             zxr10IfTrafficStatOutOctetsV4
+                Counter64,
+             zxr10IfTrafficStatOutV6
+               Counter64,
+            zxr10IfTrafficStatOutOctetsV6
+               Counter64,
+            zxr10IfTrafficStatOutUpCarDrop
+                Counter64,
+            zxr10IfTrafficStatInV4UrpfDrpPkts 
+                Counter64,
+            zxr10IfTrafficStatInV6UrpfDrpPkts
+               Counter64         
+    }    
+    
+    zxr10IfTrafficStatIfIndex  OBJECT-TYPE
+        SYNTAX  InterfaceIndex
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Interface index"
+        ::= { zxr10IfTrafficStatEntry 1 }
+
+    zxr10IfTrafficStatIfName  OBJECT-TYPE
+        SYNTAX   DisplayString (SIZE(0..36))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Interface name"
+        ::= { zxr10IfTrafficStatEntry 2 }
+
+    zxr10IfTrafficStatInPkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "In packets"
+         ::= { zxr10IfTrafficStatEntry 3 }
+
+    zxr10IfTrafficStatOutPkts  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Out packets"
+         ::= { zxr10IfTrafficStatEntry 4 } 
+          
+    zxr10IfTrafficStatInReceivesV4  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInReceivesV4"
+         ::= { zxr10IfTrafficStatEntry 5 } 
+          
+    zxr10IfTrafficStatInOctetsV4  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInOctetsV4"
+         ::= { zxr10IfTrafficStatEntry 6 } 
+         
+    zxr10IfTrafficStatInHdrErrorsV4  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInHdrErrorsV4"
+         ::= { zxr10IfTrafficStatEntry 7 }
+         
+    zxr10IfTrafficStatInAddrErrorsV4  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInAddrErrorsV4"
+         ::= { zxr10IfTrafficStatEntry 8 }                  
+
+    zxr10IfTrafficStatInTruncatedPktsV4   OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInTruncatedPktsV4"
+         ::= { zxr10IfTrafficStatEntry 9 }
+         
+    zxr10IfTrafficStatInBcastPktsV4    OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInBcastPktsV4"
+         ::= { zxr10IfTrafficStatEntry 10 }
+    
+    zxr10IfTrafficStatInNoRoutesV4    OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInNoRoutesV4"
+         ::= { zxr10IfTrafficStatEntry 11 }                        
+         
+    zxr10IfTrafficStatInUnknownProtosV4    OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInUnknownProtosV4 "
+         ::= { zxr10IfTrafficStatEntry 12 } 
+         
+    zxr10IfTrafficStatInDiscardsV4     OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInDiscardsV4"
+         ::= { zxr10IfTrafficStatEntry 13 }
+     
+    zxr10IfTrafficStatInForwDatagramsV4     OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInForwDatagramsV4"
+         ::= { zxr10IfTrafficStatEntry 14 } 
+         
+    zxr10IfTrafficStatInReceivesV6     OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInReceivesV6"
+         ::= { zxr10IfTrafficStatEntry 15 }
+    
+    zxr10IfTrafficStatInOctetsV6       OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInOctetsV6 "
+         ::= { zxr10IfTrafficStatEntry 16 }
+         
+    zxr10IfTrafficStatInHdrErrorsV6       OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInHdrErrorsV6"
+         ::= { zxr10IfTrafficStatEntry 17 }
+         
+    zxr10IfTrafficStatInTruncatedPktsV6       OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInTruncatedPktsV6"
+         ::= { zxr10IfTrafficStatEntry 18 }
+         
+    zxr10IfTrafficStatInAddrErrorsV6       OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInAddrErrorsV6"
+         ::= { zxr10IfTrafficStatEntry 19 } 
+         
+    zxr10IfTrafficStatInBcastPktsV6        OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInBcastPktsV6"
+         ::= { zxr10IfTrafficStatEntry 20 }
+         
+    zxr10IfTrafficStatInNoRoutesV6        OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInNoRoutesV6"
+         ::= { zxr10IfTrafficStatEntry 21 } 
+
+    zxr10IfTrafficStatInUnknownProtosV6         OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInUnknownProtosV6"
+         ::= { zxr10IfTrafficStatEntry 22 }                                   
+                             
+     zxr10IfTrafficStatInDiscardsV6         OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInDiscardsV6"
+         ::= { zxr10IfTrafficStatEntry 23 }
+         
+     zxr10IfTrafficStatInForwDatagramsV6         OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInForwDatagramsV6"
+         ::= { zxr10IfTrafficStatEntry 24 }         
+
+     zxr10IfTrafficStatOutDiscardsV4         OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsOutDiscardsV4"
+         ::= { zxr10IfTrafficStatEntry 25 } 
+         
+     zxr10IfTrafficStatOutForwDatagramsV4         OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsOutForwDatagramsV4"
+         ::= { zxr10IfTrafficStatEntry 26 }
+ 
+     zxr10IfTrafficStatOutFragReqdsV4          OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsOutFragReqdsV4"
+         ::= { zxr10IfTrafficStatEntry 27 }
+ 
+     zxr10IfTrafficStatOutDiscardsV6          OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsOutDiscardsV6"
+         ::= { zxr10IfTrafficStatEntry 28 }
+
+     zxr10IfTrafficStatOutForwDatagramsV6          OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsOutForwDatagramsV6"
+         ::= { zxr10IfTrafficStatEntry 29 }
+
+     zxr10IfTrafficStatOutFragReqdsV6          OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsOutFragReqdsV6"
+         ::= { zxr10IfTrafficStatEntry 30 } 
+
+     zxr10IfTrafficStatInUpsendCarDrop          OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInUpsendCarDrop"
+         ::= { zxr10IfTrafficStatEntry 31 }
+ 
+     zxr10IfTrafficStatOutV4          OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsOutV4"
+         ::= { zxr10IfTrafficStatEntry 32 }
+ 
+     zxr10IfTrafficStatOutOctetsV4          OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsOutOctetsV4"
+         ::= { zxr10IfTrafficStatEntry 33 }
+
+     zxr10IfTrafficStatOutV6          OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatOutV6"
+         ::= { zxr10IfTrafficStatEntry 34 }
+
+     zxr10IfTrafficStatOutOctetsV6          OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatOutOctetsV6"
+         ::= { zxr10IfTrafficStatEntry 35 }
+
+     zxr10IfTrafficStatOutUpCarDrop          OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsOutUpCarDrop"
+         ::= { zxr10IfTrafficStatEntry 36 }
+
+     zxr10IfTrafficStatInV4UrpfDrpPkts      OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInV4UrpfDrpPkts"
+         ::= { zxr10IfTrafficStatEntry 37 }
+
+     zxr10IfTrafficStatInV6UrpfDrpPkts      OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "ipSystemStatsInV6UrpfDrpPkts"
+         ::= { zxr10IfTrafficStatEntry 38 }
+
+
+
+    zxr10TeIfTrafficStatTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10TeIfTrafficStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10IfStatMIB 2 }
+
+    zxr10TeIfTrafficStatEntry  OBJECT-TYPE
+        SYNTAX  Zxr10TeIfTrafficStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10TeIfTrafficStatTeTunnelID }
+        ::= { zxr10TeIfTrafficStatTable 1 }
+
+    Zxr10TeIfTrafficStatEntry ::=
+        SEQUENCE {            
+            zxr10TeIfTrafficStatTeTunnelID 
+                  Integer32,
+            zxr10TeIfTrafficStatIfIndex
+                  InterfaceIndex,     
+            zxr10TeIfTrafficStatIfName
+                DisplayString,
+            zxr10TeIfTrafficStatOutBytes
+                Counter64,
+            zxr10TeIfTrafficStatOutPkts
+               Counter64,
+            zxr10TeIfTrafficStatOutBandwidth
+               Counter64,
+            zxr10TeIfTrafficStatOutPri0Bytes
+               Counter64,
+            zxr10TeIfTrafficStatOutPri0Pkts
+              Counter64,
+            zxr10TeIfTrafficStatOutPri0Bandwidth
+              Counter64,
+            zxr10TeIfTrafficStatOutPri1Bytes
+              Counter64,
+            zxr10TeIfTrafficStatOutPri1Pkts
+              Counter64,
+            zxr10TeIfTrafficStatOutPri1Bandwidth
+              Counter64,
+            zxr10TeIfTrafficStatOutPri2Bytes
+             Counter64,
+            zxr10TeIfTrafficStatOutPri2Pkts
+              Counter64,
+            zxr10TeIfTrafficStatOutPri2Bandwidth
+             Counter64,
+            zxr10TeIfTrafficStatOutPri3Bytes
+              Counter64,
+            zxr10TeIfTrafficStatOutPri3Pkts
+              Counter64,
+            zxr10TeIfTrafficStatOutPri3Bandwidth
+             Counter64,
+            zxr10TeIfTrafficStatOutPri4Bytes
+             Counter64,
+            zxr10TeIfTrafficStatOutPri4Pkts
+             Counter64,
+            zxr10TeIfTrafficStatOutPri4Bandwidth
+             Counter64,
+            zxr10TeIfTrafficStatOutPri5Bytes
+              Counter64,
+            zxr10TeIfTrafficStatOutPri5Pkts
+             Counter64,
+            zxr10TeIfTrafficStatOutPri5Bandwidth
+             Counter64,
+            zxr10TeIfTrafficStatOutPri6Bytes
+              Counter64,
+            zxr10TeIfTrafficStatOutPri6Pkts
+              Counter64,
+            zxr10TeIfTrafficStatOutPri6Bandwidth
+              Counter64,
+            zxr10TeIfTrafficStatOutPri7Bytes
+              Counter64,
+            zxr10TeIfTrafficStatOutPri7Pkts
+              Counter64,
+            zxr10TeIfTrafficStatOutPri7Bandwidth
+              Counter64,
+        zxr10TeIfTrafficStatInBytes
+              Counter64,
+            zxr10TeIfTrafficStatInPkts
+              Counter64,
+        zxr10TeIfTrafficStatInDiscBytes
+          Counter64,
+            zxr10TeIfTrafficStatInDiscPkts
+          Counter64,
+            zxr10TeIfTrafficStatOutDiscBytes
+          Counter64,
+            zxr10TeIfTrafficStatOutDiscPkts
+          Counter64,
+        zxr10TeIfTrafficStatInPNBytes
+          Counter64,
+        zxr10TeIfTrafficStatInPNPkts
+          Counter64,
+        zxr10TeIfTrafficStatOutPNBytes
+          Counter64,
+        zxr10TeIfTrafficStatOutPNPkts
+          Counter64
+       }    
+ 
+     zxr10TeIfTrafficStatTeTunnelID  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Te tunnel ID"
+        ::= { zxr10TeIfTrafficStatEntry 1 }
+
+    
+    zxr10TeIfTrafficStatIfIndex  OBJECT-TYPE
+        SYNTAX  InterfaceIndex
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Te tunnel interface index"
+        ::= { zxr10TeIfTrafficStatEntry 2 }
+
+    zxr10TeIfTrafficStatIfName  OBJECT-TYPE
+        SYNTAX   DisplayString (SIZE(0..36))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Te tunnel interface name"
+        ::= { zxr10TeIfTrafficStatEntry 3 }
+
+    zxr10TeIfTrafficStatOutBytes  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface out bytes"
+         ::= { zxr10TeIfTrafficStatEntry 4 }
+
+    zxr10TeIfTrafficStatOutPkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface out packets"
+         ::= { zxr10TeIfTrafficStatEntry 5 }  
+         
+    zxr10TeIfTrafficStatOutBandwidth  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface out bandwidth"
+         ::= { zxr10TeIfTrafficStatEntry 6 }
+         
+    zxr10TeIfTrafficStatOutPri0Bytes  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 0 out bytes"
+         ::= { zxr10TeIfTrafficStatEntry 7 }
+         
+    zxr10TeIfTrafficStatOutPri0Pkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 0 out packets"
+         ::= { zxr10TeIfTrafficStatEntry 8 }
+         
+    zxr10TeIfTrafficStatOutPri0Bandwidth  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 0 out bandwidth"
+         ::= { zxr10TeIfTrafficStatEntry 9 }
+         
+    zxr10TeIfTrafficStatOutPri1Bytes  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 1 out bytes"
+         ::= { zxr10TeIfTrafficStatEntry 10 }
+         
+    zxr10TeIfTrafficStatOutPri1Pkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 1 out packets"
+         ::= { zxr10TeIfTrafficStatEntry 11 }
+         
+    zxr10TeIfTrafficStatOutPri1Bandwidth  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 1 out bandwidth"
+         ::= { zxr10TeIfTrafficStatEntry 12 }
+         
+    zxr10TeIfTrafficStatOutPri2Bytes  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 2 out bytes"
+         ::= { zxr10TeIfTrafficStatEntry 13 }
+         
+    zxr10TeIfTrafficStatOutPri2Pkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 2 out packets"
+         ::= { zxr10TeIfTrafficStatEntry 14 }
+         
+    zxr10TeIfTrafficStatOutPri2Bandwidth  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 2 out bandwidth"
+         ::= { zxr10TeIfTrafficStatEntry 15 }  
+   
+    zxr10TeIfTrafficStatOutPri3Bytes  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 3 out bytes"
+         ::= { zxr10TeIfTrafficStatEntry 16 }
+         
+    zxr10TeIfTrafficStatOutPri3Pkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 3 out packets"
+         ::= { zxr10TeIfTrafficStatEntry 17 }
+         
+    zxr10TeIfTrafficStatOutPri3Bandwidth  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 3 out bandwidth"
+         ::= { zxr10TeIfTrafficStatEntry 18 }  
+   
+    zxr10TeIfTrafficStatOutPri4Bytes  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 4 out bytes"
+         ::= { zxr10TeIfTrafficStatEntry 19 }
+         
+    zxr10TeIfTrafficStatOutPri4Pkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 4 out packets"
+         ::= { zxr10TeIfTrafficStatEntry 20 }
+         
+    zxr10TeIfTrafficStatOutPri4Bandwidth  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 4 out bandwidth"
+         ::= { zxr10TeIfTrafficStatEntry 21 }  
+   
+    zxr10TeIfTrafficStatOutPri5Bytes  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 5 out bytes"
+         ::= { zxr10TeIfTrafficStatEntry 22 }
+         
+    zxr10TeIfTrafficStatOutPri5Pkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 5 out packets"
+         ::= { zxr10TeIfTrafficStatEntry 23 }
+         
+    zxr10TeIfTrafficStatOutPri5Bandwidth  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 5 out bandwidth"
+         ::= { zxr10TeIfTrafficStatEntry 24 }  
+   
+    zxr10TeIfTrafficStatOutPri6Bytes  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 6 out bytes"
+         ::= { zxr10TeIfTrafficStatEntry 25 }
+         
+    zxr10TeIfTrafficStatOutPri6Pkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 6 out packets"
+         ::= { zxr10TeIfTrafficStatEntry 26 }
+         
+    zxr10TeIfTrafficStatOutPri6Bandwidth  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 6 out bandwidth"
+         ::= { zxr10TeIfTrafficStatEntry 27 }  
+   
+    zxr10TeIfTrafficStatOutPri7Bytes  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 7 out bytes"
+         ::= { zxr10TeIfTrafficStatEntry 28 }
+         
+    zxr10TeIfTrafficStatOutPri7Pkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 7 out packets"
+         ::= { zxr10TeIfTrafficStatEntry 29 }
+         
+    zxr10TeIfTrafficStatOutPri7Bandwidth  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface priority 7 out bandwidth"
+         ::= { zxr10TeIfTrafficStatEntry 30 }  
+      
+    zxr10TeIfTrafficStatInBytes  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface in bytes"
+         ::= { zxr10TeIfTrafficStatEntry 31 }
+
+    zxr10TeIfTrafficStatInPkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface in packets"
+         ::= { zxr10TeIfTrafficStatEntry 32 }  
+ 
+
+    zxr10TeIfTrafficStatInDiscBytes  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface in discard bytes"
+         ::= { zxr10TeIfTrafficStatEntry 33 }
+
+    zxr10TeIfTrafficStatInDiscPkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface in discard packets"
+         ::= { zxr10TeIfTrafficStatEntry 34 }  
+ 
+    zxr10TeIfTrafficStatOutDiscBytes  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface out discard bytes"
+         ::= { zxr10TeIfTrafficStatEntry 35 }
+
+    zxr10TeIfTrafficStatOutDiscPkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface out discard packets"
+         ::= { zxr10TeIfTrafficStatEntry 36 }  
+  
+    zxr10TeIfTrafficStatInPNBytes  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface reverse receiving bytes of Node-P"
+         ::= { zxr10TeIfTrafficStatEntry 37 }
+
+    zxr10TeIfTrafficStatInPNPkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface reverse receiving packets of Node-P"
+         ::= { zxr10TeIfTrafficStatEntry 38 }  
+ 
+    zxr10TeIfTrafficStatOutPNBytes  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface reverse sending bytes of Node-P"
+         ::= { zxr10TeIfTrafficStatEntry 39 }
+
+    zxr10TeIfTrafficStatOutPNPkts  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Te tunnel interface reverse sending packets of Node-P"
+         ::= { zxr10TeIfTrafficStatEntry 40 }  
+  
+  
+    zxr10IfPerfGlobalSwitchObject  OBJECT IDENTIFIER ::= { zxr10IfStatMIB 3 }
+
+    zxr10IfPerfGlobalEnableFlag OBJECT-TYPE
+         SYNTAX      Switch
+         MAX-ACCESS  read-write
+         STATUS      current
+         DESCRIPTION
+           "Interface performance global switch,1(enable),0(disable),default
+            is 1."
+         DEFVAL {1}
+         ::= { zxr10IfPerfGlobalSwitchObject 1 }
+
+    zxr10IfPerf1MinPeakClearIfName OBJECT-TYPE
+         SYNTAX      DisplayString (SIZE(0..31))
+         MAX-ACCESS  read-write
+         STATUS      current
+         DESCRIPTION
+           "Interface name for clear one minute peak."
+         ::= { zxr10IfPerfGlobalSwitchObject 2 }
+ 
+    zxr10IfPerf1MinPeakClearAllIntf OBJECT-TYPE
+         SYNTAX      Integer32
+         MAX-ACCESS  read-write
+         STATUS      current
+         DESCRIPTION
+           "Clear all interface one minute peak,255 is valid,0 is invalid. 
+            Value of read is 0."
+         ::= { zxr10IfPerfGlobalSwitchObject 3 }         
+
+
+    zxr10IfPerfValueClearIfName OBJECT-TYPE
+         SYNTAX      DisplayString (SIZE(0..31))
+         MAX-ACCESS  read-write
+         STATUS      current
+         DESCRIPTION
+           "Interface name for clear performance value.Value of read is string
+            which length is 0."
+         ::= { zxr10IfPerfGlobalSwitchObject 4 }
+
+
+    zxr10IfPerfValueClearAllIntf OBJECT-TYPE
+         SYNTAX      Integer32
+         MAX-ACCESS  read-write
+         STATUS      current
+         DESCRIPTION
+           "Clear all interface performance value,255 is valid,0 is invalid.
+            Value of read is 0."
+         ::= { zxr10IfPerfGlobalSwitchObject 5 }    
+         
+    zxr10IfPerfGlobalRateStatPeriod OBJECT-TYPE
+         SYNTAX      Unsigned32(10..600)
+         MAX-ACCESS  read-write
+         STATUS      current
+         DESCRIPTION
+           "The interface rate count period.Rate period which is a multiple of 10 (sec)."
+         ::= { zxr10IfPerfGlobalSwitchObject 6 }
+
+
+    zxr10IfPerfSwitchTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IfPerfSwitchEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10IfStatMIB 4 }
+
+    zxr10IfPerfSwitchEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IfPerfSwitchEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10IfPerfSwitchIfName }
+        ::= { zxr10IfPerfSwitchTable 1 }
+
+    Zxr10IfPerfSwitchEntry ::=
+        SEQUENCE {            
+            zxr10IfPerfSwitchIfName 
+                  DisplayString,
+            zxr10IfPerfSwitchEnable
+                  Switch,     
+            zxr10IfPerfSwitchRowStatus
+                RowStatus
+          }    
+ 
+     zxr10IfPerfSwitchIfName  OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Interface name."
+        ::= { zxr10IfPerfSwitchEntry 1 }
+
+    
+    zxr10IfPerfSwitchEnable  OBJECT-TYPE
+        SYNTAX  Switch 
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Interface performance switch,1(enable).This config can be deleted
+             by row status destroy(6)."
+        ::= { zxr10IfPerfSwitchEntry 2 }
+
+    zxr10IfPerfSwitchRowStatus  OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Row status.active(1),notInService(2),notReady(3),createAndGo(4),
+             createAndWait(5),destroy(6)."
+        ::= { zxr10IfPerfSwitchEntry 100 }
+
+    zxr10IfPerfSpecialIfSwitchTable  OBJECT-TYPE                                            
+        SYNTAX  SEQUENCE OF Zxr10IfPerfSpecialIfSwitchEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10IfStatMIB 5 }
+
+    zxr10IfPerfSpecialIfSwitchEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IfPerfSpecialIfSwitchEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10IfPerfSpecialIfSwitchIfName }
+        ::= { zxr10IfPerfSpecialIfSwitchTable 1 }
+
+    Zxr10IfPerfSpecialIfSwitchEntry ::=
+        SEQUENCE {            
+            zxr10IfPerfSpecialIfSwitchIfName 
+                  DisplayString,
+            zxr10IfPerfSpecialIfSwitchEnable
+                  Switch,     
+            zxr10IfPerfSpecialIfSwitchRowStatus
+                RowStatus
+          }    
+ 
+     zxr10IfPerfSpecialIfSwitchIfName  OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Interface name."
+        ::= { zxr10IfPerfSpecialIfSwitchEntry 1 }
+
+    
+    zxr10IfPerfSpecialIfSwitchEnable  OBJECT-TYPE
+        SYNTAX  Switch 
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Interface performance switch,1(enable).This config can be deleted
+             by row status destroy(6)."
+        ::= { zxr10IfPerfSpecialIfSwitchEntry 2 }
+
+    zxr10IfPerfSpecialIfSwitchRowStatus  OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Row status.active(1),notInService(2),notReady(3),createAndGo(4),
+             createAndWait(5),destroy(6)."
+        ::= { zxr10IfPerfSpecialIfSwitchEntry 100 }
+
+    zxr10IfPerf1MinPeakTable  OBJECT-TYPE                                           
+        SYNTAX  SEQUENCE OF Zxr10IfPerf1MinPeakEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10IfStatMIB 6 }
+
+    zxr10IfPerf1MinPeakEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IfPerf1MinPeakEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10IfPerfSwitchIfName, zxr10IfPerf1MinPeakAllIntf}
+        ::= { zxr10IfPerf1MinPeakTable 1 }
+
+    Zxr10IfPerf1MinPeakEntry ::=
+        SEQUENCE {            
+            zxr10IfPerf1MinPeakIfName 
+                  DisplayString,
+            zxr10IfPerf1MinPeakAllIntf
+                  Integer32, 
+            zxr10IfPerf1MinPeakEnable
+                  Switch, 
+            zxr10IfPerf1MinPeakRowStatus
+                  RowStatus
+          }    
+ 
+     zxr10IfPerf1MinPeakIfName  OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Interface name.This must be blank when zxr10IfPerf1MinPeakAllIntf
+             is valid."
+        ::= { zxr10IfPerf1MinPeakEntry 1 }
+ 
+    zxr10IfPerf1MinPeakAllIntf  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Clear all interface one minute peak,valid for all interface when 
+             this item is 255 and zxr10IfPerf1MinPeakIfName is blank. If 
+             zxr10IfPerf1MinPeakAllIntf is 0,only zxr10IfPerf1MinPeakIfName 
+             is valid."
+        ::= { zxr10IfPerf1MinPeakEntry 2 }
+    
+    zxr10IfPerf1MinPeakEnable  OBJECT-TYPE
+        SYNTAX  Switch 
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "One minute peak switch.This config can be deleted by row status 
+             destroy(6)."
+        ::= { zxr10IfPerf1MinPeakEntry 3 }
+
+    zxr10IfPerf1MinPeakRowStatus  OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Row status.active(1),notInService(2),notReady(3),createAndGo(4),
+             createAndWait(5),destroy(6)."
+        ::= { zxr10IfPerf1MinPeakEntry 100 }
+
+    zxr10IfPerfLimitTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IfPerfLimitEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10IfStatMIB 7 }
+
+    zxr10IfPerfLimitEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IfPerfLimitEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10IfPerfLimitIfName,zxr10IfPerfLimitType}
+        ::= { zxr10IfPerfLimitTable 1 }
+
+    Zxr10IfPerfLimitEntry ::=
+        SEQUENCE {   
+            zxr10IfPerfLimitIfName 
+                  DisplayString,
+            zxr10IfPerfLimitType
+                  Integer32,
+            zxr10IfPerfLimitRatioLow
+                  Integer32,
+            zxr10IfPerfLimitRatioHigh
+                  Integer32,
+            zxr10IfPerfLimitCountLow
+                  Unsigned32, 
+            zxr10IfPerfLimitCountHigh
+                  Unsigned32,
+            zxr10IfPerfLimitRowStatus
+                  RowStatus
+          }    
+        
+      zxr10IfPerfLimitIfName  OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Interface name.This can set performance limit for physical 
+             interface or son interface."
+        ::= { zxr10IfPerfLimitEntry 1 }
+
+      zxr10IfPerfLimitType  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Performance limit type.Value range of physical interface is from
+             1 to 4.1 is InputRatio limit,2 is OutputRatio limit,3 is 
+             FcserrCount limit,4 is FcserrRatio.Value range of son interface 
+             is from 1 to 2.1 is InputRatio limit,2 is OutputRatio limit."
+        ::= { zxr10IfPerfLimitEntry 2 }
+        
+    zxr10IfPerfLimitRatioLow  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Performance ratio low limit.Value range is from 0 to 99,default
+             is 0.It can not be set when zxr10IfPerfLimitType is 3."
+        ::= { zxr10IfPerfLimitEntry 3 }
+        
+    zxr10IfPerfLimitRatioHigh  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Performance ratio high limit.Value range is from 1 to 100,default
+             is 100.It can not be set when zxr10IfPerfLimitType is 3."
+        ::= { zxr10IfPerfLimitEntry 4 }
+        
+    zxr10IfPerfLimitCountLow  OBJECT-TYPE
+        SYNTAX  Unsigned32 
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Performance count low limit.Value range is from 0 to 4294967294.
+             It can not be set when zxr10IfPerfLimitType is 1 or 2 or 4."
+        ::= { zxr10IfPerfLimitEntry 5 }
+        
+    zxr10IfPerfLimitCountHigh  OBJECT-TYPE
+        SYNTAX  Unsigned32 
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Performance count high limit.Value range is from 1 to 4294967295.
+             It can not be set when zxr10IfPerfLimitType is 1 or 2 or 4."
+        ::= { zxr10IfPerfLimitEntry 6 }
+        
+        
+    zxr10IfPerfLimitRowStatus  OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Row status.active(1),notInService(2),notReady(3),createAndGo(4),
+             createAndWait(5),destroy(6)."
+        ::= { zxr10IfPerfLimitEntry 100 }
+    
+    zxr10IfPerfSubIfLimitTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IfPerfSubIfLimitEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10IfStatMIB 8 }
+
+    zxr10IfPerfSubIfLimitEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IfPerfSubIfLimitEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10IfPerfSubIfLimitIfName,zxr10IfPerfSubIfLimitType}
+        ::= { zxr10IfPerfSubIfLimitTable 1 }
+
+    Zxr10IfPerfSubIfLimitEntry ::=
+        SEQUENCE { 
+            zxr10IfPerfSubIfLimitIfName 
+                  DisplayString,        
+            zxr10IfPerfSubIfLimitType
+                  Integer32,
+            zxr10IfPerfSubIfLimitRatioLow    
+                  Integer32,
+            zxr10IfPerfSubIfLimitRatioHigh
+                  Integer32,
+            zxr10IfPerfSubIfLimitRowStatus
+                  RowStatus
+          }    
+        
+      zxr10IfPerfSubIfLimitIfName  OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Physical interface name."
+        ::= { zxr10IfPerfSubIfLimitEntry 1 }
+    
+      zxr10IfPerfSubIfLimitType  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Performance limit type.Value range is from 1 to 2.1 is InputRatio
+             limit,2 is OutputRatio limit."
+        ::= { zxr10IfPerfSubIfLimitEntry 2 }    
+    
+    zxr10IfPerfSubIfLimitRatioLow  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Performance ratio low limit.Value range is from 0 to 99,default 
+             is 0."
+        ::= { zxr10IfPerfSubIfLimitEntry 3 }
+        
+    zxr10IfPerfSubIfLimitRatioHigh  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Performance ratio high limit.Value range is from 1 to 100,default
+             is 100."
+        ::= { zxr10IfPerfSubIfLimitEntry 4 }
+        
+        
+    zxr10IfPerfSubIfLimitRowStatus  OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Row status.active(1),notInService(2),notReady(3),createAndGo(4),
+             createAndWait(5),destroy(6)."
+        ::= { zxr10IfPerfSubIfLimitEntry 100 }
+        
+    
+    zxr10IfIPv6StatsTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IfIPv6StatsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10IfStatMIB 9 }
+
+    zxr10IfIPv6StatsEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IfIPv6StatsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10IfIPv6StatsIfName}
+        ::= { zxr10IfIPv6StatsTable 1 }
+
+    Zxr10IfIPv6StatsEntry ::=
+        SEQUENCE { 
+            zxr10IfIPv6StatsIfName 
+                  DisplayString,        
+            zxr10IfIPv6StatsInBytesSpeed
+                  Counter64,
+            zxr10IfIPv6StatsOutBytesSpeed    
+                  Counter64,
+            zxr10IfIPv6StatsInPktsSpeed
+                  Counter64,
+            zxr10IfIPv6StatsOutPktsSpeed
+                  Counter64,
+            zxr10IfIPv6StatsInDiscPktsRatio
+                  Integer32,
+            zxr10IfIPv6StatsOutDiscPktsRatio
+                  Integer32,
+            zxr10IfIPv6StatsInUtilization
+                  Integer32,
+            zxr10IfIPv6StatsOutUtilization
+                  Integer32,
+            zxr10IfIPv6StatsSystemUpTime
+                  Integer32
+          }    
+        
+      zxr10IfIPv6StatsIfName  OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Interface name."
+        ::= { zxr10IfIPv6StatsEntry 1 }
+    
+      zxr10IfIPv6StatsInBytesSpeed  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPv6 traffic receiving bytes rate."
+        ::= { zxr10IfIPv6StatsEntry 2 }
+        
+      zxr10IfIPv6StatsOutBytesSpeed  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPv6 traffic sending bytes rate."
+        ::= { zxr10IfIPv6StatsEntry 3 }
+        
+      zxr10IfIPv6StatsInPktsSpeed  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPv6 traffic receiving package rate."
+        ::= { zxr10IfIPv6StatsEntry 4 }
+        
+      zxr10IfIPv6StatsOutPktsSpeed  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPv6 traffic sending package rate."
+        ::= { zxr10IfIPv6StatsEntry 5 }
+        
+      zxr10IfIPv6StatsInDiscPktsRatio  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPv6 traffic receiving discarded package ratio."
+        ::= { zxr10IfIPv6StatsEntry 6 }
+        
+      zxr10IfIPv6StatsOutDiscPktsRatio  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPv6 traffic sending discarded package ratio."
+        ::= { zxr10IfIPv6StatsEntry 7 }
+        
+      zxr10IfIPv6StatsInUtilization  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPv6 traffic receiving bandwidth utilization."
+        ::= { zxr10IfIPv6StatsEntry 8 }
+        
+      zxr10IfIPv6StatsOutUtilization  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPv6 traffic sending bandwidth utilization."
+        ::= { zxr10IfIPv6StatsEntry 9 }
+        
+      zxr10IfIPv6StatsSystemUpTime  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPv6 traffic system up time."
+        ::= { zxr10IfIPv6StatsEntry 10 }
+  
+    zxr10IfHwCountersTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IfHwCountersEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10IfStatMIB 10 }
+
+    zxr10IfHwCountersEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IfHwCountersEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10IfHwCountersIfName}
+        ::= { zxr10IfHwCountersTable 1 }
+
+      Zxr10IfHwCountersEntry ::=
+        SEQUENCE { 
+      zxr10IfHwCountersIfName 
+                  DisplayString,        
+            zxr10IfHwCountersInCrcRatio
+                  Integer32,
+            zxr10IfHwCountersOutCrcRatio    
+                  Integer32
+          }    
+        
+      zxr10IfHwCountersIfName  OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Interface name."
+        ::= { zxr10IfHwCountersEntry 1 }
+    
+      zxr10IfHwCountersInCrcRatio  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Receiving CRC errors ratio of hardware counters."
+        ::= { zxr10IfHwCountersEntry 2 }
+        
+      zxr10IfHwCountersOutCrcRatio  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Sending CRC errors ratio of hardware counters."
+        ::= { zxr10IfHwCountersEntry 3 }
+        
+     zxr10WlanBssCountersTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10WlanBssCountersEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10IfStatMIB 11 }
+     zxr10WlanBssCountersEntry  OBJECT-TYPE
+        SYNTAX  Zxr10WlanBssCountersEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10WlanBssCountersIfName}
+        ::= { zxr10WlanBssCountersTable 1 }
+
+      Zxr10WlanBssCountersEntry ::=
+        SEQUENCE { 
+      zxr10WlanBssCountersIfName 
+                  DisplayString,        
+            zxr10WlanBssCountersInBytes
+                  Counter64,
+            zxr10WlanBssCountersInPkts    
+                  Counter64,
+            zxr10WlanBssCountersInErrs
+                  Counter64,
+            zxr10WlanBssCountersInDrop
+                  Counter64, 
+            zxr10WlanBssCountersInOverFlow
+                  Counter64,
+            zxr10WlanBssCountersOutBytes    
+                  Counter64,
+            zxr10WlanBssCountersOutPkts
+                  Counter64,
+            zxr10WlanBssCountersOutErrs
+                  Counter64, 
+            zxr10WlanBssCountersOutDrop
+                  Counter64
+          }    
+        
+      zxr10WlanBssCountersIfName  OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Interface name."
+        ::= { zxr10WlanBssCountersEntry 1 }
+    
+      zxr10WlanBssCountersInBytes  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Wlan Bss interface in bytes."
+        ::= { zxr10WlanBssCountersEntry 2 }
+      
+      zxr10WlanBssCountersInPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Wlan Bss interface in packets."
+        ::= { zxr10WlanBssCountersEntry 3 }
+        
+      zxr10WlanBssCountersInErrs  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Wlan Bss interface in Errors."
+        ::= { zxr10WlanBssCountersEntry 4 }
+        
+      zxr10WlanBssCountersInDrop  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Wlan Bss interface in drop counters."
+        ::= { zxr10WlanBssCountersEntry 5 }
+        
+      zxr10WlanBssCountersInOverFlow  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Wlan Bss interface in fifo overflow counters."
+        ::= { zxr10WlanBssCountersEntry 6 }
+        
+      zxr10WlanBssCountersOutBytes  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Wlan Bss interface in drop counters."
+        ::= { zxr10WlanBssCountersEntry 7 }
+        
+      zxr10WlanBssCountersOutPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Wlan Bss interface out packets."
+        ::= { zxr10WlanBssCountersEntry 8 }
+        
+      zxr10WlanBssCountersOutErrs  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Wlan Bss interface out errors."
+        ::= { zxr10WlanBssCountersEntry 9 }
+        
+      zxr10WlanBssCountersOutDrop  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Wlan Bss interface out drop counters."
+        ::= { zxr10WlanBssCountersEntry 10 }        
+
+
+     zxr10GreTunnelStatTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10GreTunnelStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A list of GRE tunnel statistices entries."
+        ::= { zxr10IfStatMIB 12 }
+     zxr10GreTunnelStatEntry  OBJECT-TYPE
+        SYNTAX  Zxr10GreTunnelStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing statistices information of a GRE tunnel."
+        INDEX  { zxr10GreTunnelStatIfName}
+        ::= { zxr10GreTunnelStatTable 1 }
+
+      Zxr10GreTunnelStatEntry ::=
+        SEQUENCE { 
+      zxr10GreTunnelStatIfName 
+                  DisplayString,        
+            zxr10GreTunnelStatInBytes
+                  Counter64,
+            zxr10GreTunnelStatInPkts    
+                  Counter64,
+            zxr10GreTunnelStatOutBytes    
+                  Counter64,
+            zxr10GreTunnelStatOutPkts
+                  Counter64,
+            zxr10GreTunnelStatInDropBytes
+                  Counter64,
+            zxr10GreTunnelStatInDropPkts
+                  Counter64,
+            zxr10GreTunnelStatOutDropBytes
+                  Counter64,
+            zxr10GreTunnelStatOutDropPkts
+                  Counter64
+          }    
+  
+      zxr10GreTunnelStatIfName  OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "GRE tunnel name."
+        ::= { zxr10GreTunnelStatEntry 1 }
+    
+      zxr10GreTunnelStatInBytes  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "GRE tunnel in bytes."
+        ::= { zxr10GreTunnelStatEntry 2 }
+      
+      zxr10GreTunnelStatInPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "GRE tunnel in packets."
+        ::= { zxr10GreTunnelStatEntry 3 }
+        
+      zxr10GreTunnelStatOutBytes  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "GRE tunnel out bytes."
+        ::= { zxr10GreTunnelStatEntry 4 }
+        
+      zxr10GreTunnelStatOutPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "GRE tunnel out packets."
+        ::= { zxr10GreTunnelStatEntry 5 }
+        
+      zxr10GreTunnelStatInDropBytes  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "GRE tunnel in drop bytes."
+        ::= { zxr10GreTunnelStatEntry 6 }
+        
+      zxr10GreTunnelStatInDropPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "GRE tunnel in drop packets."
+        ::= { zxr10GreTunnelStatEntry 7 }
+        
+      zxr10GreTunnelStatOutDropBytes  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "GRE tunnel out drop bytes."
+        ::= { zxr10GreTunnelStatEntry 8 }
+        
+      zxr10GreTunnelStatOutDropPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "GRE tunnel out drop packets."
+        ::= { zxr10GreTunnelStatEntry 9 }      
+        
+              
+zxr10PhyIfStatTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Zxr10PhyIfStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "PhySical Interface statistics Table"
+    ::= { zxr10IfStatMIB 13 }
+
+zxr10PhyIfStatEntry OBJECT-TYPE
+    SYNTAX      Zxr10PhyIfStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "PhySical Interface statistics Table Entry"
+    INDEX   { zxr10PhyIfName }
+    ::= { zxr10PhyIfStatTable 1 }
+
+Zxr10PhyIfStatEntry ::=
+    SEQUENCE {  
+        zxr10PhyIfName                  DisplayString,
+        zxr10PhyIfInOctets              Counter32,
+        zxr10PhyIfInUcastPkts           Counter32,
+        zxr10PhyIfInDiscards            Counter32,
+        zxr10PhyIfInErrors              Counter32,
+        zxr10PhyIfInUnknownProtos       Counter32,
+        zxr10PhyIfOutOctets             Counter32,
+        zxr10PhyIfOutUcastPkts          Counter32,
+        zxr10PhyIfOutDiscards           Counter32,
+        zxr10PhyIfOutErrors             Counter32
+    }  
+     
+zxr10PhyIfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(1..31))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Interface name"
+    ::= { zxr10PhyIfStatEntry 1 }   
+        
+zxr10PhyIfInOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The total number of octets received on the interface,
+            including framing characters."
+    ::= { zxr10PhyIfStatEntry 2 }
+
+zxr10PhyIfInUcastPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of packets, delivered by this sub-layer to a
+            higher (sub-)layer, which were not addressed to a multicast
+            or broadcast address at this sub-layer."
+    ::= { zxr10PhyIfStatEntry 3 }
+
+zxr10PhyIfInDiscards OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of inbound packets which were chosen to be
+            discarded even though no errors had been detected to prevent
+            their being deliverable to a higher-layer protocol.  One
+            possible reason for discarding such a packet could be to
+            free up buffer space."
+    ::= { zxr10PhyIfStatEntry 5 }
+
+zxr10PhyIfInErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "For packet-oriented interfaces, the number of inbound
+            packets that contained errors preventing them from being
+            deliverable to a higher-layer protocol.  For character-
+            oriented or fixed-length interfaces, the number of inbound
+            transmission units that contained errors preventing them
+            from being deliverable to a higher-layer protocol."
+    ::= { zxr10PhyIfStatEntry 6 }
+
+zxr10PhyIfInUnknownProtos OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "For packet-oriented interfaces, the number of packets
+            received via the interface which were discarded because of
+            an unknown or unsupported protocol.  For character-oriented
+            or fixed-length interfaces that support protocol
+            multiplexing the number of transmission units received via
+            the interface which were discarded because of an unknown or
+            unsupported protocol.  For any interface that does not
+            support protocol multiplexing, this counter will always be
+            0."
+    ::= { zxr10PhyIfStatEntry 7 }
+
+
+zxr10PhyIfOutOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The total number of octets transmitted out of the
+            interface, including framing characters."
+    ::= { zxr10PhyIfStatEntry 8 }
+
+zxr10PhyIfOutUcastPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The total number of packets that higher-level protocols
+            requested be transmitted, and which were not addressed to a
+            multicast or broadcast address at this sub-layer, including
+            those that were discarded or not sent."
+    ::= { zxr10PhyIfStatEntry 9 }
+
+zxr10PhyIfOutDiscards OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of outbound packets which were chosen to be
+            discarded even though no errors had been detected to prevent
+            their being transmitted.  One possible reason for discarding
+            such a packet could be to free up buffer space."
+    ::= { zxr10PhyIfStatEntry 11 }
+
+zxr10PhyIfOutErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "For packet-oriented interfaces, the number of outbound
+            packets that could not be transmitted because of errors.
+            For character-oriented or fixed-length interfaces, the
+            number of outbound transmission units that could not be
+            transmitted because of errors."
+    ::= { zxr10PhyIfStatEntry 12 }
+
+zxr10IPLogicIfStatTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Zxr10IPLogicIfStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "IPv4/v6 Interface statistics Table"
+    ::= { zxr10IfStatMIB 14 }
+
+zxr10IPLogicIfStatEntry OBJECT-TYPE
+    SYNTAX      Zxr10IPLogicIfStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "IPv4/v6 Interface statistics Table Entry"
+    INDEX   { zxr10IPLogicIfName }
+    ::= { zxr10IPLogicIfStatTable 1 }
+
+Zxr10IPLogicIfStatEntry ::=
+    SEQUENCE {  
+        zxr10IPLogicIfName                  DisplayString,
+        zxr10IPLogicIfInOctets              Counter32,
+        zxr10IPLogicIfInUcastPkts           Counter32,
+        zxr10IPLogicIfInDiscards            Counter32,
+        zxr10IPLogicIfInErrors              Counter32,
+        zxr10IPLogicIfInUnknownProtos       Counter32,
+        zxr10IPLogicIfOutOctets             Counter32,
+        zxr10IPLogicIfOutUcastPkts          Counter32,
+        zxr10IPLogicIfOutDiscards           Counter32,
+        zxr10IPLogicIfOutErrors             Counter32
+    }  
+     
+zxr10IPLogicIfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(1..31))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Interface name"
+    ::= { zxr10IPLogicIfStatEntry 1 }   
+        
+zxr10IPLogicIfInOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The total number of octets received on the interface,
+            including framing characters."
+    ::= { zxr10IPLogicIfStatEntry 2 }
+
+zxr10IPLogicIfInUcastPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of packets, delivered by this sub-layer to a
+            higher (sub-)layer, which were not addressed to a multicast
+            or broadcast address at this sub-layer."
+    ::= { zxr10IPLogicIfStatEntry 3 }
+
+zxr10IPLogicIfInDiscards OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of inbound packets which were chosen to be
+            discarded even though no errors had been detected to prevent
+            their being deliverable to a higher-layer protocol.  One
+            possible reason for discarding such a packet could be to
+            free up buffer space."
+    ::= { zxr10IPLogicIfStatEntry 5 }
+
+zxr10IPLogicIfInErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "For packet-oriented interfaces, the number of inbound
+            packets that contained errors preventing them from being
+            deliverable to a higher-layer protocol.  For character-
+            oriented or fixed-length interfaces, the number of inbound
+            transmission units that contained errors preventing them
+            from being deliverable to a higher-layer protocol."
+    ::= { zxr10IPLogicIfStatEntry 6 }
+
+zxr10IPLogicIfInUnknownProtos OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "For packet-oriented interfaces, the number of packets
+            received via the interface which were discarded because of
+            an unknown or unsupported protocol.  For character-oriented
+            or fixed-length interfaces that support protocol
+            multiplexing the number of transmission units received via
+            the interface which were discarded because of an unknown or
+            unsupported protocol.  For any interface that does not
+            support protocol multiplexing, this counter will always be
+            0."
+    ::= { zxr10IPLogicIfStatEntry 7 }
+
+
+zxr10IPLogicIfOutOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The total number of octets transmitted out of the
+            interface, including framing characters."
+    ::= { zxr10IPLogicIfStatEntry 8 }
+
+zxr10IPLogicIfOutUcastPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The total number of packets that higher-level protocols
+            requested be transmitted, and which were not addressed to a
+            multicast or broadcast address at this sub-layer, including
+            those that were discarded or not sent."
+    ::= { zxr10IPLogicIfStatEntry 9 }
+
+zxr10IPLogicIfOutDiscards OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of outbound packets which were chosen to be
+            discarded even though no errors had been detected to prevent
+            their being transmitted.  One possible reason for discarding
+            such a packet could be to free up buffer space."
+    ::= { zxr10IPLogicIfStatEntry 11 }
+
+zxr10IPLogicIfOutErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "For packet-oriented interfaces, the number of outbound
+            packets that could not be transmitted because of errors.
+            For character-oriented or fixed-length interfaces, the
+            number of outbound transmission units that could not be
+            transmitted because of errors."
+    ::= { zxr10IPLogicIfStatEntry 12 }
+
+zxr10NoIPLogicIfStatTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Zxr10NoIPLogicIfStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "No IPv4/v6 Interface statistics Table"
+    ::= { zxr10IfStatMIB 15 }
+
+zxr10NoIPLogicIfStatEntry OBJECT-TYPE
+    SYNTAX      Zxr10NoIPLogicIfStatEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "No IPv4/v6 Interface statistics Table Entry"
+    INDEX   { zxr10NoIPLogicIfName }
+    ::= { zxr10NoIPLogicIfStatTable 1 }
+
+Zxr10NoIPLogicIfStatEntry ::=
+    SEQUENCE {  
+        zxr10NoIPLogicIfName                  DisplayString,
+        zxr10NoIPLogicIfInOctets              Counter32,
+        zxr10NoIPLogicIfInUcastPkts           Counter32,
+        zxr10NoIPLogicIfInDiscards            Counter32,
+        zxr10NoIPLogicIfInErrors              Counter32,
+        zxr10NoIPLogicIfInUnknownProtos       Counter32,
+        zxr10NoIPLogicIfOutOctets             Counter32,
+        zxr10NoIPLogicIfOutUcastPkts          Counter32,
+        zxr10NoIPLogicIfOutDiscards           Counter32,
+        zxr10NoIPLogicIfOutErrors             Counter32
+    }  
+     
+zxr10NoIPLogicIfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(1..31))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Interface name"
+    ::= { zxr10NoIPLogicIfStatEntry 1 }   
+        
+zxr10NoIPLogicIfInOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The total number of octets received on the interface,
+            including framing characters."
+    ::= { zxr10NoIPLogicIfStatEntry 2 }
+
+zxr10NoIPLogicIfInUcastPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of packets, delivered by this sub-layer to a
+            higher (sub-)layer, which were not addressed to a multicast
+            or broadcast address at this sub-layer."
+    ::= { zxr10NoIPLogicIfStatEntry 3 }
+
+zxr10NoIPLogicIfInDiscards OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of inbound packets which were chosen to be
+            discarded even though no errors had been detected to prevent
+            their being deliverable to a higher-layer protocol.  One
+            possible reason for discarding such a packet could be to
+            free up buffer space."
+    ::= { zxr10NoIPLogicIfStatEntry 5 }
+
+zxr10NoIPLogicIfInErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "For packet-oriented interfaces, the number of inbound
+            packets that contained errors preventing them from being
+            deliverable to a higher-layer protocol.  For character-
+            oriented or fixed-length interfaces, the number of inbound
+            transmission units that contained errors preventing them
+            from being deliverable to a higher-layer protocol."
+    ::= { zxr10NoIPLogicIfStatEntry 6 }
+
+zxr10NoIPLogicIfInUnknownProtos OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "For packet-oriented interfaces, the number of packets
+            received via the interface which were discarded because of
+            an unknown or unsupported protocol.  For character-oriented
+            or fixed-length interfaces that support protocol
+            multiplexing the number of transmission units received via
+            the interface which were discarded because of an unknown or
+            unsupported protocol.  For any interface that does not
+            support protocol multiplexing, this counter will always be
+            0."
+    ::= { zxr10NoIPLogicIfStatEntry 7 }
+
+
+zxr10NoIPLogicIfOutOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The total number of octets transmitted out of the
+            interface, including framing characters."
+    ::= { zxr10NoIPLogicIfStatEntry 8 }
+
+zxr10NoIPLogicIfOutUcastPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The total number of packets that higher-level protocols
+            requested be transmitted, and which were not addressed to a
+            multicast or broadcast address at this sub-layer, including
+            those that were discarded or not sent."
+    ::= { zxr10NoIPLogicIfStatEntry 9 }
+
+zxr10NoIPLogicIfOutDiscards OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of outbound packets which were chosen to be
+            discarded even though no errors had been detected to prevent
+            their being transmitted.  One possible reason for discarding
+            such a packet could be to free up buffer space."
+    ::= { zxr10NoIPLogicIfStatEntry 11 }
+
+zxr10NoIPLogicIfOutErrors OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "For packet-oriented interfaces, the number of outbound
+            packets that could not be transmitted because of errors.
+            For character-oriented or fixed-length interfaces, the
+            number of outbound transmission units that could not be
+            transmitted because of errors."
+    ::= { zxr10NoIPLogicIfStatEntry 12 }
+
+zxr10IfRatioGatherTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Zxr10IfRatioGatherEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Interface RatioGather Table"
+    ::= { zxr10IfStatMIB 16 }
+
+zxr10IfRatioGatherEntry OBJECT-TYPE
+    SYNTAX      Zxr10IfRatioGatherEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Interface RatioGather Table Entry"
+    INDEX   { zxr10IfRatioGatherIfName }
+    ::= { zxr10IfRatioGatherTable 1 }
+    
+Zxr10IfRatioGatherEntry ::=
+    SEQUENCE {  
+        zxr10IfRatioGatherIfName                  DisplayString,
+        zxr10IfRatioGatherInErrPkts               Integer32,
+        zxr10IfRatioGatherOutErrPkts              Integer32,
+        zxr10IfRatioGatherInDrpPkts               Integer32,
+        zxr10IfRatioGatherOutDrpPkts              Integer32,
+        zxr10IfRatioGatherInUtilization           Integer32,
+        zxr10IfRatioGatherOutUtilization          Integer32
+    }  
+     
+zxr10IfRatioGatherIfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(1..31))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Interface name"
+    ::= { zxr10IfRatioGatherEntry 1 }
+       
+zxr10IfRatioGatherInErrPkts OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Interface Received Ratio of Error Packets"
+    ::= { zxr10IfRatioGatherEntry 2 }
+    
+zxr10IfRatioGatherOutErrPkts OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Interface Sent Ratio of Error Packets"
+    ::= { zxr10IfRatioGatherEntry 3 }
+    
+zxr10IfRatioGatherInDrpPkts OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Interface Received Ratio of Discards Packets"
+    ::= { zxr10IfRatioGatherEntry 4 }
+    
+zxr10IfRatioGatherOutDrpPkts OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Interface Sent Ratio of Discards Packets"
+    ::= { zxr10IfRatioGatherEntry 5 }
+    
+zxr10IfRatioGatherInUtilization OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Interface Utilization of Received Packets"
+    ::= { zxr10IfRatioGatherEntry 6 }
+    
+zxr10IfRatioGatherOutUtilization OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Interface Utilization of Sent Packets"
+    ::= { zxr10IfRatioGatherEntry 7 }
+
+
+zxr10IfSpeedGatherTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Zxr10IfSpeedGatherEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Interface SpeedGather Table"
+    ::= { zxr10IfStatMIB 17 }
+
+zxr10IfSpeedGatherEntry OBJECT-TYPE
+    SYNTAX      Zxr10IfSpeedGatherEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Interface SpeedGather Table Entry"
+    INDEX   { zxr10IfSpeedGatherIfName }
+    ::= { zxr10IfSpeedGatherTable 1 }
+    
+Zxr10IfSpeedGatherEntry ::=
+    SEQUENCE {  
+        zxr10IfSpeedGatherIfName                    DisplayString,
+        zxr10IfSpeedGatherInByteSpeed               Counter64,
+        zxr10IfSpeedGatherOutByteSpeed              Counter64,
+        zxr10IfSpeedGatherInPktsSpeed               Counter64,
+        zxr10IfSpeedGatherOutPktsSpeed              Counter64,
+        zxr10IfSpeedGatherInBPeakSpeed              Counter64,
+        zxr10IfSpeedGatherInBPeakTime               DisplayString,
+        zxr10IfSpeedGatherOutBPeakSpeed             Counter64,
+        zxr10IfSpeedGatherOutBPeakTime              DisplayString,
+        zxr10IfSpeedGatherInBitSpeed                Counter64,
+        zxr10IfSpeedGatherOutBitSpeed               Counter64
+    }  
+     
+zxr10IfSpeedGatherIfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(1..31))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Interface name"
+    ::= { zxr10IfSpeedGatherEntry 1 }
+       
+zxr10IfSpeedGatherInByteSpeed OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Interface Received Rate of Bytes"
+    ::= { zxr10IfSpeedGatherEntry 2 }
+
+zxr10IfSpeedGatherOutByteSpeed OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Interface Sent Rate of Bytes"
+    ::= { zxr10IfSpeedGatherEntry 3 }
+
+zxr10IfSpeedGatherInPktsSpeed OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Interface Received Rate of Packets"
+    ::= { zxr10IfSpeedGatherEntry 4 }
+
+zxr10IfSpeedGatherOutPktsSpeed OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Interface Sent Rate of Packets"
+    ::= { zxr10IfSpeedGatherEntry 5 }
+
+zxr10IfSpeedGatherInBPeakSpeed OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Interface Received Peak Rate of Bytes"
+    ::= { zxr10IfSpeedGatherEntry 6 }
+
+zxr10IfSpeedGatherInBPeakTime OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..31))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "Interface Received Peak Rate Time of Bytes"
+    ::= { zxr10IfSpeedGatherEntry 7 }
+
+zxr10IfSpeedGatherOutBPeakSpeed OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Interface Sent Peak Rate of Bytes"
+    ::= { zxr10IfSpeedGatherEntry 8 }
+
+zxr10IfSpeedGatherOutBPeakTime OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..31))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "Interface Sent Peak Rate Time of Bytes"
+    ::= { zxr10IfSpeedGatherEntry 9 }
+
+zxr10IfSpeedGatherInBitSpeed OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Interface Received Rate of Bits"
+    ::= { zxr10IfSpeedGatherEntry 10 }
+
+zxr10IfSpeedGatherOutBitSpeed OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Interface Sent Rate of Bits"
+    ::= { zxr10IfSpeedGatherEntry 11 }
+
+zxr10VxLanTunnelStatTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10VxLanTunnelStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A list of VxLan tunnel statistices entries."
+        ::= { zxr10IfStatMIB 18 }
+zxr10VxLanTunnelStatEntry  OBJECT-TYPE
+        SYNTAX  Zxr10VxLanTunnelStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing statistices information of a VxLan tunnel."
+        INDEX  { zxr10VxLanTunnelStatIfName}
+        ::= { zxr10VxLanTunnelStatTable 1 }
+
+ Zxr10VxLanTunnelStatEntry ::=
+        SEQUENCE { 
+      zxr10VxLanTunnelStatIfName 
+                  DisplayString,        
+            zxr10VxLanTunnelStatInBytes
+                  Counter64,
+            zxr10VxLanTunnelStatInPkts    
+                  Counter64,
+            zxr10VxLanTunnelStatOutBytes    
+                  Counter64,
+            zxr10VxLanTunnelStatOutPkts
+                  Counter64,
+            zxr10VxLanTunnelStatInDropBytes
+                  Counter64,
+            zxr10VxLanTunnelStatInDropPkts
+                  Counter64,
+            zxr10VxLanTunnelStatOutDropBytes
+                  Counter64,
+            zxr10VxLanTunnelStatOutDropPkts
+                  Counter64
+          }  
+
+      zxr10VxLanTunnelStatIfName  OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "VxLan Tunnel name."
+        ::= { zxr10VxLanTunnelStatEntry 1 }
+    
+      zxr10VxLanTunnelStatInBytes  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "VxLan Tunnel in bytes."
+        ::= { zxr10VxLanTunnelStatEntry 2 }
+      
+      zxr10VxLanTunnelStatInPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "VxLan Tunnel in packets."
+        ::= { zxr10VxLanTunnelStatEntry 3 }
+        
+      zxr10VxLanTunnelStatOutBytes  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "VxLan Tunnel out bytes."
+        ::= { zxr10VxLanTunnelStatEntry 4 }
+        
+      zxr10VxLanTunnelStatOutPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "VxLan Tunnel out packets."
+        ::= { zxr10VxLanTunnelStatEntry 5 }
+        
+      zxr10VxLanTunnelStatInDropBytes  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "VxLan Tunnel in drop bytes."
+        ::= { zxr10VxLanTunnelStatEntry 6 }
+        
+      zxr10VxLanTunnelStatInDropPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "VxLan Tunnel in drop packets."
+        ::= { zxr10VxLanTunnelStatEntry 7 }
+        
+      zxr10VxLanTunnelStatOutDropBytes  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "VxLan Tunnel out drop bytes."
+        ::= { zxr10VxLanTunnelStatEntry 8 }
+        
+      zxr10VxLanTunnelStatOutDropPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "VxLan Tunnel out drop packets."
+        ::= { zxr10VxLanTunnelStatEntry 9 }
+
+ zxr10SpiStatTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10SpiStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A list of Spi statistices entries."
+        ::= { zxr10IfStatMIB 19 }
+ zxr10SpiStatEntry  OBJECT-TYPE
+        SYNTAX  Zxr10SpiStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing statistices information of a spi."
+        INDEX  { zxr10SpiStatIfName}
+        ::= { zxr10SpiStatTable 1 }
+
+ Zxr10SpiStatEntry ::=
+    SEQUENCE { 
+            zxr10SpiStatIfName 
+                  DisplayString,        
+            zxr10SpiStatInBytes
+                  Counter64,
+            zxr10SpiStatInPkts    
+                  Counter64,
+            zxr10SpiStatInCRCErrorPkts
+                  Counter64, 
+            zxr10SpiStatOutBytes    
+                  Counter64,
+            zxr10SpiStatOutPkts
+                  Counter64,
+            zxr10SpiStatInDropPkts
+                  Counter64,
+            zxr10SpiStatOutDropPkts
+                  Counter64  
+        }    
+  
+      zxr10SpiStatIfName  OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Spi name."
+        ::= { zxr10SpiStatEntry 1 }
+    
+      zxr10SpiStatInBytes  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Spi in bytes."
+        ::= { zxr10SpiStatEntry 2 }
+      
+      zxr10SpiStatInPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Spi in packets."
+        ::= { zxr10SpiStatEntry 3 }
+
+      zxr10SpiStatInCRCErrorPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Spi in CRC-ERROR packets."
+        ::= { zxr10SpiStatEntry 4 }
+        
+      zxr10SpiStatOutBytes  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Spi out bytes."
+        ::= { zxr10SpiStatEntry 5 }
+        
+      zxr10SpiStatOutPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Spi out packets."
+        ::= { zxr10SpiStatEntry 6 }
+
+      zxr10SpiStatInDropPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Spi in drop packets."
+        ::= { zxr10SpiStatEntry 7 }
+
+      zxr10SpiStatOutDropPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Spi out drop packets."
+        ::= { zxr10SpiStatEntry 8 }
+
+ zxr10IfRateStatTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IfRateStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A list of interface rate statistices configuration entries."
+        ::= { zxr10IfStatMIB 20 }
+ zxr10IfRateStatEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IfRateStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing interface rate statistices configuration."
+        INDEX  { zxr10IfRateStatIfName}
+        ::= { zxr10IfRateStatTable 1 }
+
+ Zxr10IfRateStatEntry ::=
+    SEQUENCE { 
+            zxr10IfRateStatIfName 
+                  DisplayString,        
+            zxr10IfRateStatPeriod
+                  Unsigned32,
+            zxr10IfRateStatRowStatus
+                  RowStatus
+       }    
+  
+      zxr10IfRateStatIfName  OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Interface name."
+        ::= { zxr10IfRateStatEntry 1 }
+
+      zxr10IfRateStatPeriod OBJECT-TYPE
+        SYNTAX      Unsigned32(10..600)
+        UNITS       "seconds"
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "Interface rate period. 
+             Rate period which is a multiple of 10 (sec)."
+        ::= { zxr10IfRateStatEntry 2 }
+
+      zxr10IfRateStatRowStatus  OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Row status.active(1),notInService(2),notReady(3),createAndGo(4),
+             createAndWait(5),destroy(6)."
+        ::= { zxr10IfRateStatEntry 100 }
+
+
+     zxr10IPsecTunnelStatTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPsecTunnelStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A list of IPsec tunnel statistices entries."
+        ::= { zxr10IfStatMIB 24 }
+     zxr10IPsecTunnelStatEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IPsecTunnelStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing statistices information of a IPsec tunnel."
+        INDEX  { zxr10IPsecTunnelStatIfName}
+        ::= { zxr10IPsecTunnelStatTable 1 }
+
+      Zxr10IPsecTunnelStatEntry ::=
+        SEQUENCE { 
+      zxr10IPsecTunnelStatIfName 
+                  DisplayString,        
+            zxr10IPsecTunnelStatInBytes
+                  Counter64,
+            zxr10IPsecTunnelStatInPkts    
+                  Counter64,
+            zxr10IPsecTunnelStatOutBytes    
+                  Counter64,
+            zxr10IPsecTunnelStatOutPkts
+                  Counter64,
+            zxr10IPsecTunnelStatInDropBytes
+                  Counter64,
+            zxr10IPsecTunnelStatInDropPkts
+                  Counter64,
+            zxr10IPsecTunnelStatOutDropBytes
+                  Counter64,
+            zxr10IPsecTunnelStatOutDropPkts
+                  Counter64
+          }    
+  
+      zxr10IPsecTunnelStatIfName  OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPsec tunnel name."
+        ::= { zxr10IPsecTunnelStatEntry 1 }
+    
+      zxr10IPsecTunnelStatInBytes  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPsec tunnel in bytes."
+        ::= { zxr10IPsecTunnelStatEntry 2 }
+      
+      zxr10IPsecTunnelStatInPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPsec tunnel in packets."
+        ::= { zxr10IPsecTunnelStatEntry 3 }
+        
+      zxr10IPsecTunnelStatOutBytes  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPsec tunnel out bytes."
+        ::= { zxr10IPsecTunnelStatEntry 4 }
+        
+      zxr10IPsecTunnelStatOutPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPsec tunnel out packets."
+        ::= { zxr10IPsecTunnelStatEntry 5 }
+        
+      zxr10IPsecTunnelStatInDropBytes  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPsec tunnel in drop bytes."
+        ::= { zxr10IPsecTunnelStatEntry 6 }
+        
+      zxr10IPsecTunnelStatInDropPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPsec tunnel in drop packets."
+        ::= { zxr10IPsecTunnelStatEntry 7 }
+        
+      zxr10IPsecTunnelStatOutDropBytes  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPsec tunnel out drop bytes."
+        ::= { zxr10IPsecTunnelStatEntry 8 }
+        
+      zxr10IPsecTunnelStatOutDropPkts  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPsec tunnel out drop packets."
+        ::= { zxr10IPsecTunnelStatEntry 9 } 
+END

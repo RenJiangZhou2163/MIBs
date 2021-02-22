@@ -1,0 +1,1219 @@
+-- ====================================================================
+-- Copyright (c) 2011 by Ruijie Networks Co.,Ltd. All rights reserved.
+--
+-- Description: The MIB is designed to get IPSec tunnels' statistic information.
+-- Reference: rujie Enterprise MIB
+-- =====================================================================
+RUIJIE-IPSEC-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        DisplayString,TEXTUAL-CONVENTION, TimeStamp
+            FROM SNMPv2-TC
+        IpAddress, Integer32, Counter32, Counter64, OBJECT-TYPE,
+        MODULE-IDENTITY, Gauge32, NOTIFICATION-TYPE, Unsigned32
+            FROM SNMPv2-SMI
+        MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+            FROM SNMPv2-CONF
+        ruijieMgmt
+            FROM RUIJIE-SMI;
+
+    ruijieIPSecMonitor MODULE-IDENTITY
+        LAST-UPDATED "201102170000Z"            
+        ORGANIZATION
+            "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+            "Tel: 4008-111-000 
+             E-mail: service@ruijie.com.cn"  
+        DESCRIPTION
+            "The MIB is designed to get statistic information of
+             IPSec tunnels. With this MIB, we can get information of a certain
+             tunnel or all tunnels."
+        REVISION      "201102170000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 94 }       
+        
+    RuijieDiffHellmanGrp   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The Diffie Hellman Group used in the IKE and IPSec negotiations.
+             invalidAlg(2147483647) is defined as invalid value."
+        SYNTAX INTEGER { 
+            none(0),
+            modp768(1),
+            modp1024(2),
+            invalidMode(2147483647)
+        }
+
+    RuijieEncapMode        ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The encapsulation mode used by an IPSec Phase-2 Tunnel."
+        SYNTAX INTEGER {
+            tunnel(1),
+            transport(2),
+            invalidMode(2147483647)
+        }
+
+    RuijieEncryptAlgo   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The encryption algorithm used in the IKE and IPSec negotiations.
+             invalidAlg(2147483647) is defined as invalid value."
+        SYNTAX INTEGER {
+            none(0),
+            desCbc(2),
+            threedesCbc(3),
+            aesCbc(12),
+            sm1Cbc(128),
+            invalidAlg(2147483647)
+        }
+
+    RuijieAuthAlgo   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The authentication algorithm used in the IKE negotiations.
+             invalidAlg(2147483647) is defined as invalid value."
+        SYNTAX INTEGER {
+            none(0),
+            md5(1),
+            sha(2),
+            invalidAlg(2147483647)
+        }
+
+    RuijieSaProtocol   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The protocol of security association."
+        SYNTAX INTEGER {
+            reserved(0),
+            isakmp(1),
+            ah(2),
+            esp(3)        
+        }
+    
+    RuijieTunnelProtocol   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The protocol of security association."
+        SYNTAX INTEGER {
+            none(0),
+            icmp(1),
+            igmp(2),
+            ip(4),
+            tcp(6),
+            udp(17),
+            esp(50),
+            ah(51)        
+        }
+
+        
+    RuijieTrafficType   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The type of the data flow."
+        SYNTAX INTEGER {
+            ipv4Addr(1),
+            ipv4AddrSubnet(2),
+            ipv6Addr(3),
+            ipv6AddrSubnet(4),
+            ipv4AddrRange(5),
+            ipv6AddrRange(6)
+        }
+
+    RuijieIPSecNegoType   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The type of key used by an IPSec Phase-2 Tunnel. invalidType(2147483647)
+             is defined as invalid value."
+        SYNTAX INTEGER {
+            ike(1),
+            manual(2),
+            invalidType(2147483647)
+        }
+
+    RuijieIPSecTunnelState   ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The state of IPSec tunnel."
+        SYNTAX INTEGER {
+            establishing(1),
+            active(2),
+            expiring(3)
+        }
+
+-- ========================================================================
+-- Node definitions
+-- ========================================================================
+--Begin the node of ruijieIPSecObjects.
+
+    ruijieIPSecObjects OBJECT IDENTIFIER ::= { ruijieIPSecMonitor 1 }
+
+-- ===============================================
+-- Begin the table of ruijieIPSecTunnelTable.
+-- ===============================================
+
+    ruijieIPSecTunnelTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIPSecTunnelEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The IPSec Phase-2 Tunnel Table. There is one
+             entry in this table for each active IPSec Phase-2 Tunnel."
+        ::= { ruijieIPSecObjects 1 }
+
+    ruijieIPSecTunnelEntry OBJECT-TYPE
+        SYNTAX RuijieIPSecTunnelEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Information about ruijieIPSecTunnelTable."
+        INDEX { ruijieIPSecTunRemoteAddr }
+        ::= { ruijieIPSecTunnelTable 1 }
+
+    RuijieIPSecTunnelEntry ::=
+        SEQUENCE {
+            ruijieIPSecTunIfIndex
+                Integer32,
+            ruijieIPSecTunIndex
+                Integer32,
+            ruijieIPSecTunIKETunnelIndex
+                Integer32,
+            ruijieIPSecTunLocalAddr
+                IpAddress,
+            ruijieIPSecTunRemoteAddr
+                IpAddress,  
+            ruijieIPSecTunLocalHostname
+                DisplayString,
+            ruijieIPSecTunRemoteHostname
+                DisplayString,     
+            ruijieIPSecTunKeyType
+                RuijieIPSecNegoType,
+            ruijieIPSecTunEncapMode
+                RuijieEncapMode,
+            ruijieIPSecTunInitiator
+                INTEGER,
+            ruijieIPSecTunLifeSize
+                Integer32,
+            ruijieIPSecTunLifeTime
+                Integer32,
+            ruijieIPSecTunRemainTime
+                Integer32,
+            ruijieIPSecTunActiveTime
+                Integer32,
+            ruijieIPSecTunCreateTime
+                TimeStamp,
+            ruijieIPSecTunRemainSize
+                Integer32,
+            ruijieIPSecTunTotalRefreshes
+                Counter32,
+            ruijieIPSecTunCurrentSaInstances
+                Gauge32,
+            ruijieIPSecTunInSaEncryptAlgo
+                RuijieEncryptAlgo,
+            ruijieIPSecTunInSaAhAuthAlgo
+                RuijieAuthAlgo,
+            ruijieIPSecTunInSaEspAuthAlgo
+                RuijieAuthAlgo,
+            ruijieIPSecTunDiffHellmanGrp
+                RuijieDiffHellmanGrp,
+            ruijieIPSecTunOutSaEncryptAlgo
+                RuijieEncryptAlgo,
+            ruijieIPSecTunOutSaAhAuthAlgo
+                RuijieAuthAlgo,
+            ruijieIPSecTunOutSaEspAuthAlgo
+                RuijieAuthAlgo,
+            ruijieIPSecTunMapName
+                DisplayString,
+            ruijieIPSecTunSeqNum
+                Integer32,
+            ruijieIPSecTunStatus
+                RuijieIPSecTunnelState
+        }
+
+    ruijieIPSecTunIfIndex OBJECT-TYPE
+        SYNTAX Integer32 (1..2147483647)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The interface index( the ifIndex of ifTable )."
+        ::= { ruijieIPSecTunnelEntry 1 }
+
+    ruijieIPSecTunIndex OBJECT-TYPE
+        SYNTAX Integer32 (1..2147483647)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The index of IPSec Phase-2 Tunnel Table. The value of
+             the index is a number which begins at one and is
+             incremented with each tunnel that is created. The
+             value of this object will wrap at 2,147,483,647."
+        ::= { ruijieIPSecTunnelEntry 2 }
+
+    ruijieIPSecTunIKETunnelIndex OBJECT-TYPE
+        SYNTAX Integer32 (1..2147483647)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The index of the associated IPSec Phase-1 IKE Tunnel
+             (IKETunIndex in the IKETunnelTable). 2147483647 is defined as
+             invalid value. "
+        ::= { ruijieIPSecTunnelEntry 3 }
+
+    ruijieIPSecTunLocalAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The IP address of the local peer for the IPSec Phase-2
+             Tunnel. 0.0.0.0 is defined as invalid value."
+        ::= { ruijieIPSecTunnelEntry 4 }
+
+    ruijieIPSecTunRemoteAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The IP address of the remote peer for the IPSec Phase-2
+             Tunnel. 0.0.0.0 is defined as invalid value."
+        ::= { ruijieIPSecTunnelEntry 5 }
+
+    ruijieIPSecTunLocalHostname OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Hostname of the local peer for the IPSec Phase-2
+             Tunnel."
+        ::= { ruijieIPSecTunnelEntry 6 }
+    
+    ruijieIPSecTunRemoteHostname OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Hostname of the remote peer for the IPSec Phase-2
+             Tunnel. "
+        ::= { ruijieIPSecTunnelEntry 7 }
+    
+    ruijieIPSecTunKeyType OBJECT-TYPE
+        SYNTAX RuijieIPSecNegoType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The key negotiate mode used by the IPSec Phase-2 Tunnel."
+        ::= { ruijieIPSecTunnelEntry 8 }
+    ruijieIPSecTunEncapMode OBJECT-TYPE
+        SYNTAX RuijieEncapMode
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The encapsulation mode used by the IPSec Phase-2 Tunnel."
+        ::= { ruijieIPSecTunnelEntry 9 }
+
+    ruijieIPSecTunInitiator OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                local(1),
+                remote(2),
+                none(2147483647)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The initiator of this IPSec tunnel. Value none is used for manual
+             IPsec tunnel, for there is no initiator or responder in this method."
+        ::= { ruijieIPSecTunnelEntry 10 }
+
+    ruijieIPSecTunLifeSize OBJECT-TYPE
+        SYNTAX Integer32 (1..2147483647)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The negotiated LifeSize of the IPSec Phase-2 Tunnel in kilobytes.
+             2147483647 is defined as invalid value."
+        ::= { ruijieIPSecTunnelEntry 11 }
+
+    ruijieIPSecTunLifeTime OBJECT-TYPE
+        SYNTAX Integer32 (1..2147483647)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The negotiated LifeTime of the IPSec Phase-2 Tunnel in seconds.
+             2147483647 is defined as invalid value."
+        ::= { ruijieIPSecTunnelEntry 12 }
+
+    ruijieIPSecTunRemainTime OBJECT-TYPE
+        SYNTAX Integer32 (0..2147483647)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The remain time of SA in seconds. 2147483647 is defined as invalid
+             value."
+        ::= { ruijieIPSecTunnelEntry 13 }
+
+    ruijieIPSecTunActiveTime OBJECT-TYPE
+        SYNTAX Integer32 (0..2147483647)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The duration the IPSec Phase-2 Tunnel has been active in
+             hundredths of seconds. 2147483647 is defined as invalid value."
+        ::= { ruijieIPSecTunnelEntry 14 }
+    
+    ruijieIPSecTunCreateTime OBJECT-TYPE
+        SYNTAX  Integer32 (0..2147483647)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Time Stamp when the IPSec Phase-2 Tunnel created."
+        ::= { ruijieIPSecTunnelEntry 15 }
+    
+    ruijieIPSecTunRemainSize OBJECT-TYPE
+        SYNTAX Integer32 (0..2147483647)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The remain LifeSize of SA in kilobytes. 2147483647 is defined as
+             invalid value."
+        ::= { ruijieIPSecTunnelEntry 16 }
+
+    ruijieIPSecTunTotalRefreshes OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of security association refreshing performed."
+        ::= { ruijieIPSecTunnelEntry 17 }
+
+    ruijieIPSecTunCurrentSaInstances OBJECT-TYPE
+        SYNTAX Gauge32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of security associations which are currently active
+             or expiring."
+        ::= { ruijieIPSecTunnelEntry 18 }
+
+    ruijieIPSecTunInSaEncryptAlgo OBJECT-TYPE
+        SYNTAX RuijieEncryptAlgo
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The encryption algorithm used by the inbound security association
+             of the IPSec Phase-2 Tunnel."
+        ::= { ruijieIPSecTunnelEntry 19 }
+
+    ruijieIPSecTunInSaAhAuthAlgo OBJECT-TYPE
+        SYNTAX RuijieAuthAlgo
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The authentication algorithm used by the inbound authentication
+             header (AH) security association of the IPSec Phase-2 Tunnel."
+        ::= { ruijieIPSecTunnelEntry 20 }
+
+    ruijieIPSecTunInSaEspAuthAlgo OBJECT-TYPE
+        SYNTAX RuijieAuthAlgo
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The authentication algorithm used by the inbound encapsulation
+             security protocol(ESP) security association of the IPSec
+             Phase-2 Tunnel."
+        ::= { ruijieIPSecTunnelEntry 21 }
+
+    ruijieIPSecTunDiffHellmanGrp OBJECT-TYPE
+        SYNTAX RuijieDiffHellmanGrp
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Diffie Hellman Group used by the security association of the
+             IPSec Phase-2 Tunnel."
+        ::= { ruijieIPSecTunnelEntry 22 }
+
+    ruijieIPSecTunOutSaEncryptAlgo OBJECT-TYPE
+        SYNTAX RuijieEncryptAlgo
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The encryption algorithm used by the outbound security
+             association of the IPSec Phase-2 Tunnel."
+        ::= { ruijieIPSecTunnelEntry 23 }
+
+    ruijieIPSecTunOutSaAhAuthAlgo OBJECT-TYPE
+        SYNTAX RuijieAuthAlgo
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The authentication algorithm used by the outbound
+             authentication header (AH) security association of
+             the IPSec Phase-2 Tunnel."
+        ::= { ruijieIPSecTunnelEntry 24 }
+
+    ruijieIPSecTunOutSaEspAuthAlgo OBJECT-TYPE
+        SYNTAX RuijieAuthAlgo
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The authentication algorithm used by the outbound encapsulation
+             security protocol(ESP) security association of the IPSec
+             Phase-2 Tunnel."
+        ::= { ruijieIPSecTunnelEntry 25 }
+
+    ruijieIPSecTunMapName OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Map name used by this IPSec tunnel."
+        ::= { ruijieIPSecTunnelEntry 26 }
+
+    ruijieIPSecTunSeqNum OBJECT-TYPE
+        SYNTAX Integer32 (1..2147483647)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The sequence number of policy used by this IPSec tunnel."
+        ::= { ruijieIPSecTunnelEntry 27 }
+
+    ruijieIPSecTunStatus OBJECT-TYPE
+        SYNTAX RuijieIPSecTunnelState
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The status of the IPSec Tunnel."
+        ::= { ruijieIPSecTunnelEntry 28 }
+
+-- ===============================================
+-- Begin the table of ruijieIPSecTunnelStatTable.
+-- ===============================================
+
+    ruijieIPSecTunnelStatTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIPSecTunnelStatEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The IPSec Phase-2 Tunnel Statistics Table. "
+        ::= { ruijieIPSecObjects 2 }
+
+    ruijieIPSecTunnelStatEntry OBJECT-TYPE
+        SYNTAX RuijieIPSecTunnelStatEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Information about ruijieIPSecTunnelStatTable."
+        INDEX { ruijieIPSecTunRemoteAddr }
+        ::= { ruijieIPSecTunnelStatTable 1 }
+
+    RuijieIPSecTunnelStatEntry ::=
+        SEQUENCE {
+            ruijieIPSecTunInOctets
+                Counter64,
+            ruijieIPSecTunInDecompOctets
+                Counter64,
+            ruijieIPSecTunInPkts
+                Counter64,
+            ruijieIPSecTunInSpeed
+            	Counter64,
+            ruijieIPSecTunInDropPkts
+                Counter64,
+            ruijieIPSecTunOutOctets
+                Counter64,
+            ruijieIPSecTunOutUncompOctets
+                Counter64,
+            ruijieIPSecTunOutPkts
+                Counter64, 
+            ruijieIPSecTunOutSpeed
+            	Counter64,
+            ruijieIPSecTunOutDropPkts
+                Counter64        
+        }
+
+    ruijieIPSecTunInOctets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of octets received by this IPSec Phase-2 Tunnel.
+             This value is accumulated BEFORE determining whether or not the
+             packet should be decompressed."
+        ::= { ruijieIPSecTunnelStatEntry 1 }
+
+    ruijieIPSecTunInDecompOctets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of decompressed octets received by this IPSec
+             Phase-2 Tunnel. This value is accumulated AFTER the packet
+             is decompressed."
+        ::= { ruijieIPSecTunnelStatEntry 2 }
+
+    ruijieIPSecTunInPkts OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets received by this IPSec Phase-2 Tunnel."
+        ::= { ruijieIPSecTunnelStatEntry 3 } 
+    
+    ruijieIPSecTunInSpeed OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Speed(bps) of packets received by this IPSec Phase-2 Tunnel."
+        ::= { ruijieIPSecTunnelStatEntry 4 }
+
+    ruijieIPSecTunInDropPkts OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped during receiving process
+             by this IPSec Phase-2 Tunnel."
+        ::= { ruijieIPSecTunnelStatEntry 5 }
+
+    ruijieIPSecTunOutOctets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of octets sent by this IPSec Phase-2 Tunnel.
+             This value is accumulated AFTER determining whether or not
+             the packet should be compressed."
+        ::= { ruijieIPSecTunnelStatEntry 6 }
+
+    ruijieIPSecTunOutUncompOctets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of uncompressed octets sent by this IPSec Phase-2
+             Tunnel.This value is accumulated BEFORE the packet is compressed."
+        ::= { ruijieIPSecTunnelStatEntry 7 }
+
+    ruijieIPSecTunOutPkts OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets sent by this IPSec Phase-2 Tunnel."
+        ::= { ruijieIPSecTunnelStatEntry 8 }
+    
+    ruijieIPSecTunOutSpeed OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Speed(bps) of packets sent by this IPSec Phase-2 Tunnel. "
+        ::= { ruijieIPSecTunnelStatEntry 9 }
+
+    
+    ruijieIPSecTunOutDropPkts OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped during sending process
+             by this IPSec Phase-2 Tunnel."
+        ::= { ruijieIPSecTunnelStatEntry 10 }
+
+   
+-- ===============================================
+-- Begin the table of ruijieIPSecSaTable.
+-- ===============================================
+
+    ruijieIPSecSaTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIPSecSaEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The IPSec Phase-2 Security Protection Index Table.  This table
+             contains an entry for each active and expiring security association."
+        ::= { ruijieIPSecObjects 3 }
+
+    ruijieIPSecSaEntry OBJECT-TYPE
+        SYNTAX RuijieIPSecSaEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Information about ruijieIPSecSaTable."
+        INDEX { ruijieIPSecTunRemoteAddr }
+        ::= { ruijieIPSecSaTable 1 }
+
+    RuijieIPSecSaEntry ::=
+        SEQUENCE {
+            ruijieIPSecSaIndex
+                Integer32,
+            ruijieIPSecSaDirection
+                INTEGER,
+            ruijieIPSecSaValue
+                Unsigned32,
+            ruijieIPSecSaProtocol
+                RuijieSaProtocol,
+            ruijieIPSecSaEncryptAlgo
+                RuijieEncryptAlgo,
+            ruijieIPSecSaAuthAlgo
+                RuijieAuthAlgo,
+            ruijieIPSecSaStatus
+                RuijieIPSecTunnelState
+        }
+
+    ruijieIPSecSaIndex OBJECT-TYPE
+        SYNTAX Integer32 (1..2147483647)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The number of the Sa associated with the Phase-2 Tunnel
+             Table.  The value of this index is a number which begins
+             at one and is incremented with each Sa associated with
+             an IPSec Phase-2 Tunnel.  The value of this object will
+             wrap at 2,147,483,647."
+        ::= { ruijieIPSecSaEntry 1 }
+
+    ruijieIPSecSaDirection OBJECT-TYPE
+        SYNTAX INTEGER {
+            in(1),
+            out(2)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The direction of the SA."
+        ::= { ruijieIPSecSaEntry 2 }
+
+    ruijieIPSecSaValue OBJECT-TYPE
+        SYNTAX Unsigned32 (1..4294967295)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The value of the SPI."
+        ::= { ruijieIPSecSaEntry 3 }
+
+    ruijieIPSecSaProtocol OBJECT-TYPE
+        SYNTAX RuijieSaProtocol
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The security protocol of the SA."
+        ::= { ruijieIPSecSaEntry 4 }
+
+    ruijieIPSecSaEncryptAlgo OBJECT-TYPE
+        SYNTAX RuijieEncryptAlgo
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The encryption algorithm used by the security association
+             of the IPSec Phase-2 Tunnel."
+        ::= { ruijieIPSecSaEntry 5 }
+
+    ruijieIPSecSaAuthAlgo OBJECT-TYPE
+        SYNTAX RuijieAuthAlgo
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The authentication algorithm used by the SA."
+        ::= { ruijieIPSecSaEntry 6 }
+
+    ruijieIPSecSaStatus OBJECT-TYPE
+        SYNTAX RuijieIPSecTunnelState        
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The status of the SA."
+        ::= { ruijieIPSecSaEntry 7 }
+
+-- ===============================================
+-- Begin the table of ruijieIPSecTrafficTable.
+-- ===============================================
+
+    ruijieIPSecTrafficTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIPSecTrafficEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The IPSec Phase-2 Tunnel Traffic Table. "
+        ::= { ruijieIPSecObjects 4 }
+
+    ruijieIPSecTrafficEntry OBJECT-TYPE
+        SYNTAX RuijieIPSecTrafficEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Information about ruijieIPSecTrafficTable."
+        INDEX { ruijieIPSecTunRemoteAddr }
+        ::= { ruijieIPSecTrafficTable 1 }
+
+    RuijieIPSecTrafficEntry ::=
+        SEQUENCE {
+            ruijieIPSecTrafficLocalType
+                RuijieTrafficType,
+            ruijieIPSecTrafficLocalAddr1
+                IpAddress,
+            ruijieIPSecTrafficLocalAddr2
+                IpAddress,
+            ruijieIPSecTrafficLocalProtocol
+                RuijieTunnelProtocol,
+            ruijieIPSecTrafficLocalPort
+                Integer32, 
+            ruijieIPSecTrafficLocalHostname
+                DisplayString,
+            ruijieIPSecTrafficRemoteType
+                RuijieTrafficType,
+            ruijieIPSecTrafficRemoteAddr1
+                IpAddress,
+            ruijieIPSecTrafficRemoteAddr2
+                IpAddress,
+            ruijieIPSecTrafficRemoteProtocol
+                RuijieTunnelProtocol,
+            ruijieIPSecTrafficRemotePort
+                Integer32,
+            ruijieIPSecTrafficRemoteHostname
+                DisplayString
+    }
+
+    ruijieIPSecTrafficLocalType OBJECT-TYPE
+        SYNTAX RuijieTrafficType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The type of local peer. Possible values are: a single
+             IP address, or an IP address range, or an IP subnet."
+        ::= { ruijieIPSecTrafficEntry 1 }
+
+    ruijieIPSecTrafficLocalAddr1 OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The first specification of local peer's IP address. If
+             the local peer type is single IP address, then this is the
+             value of the IP address. If the local peer type is IP subnet,
+             then this is the value of the subnet. If the local peer type
+             is IP address range, then this is the value of beginning IP
+             address of the range."
+        ::= { ruijieIPSecTrafficEntry 2 }
+
+    ruijieIPSecTrafficLocalAddr2 OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The second specification of local peer's IP address. If the local
+             peer type is single IP address, then this is the value of the
+             IP address. If the local peer type is IP subnet, then this is
+             the value of the subnet mask. If the local peer type is IP
+             address range, then this is the value of ending IP address of
+             the range."
+        ::= { ruijieIPSecTrafficEntry 3 }
+        
+    ruijieIPSecTrafficLocalProtocol OBJECT-TYPE
+        SYNTAX RuijieTunnelProtocol
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The protocol number of the local peer's traffic."
+        ::= { ruijieIPSecTrafficEntry 4 }
+
+    ruijieIPSecTrafficLocalPort OBJECT-TYPE
+        SYNTAX Integer32 (0..65535)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The port number of the local peer's traffic."
+        ::= { ruijieIPSecTrafficEntry 5 }
+    
+    ruijieIPSecTrafficLocalHostname OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Hostname of local peer's IP address."
+        ::= { ruijieIPSecTrafficEntry 6 }
+
+    
+    ruijieIPSecTrafficRemoteType OBJECT-TYPE
+        SYNTAX RuijieTrafficType
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The type of remote peer. Possible values are: a single
+             IP address, or an IP address range, or an IP subnet."
+        ::= { ruijieIPSecTrafficEntry 7 }
+
+    ruijieIPSecTrafficRemoteAddr1 OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The first specification of remote peer's IP address.
+             If the remote peer type is single IP address, then
+             this is the value of the IP address. If the remote
+             peer type is IP subnet, then this is the value
+             of the subnet. If the remote peer type is IP
+             address range, then this is the value of beginning
+             IP address of the range."
+        ::= { ruijieIPSecTrafficEntry 8 }
+
+    ruijieIPSecTrafficRemoteAddr2 OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Single IP address, then this is the value of the IP
+             address. If the remote peer type is IP subnet,
+             then this is the value of the subnet mask. If the
+             remote peer type is IP address range, then this
+             is the value of ending IP address of the range."
+        ::= { ruijieIPSecTrafficEntry 9 }
+          
+    ruijieIPSecTrafficRemoteProtocol OBJECT-TYPE
+        SYNTAX RuijieTunnelProtocol
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The protocol number of the remote peer's traffic."
+        ::= { ruijieIPSecTrafficEntry 10 }
+
+    ruijieIPSecTrafficRemotePort OBJECT-TYPE
+        SYNTAX Integer32 (0..65535)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The port number of the remote peer's traffic."
+        ::= { ruijieIPSecTrafficEntry 11 }
+    
+    ruijieIPSecTrafficRemoteHostname OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Hostname of remote peer's IP address."
+        ::= { ruijieIPSecTrafficEntry 12 }
+
+-- ===============================================
+-- Begin the ruijieIPSecGlobalStats.
+-- ===============================================
+
+    ruijieIPSecGlobalStats OBJECT IDENTIFIER ::= { ruijieIPSecObjects 5 }
+
+    ruijieIPSecGlobalActiveTunnels OBJECT-TYPE
+        SYNTAX Gauge32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of currently active  IPSec Phase-2 Tunnels."
+        ::= { ruijieIPSecGlobalStats 1 }
+
+    ruijieIPSecGlobalActiveSas OBJECT-TYPE
+        SYNTAX Gauge32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of currently active or expiring IPSec Phase-2 SA."
+        ::= { ruijieIPSecGlobalStats 2 }
+
+    ruijieIPSecGlobalInOctets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of octets received by all current and previous
+             IPSec Phase-2 Tunnels. This value is accumulated BEFORE determining
+             whether or not the packet should be decompressed."
+        ::= { ruijieIPSecGlobalStats 3 }
+
+    ruijieIPSecGlobalInPkts OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets received by all current and
+             previous IPSec Phase-2 Tunnels."
+        ::= { ruijieIPSecGlobalStats 4 }
+    
+    ruijieIPSecGlobalInSpeed OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total speed(bps) of packets received by all current and
+             previous IPSec Phase-2 Tunnels."
+        ::= { ruijieIPSecGlobalStats 5 }
+    
+    ruijieIPSecGlobalInDrops OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped during receiving
+             process by all current and previous IPSec Phase-2
+             Tunnels. "
+        ::= { ruijieIPSecGlobalStats 6 }
+            
+    ruijieIPSecGlobalOutOctets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of octets sent by all current and previous
+             IPSec Phase-2 Tunnels. This value is accumulated AFTER
+             determining whether or not the packet should be compressed."
+        ::= { ruijieIPSecGlobalStats 7 }
+
+
+    ruijieIPSecGlobalOutPkts OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets sent by all current and previous
+             IPSec Phase-2 Tunnels."
+        ::= { ruijieIPSecGlobalStats 8 }
+      
+    ruijieIPSecGlobalOutSpeed OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total speed(bps) of packets sent by all current and previous
+             IPSec Phase-2 Tunnels."
+        ::= { ruijieIPSecGlobalStats 9 }
+ 
+     
+    ruijieIPSecGlobalOutDrops OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of packets dropped during sending process
+             by all current and previous IPSec Phase-2 Tunnels."
+        ::= { ruijieIPSecGlobalStats 10 }
+
+-- ===============================================
+-- Begin the ruijieIPSecTrapObject.
+-- ===============================================
+
+    ruijieIPSecTrapObject OBJECT IDENTIFIER ::= { ruijieIPSecObjects 6 }
+
+    ruijieIPSecMapName OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The IPSec map name with a trap."
+        ::= { ruijieIPSecTrapObject 1 }
+
+    ruijieIPSecSeqNum OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The IPSec map sequence number with a trap."
+        ::= { ruijieIPSecTrapObject 2 }
+
+    ruijieIPSecSpiValue OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The SPI value associated with a trap."
+        ::= { ruijieIPSecTrapObject 3 }
+
+
+-- ===============================================
+-- definition of traps.
+-- ===============================================
+
+    ruijieIPSecTrap OBJECT IDENTIFIER ::= { ruijieIPSecObjects 7 }
+
+    ruijieIPSecNotifications OBJECT IDENTIFIER ::= { ruijieIPSecTrap 1 }
+
+    ruijieIPSecTunnelStart NOTIFICATION-TYPE
+        OBJECTS { ruijieIPSecTunLocalAddr,
+                  ruijieIPSecTunRemoteAddr, 
+                  ruijieIPSecTunLocalHostname,
+                  ruijieIPSecTunRemoteHostname,
+                  ruijieIPSecTunLifeTime,
+                  ruijieIPSecTunLifeSize
+                }
+        STATUS     current
+        DESCRIPTION
+            "This notification is generated when an IPSec Phase-2
+             Tunnel is created."
+        ::= { ruijieIPSecNotifications 1 }
+
+    ruijieIPSecTunnelStop NOTIFICATION-TYPE
+        OBJECTS { ruijieIPSecTunLocalAddr,
+                  ruijieIPSecTunRemoteAddr,
+                  ruijieIPSecTunLocalHostname,
+                  ruijieIPSecTunRemoteHostname,
+                  ruijieIPSecTunActiveTime
+                }
+        STATUS     current
+        DESCRIPTION
+            "This notification is generated when an IPSec Phase-2
+             Tunnel is deleted."
+        ::= { ruijieIPSecNotifications 2 }
+        
+-- ===============================================
+-- Conformance Information
+-- ===============================================
+    ruijieIPSecConformance   OBJECT IDENTIFIER
+        ::= { ruijieIPSecMonitor 2 }
+    ruijieIPSecCompliances   OBJECT IDENTIFIER
+        ::= { ruijieIPSecConformance 1 }
+    ruijieIPSecGroups        OBJECT IDENTIFIER
+        ::= { ruijieIPSecConformance 2 }
+
+-- ===============================================
+-- Compliance Statements
+-- ===============================================
+    ruijieIPSecCompliance MODULE-COMPLIANCE
+        STATUS current
+        DESCRIPTION
+            " "
+        MODULE -- this module
+        MANDATORY-GROUPS
+            {
+                ruijieIPSecTunnelTableGroup,
+                ruijieIPSecTunnelStatGroup,
+                ruijieIPSecSaGroup,
+                ruijieIPSecTrafficTableGroup,
+                ruijieIPSecGlobalStatsGroup,
+                ruijieIPSecTrapObjectGroup,
+                ruijieIPSecTrapGroup
+            }
+        ::= { ruijieIPSecCompliances 1 }
+
+    ruijieIPSecTunnelTableGroup OBJECT-GROUP
+        OBJECTS {
+                    ruijieIPSecTunIKETunnelIndex,
+                    ruijieIPSecTunLocalAddr,
+                    ruijieIPSecTunRemoteAddr,
+                    ruijieIPSecTunLocalHostname,
+                    ruijieIPSecTunRemoteHostname,
+                    ruijieIPSecTunKeyType,
+                    ruijieIPSecTunEncapMode,
+                    ruijieIPSecTunInitiator,
+                    ruijieIPSecTunLifeSize,
+                    ruijieIPSecTunLifeTime,
+                    ruijieIPSecTunRemainTime,
+                    ruijieIPSecTunActiveTime,
+                    ruijieIPSecTunRemainSize,
+                    ruijieIPSecTunTotalRefreshes,
+                    ruijieIPSecTunCurrentSaInstances,
+                    ruijieIPSecTunInSaEncryptAlgo,
+                    ruijieIPSecTunInSaAhAuthAlgo,
+                    ruijieIPSecTunInSaEspAuthAlgo,
+                    ruijieIPSecTunDiffHellmanGrp,
+                    ruijieIPSecTunOutSaEncryptAlgo,
+                    ruijieIPSecTunOutSaAhAuthAlgo,
+                    ruijieIPSecTunOutSaEspAuthAlgo,
+                    --ruijieIPSecTunPolicyName,
+                    --ruijieIPSecTunPolicyNum,
+                    ruijieIPSecTunStatus
+                }
+        STATUS current
+        DESCRIPTION
+            "The group contains the IPSec tunnel's property information."
+        ::= { ruijieIPSecGroups 1 }
+
+    ruijieIPSecTunnelStatGroup OBJECT-GROUP
+        OBJECTS {
+                    ruijieIPSecTunInOctets,
+                    ruijieIPSecTunInDecompOctets,
+                    ruijieIPSecTunInPkts,
+                    ruijieIPSecTunInSpeed,
+                    ruijieIPSecTunInDropPkts,
+                    ruijieIPSecTunOutOctets,
+                    ruijieIPSecTunOutUncompOctets,
+                    ruijieIPSecTunOutPkts, 
+                    ruijieIPSecTunOutSpeed,
+                    ruijieIPSecTunOutDropPkts     
+        		}
+        STATUS current
+        DESCRIPTION
+            "The group contains the IPSec tunnel's statistic information."
+        ::= { ruijieIPSecGroups 2 }
+
+    ruijieIPSecSaGroup OBJECT-GROUP
+        OBJECTS {
+                    ruijieIPSecSaDirection,
+                    ruijieIPSecSaValue,
+                    ruijieIPSecSaProtocol,
+                    ruijieIPSecSaEncryptAlgo,
+                    ruijieIPSecSaAuthAlgo,
+                    ruijieIPSecSaStatus
+                }
+        STATUS current
+        DESCRIPTION
+            "The group contains the SA's property information."
+        ::= { ruijieIPSecGroups 3 }
+
+    ruijieIPSecTrafficTableGroup OBJECT-GROUP
+        OBJECTS {
+                    ruijieIPSecTrafficLocalType,
+                    ruijieIPSecTrafficLocalAddr1,
+                    ruijieIPSecTrafficLocalAddr2,
+                    ruijieIPSecTrafficLocalProtocol,
+                    ruijieIPSecTrafficLocalPort,
+                    ruijieIPSecTrafficLocalHostname,
+                    ruijieIPSecTrafficRemoteType,
+                    ruijieIPSecTrafficRemoteAddr1,
+                    ruijieIPSecTrafficRemoteAddr2,
+                    ruijieIPSecTrafficRemoteProtocol,
+                    ruijieIPSecTrafficRemotePort,
+                    ruijieIPSecTrafficRemoteHostname
+                }
+        STATUS current
+        DESCRIPTION
+            "The group contains the property information of the
+             data flow protected by IPSec tunnel."
+        ::= { ruijieIPSecGroups 4 }
+
+    ruijieIPSecGlobalStatsGroup OBJECT-GROUP
+        OBJECTS {
+                    ruijieIPSecGlobalActiveTunnels,
+                    ruijieIPSecGlobalActiveSas,
+                    ruijieIPSecGlobalInOctets,
+                    ruijieIPSecGlobalInPkts,
+                    ruijieIPSecGlobalInDrops,
+                    ruijieIPSecGlobalInSpeed,                    
+                    ruijieIPSecGlobalOutOctets,
+                    ruijieIPSecGlobalOutPkts,
+                    ruijieIPSecGlobalOutDrops, 
+                    ruijieIPSecGlobalOutSpeed
+                }
+        STATUS current
+        DESCRIPTION
+            "The group contains all of the IPSec tunnel's statistic
+             information."
+        ::= { ruijieIPSecGroups 5 }
+
+    ruijieIPSecTrapObjectGroup OBJECT-GROUP
+        OBJECTS {
+                    ruijieIPSecMapName,
+                    ruijieIPSecSeqNum,
+                    ruijieIPSecSpiValue
+                }
+        STATUS current
+        DESCRIPTION
+            "The group contains all of trap objects of IPSec tunnels."
+        ::= { ruijieIPSecGroups 6 }
+
+    ruijieIPSecTrapGroup NOTIFICATION-GROUP
+        NOTIFICATIONS {
+                          ruijieIPSecTunnelStart,
+                          ruijieIPSecTunnelStop
+                      }
+        STATUS current
+        DESCRIPTION
+            "The group contains all of trap of IPSec tunnels."
+        ::= { ruijieIPSecGroups 7 }
+
+
+END
+

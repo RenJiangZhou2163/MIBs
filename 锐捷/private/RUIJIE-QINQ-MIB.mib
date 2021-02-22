@@ -1,0 +1,645 @@
+-- *****************************************************************
+-- RUIJIE-QINQ-MIB.mib:  Ruijie QINQ MIB file
+--
+-- September 2010, miaoshifu
+--
+-- Copyright (c) 2010 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-QINQ-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32
+                FROM SNMPv2-SMI
+        VlanId
+                FROM Q-BRIDGE-MIB
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        IfIndex
+                FROM RUIJIE-TC        
+        EnabledStatus
+        	FROM P-BRIDGE-MIB
+        TEXTUAL-CONVENTION
+                FROM SNMPv2-TC        
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieQinQMIB MODULE-IDENTITY
+        LAST-UPDATED "200909090000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie vlan mibs."
+        REVISION      "200909090000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 53}
+
+ruijieQINQMIBObjects OBJECT IDENTIFIER ::= { ruijieQinQMIB 1 }
+
+VlanList ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "Each octet within this value specifies a set of eight
+        vlans, with the first octet specifying vlans 1 through
+        8, the second octet specifying vlans 9 through 16, etc.
+        Within each octet, the most significant bit represents
+        the lowest numbered vlan, and the least significant bit
+        represents the highest numbered vlan.  Thus, each vlan
+        of the bridge is represented by a single bit within the
+        value of this object.  If that bit has a value of '1',
+        then that vlan is included in the set of vlans; the vlan
+        is not included if its bit has a value of '0'."
+    SYNTAX      OCTET STRING
+
+
+-- ---------------------------------------------------------- --
+-- A table for configuring 802.1q tunnel port.
+-- ---------------------------------------------------------- -- 
+ruijieQinQPortConfigTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieQinQPortConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A table for configuring 802.1q tunnel port mode, native 
+            vlan and allowed vlan"
+        ::= { ruijieQINQMIBObjects 1 }
+    
+ruijieQinQPortConfigEntry OBJECT-TYPE
+        SYNTAX RuijieQinQPortConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            " "
+        INDEX { ruijieQinQPortConfigIndex}
+        ::= { ruijieQinQPortConfigTable 1 }
+    
+RuijieQinQPortConfigEntry ::=
+        SEQUENCE {
+        ruijieQinQPortConfigIndex IfIndex,
+        ruijieQinQPortConfigMode INTEGER,
+        ruijieQinQPortNativeVlan   VlanId,
+        ruijieQinQPortAllowedUntagVlanList VlanList,
+        ruijieQinQPortAllowedTagVlanList VlanList
+        }
+        
+ruijieQinQPortConfigIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "port index."
+        ::= { ruijieQinQPortConfigEntry 1 }
+              
+ruijieQinQPortConfigMode OBJECT-TYPE
+        SYNTAX INTEGER {
+            other(1),          -- the mode of interface is not 802.1q tunnel
+            dot1q-tunnel(2)    -- the mode of interface is 802.1q tunnel port
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Port mode, indicates that port is an 
+             other(1), dot1q-tunnel(2)."
+        ::= { ruijieQinQPortConfigEntry 2 }
+
+ruijieQinQPortNativeVlan OBJECT-TYPE
+        SYNTAX VlanId
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The value indicate the VID of the native vlan of that this port .
+             This field is effective for only dot1q_tunnel port."
+        ::= { ruijieQinQPortConfigEntry 3 }
+
+ruijieQinQPortAllowedUntagVlanList OBJECT-TYPE
+        SYNTAX VlanList
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The set of vlans that should transmit egress packets 
+             for this VLAN as untagged. 
+             Each octet within this value specifies a set of eight
+             vlans, with the first octet specifying vlans 1 through
+             8, the second octet specifying vlans 9 through 16, etc.
+             Within each octet, the most significant bit represents
+             the lowest numbered vlan, and the least significant bit
+             represents the highest numbered vlan.  Thus, each vlan
+             of the bridge is represented by a single bit within the
+             value of this object.  If that bit has a value of '1',
+             then that vlan is included in the set of vlans; the vlan
+             is not included if its bit has a value of '0'. This field
+             is effective for only 802.1q tunnel port."
+        ::= { ruijieQinQPortConfigEntry 4 }
+
+ruijieQinQPortAllowedTagVlanList OBJECT-TYPE
+        SYNTAX VlanList
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The set of vlans that should transmit egress packets 
+             for this VLAN as tagged. 
+             Each octet within this value specifies a set of eight
+             vlans, with the first octet specifying vlans 1 through
+             8, the second octet specifying vlans 9 through 16, etc.
+             Within each octet, the most significant bit represents
+             the lowest numbered vlan, and the least significant bit
+             represents the highest numbered vlan.  Thus, each vlan
+             of the bridge is represented by a single bit within the
+             value of this object.  If that bit has a value of '1',
+             then that vlan is included in the set of vlans; the vlan
+             is not included if its bit has a value of '0'. This field
+             is effective for only 802.1q tunnel."
+        ::= { ruijieQinQPortConfigEntry 5 }
+
+
+-- ---------------------------------------------------------- --
+-- configuring global Service TPID value.
+-- ---------------------------------------------------------- -- 
+    ruijieQinQServiceTPIDValue  OBJECT-TYPE
+        SYNTAX      Integer32 (1..65535)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Ethernet protocol type configured for service VLAN tags
+            globally.  The ethernet protocol type is also the TPID(Tag
+            Protocol Identity) field of a VLAN tag described in 802.1q
+            document.  This value can be also configured for an
+            individual interface.  The node that configure this
+            value for a single interface is ruijieQinQIfServiceTPIDValue,
+            who has no association with ruijieQinQServiceTPIDValue.
+            That meas, a switch can only support one of them. only
+            support interface configuration or only support global
+            configuration.
+            The default Service TPID value is 0x8100."
+        ::= { ruijieQINQMIBObjects 2 }
+
+-- ---------------------------------------------------------- --
+-- A table for configuring Service TPID value for interfaces.
+-- ---------------------------------------------------------- -- 
+ruijieQinQIfServiceTPIDConfigTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieQinQIfServiceTPIDConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry for configuring Service TPID functions for
+            interfaces."
+        ::= { ruijieQINQMIBObjects 3 }
+    
+ruijieQinQIfServiceTPIDConfigEntry OBJECT-TYPE
+        SYNTAX RuijieQinQIfServiceTPIDConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry for configuring Service TPID function for
+            interfaces."
+        INDEX { ruijieQinQIfServiceTPIDConfigIfIndex}
+        ::= { ruijieQinQIfServiceTPIDConfigTable 1 }
+    
+RuijieQinQIfServiceTPIDConfigEntry ::=
+        SEQUENCE {
+        ruijieQinQIfServiceTPIDConfigIfIndex IfIndex,
+        ruijieQinQIfServiceTPIDValue   Integer32
+        }    
+    
+ruijieQinQIfServiceTPIDConfigIfIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "port index."
+        ::= { ruijieQinQIfServiceTPIDConfigEntry 1 }  
+
+ruijieQinQIfServiceTPIDValue    OBJECT-TYPE
+        SYNTAX      Integer32 (1..65535)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "Service TPID value configured for an interface.
+            The default Service TPID value is 0x8100."
+        ::= { ruijieQinQIfServiceTPIDConfigEntry 2 }
+
+-- ---------------------------------------------------------- --
+-- A table for configuring priority copy for interfaces.
+-- ---------------------------------------------------------- -- 
+ruijieQinQPriorityCopyTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieQinQPriorityCopyEntry
+        MAX-ACCESS not-accessible
+        STATUS   current
+        DESCRIPTION
+            " A table for configuring priority field in 802.1Q-in-Q
+            outer VLAN tag for interfaces. This feature copy the
+            priority of an inner VLAN tag to the priority of an 
+            outer VLAN tag."
+        ::= { ruijieQINQMIBObjects  4  }
+
+ruijieQinQPriorityCopyEntry OBJECT-TYPE
+        SYNTAX  RuijieQinQPriorityCopyEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            " An entry for configuring priority copy function for
+            interfaces."
+        INDEX   { ruijieQinQPriorityCopyIfIndex }		
+        ::= { ruijieQinQPriorityCopyTable 1}
+
+RuijieQinQPriorityCopyEntry ::=
+        SEQUENCE {
+		            ruijieQinQPriorityCopyIfIndex  IfIndex,
+		            ruijieQinQPriorityCopyPortStatus   EnabledStatus 
+		    }
+
+ruijieQinQPriorityCopyIfIndex OBJECT-TYPE
+        SYNTAX  IfIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            "port index."          
+	      ::= { ruijieQinQPriorityCopyEntry 1 }
+
+ruijieQinQPriorityCopyPortStatus OBJECT-TYPE
+        SYNTAX  EnabledStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+             "The value enabled(1) indicates that priority copy should 
+             be enabled on this interface. When disabled(2), priority 
+             copy is disabled on this interface."
+        ::= { ruijieQinQPriorityCopyEntry 2 }   
+
+-- ---------------------------------------------------------- --
+-- A table for configuring priority remark for interfaces.
+-- ---------------------------------------------------------- -- 
+
+ruijieQinQPriorityRemarkTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieQinQPriorityRemarkEntry
+        MAX-ACCESS not-accessible
+        STATUS   current
+        DESCRIPTION
+            " A table for configuring priority field in 802.1Q-in-Q
+            outer VLAN tag for interfaces. This feature uses the
+            priority of an inner VLAN tag to remark the priority
+            of an outer VLAN tag."
+        ::= { ruijieQINQMIBObjects  5  }
+
+ruijieQinQPriorityRemarkEntry OBJECT-TYPE
+        SYNTAX  RuijieQinQPriorityRemarkEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            " An entry for configuring priority remark function for
+            interfaces."
+        INDEX   { ruijieQinQPriorityRemarkIfIndex, 
+                  ruijieQinQPriorityValue
+                }		
+        ::= { ruijieQinQPriorityRemarkTable 1}
+
+RuijieQinQPriorityRemarkEntry ::=
+        SEQUENCE {
+		        	ruijieQinQPriorityRemarkIfIndex  IfIndex,
+            		ruijieQinQPriorityValue Integer32,
+            		ruijieQinQPriorityRemarkValue Integer32
+		    }
+
+ruijieQinQPriorityRemarkIfIndex OBJECT-TYPE
+        SYNTAX  IfIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            "port index."          
+	      ::= { ruijieQinQPriorityRemarkEntry 1 }
+
+ruijieQinQPriorityValue  OBJECT-TYPE
+        SYNTAX      Integer32 (0..7)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The priority value in inner VLAN tag. Since the priority
+            range is from 0 to 7, yet the index range is from 1 to 8.
+            Thus, the actual priority value equals to the value that
+            subtracts 1 from corresponding index value."
+        ::= { ruijieQinQPriorityRemarkEntry 2 }
+
+ruijieQinQPriorityRemarkValue  OBJECT-TYPE
+        SYNTAX      Integer32 (0..7)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The new priority value used to fill outer tag."
+        ::= { ruijieQinQPriorityRemarkEntry 3 }
+
+-- ------------------------------------------------------------------ --
+-- A table for configuring selective QINQ based on VLAN for interfaces.
+-- ------------------------------------------------------------------ -- 
+ruijieselectiveQinQBasedOnVlanTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieselectiveQinQBasedOnVlanEntry
+        MAX-ACCESS not-accessible
+        STATUS   current
+        DESCRIPTION
+            " A table for configuring vlan field in 802.1Q-in-Q outer 
+            VLAN tag for interfaces. This feature adds an outer VLAN 
+            tag based on inbound VLAN IDs, modifies outer VLAN tag 
+            based on inner VLAN IDs, modifies outer VLAN tag based on
+            outer VLAN IDs, modifies outer VLAN tag based on outer VLAN
+            ID and inner VLAN IDs."
+        ::= { ruijieQINQMIBObjects  6  }
+
+ruijieselectiveQinQBasedOnVlanEntry OBJECT-TYPE
+        SYNTAX  RuijieselectiveQinQBasedOnVlanEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            " An entry for configuring vlan field in 802.1Q-in-Q
+            outer VLAN tag based on VLAN for interfaces."
+        INDEX   { ruijieselectiveQinQBasedOnVlanIfIndex, 
+        		  ruijieselectiveQinQBasedOnVlanType,
+                  ruijieselectiveQinQBasedOnVlanOuterVlanID,
+				  ruijieselectiveQinQBasedOnVlanOldOuterVlanID  }		
+        ::= { ruijieselectiveQinQBasedOnVlanTable 1}
+
+RuijieselectiveQinQBasedOnVlanEntry ::=
+        SEQUENCE {
+		        	ruijieselectiveQinQBasedOnVlanIfIndex  IfIndex,
+		        	ruijieselectiveQinQBasedOnVlanType     INTEGER,
+            		ruijieselectiveQinQBasedOnVlanOuterVlanID Integer32,
+            		ruijieselectiveQinQBasedOnVlanOldOuterVlanID Integer32,
+            		ruijieselectiveQinQBasedOnVlanVlanList VlanList
+		    }
+
+ruijieselectiveQinQBasedOnVlanIfIndex OBJECT-TYPE
+        SYNTAX  IfIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            "port index."          
+	      ::= { ruijieselectiveQinQBasedOnVlanEntry 1 }
+
+ruijieselectiveQinQBasedOnVlanType OBJECT-TYPE
+        SYNTAX  INTEGER {
+            addOuterTag(1),       				
+            -- add an outer VLAN tag based on VLAN.
+            modifyOuterTagBaseInnerTag(2),    	
+            -- modify the outer VLAN tag based on inner VLAN IDs.
+            modifyOuterTagBaseOuterTag(3),     	
+            -- modify the inner VLAN tag based on outer VLAN IDs.
+            modifyOuterTagBaseInnerAndOuterTag(4) 
+            -- modify the inner VLAN tag based on old outer VLAN ID and inner VLAN IDs.   
+            }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "802.1Q-in-Q strategy type."
+    ::= { ruijieselectiveQinQBasedOnVlanEntry 2 }
+
+ruijieselectiveQinQBasedOnVlanOuterVlanID  OBJECT-TYPE
+        SYNTAX      Integer32 (1..4094)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The outer VLAN ID."
+        ::= { ruijieselectiveQinQBasedOnVlanEntry 3 }
+
+ruijieselectiveQinQBasedOnVlanOldOuterVlanID  OBJECT-TYPE
+        SYNTAX      Integer32 (1..4094)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The old outer VLAN ID of original 802.1Q packets.
+            This field is only effective for mofifying outer 
+            VLAN tag based on old outer VLAN ID and inner VLAN
+            IDs."
+        ::= { ruijieselectiveQinQBasedOnVlanEntry 4 }
+
+ruijieselectiveQinQBasedOnVlanVlanList OBJECT-TYPE
+        SYNTAX VlanList
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The inbound VLAN IDs which need 802.1Q-in-Q processing. 
+             Each octet within this value specifies a set of eight
+             vlans, with the first octet specifying vlans 1 through
+             8, the second octet specifying vlans 9 through 16, etc.
+             Within each octet, the most significant bit represents
+             the lowest numbered vlan, and the least significant bit
+             represents the highest numbered vlan.  Thus, each vlan
+             of the bridge is represented by a single bit within the
+             value of this object.  If that bit has a value of '1',
+             then that vlan is included in the set of vlans; the vlan
+             is not included if its bit has a value of '0'. This field
+             is effective for only 802.1q tunnel port."
+        ::= { ruijieselectiveQinQBasedOnVlanEntry 5 }
+
+
+-- ------------------------------------------------------------------ --
+-- A table for configuring selective QINQ based on ACL for interfaces.
+-- ------------------------------------------------------------------ -- 
+ruijieselectiveQinQBasedOnAclTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieselectiveQinQBasedOnAclEntry
+        MAX-ACCESS not-accessible
+        STATUS   current
+        DESCRIPTION
+            " A table for configuring vlan field in 802.1Q-in-Q VLAN tag
+            for interfaces. This feature adds an outer VLAN tag based on 
+            ACL, modifies the outer VLAN tag based on ACL or modifies the
+            inner VLAN tag based on ACL."
+        ::= { ruijieQINQMIBObjects  7  }
+
+ruijieselectiveQinQBasedOnAclEntry OBJECT-TYPE
+        SYNTAX  RuijieselectiveQinQBasedOnAclEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            " An entry for configuring vlan field in 802.1Q-in-Q
+            VLAN tag for interfaces."
+        INDEX   { ruijieselectiveQinQBasedOnAclIfIndex, 
+                  ruijieselectiveQinQBasedOnAclType,
+                  ruijieselectiveQinQBasedOnAclAclID}		
+        ::= { ruijieselectiveQinQBasedOnAclTable 1}
+
+RuijieselectiveQinQBasedOnAclEntry ::=
+        SEQUENCE {
+		        	ruijieselectiveQinQBasedOnAclIfIndex  IfIndex,
+		        	ruijieselectiveQinQBasedOnAclType   INTEGER,
+		        	ruijieselectiveQinQBasedOnAclAclID  Integer32,
+            		ruijieselectiveQinQBasedOnAclVlanID Integer32
+		    }
+
+ruijieselectiveQinQBasedOnAclIfIndex OBJECT-TYPE
+        SYNTAX  IfIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            "port index."          
+	      ::= { ruijieselectiveQinQBasedOnAclEntry 1 }
+
+
+ruijieselectiveQinQBasedOnAclType OBJECT-TYPE
+        SYNTAX  INTEGER {
+            addOuterTag(1),       -- add an outer VLAN tag based on ACL
+            modifyOuterTag(2),    -- modify the outer VLAN tag based on ACL
+            modifyInnerTag(3)     -- modify the inner VLAN tag based on ACL            
+        }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "802.1Q-in-Q strategy type."
+    ::= { ruijieselectiveQinQBasedOnAclEntry 2 }
+
+ruijieselectiveQinQBasedOnAclAclID  OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The ACL index."
+        ::= { ruijieselectiveQinQBasedOnAclEntry 3 }
+
+ruijieselectiveQinQBasedOnAclVlanID  OBJECT-TYPE
+        SYNTAX      Integer32 (1..4094)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VLAN ID."
+        ::= { ruijieselectiveQinQBasedOnAclEntry 4 }
+
+-- ------------------------------------------------------------------ --
+-- A table for configuring vlan mapping for interfaces.
+-- ------------------------------------------------------------------ -- 
+ruijieQinQVlanMappingTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieQinQVlanMappingEntry
+        MAX-ACCESS not-accessible
+        STATUS   current
+        DESCRIPTION
+            " A table for configuring 802.1Q-in-Q vlan mapping for interfaces."
+        ::= { ruijieQINQMIBObjects  8  }
+
+ruijieQinQVlanMappingEntry OBJECT-TYPE
+        SYNTAX  RuijieQinQVlanMappingEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            " An entry for configuring vlan mapping for interfaces."
+        INDEX   { ruijieQinQVlanMappingIfIndex, 
+                  ruijieQinQVlanMappingType, 
+		  ruijieQinQVlanMappingNewVlanID  }		
+        ::= { ruijieQinQVlanMappingTable 1}
+
+RuijieQinQVlanMappingEntry ::=
+        SEQUENCE {
+		        	ruijieQinQVlanMappingIfIndex  	IfIndex,
+		        	ruijieQinQVlanMappingType 		INTEGER,
+            		ruijieQinQVlanMappingNewVlanID 	Integer32,
+            		ruijieQinQVlanMappingOldVlanList VlanList,
+		        	ruijieQinQVlanMappingOldVlanID  Integer32
+		    }
+
+ruijieQinQVlanMappingIfIndex OBJECT-TYPE
+        SYNTAX  IfIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION 
+            "port index."          
+	      ::= { ruijieQinQVlanMappingEntry 1 }
+
+ruijieQinQVlanMappingType OBJECT-TYPE
+        SYNTAX  INTEGER {
+            vlanMappingIn(1),       				
+            -- ingress vlan mapping strategy.
+            vlanMappingOut(2)    	
+            -- egress vlan mapping strategy. 
+            }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "vlan mapping strategy type."
+        ::= { ruijieQinQVlanMappingEntry 2 }
+
+ruijieQinQVlanMappingNewVlanID  OBJECT-TYPE
+        SYNTAX      Integer32 (1..4094)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The new VLAN ID of original ingress or egress 802.1Q packets."
+        ::= { ruijieQinQVlanMappingEntry 3 }
+
+ruijieQinQVlanMappingOldVlanList OBJECT-TYPE
+        SYNTAX VlanList
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The old VLAN IDs of original ingress 802.1Q packets.
+             Each octet within this value specifies a set of eight
+             vlans, with the first octet specifying vlans 1 through
+             8, the second octet specifying vlans 9 through 16, etc.
+             Within each octet, the most significant bit represents
+             the lowest numbered vlan, and the least significant bit
+             represents the highest numbered vlan.  Thus, each vlan
+             of the bridge is represented by a single bit within the
+             value of this object.  If that bit has a value of '1',
+             then that vlan is included in the set of vlans; the vlan
+             is not included if its bit has a value of '0'.
+             This field is effective for ingress vlan mapping strategy."
+        ::= { ruijieQinQVlanMappingEntry 4 }
+
+ruijieQinQVlanMappingOldVlanID  OBJECT-TYPE
+        SYNTAX      Integer32 (1..4094)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The old VLAN ID of original egress 802.1Q packets.
+	     This field is effective for egress vlan mapping strategy."
+        ::= { ruijieQinQVlanMappingEntry 5 }
+
+
+ruijieQinQMIBConformance OBJECT IDENTIFIER ::= { ruijieQinQMIB 2 }
+ruijieQinQMIBCompliances OBJECT IDENTIFIER ::= { ruijieQinQMIBConformance 1 }
+ruijieQinQMIBGroups      OBJECT IDENTIFIER ::= { ruijieQinQMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieQinQMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Ruijie QINQ MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { 
+                      ruijieQinQMIBGroup  
+                 }
+         ::= { ruijieQinQMIBCompliances 1 }
+         
+ruijieQinQMIBGroup OBJECT-GROUP
+        OBJECTS {
+              ruijieQinQPortConfigMode,
+              ruijieQinQPortNativeVlan,
+              ruijieQinQPortAllowedUntagVlanList,
+              ruijieQinQPortAllowedTagVlanList,
+              ruijieQinQServiceTPIDValue,
+              ruijieQinQIfServiceTPIDValue,
+		          ruijieQinQPriorityCopyPortStatus,
+            	ruijieQinQPriorityValue,
+            	ruijieQinQPriorityRemarkValue,
+		        	ruijieselectiveQinQBasedOnVlanType,
+            	ruijieselectiveQinQBasedOnVlanOuterVlanID,
+            	ruijieselectiveQinQBasedOnVlanOldOuterVlanID,
+            	ruijieselectiveQinQBasedOnVlanVlanList,
+		        	ruijieselectiveQinQBasedOnAclType,
+		        	ruijieselectiveQinQBasedOnAclAclID,
+            	ruijieselectiveQinQBasedOnAclVlanID,
+            	ruijieQinQVlanMappingNewVlanID   
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing qinq managment."
+        ::= { ruijieQinQMIBGroups 1 }
+END

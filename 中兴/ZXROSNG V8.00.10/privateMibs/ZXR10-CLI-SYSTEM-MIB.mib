@@ -1,0 +1,136 @@
+ZXR10-CLI-SYSTEM-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+       MODULE-IDENTITY, OBJECT-TYPE, OBJECT-IDENTITY,
+       Integer32, TimeTicks,
+       enterprises,Unsigned32              FROM SNMPv2-SMI
+       DisplayString, TEXTUAL-CONVENTION   FROM SNMPv2-TC;
+
+    zxr10CliSystemMib  MODULE-IDENTITY
+        LAST-UPDATED "201510210000Z"
+        ORGANIZATION "ZTE Corporation."
+        CONTACT-INFO
+               "Chen Wenbo
+                Tel: 675166      
+                E-Mail: chen.wenbo@zte.com.cn"
+        DESCRIPTION 
+                ""
+        REVISION "201510210000Z"
+        DESCRIPTION
+            "Modify zxr10SystemSecretEncrypted MAX-ACCESS :read-only,
+             modify zxr10SystemSecretPassword MAX-ACCESS :read-only,
+             modify SecretRowStatus STATUS : obsolete."
+
+        REVISION "201503200000Z"
+        DESCRIPTION
+            "Delete the TAB char,
+             modify invalid TC definition : SecretRowStatus,
+             add MODULE-IDENTITY and LAST-UPDATED."
+        ::= { zxr10 1 } 
+
+    zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+    zxr10 OBJECT IDENTIFIER ::= { zte 3}
+
+    --  textual conventions
+    
+    SecretRowStatus ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION
+            "The RowStatus of this row instance.It could be used for creating,
+             modify or remove instance. But only some of the six enumerated values 
+             for the RowStatus textual convention need be supported, specifically: 
+             active(1):      the row is active,
+             createAndGo(4): Create a new row, 
+             destroy(6):     Remove current row."
+        SYNTAX INTEGER
+            {
+                active(1),
+                createAndGo(4),
+                destroy(6)
+            }
+    --  Ended of added by Zhu Zhenlong 
+          
+    
+    --  mib object in zxr10 group()
+    --  zxr10systemconfig,
+
+
+    zxr10systemconfig OBJECT IDENTIFIER ::= { zxr10 1 }
+
+    zxr10SystemSecretTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10SystemSecretEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "the description of zxr10 secret entries."
+        ::= { zxr10systemconfig 50 }
+
+    zxr10SystemSecretEntry  OBJECT-TYPE
+        SYNTAX      Zxr10SystemSecretEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A secret entry containing objects that
+             descript the enable secret infomation"
+        INDEX  { zxr10SystemSecretLevel }
+        ::= { zxr10SystemSecretTable 1 }
+
+    Zxr10SystemSecretEntry ::=
+        SEQUENCE {
+            zxr10SystemSecretLevel       INTEGER,
+            zxr10SystemSecretEncrypted   INTEGER,
+            zxr10SystemSecretPassword    DisplayString,
+            zxr10SystemSecretStatus      SecretRowStatus
+        }
+
+   zxr10SystemSecretLevel  OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The level of the secret.
+             The max level is decided by performance parameter.
+             It may be (1..18) or (1..15)"
+        ::= { zxr10SystemSecretEntry 1 }
+
+   zxr10SystemSecretEncrypted  OBJECT-TYPE
+        SYNTAX      INTEGER
+            {
+               unencrypted (0),
+               encrypted (5)
+            }           
+        MAX-ACCESS  read-only       
+        STATUS      current                                
+        DESCRIPTION                                    
+            "Specifies an ENCRYPTED password or not.
+             0----Unencrypted
+             5----Encrypted"  
+        ::= { zxr10SystemSecretEntry 2 }
+              
+   zxr10SystemSecretPassword  OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(3..24))           
+        MAX-ACCESS  read-only      
+        STATUS      current                                
+        DESCRIPTION                                    
+            "Specifies an secret.
+             Unencrypted password: size(3..16)
+             Encrypted password: size(24)"
+        ::= { zxr10SystemSecretEntry 3 }  
+              
+    zxr10SystemSecretStatus  OBJECT-TYPE
+        SYNTAX      SecretRowStatus
+        MAX-ACCESS  read-create
+        STATUS      obsolete
+        DESCRIPTION
+            "The RowStatus of this row instance.It could be used for creating,
+             modify or remove instance. But only some of the six
+             enumerated values for the RowStatus textual convention
+             need be supported, specifically: 
+             active(1):      the row is active, 
+             createAndGo(4): Create a new row, 
+             destroy(6):     Remove current row."
+        ::= { zxr10SystemSecretEntry 4 }              
+                                                                                            
+
+          
+END

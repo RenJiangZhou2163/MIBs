@@ -1,0 +1,473 @@
+--  ************************************************
+--  $Id: zxr10ping.mib 8 2005-07-28 12:17:08Z zhanglh $
+--
+--  zxr10ping.mib: ZXR10 Ping MIB file
+--
+--  Mar. 2008, Cailei 153843
+--
+--  Copyright(c) 2008 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+
+ZXR10-CLI-MIB DEFINITIONS ::= BEGIN
+    
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    Unsigned32, Integer32,enterprises,
+    IpAddress
+        FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION, DisplayString, DateAndTime,
+    TruthValue
+        FROM SNMPv2-TC
+    Ipv6Address   FROM IPV6-TC;
+
+    zxr10CLIMIB  MODULE-IDENTITY
+        LAST-UPDATED "201808270010Z"
+        ORGANIZATION "ZTE Corporation."
+        CONTACT-INFO
+               "Chen Wenbo
+               Tel: 675166      
+               E-Mail: chen.wenbo@zte.com.cn    
+               "
+        DESCRIPTION 
+                "" 
+
+        REVISION "201808270010Z"
+        DESCRIPTION
+                "Add startrun download file operation.
+                Users can download files using FTP or SFTP server." 
+
+        REVISION "201707070000Z"
+        DESCRIPTION
+                "Add automatic save configuration strategy.
+                Change description, node name, syntax and OID for 
+                save configuration operation and status query node" 
+     
+        REVISION "201706220000Z"
+        DESCRIPTION
+                "Add save configuration operation and status query"  
+
+        REVISION "201501150000Z"
+        DESCRIPTION
+                "Change MAX-ACCESS from read-write to read-only" 
+
+        REVISION "201405070000Z"
+        DESCRIPTION
+                "CLI"
+            
+        ::= { zxr10RosngMIB 52 } 
+            
+--  CLI table
+    zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+    zxr10 OBJECT IDENTIFIER ::= { zte 3}
+    zxr10RosngMIB OBJECT IDENTIFIER ::= { zxr10 6000}
+    
+    CLISaveConfigStatus ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION   "The CLISaveConfigStatus textual convention is 
+                       used to save configuration, and is used as 
+                       the status of a saving configuration operation.
+                       After saving configuration finished for five minutes, 
+                       status data will be aging.
+ 
+                 The description of each status is given below:
+                 doWrite:     this value is supplied to save configuration.
+                              This value may be written, but is never be read.
+                 idle:        this status signifies that saving 
+                              configuration operation is never done, or 
+                              the status data has been aging.
+                              This value may be read, but is never be written.
+                 running:     this status signifies that the saving 
+                              configuration operation is running.
+                              This value may be read, but is never be written.
+                 success:     the status signifies that the saving 
+                              configuration operation is successfully completed.
+                              This value may be read, but is never be written.
+                 failed:      the saving configuration operation is failed.
+                              This value may be read, but is never be written.
+                "
+        SYNTAX        INTEGER {
+                -- the following value is an action: 
+                -- this value may be written, but not read
+                doWrite(1),
+                
+                -- the following four values are statuses:
+                -- these values may be read, but are never be written
+                idle(2),
+                running(3),
+                success(4),
+                failed(5)
+        }
+
+    CLISaveConfigFailedReason ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION     "The reason of a saving configuration operation failed.
+                 The description of each reason is given below:
+                 noError:      this status signifies that saving 
+                               configuration operation is never done, or 
+                               the reason data has been aging.
+                 commonError:  this status signifies that the common error 
+                               happened during saving configuration operation.
+                 openFileFailed:   opening configuration file failed.
+                 writeFileFailed:  writing configuration file failed.
+                 queryConflict:    the configuration is changed during saving.
+                 invalidFileName:  the saving configuration file name 
+                                   is invalid.
+                 pathForbidden:    the path of saving configuration file 
+                                   is forbidden for write.
+                 invalidPathLevel: the path is deeper than 10 levels.
+                 createDirectoryFailed: creating destination directory failed.
+                 moduleUnloaded:   the module has been unloaded 
+                                   during the execution. "
+        SYNTAX INTEGER {
+                noError(1),
+                commonError(2),    
+                openFileFailed(3), 
+                writeFileFailed(4), 
+                queryConfilict(5),  
+                invalidFileName(6), 
+                pathForbidden(7),     
+                invalidPathLevel(8), 
+                createDirectoryFailed(9), 
+                moduleUnloaded(10)
+        } 
+
+    zxr10CLIGlobalObjects OBJECT IDENTIFIER ::={zxr10CLIMIB 1}
+
+--  Multi-User Config
+    zxr10CLIMultiUserConfig OBJECT-TYPE
+         SYNTAX   INTEGER
+              {
+                 true(1),
+                 false(2)
+              }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "True indicates multiple CLI users are permitted to enter 
+            configuration mode. False indicates they are prohibited."
+        ::= { zxr10CLIGlobalObjects 1 }
+
+--  save configuration        
+    zxr10CLIConfigSaveGlobalObjects OBJECT IDENTIFIER 
+                                ::= { zxr10CLIGlobalObjects 2 }
+    
+--  save configuration operation  
+    zxr10CLIConfigSaveStatus    OBJECT-TYPE
+        SYNTAX      CLISaveConfigStatus
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION 
+            "The node is used to save configuration, and is used as 
+             the status of a saving configuration operation.
+             After saving configuration finished for five minutes, 
+             status data will be idle." 
+        DEFVAL        {idle}
+        ::=  {  zxr10CLIConfigSaveGlobalObjects  1  }      
+        
+--  save configuration starting time
+    zxr10CLIConfigSaveStartTime    OBJECT-TYPE      
+        SYNTAX      DateAndTime   
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION 
+            "The starting time of saving configuration.
+             After saving configuration operation finished for five minutes, 
+             starting time will be empty string."     
+        DEFVAL        {""}             
+        ::=  {  zxr10CLIConfigSaveGlobalObjects  2  }  
+        
+--  save configuration ending time
+    zxr10CLIConfigSaveEndTime    OBJECT-TYPE      
+        SYNTAX      DateAndTime   
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION 
+            "The ending time of saving configuration.
+             After saving configuration finished for five minutes, 
+             ending time will be empty string."    
+        DEFVAL        {""}              
+        ::=  {  zxr10CLIConfigSaveGlobalObjects  3  }              
+
+--  save configuration failed reason
+    zxr10CLIConfigSaveFailedReason    OBJECT-TYPE      
+        SYNTAX      CLISaveConfigFailedReason 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION 
+            "The saving configuration operation failed reason.
+             After saving configuration finished for five minutes,  
+             the reason will be noError." 
+        DEFVAL        {noError}              
+        ::=  {  zxr10CLIConfigSaveGlobalObjects  4  }  
+
+--  save configuration progress
+    zxr10CLIConfigSaveProgress    OBJECT-TYPE      
+        SYNTAX      Integer32( 0..100 ) 
+        UNITS       "percent"   
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION 
+            "The progress of the saving configuration operation.
+             After saving configuration finished for five minutes, 
+             the progress will be zero."   
+        DEFVAL        {0}               
+        ::=  {  zxr10CLIConfigSaveGlobalObjects  5  }
+    
+--  automatic save configuration        
+    zxr10CLIAutoSaveGlobalObjects OBJECT IDENTIFIER 
+                                    ::= { zxr10CLIGlobalObjects 3 }
+    
+--  automatic save configuration delay interval  
+    zxr10CLIAutoSaveDelayInterval    OBJECT-TYPE      
+        SYNTAX      Integer32(0..60 ) 
+        UNITS       "Minutes"   
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION 
+            "The delay interval of automatic saving 
+             configuration when configuration data is changed. 
+             Another strategy is to save regularly every day.
+             These two strategies are mutually exclusive.
+             0 indicates that the policy is closed." 
+        DEFVAL { 0 }    
+        ::=  {  zxr10CLIAutoSaveGlobalObjects  1  } 
+
+--  automatic save configuration at some time everyday
+    zxr10CLIAutoSaveEverydayTime    OBJECT-TYPE       
+        SYNTAX      Integer32( 0..86400 ) 
+        UNITS       "Seconds"        
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION 
+            "The time of automatic saving configuration time everyday. 
+             To convert a time HH:MM:SS into a value in units of
+             seconds, the following algorithm should be used:
+             value = HH * 3600 + MM * 60 + SS
+             Another strategy is to save when configuration data is changed.
+             These two strategies are mutually exclusive.
+             86400 indicates that the policy is closed." 
+        DEFVAL { 86400 } 
+        ::=  { zxr10CLIAutoSaveGlobalObjects  2  } 
+ 
+--  automatic save configuration CPU limit  
+    zxr10CLIAutoSaveCpuLimit    OBJECT-TYPE      
+        SYNTAX      Integer32( 0..90 ) 
+        UNITS       "percent"   
+        MAX-ACCESS  read-write
+        STATUS      current  
+        DESCRIPTION 
+            "The CPU usage threshold of automatic saving configuration.
+             Configuration will be saved immediately when CPU utilization 
+             not reach the threshold. Configuration will be not saved when the 
+             threshold is exceeded.
+             After the interval, Check CPU utilization again.
+             0 indicates that it is not restricted by CPU utilization." 
+        DEFVAL { 0 }   
+        ::=  {  zxr10CLIAutoSaveGlobalObjects  3  }     
+
+--  automatic save configuration interval when CPU utilization to upper limit
+    zxr10CLIAutoSaveCpuLimitInterval    OBJECT-TYPE      
+        SYNTAX      Integer32( 0..60 ) 
+        UNITS       "Minutes"   
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION 
+            "The time interval of automatic saving configuration 
+             when CPU utilization reaches to upper limit.
+             If the interval is not configured, configuration is not saved
+             when exceeds CPU utilization.
+             0 indicates that the interval does not take effect."   
+        DEFVAL { 0 }            
+        ::=  {  zxr10CLIAutoSaveGlobalObjects  4  }
+
+-- global node: startrun download files
+    zxr10StartrunGlobalObjects OBJECT IDENTIFIER 
+                              ::= { zxr10CLIGlobalObjects 4 }
+
+-- vrf name
+    zxr10DownloadVrfName    OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE (1..32))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION 
+            "VPN routing/forwarding instance (VRF). This node and zxr10DownloadDcn cannot
+            be configured at the same time" 
+        ::=  {  zxr10StartrunGlobalObjects  1 } 
+
+-- DCN
+    zxr10DownloadDcn    OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION 
+            "A special VRF name. This node and zxr10DownloadVrfName cannot
+            be configured at the same time"
+        DEFVAL { false }
+        ::=  {  zxr10StartrunGlobalObjects  2  } 
+
+-- server protocol
+    zxr10DownloadType    OBJECT-TYPE
+        SYNTAX  INTEGER
+                {
+                    local(1),
+                    ftp(2),
+                    sftp(3)
+                }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION 
+            "The mode to download files. Three modes: local, FTP or SFTP.
+             Users can choose one mode to download file one time." 
+        ::=  {  zxr10StartrunGlobalObjects  3  } 
+
+-- server ip addr
+    zxr10DownloadServerIPv4Addr    OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION 
+            "The IPv4 address of the FTP/STFP server from 
+                which to copy the configuration file. This object
+                can not be used with zxr10DownloadServerIPv6Addr at the 
+                same time. Values of 0.0.0.0 or FF.FF.FF.FF for
+                copyServerAddress are not allowed." 
+        ::=  {  zxr10StartrunGlobalObjects  4  }
+
+-- server ipv6 addr
+    zxr10DownloadServerIPv6Addr    OBJECT-TYPE
+        SYNTAX      Ipv6Address
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION 
+            "The IPv6 address of the FTP/STFP server from 
+                which to copy the configuration file. This object
+                can not be used with zxr10DownloadServerIPv4Addr at the 
+                same time." 
+        ::=  {  zxr10StartrunGlobalObjects  5  }
+
+-- listen port
+    zxr10DownloadServerListenPort    OBJECT-TYPE
+        SYNTAX      Unsigned32(1..65535)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION 
+            "Listen port number of server." 
+        ::=  {  zxr10StartrunGlobalObjects  6  }
+
+-- user name
+    zxr10DownloadServerUsername    OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE (1..65))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION 
+            "User name for downloading via FTP or SFTP protocol.
+            This object must be created when the zxr10DownloadType
+            is FTP or SFTP." 
+        ::=  {  zxr10StartrunGlobalObjects  7  } 
+
+-- user password
+    zxr10DownloadServerPassword    OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE (1..32))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION 
+            "User password for downloading via FTP or SFTP protocol.
+            This object must be created when the zxr10DownloadType
+            is FTP or SFTP." 
+        ::=  {  zxr10StartrunGlobalObjects  8  } 
+
+-- file path
+    zxr10DownloadFilePath    OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE (1..159))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION 
+            "The destination file name (including the path, if applicable)
+                of the file. This node must be created regardless of which way to download." 
+        ::=  {  zxr10StartrunGlobalObjects  9  }
+
+-- zxr10DownloadStatus
+    zxr10DownloadState    OBJECT-TYPE
+        SYNTAX  INTEGER 
+            {
+                idle(1),
+                running(2),
+                success(3),
+                failure(4)
+            }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION 
+            "The status of file download. The description of each status is given below:
+            idle: there is no downloading request.
+            running: files is downloading.
+            success: file downloading is completed and successful.
+            failure: download request is failure." 
+        ::=  {  zxr10StartrunGlobalObjects  10  } 
+
+-- failure cause
+    zxr10DownloadFailureCause    OBJECT-TYPE
+        SYNTAX  INTEGER 
+            {
+                noError(255),
+                invalidFile(1),
+                directError(2),
+                noSuchFileOrDirect(3),
+                ftpTransmitFail(4),
+                ftpNoResponse(5),
+                sftpNoResponse(6),
+                requestSftpFail(7),
+                commonError(8),
+                directCreateFail(9),
+                otherTerminalRunning(10),
+                batchCommandRunning(11),
+                copyFileFail(12),
+                disconnect(13), 
+                ftpServerDown(14),
+                sftpServerDown(15),
+                parameterError(16)
+            }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION 
+            "The cause of file download failure.
+            The description of each failure is given below:
+            noError: file is downloading or download successfully.
+            invalidFile: file name is invalid.
+            directError: the operation to the directory/file is forbidden or directory/file is error.
+            ftpNoResponse: can not recieve response from FTP.
+            sftpNoResponse: can not recieve response from SFTP.
+            noSuchFileOrDirect: no such file(s) or directory(s).
+            ftpTransmitFail: fail to transmit file by FTP server.
+            directCreateFail: fail to create directory.
+            otherTerminalRunning: copy-config is running in other terminal.
+            batchCommandRunning: batch command is running in other terminal.
+            copyFileFail: fail to copy file.
+            disconnect: can not connect FTP/SFTP server.
+            ftpServerDown: FTP server can not provide services.
+            sftpServerDown: SFTP server can not provide services.
+            parameterError: parameter is incorrect." 
+        ::=  {  zxr10StartrunGlobalObjects  11  }
+
+-- start time
+    zxr10DownloadStartTime    OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION 
+            "Specifies the time the download last transitioned
+            to running, or 0 if the state has never transitioned to
+            running." 
+        ::=  {  zxr10StartrunGlobalObjects  12  }
+
+-- end time
+    zxr10DownloadEndTime    OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION 
+            "End time of downloading file." 
+        ::=  {  zxr10StartrunGlobalObjects  13  }
+END

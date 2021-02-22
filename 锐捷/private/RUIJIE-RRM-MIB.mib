@@ -1,0 +1,3477 @@
+-- *******************************************************************
+-- RUIJIE-RRM-MIB.mib : Ruijie RRM MIB file
+-- November 2009, chenmingjin
+--
+-- Copyright (c) 2009 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- *******************************************************************
+
+RUIJIE-RRM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        IpAddress,
+        OBJECT-TYPE,
+        MODULE-IDENTITY,
+        NOTIFICATION-TYPE,
+        Integer32,
+        Unsigned32
+                FROM SNMPv2-SMI
+        MacAddress,
+        DisplayString,
+        TruthValue
+                FROM SNMPv2-TC
+        NOTIFICATION-GROUP,
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+--********************************************************************
+--  MODULE IDENTITY
+--********************************************************************
+
+ruijieRrmMIB MODULE-IDENTITY
+    LAST-UPDATED "200912150000Z"
+    ORGANIZATION "Ruijie Networks Co.,Ltd."
+    CONTACT-INFO
+        "
+    Tel: 4008-111-000
+
+    E-mail: service@ruijie.com.cn"
+    DESCRIPTION
+        "This module defines wlan rrm mibs."
+    REVISION      "200912150000Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { ruijieMgmt 63 }
+
+
+--********************** define the Rrm root nodes ***************************
+ruijieRrmMIBObjects     OBJECT IDENTIFIER     ::= { ruijieRrmMIB 1 }
+ruijieRrmMIBTraps       OBJECT IDENTIFIER     ::= { ruijieRrmMIB 2 }
+ruijieRrmMIBConformance OBJECT IDENTIFIER     ::= { ruijieRrmMIB 3 }
+
+
+--***************** define the ruijieRrmMIBObjects nodes *********************
+ruijieRrmObjectsGroup   OBJECT IDENTIFIER      ::= { ruijieRrmMIBObjects 1 }
+ruijieRrmObjectsDot11a  OBJECT IDENTIFIER      ::= { ruijieRrmMIBObjects 2 }
+ruijieRrmObjectsDot11b  OBJECT IDENTIFIER      ::= { ruijieRrmMIBObjects 3 }
+ruijieRrmObjectsAP     	OBJECT IDENTIFIER      ::= { ruijieRrmMIBObjects 4 }
+
+--***************** define the ruijieRrmObjectsDot11a nodes *****************
+ruijieRrmDCADot11a      OBJECT IDENTIFIER      ::= { ruijieRrmObjectsDot11a 1 }
+ruijieRrmTPCDot11a      OBJECT IDENTIFIER      ::= { ruijieRrmObjectsDot11a 2 }
+ruijieRrmCHDDot11a      OBJECT IDENTIFIER      ::= { ruijieRrmObjectsDot11a 3 }
+ruijieRrmGroupDot11a    OBJECT IDENTIFIER      ::= { ruijieRrmObjectsDot11a 4 }
+ruijieRrmProfileDot11a  OBJECT IDENTIFIER      ::= { ruijieRrmObjectsDot11a 5 }
+ruijieRrmMonitorDot11a  OBJECT IDENTIFIER      ::= { ruijieRrmObjectsDot11a 6 }
+ruijieRrmFactoryDot11a  OBJECT IDENTIFIER      ::= { ruijieRrmObjectsDot11a 7 }
+
+--***************** define the ruijieRrmObjectsDot11a nodes *****************
+ruijieRrmDCADot11b      OBJECT IDENTIFIER      ::= { ruijieRrmObjectsDot11b 1 }
+ruijieRrmTPCDot11b      OBJECT IDENTIFIER      ::= { ruijieRrmObjectsDot11b 2 }
+ruijieRrmCHDDot11b      OBJECT IDENTIFIER      ::= { ruijieRrmObjectsDot11b 3 }
+ruijieRrmGroupDot11b    OBJECT IDENTIFIER      ::= { ruijieRrmObjectsDot11b 4 }
+ruijieRrmProfileDot11b  OBJECT IDENTIFIER      ::= { ruijieRrmObjectsDot11b 5 }
+ruijieRrmMonitorDot11b  OBJECT IDENTIFIER      ::= { ruijieRrmObjectsDot11b 6 }
+ruijieRrmFactoryDot11b  OBJECT IDENTIFIER      ::= { ruijieRrmObjectsDot11b 7 }
+
+
+--********************************************************************
+--                                                                  **
+--                           Rf group name                          **
+--                                                                  **
+--********************************************************************
+
+ruijieRrmRFNetworkName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(1..19))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "RF Network Group Name to which this Ruijie Switch belongs.
+         Airespace Switches on a network form a RF Network Group as
+         well as a Mobility Group. RF Network Groups does the channel
+         and power management of AP while Mobility Group does load
+         balancing and hand off for clients."
+    ::= { ruijieRrmObjectsGroup 1 }
+
+
+--********************************************************************
+--                                                                  **
+--                       AP Profile Display                         **
+--                                                                  **
+--********************************************************************
+ProfileState ::= INTEGER { pass (1), fail (0) }
+
+ruijieRrmAPIfSlotId OBJECT-TYPE
+    SYNTAX 			INTEGER(1..32)
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"Number of Radio Interfaces on the Airespace AP.
+         		Currently maximum two interfaces are supported.
+         		One would be of type 802.11a and other of type
+         		802.11b/g."
+    ::= {  ruijieRrmObjectsAP 1 }
+
+ruijieRrmAPName OBJECT-TYPE
+    SYNTAX 			DisplayString (SIZE(1..32))
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"Name assigned to this AP. If an AP is not configured its
+         		factory default name will be ap:<last three byte of
+         		MACAddress> eg. ap:af:12:be"
+    ::= { ruijieRrmObjectsAP 2 }
+
+
+--********************************************************************
+-- * Begin of ruijieRrmAPIfProfileThresholdConfigTable
+--********************************************************************
+
+ruijieRrmAPIfProfileThresholdConfigTable OBJECT-TYPE
+		SYNTAX 			SEQUENCE OF RuijieRrmAPIfProfileThresholdConfigEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+        		"Table of attributes for various thresholds to be
+         		set on each Airespace AP Interface for Load
+        		performance profile , interference performance
+        		profile and Noise performance profile."
+		::= { ruijieRrmObjectsAP 3 }
+
+ruijieRrmAPIfProfileThresholdConfigEntry OBJECT-TYPE
+		SYNTAX 			RuijieRrmAPIfProfileThresholdConfigEntry
+ 		MAX-ACCESS 	not-accessible
+  	STATUS 			current
+  	DESCRIPTION
+         		"An entry (conceptual row) in the Phy Thresholds
+          	Table. Entries in this MIB are indexed by
+        		ruijieRrmAPDot3MacAddress and ruijieRrmAPIfSlotId"
+   	INDEX { ruijieRrmAPIfThresholdMacAddr, ruijieRrmAPIfThresholdRadioType }
+    ::= { ruijieRrmAPIfProfileThresholdConfigTable 1 }
+
+RuijieRrmAPIfProfileThresholdConfigEntry ::=
+     	SEQUENCE {
+     				ruijieRrmAPIfThresholdMacAddr    MacAddress,
+            ruijieRrmAPIfThresholdRadioType  INTEGER,
+            ruijieRrmAPIfThresholdName DisplayString,
+            ruijieRrmAPIfForeignInterferenceThreshold INTEGER,
+            ruijieRrmAPIfForeignNoiseThreshold        INTEGER,
+            ruijieRrmAPIfRFUtilizationThreshold       INTEGER,
+            ruijieRrmAPIfThroughputThreshold          Unsigned32,
+            ruijieRrmAPIfMobilesThreshold             INTEGER,
+            ruijieRrmAPIfForeignGlobalConfig          INTEGER,
+            ruijieRrmAPIfNoiseGlobalConfig            INTEGER,
+            ruijieRrmAPIfRFUtilizationGlobalConfig    INTEGER,
+            ruijieRrmAPIfThroughputGlobalConfig       INTEGER,
+            ruijieRrmAPIfMobilesGlobalConfig          INTEGER
+		}
+
+ruijieRrmAPIfThresholdRadioType OBJECT-TYPE
+    SYNTAX 			INTEGER {type80211a(0),type80211b(1)}
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+      			"radio type, type 802.11b means 2.4GHz, type 802.11a means 5GHz,"
+		::= {ruijieRrmAPIfProfileThresholdConfigEntry 1 }
+
+ruijieRrmAPIfForeignInterferenceThreshold OBJECT-TYPE
+    SYNTAX 			INTEGER(1..100)
+    MAX-ACCESS 	read-write
+    STATUS 			current
+    DESCRIPTION
+      			"foreign interference threshold between 1 and 100 percent."
+		::= {ruijieRrmAPIfProfileThresholdConfigEntry 2 }
+
+ruijieRrmAPIfForeignNoiseThreshold OBJECT-TYPE
+    SYNTAX 			INTEGER(-127..0)
+    MAX-ACCESS 	read-write
+    STATUS 			current
+    DESCRIPTION
+     				"foreign noise threshold between -127 and 0 dBm."
+   	::= {ruijieRrmAPIfProfileThresholdConfigEntry 3 }
+
+ruijieRrmAPIfRFUtilizationThreshold OBJECT-TYPE
+    SYNTAX 			INTEGER(1..100)
+    MAX-ACCESS 	read-write
+    STATUS 			current
+    DESCRIPTION
+    				"RF utlization threshold between 1 and 100 percent."
+		::= {ruijieRrmAPIfProfileThresholdConfigEntry 4 }
+
+ruijieRrmAPIfThroughputThreshold OBJECT-TYPE
+    SYNTAX 			Unsigned32(1000..10000000)
+    MAX-ACCESS 	read-write
+    STATUS 			current
+    DESCRIPTION
+    				" Airespace AP data-rate threshold between 1000 and 1000000000."
+		::= {ruijieRrmAPIfProfileThresholdConfigEntry 5 }
+
+ruijieRrmAPIfMobilesThreshold OBJECT-TYPE
+    SYNTAX 			INTEGER(1..128)
+    MAX-ACCESS 	read-write
+    STATUS 			current
+    DESCRIPTION
+    				" Airespace AP mobiles threshold between 1 and 128."
+		::= {ruijieRrmAPIfProfileThresholdConfigEntry 6 }
+
+ruijieRrmAPIfThresholdName OBJECT-TYPE
+    SYNTAX 			DisplayString (SIZE(1..32))
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"The name of the AP"
+    ::= { ruijieRrmAPIfProfileThresholdConfigEntry 7 }
+
+ruijieRrmAPIfThresholdMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of radio on the AP"
+    ::= { ruijieRrmAPIfProfileThresholdConfigEntry 8 }
+
+ruijieRrmAPIfForeignGlobalConfig OBJECT-TYPE
+    SYNTAX 			INTEGER(0..1)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Interference threshold inherited from global or not, 1: global config, 0: ap config"
+    ::= { ruijieRrmAPIfProfileThresholdConfigEntry 9 }
+
+ruijieRrmAPIfNoiseGlobalConfig OBJECT-TYPE
+    SYNTAX 			INTEGER(0..1)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Noise threshold inherited from global or not, 1: global config, 0: ap config"
+    ::= { ruijieRrmAPIfProfileThresholdConfigEntry 10 }
+
+ruijieRrmAPIfRFUtilizationGlobalConfig OBJECT-TYPE
+    SYNTAX 			INTEGER(0..1)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "RFUtilization threshold inherited from global or not, 1: global config, 0: ap config"
+    ::= { ruijieRrmAPIfProfileThresholdConfigEntry 11 }
+
+ruijieRrmAPIfThroughputGlobalConfig OBJECT-TYPE
+    SYNTAX 			INTEGER(0..1)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Throughput threshold inherited from global or not, 1: global config, 0: ap config"
+    ::= { ruijieRrmAPIfProfileThresholdConfigEntry 12 }
+
+ruijieRrmAPIfMobilesGlobalConfig OBJECT-TYPE
+    SYNTAX 			INTEGER(0..1)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Mobiles threshold inherited from global or not, 1: global config, 0: ap config"
+    ::= { ruijieRrmAPIfProfileThresholdConfigEntry 13 }
+
+--********************************************************************
+-- * Begin of ruijieRrmAPIfLoadParametersTable
+--********************************************************************
+ruijieRrmAPIfLoadParametersTable OBJECT-TYPE
+		SYNTAX 			SEQUENCE OF RuijieRrmAPIfLoadParametersEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+        		"These are RRM performance related read only parameters
+        		per Airespace AP"
+		::= { ruijieRrmObjectsAP 4 }
+
+ruijieRrmAPIfLoadParametersEntry OBJECT-TYPE
+		SYNTAX 			RuijieRrmAPIfLoadParametersEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+          	"An entry (conceptual row) in the Table.
+          	Entries in this MIB are indexed by
+         	ruijieRrmAPDot3MacAddress and ruijieRrmAPIfSlotId"
+ 		INDEX { ruijieRrmAPIfLoadMacAddr, ruijieRrmAPIfLoadSlotId }
+ 		::= { ruijieRrmAPIfLoadParametersTable 1 }
+
+RuijieRrmAPIfLoadParametersEntry ::=
+  	SEQUENCE {
+  	    ruijieRrmAPIfLoadName DisplayString,
+        ruijieRrmAPIfLoadMacAddr MacAddress,
+        ruijieRrmAPIfLoadSlotId INTEGER,
+     		ruijieRrmAPIfLoadRxUtilization        INTEGER,
+   			ruijieRrmAPIfLoadTxUtilization        INTEGER,
+  			ruijieRrmAPIfLoadChannelUtilization   INTEGER,
+   			ruijieRrmAPIfLoadNumOfClients         Integer32,
+   			ruijieRrmAPIfPoorSNRClients           Integer32,
+   			ruijieRrmAPIfThroughput		      INTEGER
+		}
+
+ruijieRrmAPIfLoadRxUtilization OBJECT-TYPE
+		SYNTAX 			INTEGER(0..100)
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+      			"This is the percentage of time the Airespace AP
+        		receiver is busy operating on packets. It is a number
+       			from 0-100 representing a load from 0 to 1."
+		::= { ruijieRrmAPIfLoadParametersEntry 1 }
+
+ruijieRrmAPIfLoadTxUtilization OBJECT-TYPE
+ 		SYNTAX 			INTEGER(0..100)
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+      			"This is the percentage of time the Airespace AP
+         		transmitter is busy operating on packets. It is a
+       			number from 0-100 representing a load from 0 to 1."
+		::= { ruijieRrmAPIfLoadParametersEntry 2 }
+
+ruijieRrmAPIfLoadChannelUtilization OBJECT-TYPE
+    SYNTAX 			INTEGER(0..100)
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+            "Channel Utilization"
+    ::= { ruijieRrmAPIfLoadParametersEntry 3 }
+
+ruijieRrmAPIfLoadNumOfClients OBJECT-TYPE
+		SYNTAX 			Integer32
+   	MAX-ACCESS 	read-only
+   	STATUS 			current
+   	DESCRIPTION
+         		"This is the number of clients attached to this Airespace
+        		AP at the last measurement interval(This comes from
+        		APF)"
+    ::= { ruijieRrmAPIfLoadParametersEntry 4 }
+
+ruijieRrmAPIfPoorSNRClients OBJECT-TYPE
+		SYNTAX 			Integer32
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+           	"This is the number of clients with poor SNR attached to
+          	this Airespace AP at the last measurement interval
+          	( This comes from APF )."
+		::= { ruijieRrmAPIfLoadParametersEntry 5 }
+
+ruijieRrmAPIfLoadName OBJECT-TYPE
+    SYNTAX 			DisplayString (SIZE(1..32))
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"The name of the AP"
+    ::= { ruijieRrmAPIfLoadParametersEntry 6 }
+
+ruijieRrmAPIfLoadMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of radio on the AP"
+    ::= { ruijieRrmAPIfLoadParametersEntry 7 }
+
+ruijieRrmAPIfLoadSlotId OBJECT-TYPE
+    SYNTAX 			INTEGER(1..32)
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"Number of Radio Interfaces on the Airespace AP.
+         		Currently maximum two interfaces are supported.
+         		One would be of type 802.11a and other of type
+         		802.11b/g."
+    ::= {  ruijieRrmAPIfLoadParametersEntry 8 }
+
+ruijieRrmAPIfThroughput OBJECT-TYPE
+    SYNTAX 			INTEGER
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"Throughput in ap's radio, it represent the performance of
+        		ap"
+    ::= {  ruijieRrmAPIfLoadParametersEntry 9 }
+
+
+--********************************************************************
+-- * Begin of ruijieRrmAPIfChannelInterferenceInfoTable
+--********************************************************************
+
+ruijieRrmAPIfChannelInterferenceInfoTable OBJECT-TYPE
+		SYNTAX 			SEQUENCE OF RuijieRrmAPIfChannelInterferenceInfoEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+         		"This is a table of channel information like interference
+         		and noise from other 802.11 networks on each channel."
+		::= { ruijieRrmObjectsAP 5 }
+
+ruijieRrmAPIfChannelInterferenceInfoEntry OBJECT-TYPE
+ 		SYNTAX 			RuijieRrmAPIfChannelInterferenceInfoEntry
+ 		MAX-ACCESS 	not-accessible
+  	STATUS 			current
+		DESCRIPTION
+        		"An entry (conceptual row) in the Table.
+          	Entries in this MIB are indexed by
+        		ruijieRrmAPDot3MacAddress, ruijieRrmAPIfSlotId"
+		INDEX { ruijieRrmAPIfInterferenceMacAddr, ruijieRrmAPIfInterferenceSlotId,
+                ruijieRrmAPIfInterferenceChannelNo}
+		::= { ruijieRrmAPIfChannelInterferenceInfoTable 1 }
+
+RuijieRrmAPIfChannelInterferenceInfoEntry ::=
+    SEQUENCE {
+        ruijieRrmAPIfInterferenceName DisplayString,
+        ruijieRrmAPIfInterferenceMacAddr MacAddress,
+        ruijieRrmAPIfInterferenceSlotId INTEGER,
+    		ruijieRrmAPIfInterferenceChannelNo     		Integer32,
+    		ruijieRrmAPIfInterferencePower         		Integer32,
+    		ruijieRrmAPIfInterferenceUtilization   		INTEGER
+    }
+
+ruijieRrmAPIfInterferenceChannelNo OBJECT-TYPE
+  	SYNTAX 			Integer32
+   	MAX-ACCESS 	read-only
+   	STATUS 			current
+   	DESCRIPTION
+           	"Channel Number on AP"
+    ::= { ruijieRrmAPIfChannelInterferenceInfoEntry 1}
+
+ruijieRrmAPIfInterferencePower OBJECT-TYPE
+		SYNTAX 			Integer32
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		       "Power of Interference from other 802.11 networks on
+		        this channel"
+		::= { ruijieRrmAPIfChannelInterferenceInfoEntry 2}
+
+ruijieRrmAPIfInterferenceUtilization OBJECT-TYPE
+		SYNTAX 			INTEGER(0..100)
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+						"Interference from other 802.11 networks on this
+		        channel"
+		::= { ruijieRrmAPIfChannelInterferenceInfoEntry 3}
+
+ruijieRrmAPIfInterferenceName OBJECT-TYPE
+    SYNTAX 			DisplayString (SIZE(1..32))
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"The name of the AP"
+    ::= { ruijieRrmAPIfChannelInterferenceInfoEntry 4 }
+
+ruijieRrmAPIfInterferenceMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of radio on the AP"
+    ::= { ruijieRrmAPIfChannelInterferenceInfoEntry 5 }
+
+ruijieRrmAPIfInterferenceSlotId OBJECT-TYPE
+    SYNTAX 			INTEGER(1..32)
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"Number of Radio Interfaces on the Airespace AP.
+         		Currently maximum two interfaces are supported.
+         		One would be of type 802.11a and other of type
+         		802.11b/g."
+    ::= {  ruijieRrmAPIfChannelInterferenceInfoEntry 6 }
+
+--********************************************************************
+-- * Begin of ruijieRrmAPIfChannelNoiseInfoTable
+--********************************************************************
+ruijieRrmAPIfChannelNoiseInfoTable OBJECT-TYPE
+		SYNTAX 			SEQUENCE OF RuijieRrmAPIfChannelNoiseInfoEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+          	"This is a table of channel information like
+         		interference and noise from other 802.11 networks on
+          	each channel."
+		::= { ruijieRrmObjectsAP 6 }
+
+ruijieRrmAPIfChannelNoiseInfoEntry OBJECT-TYPE
+  	SYNTAX RuijieRrmAPIfChannelNoiseInfoEntry
+  	MAX-ACCESS not-accessible
+ 		STATUS current
+ 		DESCRIPTION
+          	"An entry (conceptual row) in the Table.
+           	Entries in this MIB are indexed by ruijieRrmAPDot3MacAddress,
+           	ruijieRrmAPIfSlotId"
+  	INDEX { ruijieRrmAPIfNoiseMacAddr, ruijieRrmAPIfNoiseSlotId,
+               ruijieRrmAPIfNoiseChannelNo }
+ 		::= { ruijieRrmAPIfChannelNoiseInfoTable 1 }
+
+RuijieRrmAPIfChannelNoiseInfoEntry ::=
+		SEQUENCE {
+		    ruijieRrmAPIfNoiseName DisplayString,
+        ruijieRrmAPIfNoiseMacAddr MacAddress,
+        ruijieRrmAPIfNoiseSlotId INTEGER,
+     		ruijieRrmAPIfNoiseChannelNo         	Integer32,
+ 				ruijieRrmAPIfDBNoisePower          		Integer32
+		}
+
+ruijieRrmAPIfNoiseChannelNo OBJECT-TYPE
+		SYNTAX 			Integer32
+ 		MAX-ACCESS 	read-only
+   	STATUS 			current
+  	DESCRIPTION
+           	"Channel Number on AP"
+    ::= { ruijieRrmAPIfChannelNoiseInfoEntry 1 }
+
+ruijieRrmAPIfDBNoisePower OBJECT-TYPE
+ 		SYNTAX 			Integer32
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+        		"This is the average noise power in dBm on
+          	each channel that is available to Airespace AP"
+    ::= { ruijieRrmAPIfChannelNoiseInfoEntry 2 }
+
+ruijieRrmAPIfNoiseName OBJECT-TYPE
+    SYNTAX 			DisplayString (SIZE(1..32))
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"The name of the AP"
+    ::= { ruijieRrmAPIfChannelNoiseInfoEntry 3 }
+
+ruijieRrmAPIfNoiseMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of radio on the AP"
+    ::= { ruijieRrmAPIfChannelNoiseInfoEntry 4 }
+
+ruijieRrmAPIfNoiseSlotId OBJECT-TYPE
+    SYNTAX 			INTEGER(1..32)
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"Number of Radio Interfaces on the Airespace AP.
+         		Currently maximum two interfaces are supported.
+         		One would be of type 802.11a and other of type
+         		802.11b/g."
+    ::= {  ruijieRrmAPIfChannelNoiseInfoEntry 5 }
+
+--********************************************************************
+-- * Begin of ruijieRrmAPIfProfileStateTable
+--********************************************************************
+
+ruijieRrmAPIfProfileStateTable OBJECT-TYPE
+		SYNTAX 			SEQUENCE OF RuijieRrmAPIfProfileStateEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+		        "This is a table of state of interference monitor
+		         on each Airespace AP"
+		::= { ruijieRrmObjectsAP 7 }
+
+ruijieRrmAPIfProfileStateEntry OBJECT-TYPE
+		SYNTAX 			RuijieRrmAPIfProfileStateEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+		       "An entry (conceptual row) in the Table.
+		        Entries in this MIB are indexed by ruijieRrmAPDot3MacAddress,
+		        ruijieRrmAPIfSlotId"
+		INDEX { ruijieRrmAPIfProfileMacAddr, ruijieRrmAPIfProfileSlotId }
+		::= { ruijieRrmAPIfProfileStateTable 1 }
+
+RuijieRrmAPIfProfileStateEntry ::=
+		SEQUENCE {
+		    ruijieRrmAPIfProfileName DisplayString,
+        ruijieRrmAPIfProfileMacAddr MacAddress,
+        ruijieRrmAPIfProfileSlotId INTEGER,
+        ruijieRrmAPIfLoadProfileState          	ProfileState,
+        ruijieRrmAPIfInterferenceProfileState 	ProfileState,
+        ruijieRrmAPIfNoiseProfileState         	ProfileState,
+        ruijieRrmAPIfCoverageProfileState      	ProfileState,
+        ruijieRrmAPIfPerformanceProfileState 		ProfileState
+		}
+
+ruijieRrmAPIfLoadProfileState OBJECT-TYPE
+		SYNTAX 			ProfileState
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		        "This field represents the current state of the LOAD
+		         monitor. This is a total measurement of the business of
+		         this Airespace AP. PASS indicates that this Airespace
+		         AP is performing adequately compared to the Airespace
+		         AP profile. FAIL indicates the Airespace AP is not
+		         performing adequately against the LOAD profile."
+		::= { ruijieRrmAPIfProfileStateEntry 1 }
+
+
+ruijieRrmAPIfInterferenceProfileState OBJECT-TYPE
+		SYNTAX 			ProfileState
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		       "This field represents the current state of Interference
+		        monitor. This is a total measurement of the interference
+		        present at this Airespace AP. PASS indicates that this
+		        Airespace AP is performing adequately compared to the
+		        Interference profile.  FAIL indicates the Airespace AP
+		        is not performing adequately against the Interference
+		        profile."
+		::= { ruijieRrmAPIfProfileStateEntry 2 }
+
+ruijieRrmAPIfNoiseProfileState OBJECT-TYPE
+		SYNTAX 			ProfileState
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+						"This field represents the current state of Noise
+						monitor. This is a total measurement of the noise
+						present at this Airespace AP. PASS indicates that this
+						Airespace AP is performing adequately compared to the
+						noise profile.
+						FAIL indicates the Airespace AP is not performing
+						adequately against the noise profile."
+		::= { ruijieRrmAPIfProfileStateEntry 3 }
+
+ruijieRrmAPIfCoverageProfileState OBJECT-TYPE
+		SYNTAX 			ProfileState
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		       "This field represents the current state of coverage
+		        monitor. This is a total measurement of the client
+		        coverage at this Airespace AP. PASS indicates that
+		        this  Airespace AP is performing adequately compared
+		        to the  coverage profile. FAIL indicates the Airespace
+		        AP is not performing adequately against the coverage
+		        profile."
+		::= { ruijieRrmAPIfProfileStateEntry 4}
+
+ruijieRrmAPIfPerformanceProfileState OBJECT-TYPE
+		SYNTAX 			ProfileState
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		       ""
+		::= { ruijieRrmAPIfProfileStateEntry 5}
+
+ruijieRrmAPIfProfileName OBJECT-TYPE
+    SYNTAX 			DisplayString (SIZE(1..32))
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"The name of the AP"
+    ::= { ruijieRrmAPIfProfileStateEntry 6 }
+
+ruijieRrmAPIfProfileMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of radio on the AP"
+    ::= { ruijieRrmAPIfProfileStateEntry 7 }
+
+ruijieRrmAPIfProfileSlotId OBJECT-TYPE
+    SYNTAX 			INTEGER(1..32)
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"Number of Radio Interfaces on the Airespace AP.
+         		Currently maximum two interfaces are supported.
+         		One would be of type 802.11a and other of type
+         		802.11b/g."
+    ::= {  ruijieRrmAPIfProfileStateEntry 8 }
+
+--********************************************************************
+-- * Begin of ruijieRrmAPIfRxNeighborsTable
+--********************************************************************
+ruijieRrmAPIfRxNeighborsTable OBJECT-TYPE
+		SYNTAX 			SEQUENCE OF RuijieRrmAPIfRxNeighborsEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+		        "This is a table of Rx Neighbors for each Airespace AP
+		         with their RSSI value."
+		::= { ruijieRrmObjectsAP 8 }
+
+ruijieRrmAPIfRxNeighborsEntry OBJECT-TYPE
+		SYNTAX 			RuijieRrmAPIfRxNeighborsEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+		        "An entry (conceptual row) in the Table.
+		         Entries in this MIB are indexed by ruijieRrmAPDot3MacAddress
+		         ruijieRrmAPIfSlotId, ruijieRrmAPIfRxNeighborMacAddress"
+		INDEX { ruijieRrmAPIfRxNeighborMacAddr, ruijieRrmAPIfRxNeighborSlotId,
+		        ruijieRrmAPIfRxNeighborMacAddress, ruijieRrmAPIfRxNeighborSlot}
+		::= { ruijieRrmAPIfRxNeighborsTable 1 }
+
+RuijieRrmAPIfRxNeighborsEntry ::=
+		SEQUENCE {
+		    ruijieRrmAPIfRxNeighborName DisplayString,
+        ruijieRrmAPIfRxNeighborMacAddr MacAddress,
+        ruijieRrmAPIfRxNeighborSlotId INTEGER,
+				ruijieRrmAPIfRxNeighborMacAddress          	MacAddress,
+				ruijieRrmAPIfRxNeighborSlot                	Integer32,
+				ruijieRrmAPIfRxNeighborIpAddress           	IpAddress,
+				ruijieRrmAPIfRxNeighborRSSI                	Integer32,
+				ruijieRrmAPIfRxNeighborSNR                	Integer32,
+				ruijieRrmAPIfRxNeighborChannel             	Integer32,
+				ruijieRrmAPIfRxNeighborChannelWidth        	INTEGER
+		}
+
+ruijieRrmAPIfRxNeighborMacAddress OBJECT-TYPE
+		SYNTAX 			MacAddress
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		   			"MAC Address of Rx Neighbor of the Airespace AP"
+		::= { ruijieRrmAPIfRxNeighborsEntry 1 }
+
+ruijieRrmAPIfRxNeighborSlot OBJECT-TYPE
+		SYNTAX 			Integer32
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		       "Slot value of the Rx Neighbor"
+		::= { ruijieRrmAPIfRxNeighborsEntry 2 }
+
+ruijieRrmAPIfRxNeighborIpAddress OBJECT-TYPE
+		SYNTAX 			IpAddress
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		       "IP Address of Rx Neighbor of the Airespace AP"
+		::= { ruijieRrmAPIfRxNeighborsEntry 3 }
+
+ruijieRrmAPIfRxNeighborRSSI OBJECT-TYPE
+		SYNTAX 			Integer32
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		       "RSSI value of the Rx Neighbor"
+		::= { ruijieRrmAPIfRxNeighborsEntry 4 }
+
+ruijieRrmAPIfRxNeighborSNR OBJECT-TYPE
+		SYNTAX 			Integer32
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		       "SNR value of the Rx Neighbor"
+		::= { ruijieRrmAPIfRxNeighborsEntry 5 }
+
+ruijieRrmAPIfRxNeighborChannel OBJECT-TYPE
+		SYNTAX  		Integer32
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		    		"This object represents Channel information which
+		     		neighboring Access point is using."
+		::= { ruijieRrmAPIfRxNeighborsEntry 6 }
+
+ruijieRrmAPIfRxNeighborChannelWidth OBJECT-TYPE
+		SYNTAX  		INTEGER {
+		           five(1),
+		           ten(2),
+		           twenty(3),
+		           aboveforty(4),
+		           belowforty(5)
+		}
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		    		"This object represents Channel bandwidth information
+		     		which neighboring Access point is using."
+		::= { ruijieRrmAPIfRxNeighborsEntry 7 }
+
+ruijieRrmAPIfRxNeighborName OBJECT-TYPE
+    SYNTAX 			DisplayString (SIZE(1..32))
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"The name of the AP"
+    ::= { ruijieRrmAPIfRxNeighborsEntry 8 }
+
+ruijieRrmAPIfRxNeighborMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of radio on the AP"
+    ::= { ruijieRrmAPIfRxNeighborsEntry 9 }
+
+ruijieRrmAPIfRxNeighborSlotId OBJECT-TYPE
+    SYNTAX 			INTEGER(1..32)
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"Number of Radio Interfaces on the Airespace AP.
+         		Currently maximum two interfaces are supported.
+         		One would be of type 802.11a and other of type
+         		802.11b/g."
+    ::= {  ruijieRrmAPIfRxNeighborsEntry 10 }
+
+-- *****************************************************************
+
+
+--********************************************************************
+-- * Begin of ruijieRrmAPIfStationRSSICoverageInfoTable
+--********************************************************************
+ruijieRrmAPIfStationRSSICoverageInfoTable OBJECT-TYPE
+    SYNTAX 			SEQUENCE OF RuijieRrmAPIfStationRSSICoverageInfoEntry
+    MAX-ACCESS 	not-accessible
+    STATUS 			current
+    DESCRIPTION
+            "This is a table of channel information like interference
+             and noise from other 802.11 networks on each channel."
+    ::= { ruijieRrmObjectsAP 9 }
+
+ruijieRrmAPIfStationRSSICoverageInfoEntry OBJECT-TYPE
+		SYNTAX 			RuijieRrmAPIfStationRSSICoverageInfoEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+		       "An entry (conceptual row) in the Table.
+		        Entries in this MIB are indexed by ruijieRrmAPDot3MacAddress,
+		        ruijieRrmAPIfSlotId"
+		INDEX { ruijieRrmAPIfStationRSSIMacAddr, ruijieRrmAPIfStationRSSISlotId,
+		        ruijieRrmAPIfStationRSSICoverageIndex}
+		::= { ruijieRrmAPIfStationRSSICoverageInfoTable 1 }
+
+RuijieRrmAPIfStationRSSICoverageInfoEntry ::=
+		SEQUENCE {
+		    ruijieRrmAPIfStationRSSIName DisplayString,
+        ruijieRrmAPIfStationRSSIMacAddr MacAddress,
+        ruijieRrmAPIfStationRSSISlotId INTEGER,
+				ruijieRrmAPIfStationRSSICoverageIndex     Integer32,
+				ruijieRrmAPIfRSSILevel                    Integer32,
+				ruijieRrmAPIfStationCountOnRSSI           Integer32
+		}
+
+ruijieRrmAPIfStationRSSICoverageIndex OBJECT-TYPE
+		SYNTAX 			Integer32
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		       "RSSI Coverage Index on AP"
+		::= { ruijieRrmAPIfStationRSSICoverageInfoEntry 1 }
+
+ruijieRrmAPIfRSSILevel OBJECT-TYPE
+		SYNTAX 			Integer32
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		       "RSSI Level"
+		::= { ruijieRrmAPIfStationRSSICoverageInfoEntry 2 }
+
+ruijieRrmAPIfStationCountOnRSSI OBJECT-TYPE
+		SYNTAX 			Integer32
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		        "Number of stations on this RSSI Level"
+		::= { ruijieRrmAPIfStationRSSICoverageInfoEntry 3 }
+
+ruijieRrmAPIfStationRSSIName OBJECT-TYPE
+    SYNTAX 			DisplayString (SIZE(1..32))
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"The name of the AP"
+    ::= { ruijieRrmAPIfStationRSSICoverageInfoEntry 4 }
+
+ruijieRrmAPIfStationRSSIMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of radio on the AP"
+    ::= { ruijieRrmAPIfStationRSSICoverageInfoEntry 5 }
+
+ruijieRrmAPIfStationRSSISlotId OBJECT-TYPE
+    SYNTAX 			INTEGER(1..32)
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"Number of Radio Interfaces on the Airespace AP.
+         		Currently maximum two interfaces are supported.
+         		One would be of type 802.11a and other of type
+         		802.11b/g."
+    ::= {  ruijieRrmAPIfStationRSSICoverageInfoEntry 6 }
+
+-- ********************************************************************
+-- * Begin of ruijieRrmAPIfStationSNRCoverageInfoTable
+-- ********************************************************************
+ruijieRrmAPIfStationSNRCoverageInfoTable OBJECT-TYPE
+		SYNTAX 			SEQUENCE OF RuijieRrmAPIfStationSNRCoverageInfoEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+		        "This is a table of Signal to Noise ratio Coverage
+		         information on an AP Interface."
+		::= { ruijieRrmObjectsAP 10 }
+
+ruijieRrmAPIfStationSNRCoverageInfoEntry OBJECT-TYPE
+		SYNTAX 			RuijieRrmAPIfStationSNRCoverageInfoEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+		       "An entry (conceptual row) in the Table.
+		        Entries in this MIB are indexed by ruijieRrmAPDot3MacAddress,
+		        ruijieRrmAPIfSlotId"
+		INDEX { ruijieRrmAPIfStationSNRMacAddr, ruijieRrmAPIfStationSNRSlotId,
+		        ruijieRrmAPIfStationSNRCoverageIndex}
+		::= { ruijieRrmAPIfStationSNRCoverageInfoTable 1 }
+
+RuijieRrmAPIfStationSNRCoverageInfoEntry ::=
+		SEQUENCE {
+		    ruijieRrmAPIfStationSNRName DisplayString,
+        ruijieRrmAPIfStationSNRMacAddr MacAddress,
+        ruijieRrmAPIfStationSNRSlotId INTEGER,
+				ruijieRrmAPIfStationSNRCoverageIndex     	Integer32,
+				ruijieRrmAPIfSNRLevel                 		Integer32,
+				ruijieRrmAPIfStationCountOnSNR        		Integer32
+		}
+
+ruijieRrmAPIfStationSNRCoverageIndex OBJECT-TYPE
+		SYNTAX 			Integer32
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		       "SNR Coverage Index on AP"
+    ::= { ruijieRrmAPIfStationSNRCoverageInfoEntry 1}
+
+ruijieRrmAPIfSNRLevel OBJECT-TYPE
+		SYNTAX 			Integer32
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		       "SNR Level"
+		::= { ruijieRrmAPIfStationSNRCoverageInfoEntry 2}
+
+ruijieRrmAPIfStationCountOnSNR OBJECT-TYPE
+    SYNTAX 			Integer32
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+          "Number of stations on this SNR Level"
+    ::= { ruijieRrmAPIfStationSNRCoverageInfoEntry 3}
+
+ruijieRrmAPIfStationSNRName OBJECT-TYPE
+    SYNTAX 			DisplayString (SIZE(1..32))
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"The name of the AP"
+    ::= { ruijieRrmAPIfStationSNRCoverageInfoEntry 4 }
+
+ruijieRrmAPIfStationSNRMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of radio on the AP"
+    ::= { ruijieRrmAPIfStationSNRCoverageInfoEntry 5 }
+
+ruijieRrmAPIfStationSNRSlotId OBJECT-TYPE
+    SYNTAX 			INTEGER(1..32)
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"Number of Radio Interfaces on the Airespace AP.
+         		Currently maximum two interfaces are supported.
+         		One would be of type 802.11a and other of type
+         		802.11b/g."
+    ::= {  ruijieRrmAPIfStationSNRCoverageInfoEntry 6 }
+
+-- ********************************************************************
+-- * Begin of ruijieRrmAPIfRecommendedRFParametersTable
+-- ********************************************************************
+ruijieRrmAPIfRecommendedRFParametersTable OBJECT-TYPE
+		SYNTAX 			SEQUENCE OF RuijieRrmAPIfRecommendedRFParametersEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+		  			" This table list Best Channel,Best TxPowerLevel,
+		    		Best RTSThreshold,Best FragmentationThreshold etc
+		    		for this AP Interface as determined by RRM."
+		::= { ruijieRrmObjectsAP 11 }
+
+ruijieRrmAPIfRecommendedRFParametersEntry OBJECT-TYPE
+		SYNTAX 			RuijieRrmAPIfRecommendedRFParametersEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+		       "An entry (conceptual row) in the Table.
+		        Entries in this MIB are indexed by ruijieRrmAPDot3MacAddress,
+		        ruijieRrmAPIfSlotId"
+		INDEX { ruijieRrmAPIfRecommendedMacAddr, ruijieRrmAPIfRecommendedSlotId}
+    ::= { ruijieRrmAPIfRecommendedRFParametersTable 1 }
+
+RuijieRrmAPIfRecommendedRFParametersEntry ::=
+		SEQUENCE {
+		    ruijieRrmAPIfRecommendedName DisplayString,
+        ruijieRrmAPIfRecommendedMacAddr MacAddress,
+        ruijieRrmAPIfRecommendedSlotId INTEGER,
+				ruijieRrmAPIfRecommendedChannelNumber             Integer32,
+				ruijieRrmAPIfRecommendedTxPowerLevel              Integer32,
+				ruijieRrmAPIfRecommendedRTSThreshold              Integer32,
+				ruijieRrmAPIfRecommendedFragmentationThreshold    Integer32
+		}
+
+ruijieRrmAPIfRecommendedChannelNumber OBJECT-TYPE
+		SYNTAX 			Integer32
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		       "Recommended ChannelNumber by RRM for this APIf"
+		::= { ruijieRrmAPIfRecommendedRFParametersEntry 1}
+
+ruijieRrmAPIfRecommendedTxPowerLevel OBJECT-TYPE
+		SYNTAX 			Integer32
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		       "Recommended TxPowerLevel by RRM for this APIf"
+		::= { ruijieRrmAPIfRecommendedRFParametersEntry 2}
+
+ruijieRrmAPIfRecommendedRTSThreshold OBJECT-TYPE
+		SYNTAX 			Integer32
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		       "Recommended RTSThreshold by RRM for this APIf"
+		::= { ruijieRrmAPIfRecommendedRFParametersEntry 3}
+
+ruijieRrmAPIfRecommendedFragmentationThreshold OBJECT-TYPE
+		SYNTAX 			Integer32
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+		       "Recommended Fragmentation Threshold by RRM for this
+		        APIf"
+		::= { ruijieRrmAPIfRecommendedRFParametersEntry 4}
+
+ruijieRrmAPIfRecommendedName OBJECT-TYPE
+    SYNTAX 			DisplayString (SIZE(1..32))
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"The name of the AP"
+    ::= { ruijieRrmAPIfRecommendedRFParametersEntry 5 }
+
+ruijieRrmAPIfRecommendedMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of radio on the AP"
+    ::= { ruijieRrmAPIfRecommendedRFParametersEntry 6 }
+
+ruijieRrmAPIfRecommendedSlotId OBJECT-TYPE
+    SYNTAX 			INTEGER(1..32)
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"Number of Radio Interfaces on the Airespace AP.
+         		Currently maximum two interfaces are supported.
+         		One would be of type 802.11a and other of type
+         		802.11b/g."
+    ::= {  ruijieRrmAPIfRecommendedRFParametersEntry 7 }
+
+--********************************************************************
+-- * Begin of ruijieRrmAPRadioTable
+--********************************************************************
+
+ruijieRrmAPRadioTable OBJECT-TYPE
+		SYNTAX 			SEQUENCE OF RuijieRrmAPRadioEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+        		"ap radio table"
+		::= { ruijieRrmObjectsAP 12 }
+
+ruijieRrmAPRadioEntry OBJECT-TYPE
+		SYNTAX 			RuijieRrmAPRadioEntry
+ 		MAX-ACCESS 	not-accessible
+  	STATUS 			current
+  	DESCRIPTION
+         		"all radio in aps"
+   	INDEX { ruijieRrmAPMacAddr, ruijieRrmAPRadioID}
+    ::= { ruijieRrmAPRadioTable 1 }
+
+RuijieRrmAPRadioEntry ::=
+ 		SEQUENCE {
+ 						ruijieRrmAPRealName  DisplayString,
+            ruijieRrmAPMacAddr MacAddress,
+     				ruijieRrmAPRadioID    INTEGER,
+     				ruijieRrmAPRadioType  INTEGER
+		}
+
+ruijieRrmAPRadioID OBJECT-TYPE
+    SYNTAX 			INTEGER(1..32)
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"Number of Radio Interfaces on the Ruijie AP.
+         		Currently maximum 32 interfaces are supported."
+    ::= { ruijieRrmAPRadioEntry 1 }
+
+ruijieRrmAPRadioType OBJECT-TYPE
+    SYNTAX 			INTEGER {type80211a(0),type80211b(1)}
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+      			"radio type, type 802.11b means 2.4GHz, type 802.11a means 5GHz,"
+		::= { ruijieRrmAPRadioEntry 2 }
+
+ruijieRrmAPRealName OBJECT-TYPE
+    SYNTAX 			DisplayString (SIZE(1..32))
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"The name of the AP"
+    ::= { ruijieRrmAPRadioEntry 3 }
+
+ruijieRrmAPMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of radio on the AP"
+    ::= { ruijieRrmAPRadioEntry 4 }
+
+--********************************************************************
+-- * Begin of ruijieRrmAPIfThroughputParametersTable
+--********************************************************************
+ruijieRrmAPIfThroughputParametersTable OBJECT-TYPE
+		SYNTAX 			SEQUENCE OF RuijieRrmAPIfThroughputParametersEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+        		"These are RRM performance related read only parameters
+        		per Airespace AP"
+		::= { ruijieRrmObjectsAP 13 }
+
+ruijieRrmAPIfThroughputParametersEntry OBJECT-TYPE
+		SYNTAX 			RuijieRrmAPIfThroughputParametersEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+          	"An entry (conceptual row) in the Table.
+          	Entries in this MIB are indexed by
+         	ruijieRrmAPDot3MacAddress and ruijieRrmAPIfSlotId"
+ 		INDEX { ruijieRrmAPIfThroughputMacAddr, ruijieRrmAPIfThroughputSlotId }
+ 		::= { ruijieRrmAPIfThroughputParametersTable 1 }
+
+RuijieRrmAPIfThroughputParametersEntry ::=
+  	SEQUENCE {
+        ruijieRrmAPIfThroughputMacAddr MacAddress,
+        ruijieRrmAPIfThroughputSlotId  INTEGER,
+        ruijieRrmAPIfThroughputAPName  DisplayString,
+     		ruijieRrmAPIfThroughputRx      INTEGER,
+   			ruijieRrmAPIfThroughputTx      INTEGER,
+   			ruijieRrmAPIfThroughputTotal	 INTEGER
+		}
+
+ruijieRrmAPIfThroughputMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of radio on the AP"
+    ::= { ruijieRrmAPIfThroughputParametersEntry 1 }
+
+ruijieRrmAPIfThroughputSlotId OBJECT-TYPE
+    SYNTAX 			INTEGER(1..32)
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"Number of Radio Interfaces on the Airespace AP.
+         		Currently maximum two interfaces are supported.
+         		One would be of type 802.11a and other of type
+         		802.11b/g."
+    ::= { ruijieRrmAPIfThroughputParametersEntry 2 }
+
+ruijieRrmAPIfThroughputAPName OBJECT-TYPE
+    SYNTAX 			DisplayString (SIZE(1..64))
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"The name of the AP"
+    ::= { ruijieRrmAPIfThroughputParametersEntry 3 }
+
+ruijieRrmAPIfThroughputRx OBJECT-TYPE
+		SYNTAX 			INTEGER
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+      			"This is the RX throughput"
+		::= { ruijieRrmAPIfThroughputParametersEntry 4 }
+
+ruijieRrmAPIfThroughputTx OBJECT-TYPE
+ 		SYNTAX 			INTEGER
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+      			"This is the TX throughput"
+		::= { ruijieRrmAPIfThroughputParametersEntry 5 }
+
+ruijieRrmAPIfThroughputTotal OBJECT-TYPE
+    SYNTAX 			INTEGER
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+            "This is the total throughput"
+    ::= { ruijieRrmAPIfThroughputParametersEntry 6 }
+
+--********************************************************************
+-- * Begin of ruijieRrmAPSnrBSSIDTable
+--********************************************************************
+ruijieRrmAPSnrBSSIDTable OBJECT-TYPE
+		SYNTAX 			SEQUENCE OF RuijieRrmAPSnrBSSIDEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+        		"These are stat on ap snr BSSID"
+		::= { ruijieRrmObjectsAP 14 }
+
+ruijieRrmAPSnrBSSIDEntry OBJECT-TYPE
+		SYNTAX 			RuijieRrmAPSnrBSSIDEntry
+		MAX-ACCESS 	not-accessible
+		STATUS 			current
+		DESCRIPTION
+          	"An entry (conceptual row) in the Table.
+          	Entries in this MIB are indexed by
+         	ruijieRrmAPDot3MacAddress and ruijieRrmAPIfSlotId"
+ 		INDEX { ruijieRrmAPSnrBSSIDMacAddr, ruijieRrmAPSnrBSSIDSlotId }
+ 		::= { ruijieRrmAPSnrBSSIDTable 1 }
+
+RuijieRrmAPSnrBSSIDEntry ::=
+  	SEQUENCE {
+        ruijieRrmAPSnrBSSIDMacAddr                  MacAddress,
+        ruijieRrmAPSnrBSSIDSlotId                   INTEGER,
+        ruijieRrmAPSnrBSSIDAPName                   DisplayString,
+     		ruijieRrmAPSnrBSSIDAverageSignalStrength    INTEGER,
+   			ruijieRrmAPSnrBSSIDSignalPkts               INTEGER,
+   			ruijieRrmAPSnrBSSIDHighestRxSignalStrength  INTEGER,
+   			ruijieRrmAPSnrBSSIDLowestRxSignalStrength   INTEGER,
+   			ruijieRrmAPSnrBSSIDSampleTime               INTEGER
+		}
+
+ruijieRrmAPSnrBSSIDMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of radio on the AP"
+    ::= { ruijieRrmAPSnrBSSIDEntry 1 }
+
+ruijieRrmAPSnrBSSIDSlotId OBJECT-TYPE
+    SYNTAX 			INTEGER(1..32)
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"Number of Radio Interfaces on the Airespace AP.
+         		Currently maximum two interfaces are supported.
+         		One would be of type 802.11a and other of type
+         		802.11b/g."
+    ::= { ruijieRrmAPSnrBSSIDEntry 2 }
+
+ruijieRrmAPSnrBSSIDAPName OBJECT-TYPE
+    SYNTAX 			DisplayString (SIZE(1..64))
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+        		"The name of the AP"
+    ::= { ruijieRrmAPSnrBSSIDEntry 3 }
+
+ruijieRrmAPSnrBSSIDAverageSignalStrength OBJECT-TYPE
+		SYNTAX 			INTEGER
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+      			"The average signal strength during monitor"
+		::= { ruijieRrmAPSnrBSSIDEntry 4 }
+
+ruijieRrmAPSnrBSSIDSignalPkts OBJECT-TYPE
+ 		SYNTAX 			INTEGER
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+      			"The number of signal packets"
+		::= { ruijieRrmAPSnrBSSIDEntry 5 }
+
+ruijieRrmAPSnrBSSIDHighestRxSignalStrength OBJECT-TYPE
+    SYNTAX 			INTEGER
+    MAX-ACCESS 	read-only
+    STATUS 			current
+    DESCRIPTION
+            "The highest rx signal strength during monitor"
+    ::= { ruijieRrmAPSnrBSSIDEntry 6 }
+
+ruijieRrmAPSnrBSSIDLowestRxSignalStrength OBJECT-TYPE
+		SYNTAX 			INTEGER
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+      			"The lowest rx signal strength during monitor"
+		::= { ruijieRrmAPSnrBSSIDEntry 7 }
+
+ruijieRrmAPSnrBSSIDSampleTime OBJECT-TYPE
+ 		SYNTAX 			INTEGER
+		MAX-ACCESS 	read-only
+		STATUS 			current
+		DESCRIPTION
+      			"The sample time"
+		::= { ruijieRrmAPSnrBSSIDEntry 8 }
+
+--********************************************************************
+--                                                                  **
+--                           DCA Algorithm                          **
+--                                                                  **
+--********************************************************************
+ruijieRrmDot11bDynamicChannelAssignment OBJECT-TYPE
+    SYNTAX      INTEGER {
+        automatic (1),
+        runOnce (2),
+        static (3)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Dynamic channel assignment(DCA) has three modes. When the
+            mode is auto, the channel assignment will be periodically
+            updated for all APs that permit this operation. When the
+            DCA is runOnce, channel assignments are updated based on
+            the UPDATE_CMD received from the management. When the DCA
+            is static, no dynamic channel assignments occurs and value
+            are set to their global default.  Default is auto."
+    DEFVAL { automatic }
+    ::= { ruijieRrmDCADot11b 1 }
+
+ruijieRrmDot11bAnchorTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "the time of DCA algorithm to start"
+    DEFVAL { 0 }
+    ::= { ruijieRrmDCADot11b 2 }
+
+ruijieRrmDot11bChannalWidth11n OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "channel width in DCA for 802.11n"
+    DEFVAL { 20 }
+    ::= { ruijieRrmDCADot11b 3 }
+
+ruijieRrmDot11bDynamicChannelUpdateInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "When Channel dynamic alogirthm is running, this interval
+            (in secs) specifies how often Channel assignement updates
+            are attempted on an AP. NOTE: hysteresis is built into
+            the algorithms so we will not have uproductive changes
+            occuring. Default value is 600 secs"
+    DEFVAL { 600 }
+    ::= { ruijieRrmDCADot11b 4 }
+
+ruijieRrmDot11bDCASensitivity OBJECT-TYPE
+    SYNTAX      INTEGER {
+        low (1),
+        medium (2),
+        high (3)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Consider foreign factor in DCA algorithm"
+    DEFVAL  { medium }
+    ::= { ruijieRrmDCADot11b 5 }
+
+ruijieRrmDot11bForeignInterfereFactorEnable OBJECT-TYPE
+    SYNTAX      INTEGER {disable(0),enable(1)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Consider foreign factor in DCA algorithm"
+    DEFVAL  { enable }
+    ::= { ruijieRrmDCADot11b 6 }
+
+ruijieRrmDot11bLoadFactorEnable OBJECT-TYPE
+    SYNTAX      INTEGER {disable(0),enable(1)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Consider foreign factor in DCA algorithm"
+    DEFVAL  { disable }
+    ::= { ruijieRrmDCADot11b 7 }
+
+ruijieRrmDot11bNoiseFactorEnable OBJECT-TYPE
+    SYNTAX      INTEGER {disable(0),enable(1)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Consider foreign factor in DCA algorithm"
+    DEFVAL  { disable }
+    ::= { ruijieRrmDCADot11b 8 }
+
+ruijieRrmDot11bChannelUpdateCmdInvoke OBJECT-TYPE
+    SYNTAX      INTEGER { default (0), activate (1) }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When set to activate this starts a DCA calculation regardless
+         of the dynamic update interval. This command should be invoke
+         on Group Leader Ruijie Switch.Invoking on a Ruijie
+         Switch which is not a Group leader has no effect."
+    ::= {  ruijieRrmDCADot11b 9 }
+
+ruijieRrmDot11bDCAChannelTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieRrmDot11bDCAChannelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "This is a table of Ruijie Switch addresses that identifies
+        the members of the Dot11a RF group containing this Ruijie
+        Switch. Max size is 20 entries."
+    ::= { ruijieRrmDCADot11b 10 }
+
+ruijieRrmDot11bDCAChannelEntry OBJECT-TYPE
+    SYNTAX      RuijieRrmDot11bDCAChannelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        " ... "
+    INDEX { ruijieRrmDot11bDCAChannelIndex }
+    ::= { ruijieRrmDot11bDCAChannelTable 1 }
+
+RuijieRrmDot11bDCAChannelEntry ::=
+    SEQUENCE {
+        ruijieRrmDot11bDCAChannelIndex        INTEGER,
+        ruijieRrmDot11bDCAChannelOperation    INTEGER
+    }
+
+ruijieRrmDot11bDCAChannelIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "the index of dca channel."
+    ::= { ruijieRrmDot11bDCAChannelEntry 1 }
+
+ruijieRrmDot11bDCAChannelOperation OBJECT-TYPE
+    SYNTAX      INTEGER {delete(0),add(1)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "add or delete the channel using in DCA algorithm."
+    ::= { ruijieRrmDot11bDCAChannelEntry 2 }
+
+
+ruijieRrmDot11aDynamicChannelAssignment OBJECT-TYPE
+    SYNTAX      INTEGER {
+        automatic (1),
+        runOnce (2),
+        static (3)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Dynamic channel assignment(DCA) has three modes. When the
+            mode is auto, the channel assignment will be periodically
+            updated for all APs that permit this operation. When the
+            DCA is runOnce, channel assignments are updated based on
+            the UPDATE_CMD received from the management. When the DCA
+            is static, no dynamic channel assignments occurs and value
+            are set to their global default.  Default is auto."
+    DEFVAL { automatic }
+    ::= { ruijieRrmDCADot11a 1 }
+
+ruijieRrmDot11aAnchorTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "the time of DCA algorithm to start"
+    DEFVAL { 0 }
+    ::= { ruijieRrmDCADot11a 2 }
+
+ruijieRrmDot11aChannalWidth11n OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "channel width in DCA for 802.11n"
+    DEFVAL { 20 }
+    ::= { ruijieRrmDCADot11a 3 }
+
+ruijieRrmDot11aDynamicChannelUpdateInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "When Channel dynamic alogirthm is running, this interval
+            (in secs) specifies how often Channel assignement updates
+            are attempted on an AP. NOTE: hysteresis is built into
+            the algorithms so we will not have uproductive changes
+            occuring. Default value is 600 secs"
+    DEFVAL { 600 }
+    ::= { ruijieRrmDCADot11a 4 }
+
+ruijieRrmDot11aDCASensitivity OBJECT-TYPE
+    SYNTAX      INTEGER {
+        low (1),
+        medium (2),
+        high (3)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Consider foreign factor in DCA algorithm"
+    DEFVAL  { medium }
+    ::= { ruijieRrmDCADot11a 5 }
+
+ruijieRrmDot11aForeignInterfereFactorEnable OBJECT-TYPE
+    SYNTAX      INTEGER {disable(0),enable(1)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Consider foreign factor in DCA algorithm"
+    DEFVAL  { enable }
+    ::= { ruijieRrmDCADot11a 6 }
+
+ruijieRrmDot11aLoadFactorEnable OBJECT-TYPE
+    SYNTAX      INTEGER {disable(0),enable(1)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Consider foreign factor in DCA algorithm"
+    DEFVAL  { disable }
+    ::= { ruijieRrmDCADot11a 7 }
+
+ruijieRrmDot11aNoiseFactorEnable OBJECT-TYPE
+    SYNTAX      INTEGER {disable(0),enable(1)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "Consider foreign factor in DCA algorithm"
+    DEFVAL  { disable }
+    ::= { ruijieRrmDCADot11a 8 }
+
+ruijieRrmDot11aChannelUpdateCmdInvoke OBJECT-TYPE
+    SYNTAX      INTEGER { default (0), activate (1) }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When set to activate this starts a DCA calculation regardless
+         of the dynamic update interval. This command should be invoke
+         on Group Leader Ruijie Switch.Invoking on a Ruijie
+         Switch which is not a Group leader has no effect."
+    ::= {  ruijieRrmDCADot11a 9 }
+
+ruijieRrmDot11aDCAChannelTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieRrmDot11aDCAChannelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "This is a table of Ruijie Switch addresses that identifies
+        the members of the Dot11a RF group containing this Ruijie
+        Switch. Max size is 20 entries."
+    ::= { ruijieRrmDCADot11a 10 }
+
+ruijieRrmDot11aDCAChannelEntry OBJECT-TYPE
+    SYNTAX      RuijieRrmDot11aDCAChannelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        " ... "
+    INDEX { ruijieRrmDot11aDCAChannelIndex }
+    ::= { ruijieRrmDot11aDCAChannelTable 1 }
+
+RuijieRrmDot11aDCAChannelEntry ::=
+    SEQUENCE {
+        ruijieRrmDot11aDCAChannelIndex        INTEGER,
+        ruijieRrmDot11aDCAChannelOperation    INTEGER
+    }
+
+ruijieRrmDot11aDCAChannelIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "the index of dca channel."
+    ::= { ruijieRrmDot11aDCAChannelEntry 1 }
+
+ruijieRrmDot11aDCAChannelOperation OBJECT-TYPE
+    SYNTAX      INTEGER {delete(0),add(1)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "add or delete the channel using in DCA algorithm."
+    ::= { ruijieRrmDot11aDCAChannelEntry 2 }
+
+--********************************************************************
+--                                                                  **
+--                           TPC Algorithm                          **
+--                                                                  **
+--********************************************************************
+ruijieRrmDot11bDTPCSupport OBJECT-TYPE
+    SYNTAX      INTEGER {disable(0),enable(1)}
+    MAX-ACCESS  read-write
+    STATUS current
+    DESCRIPTION
+        "This attribute may be used to enable the DTPC support on all
+        802.11b/g radios. DTPC or Dynamic Transmit Power Control support
+        means that the radio's transmit power will be advertised in the
+        beacons and probe responses."
+    DEFVAL { enable }
+    ::= { ruijieRrmTPCDot11b 1 }
+
+ruijieRrmDot11bDynamicTransmitPowerControl OBJECT-TYPE
+    SYNTAX      INTEGER {
+        automatic (1),
+        runOnce (2),
+        static (3)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Dynamic transmit power (DTP) has three modes. When the mode
+         is auto, the transmit power of each Ruijie AP will be
+         periodically updated for all Ruijie APs that permit this
+         operation. When the DTP is runOnce,transmit power update will
+         occur based on the UPDATE_CMD received from the management.
+         When the DTP is static, no dynamic transmit power updates
+         occur and their global defaults are used.  Default is auto."
+    DEFVAL { automatic }
+    ::= { ruijieRrmTPCDot11b 2 }
+
+ruijieRrmDot11bDynamicTxPowerControlInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "When Tx PowerControl dynamic alogirthm is running, this
+         interval(in secs) specifies how often TxPower control updates
+         are attempted on an Ruijie AP. NOTE: hysteresis is
+         build into the algorithms so we will not have uproductive
+         changes occuring. Default value is 600 secs"
+   DEFVAL { 600 }
+   ::= { ruijieRrmTPCDot11b 3 }
+
+ruijieRrmDot11bCurrentTxPowerLevel OBJECT-TYPE
+    SYNTAX      INTEGER (1..8)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "The TxPowerLevel N currently being used to transmit data.
+            Some PHYs also use this value to determine the receiver
+            sensitivity requirements for CCA."
+    ::= { ruijieRrmTPCDot11b 4 }
+
+ruijieRrmDot11bPowerUpdateCmdInvoke OBJECT-TYPE
+    SYNTAX      INTEGER { default (0), activate (1) }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When set to activate this starts a DTP calculation regardless
+         of the dynamic update interval. This command should be
+         invoke on Group Leader Ruijie Switch.Invoking on a
+         Ruijie Switch which is not a Group leader has no effect."
+    ::= {  ruijieRrmTPCDot11b 5 }
+
+ruijieRrmDot11bTXPowerThreshold OBJECT-TYPE
+    SYNTAX      INTEGER (-90..-60)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "threshold value in TPC algorithm"
+    DEFVAL { -70 }
+    ::= { ruijieRrmTPCDot11b 6 }
+
+ruijieRrmDot11bTPCNeighborNumber OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "threshold value in TPC algorithm"
+    DEFVAL { 3 }
+    ::= { ruijieRrmTPCDot11b 7 }
+
+ruijieRrmDot11aDTPCSupport OBJECT-TYPE
+    SYNTAX      INTEGER {disable(0),enable(1)}
+    MAX-ACCESS  read-write
+    STATUS current
+    DESCRIPTION
+        "This attribute may be used to enable the DTPC support on all
+        802.11b/g radios. DTPC or Dynamic Transmit Power Control support
+        means that the radio's transmit power will be advertised in the
+        beacons and probe responses."
+    DEFVAL { enable }
+    ::= { ruijieRrmTPCDot11a 1 }
+
+ruijieRrmDot11aDynamicTransmitPowerControl OBJECT-TYPE
+    SYNTAX      INTEGER {
+        automatic (1),
+        runOnce (2),
+        static (3)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Dynamic transmit power (DTP) has three modes. When the mode
+         is auto, the transmit power of each Ruijie AP will be
+         periodically updated for all Ruijie APs that permit this
+         operation. When the DTP is runOnce,transmit power update will
+         occur based on the UPDATE_CMD received from the management.
+         When the DTP is static, no dynamic transmit power updates
+         occur and their global defaults are used.  Default is auto."
+    DEFVAL { automatic }
+    ::= { ruijieRrmTPCDot11a 2 }
+
+ruijieRrmDot11aDynamicTxPowerControlInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "When Tx PowerControl dynamic alogirthm is running, this
+         interval(in secs) specifies how often TxPower control updates
+         are attempted on an Ruijie AP. NOTE: hysteresis is
+         build into the algorithms so we will not have uproductive
+         changes occuring. Default value is 600 secs"
+   DEFVAL { 600 }
+   ::= { ruijieRrmTPCDot11a 3 }
+
+ruijieRrmDot11aCurrentTxPowerLevel OBJECT-TYPE
+    SYNTAX      INTEGER (1..8)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "The TxPowerLevel N currently being used to transmit data.
+            Some PHYs also use this value to determine the receiver
+            sensitivity requirements for CCA."
+    ::= { ruijieRrmTPCDot11a 4 }
+
+ruijieRrmDot11aPowerUpdateCmdInvoke OBJECT-TYPE
+    SYNTAX      INTEGER { default (0), activate (1) }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When set to activate this starts a DTP calculation regardless
+         of the dynamic update interval. This command should be
+         invoke on Group Leader Ruijie Switch.Invoking on a
+         Ruijie Switch which is not a Group leader has no effect."
+    ::= {  ruijieRrmTPCDot11a 5 }
+
+ruijieRrmDot11aTXPowerThreshold OBJECT-TYPE
+    SYNTAX      INTEGER (-90..-60)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "threshold value in TPC algorithm"
+    DEFVAL { -70 }
+    ::= { ruijieRrmTPCDot11a 6 }
+
+ruijieRrmDot11aTPCNeighborNumber OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "threshold value in TPC algorithm"
+    DEFVAL { 3 }
+    ::= { ruijieRrmTPCDot11a 7 }
+
+--********************************************************************
+--                                                                  **
+--                           CHD Algorithm                          **
+--                                                                  **
+--********************************************************************
+ruijieRrmDot11bCoverageEnable OBJECT-TYPE
+    SYNTAX      INTEGER {disable(0),enable(1)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm. Default is enable."
+    DEFVAL { enable }
+    ::= { ruijieRrmCHDDot11b 1 }
+
+ruijieRrmDot11bCoverageExceptionGlobal OBJECT-TYPE
+    SYNTAX      INTEGER (1..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm."
+    DEFVAL { 25 }
+    ::= { ruijieRrmCHDDot11b 2 }
+
+ruijieRrmDot11bCoverageLevelGlobal OBJECT-TYPE
+    SYNTAX      INTEGER (1..75)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm."
+    DEFVAL { 3 }
+    ::= { ruijieRrmCHDDot11b 3 }
+
+ruijieRrmDot11bCoverageDataRSSIThreshold OBJECT-TYPE
+    SYNTAX      INTEGER (-90..-60)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm."
+    DEFVAL { -80 }
+    ::= { ruijieRrmCHDDot11b 4 }
+
+ruijieRrmDot11bCoverageVoiceRSSIThreshold OBJECT-TYPE
+    SYNTAX      INTEGER (-90..-60)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm."
+    DEFVAL { -75 }
+    ::= { ruijieRrmCHDDot11b 5 }
+
+ruijieRrmDot11bCoverageDataPacketCount OBJECT-TYPE
+    SYNTAX      INTEGER (1..255)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm."
+    DEFVAL { 10 }
+    ::= { ruijieRrmCHDDot11b 6 }
+
+ruijieRrmDot11bCoverageVoicePacketCount OBJECT-TYPE
+    SYNTAX      INTEGER (1..255)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm."
+    DEFVAL { 10 }
+    ::= { ruijieRrmCHDDot11b 7 }
+
+ruijieRrmDot11bCoverageDataFailRate OBJECT-TYPE
+    SYNTAX      INTEGER (1..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm."
+    DEFVAL { 20 }
+    ::= { ruijieRrmCHDDot11b 8 }
+
+ruijieRrmDot11bCoverageVoiceFailRate OBJECT-TYPE
+    SYNTAX      INTEGER (1..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm."
+    DEFVAL { 20 }
+    ::= { ruijieRrmCHDDot11b 9 }
+
+ruijieRrmDot11aCoverageEnable OBJECT-TYPE
+    SYNTAX      INTEGER {disable(0),enable(1)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm. Default is enable."
+    DEFVAL { enable }
+    ::= { ruijieRrmCHDDot11a 1 }
+
+ruijieRrmDot11aCoverageExceptionGlobal OBJECT-TYPE
+    SYNTAX      INTEGER (1..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm."
+    DEFVAL { 25 }
+    ::= { ruijieRrmCHDDot11a 2 }
+
+ruijieRrmDot11aCoverageLevelGlobal OBJECT-TYPE
+    SYNTAX      INTEGER (1..75)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm."
+    DEFVAL { 3 }
+    ::= { ruijieRrmCHDDot11a 3 }
+
+ruijieRrmDot11aCoverageDataRSSIThreshold OBJECT-TYPE
+    SYNTAX      INTEGER (-90..-60)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm."
+    DEFVAL { -80 }
+    ::= { ruijieRrmCHDDot11a 4 }
+
+ruijieRrmDot11aCoverageVoiceRSSIThreshold OBJECT-TYPE
+    SYNTAX      INTEGER (-90..-60)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm."
+    DEFVAL { -75 }
+    ::= { ruijieRrmCHDDot11a 5 }
+
+ruijieRrmDot11aCoverageDataPacketCount OBJECT-TYPE
+    SYNTAX      INTEGER (1..255)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm."
+    DEFVAL { 10 }
+    ::= { ruijieRrmCHDDot11a 6 }
+
+ruijieRrmDot11aCoverageVoicePacketCount OBJECT-TYPE
+    SYNTAX      INTEGER (1..255)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm."
+    DEFVAL { 10 }
+    ::= { ruijieRrmCHDDot11a 7 }
+
+ruijieRrmDot11aCoverageDataFailRate OBJECT-TYPE
+    SYNTAX      INTEGER (1..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm."
+    DEFVAL { 20 }
+    ::= { ruijieRrmCHDDot11a 8 }
+
+ruijieRrmDot11aCoverageVoiceFailRate OBJECT-TYPE
+    SYNTAX      INTEGER (1..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "CHD algorighm."
+    DEFVAL { 20 }
+    ::= { ruijieRrmCHDDot11a 9 }
+
+--********************************************************************
+--                                                                  **
+--                      RRM Group Infomation                        **
+--                                                                  **
+--********************************************************************
+ruijieRrmDot11bGlobalAutomaticGrouping OBJECT-TYPE
+    SYNTAX      INTEGER { automatic (1), off (0) }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Dynamic grouping has two modes: on and off. When the grouping
+         is off, no dynamic grouping occurs. Each Ruijie Switch
+         optimizes only its own Ruijie APs' parameters. When
+         grouping is on, the Ruijie Switches form groups and
+         elect leaders to perform better dynamic parameter
+         optimization."
+    DEFVAL { automatic }
+    ::= { ruijieRrmGroupDot11b 1 }
+
+ruijieRrmDot11bGroupLeaderMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This is the MAC address of the group leader for the Dot11b
+         group containing this Ruijie Switch."
+    ::= { ruijieRrmGroupDot11b 2 }
+
+ruijieRrmDot11bGroupLeader OBJECT-TYPE
+    SYNTAX      INTEGER {no(0),yes(1)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "If this Ruijie Switch is a Dot11b Group Leader then this
+         attribute will be true else it will be false."
+    ::= { ruijieRrmGroupDot11b 3 }
+
+ruijieRrmDot11bGroupLastUpdateTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Last time the Dot11b grouping was updated on this Ruijie
+         Switch. This is valid only if the Ruijie Switch is a
+         group leader."
+    ::= { ruijieRrmGroupDot11b 4 }
+
+ruijieRrmDot11bGroupInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "When grouping is on, this interval(in secs) represents the
+         period with which the grouping algorithm is run. Grouping
+         algorithm will also run when the group contents changes and
+         the automatic grouping is enabled. A dynamic grouping can be
+         started upon request from the system administrator. Default
+         value is 3600 secs."
+    DEFVAL { 3600 }
+    ::= {ruijieRrmGroupDot11b 5}
+
+ruijieRrmDot11bGroupTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieRrmDot11bGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "This is a table of Ruijie Switch addresses that identifies
+        the members of the Dot11b RF group containing this Ruijie
+        Switch. Max size is 20 entries."
+    ::= { ruijieRrmGroupDot11b 6 }
+
+ruijieRrmDot11bGroupEntry OBJECT-TYPE
+    SYNTAX      RuijieRrmDot11bGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        " ... "
+    INDEX { ruijieRrmDot11bPeerMacAddress }
+    ::= { ruijieRrmDot11bGroupTable 1 }
+
+RuijieRrmDot11bGroupEntry ::=
+    SEQUENCE {
+        ruijieRrmDot11bPeerMacAddress       MacAddress,
+        ruijieRrmDot11bPeerIpAddress        IpAddress
+    }
+
+ruijieRrmDot11bPeerMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of the member Switch."
+    ::= { ruijieRrmDot11bGroupEntry 1 }
+
+ruijieRrmDot11bPeerIpAddress OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The IP address of the Ruijie Switch."
+    ::= { ruijieRrmDot11bGroupEntry 2 }
+
+ruijieRrmDot11bSummaryTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieRrmDot11bSummaryEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       ""
+    ::= { ruijieRrmGroupDot11b 7 }
+
+ruijieRrmDot11bSummaryEntry OBJECT-TYPE
+    SYNTAX      RuijieRrmDot11bSummaryEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        " ... "
+    INDEX { ruijieRrmDot11bSummaryMacAddress, ruijieRrmDot11bAPRadioID}
+    ::= { ruijieRrmDot11bSummaryTable 1 }
+
+RuijieRrmDot11bSummaryEntry ::=
+    SEQUENCE {
+        ruijieRrmDot11bSummaryMacAddress   MacAddress,
+        ruijieRrmDot11bAPname           					DisplayString,
+        ruijieRrmDot11bAPRadioID									Unsigned32,
+        ruijieRrmDot11bAPChannel        					Unsigned32,
+        ruijieRrmDot11bAPTxPower        					Unsigned32,
+        ruijieRrmDot11bAPChannelRrmChangeFlag    	INTEGER,
+        ruijieRrmDot11bAPTxPowerRrmChangeFlag    	INTEGER
+    }
+
+ruijieRrmDot11bAPname OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            ""
+    ::= { ruijieRrmDot11bSummaryEntry 1 }
+
+ruijieRrmDot11bAPRadioID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            ""
+    ::= { ruijieRrmDot11bSummaryEntry 2 }
+
+ruijieRrmDot11bAPChannel OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            ""
+    ::= { ruijieRrmDot11bSummaryEntry 3 }
+
+ruijieRrmDot11bAPTxPower OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            ""
+    ::= { ruijieRrmDot11bSummaryEntry 4 }
+
+ruijieRrmDot11bAPChannelRrmChangeFlag OBJECT-TYPE
+    SYNTAX      INTEGER {no(0),yes(1)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            ""
+    ::= { ruijieRrmDot11bSummaryEntry 5 }
+
+ruijieRrmDot11bAPTxPowerRrmChangeFlag OBJECT-TYPE
+    SYNTAX      INTEGER {no(0),yes(1)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            ""
+    ::= { ruijieRrmDot11bSummaryEntry 6 }
+
+ruijieRrmDot11bSummaryMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of the member Switch."
+    ::= { ruijieRrmDot11bSummaryEntry 7 }
+
+
+ruijieRrmDot11aGlobalAutomaticGrouping OBJECT-TYPE
+    SYNTAX      INTEGER { automatic (1), off (0) }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Dynamic grouping has two modes: on and off. When the grouping
+         is off, no dynamic grouping occurs. Each Ruijie Switch
+         optimizes only its own Ruijie APs' parameters. When
+         grouping is on, the Ruijie Switches form groups and
+         elect leaders to perform better dynamic parameter
+         optimization."
+    DEFVAL { automatic }
+    ::= { ruijieRrmGroupDot11a 1 }
+
+ruijieRrmDot11aGroupLeaderMacAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This is the MAC address of the group leader for the dot11a
+         group containing this Ruijie Switch."
+    ::= { ruijieRrmGroupDot11a 2 }
+
+ruijieRrmDot11aGroupLeader OBJECT-TYPE
+    SYNTAX      INTEGER {no(0),yes(1)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "If this Ruijie Switch is a Dot11a Group Leader then this
+         attribute will be true else it will be false."
+    ::= { ruijieRrmGroupDot11a 3 }
+
+ruijieRrmDot11aGroupLastUpdateTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Last time the dot11a grouping was updated on this Ruijie
+         Switch. This is valid only if the Ruijie Switch is a
+         group leader."
+    ::= { ruijieRrmGroupDot11a 4 }
+
+ruijieRrmDot11aGroupInterval OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "When grouping is on, this interval(in secs) represents the
+         period with which the grouping algorithm is run. Grouping
+         algorithm will also run when the group contents changes and
+         the automatic grouping is enabled. A dynamic grouping can be
+         started upon request from the system administrator. Default
+         value is 3600 secs."
+    DEFVAL { 3600 }
+    ::= {ruijieRrmGroupDot11a 5}
+
+ruijieRrmDot11aGroupTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieRrmDot11aGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       "This is a table of Ruijie Switch addresses that identifies
+        the members of the Dot11a RF group containing this Ruijie
+        Switch. Max size is 20 entries."
+    ::= { ruijieRrmGroupDot11a 6 }
+
+ruijieRrmDot11aGroupEntry OBJECT-TYPE
+    SYNTAX      RuijieRrmDot11aGroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        " ... "
+    INDEX { ruijieRrmDot11aPeerMacAddress }
+    ::= { ruijieRrmDot11aGroupTable 1 }
+
+RuijieRrmDot11aGroupEntry ::=
+    SEQUENCE {
+        ruijieRrmDot11aPeerMacAddress       MacAddress,
+        ruijieRrmDot11aPeerIpAddress        IpAddress
+    }
+
+ruijieRrmDot11aPeerMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of the member Switch."
+    ::= { ruijieRrmDot11aGroupEntry 1 }
+
+ruijieRrmDot11aPeerIpAddress OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The IP address of the Ruijie Switch."
+    ::= { ruijieRrmDot11aGroupEntry 2 }
+
+ruijieRrmDot11aSummaryTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieRrmDot11aSummaryEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+       ""
+    ::= { ruijieRrmGroupDot11a 7 }
+
+ruijieRrmDot11aSummaryEntry OBJECT-TYPE
+    SYNTAX      RuijieRrmDot11aSummaryEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        " ... "
+    INDEX { ruijieRrmDot11aSummaryMacAddress,  ruijieRrmDot11aAPRadioID}
+    ::= { ruijieRrmDot11aSummaryTable 1 }
+
+RuijieRrmDot11aSummaryEntry ::=
+    SEQUENCE {
+        ruijieRrmDot11aSummaryMacAddress MacAddress,
+        ruijieRrmDot11aAPname           					DisplayString,
+        ruijieRrmDot11aAPRadioID									Unsigned32,
+        ruijieRrmDot11aAPChannel        					Unsigned32,
+        ruijieRrmDot11aAPTxPower        					Unsigned32,
+        ruijieRrmDot11aAPChannelRrmChangeFlag    	INTEGER,
+        ruijieRrmDot11aAPTxPowerRrmChangeFlag    	INTEGER
+    }
+
+ruijieRrmDot11aAPname OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            ""
+    ::= { ruijieRrmDot11aSummaryEntry 1 }
+
+ruijieRrmDot11aAPRadioID OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            ""
+    ::= { ruijieRrmDot11aSummaryEntry 2 }
+
+ruijieRrmDot11aAPChannel OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            ""
+    ::= { ruijieRrmDot11aSummaryEntry 3 }
+
+ruijieRrmDot11aAPTxPower OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            ""
+    ::= { ruijieRrmDot11aSummaryEntry 4 }
+
+ruijieRrmDot11aAPChannelRrmChangeFlag OBJECT-TYPE
+    SYNTAX      INTEGER {no(0),yes(1)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            ""
+    ::= { ruijieRrmDot11aSummaryEntry 5 }
+
+ruijieRrmDot11aAPTxPowerRrmChangeFlag OBJECT-TYPE
+    SYNTAX      INTEGER {no(0),yes(1)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            ""
+    ::= { ruijieRrmDot11aSummaryEntry 6 }
+
+ruijieRrmDot11aSummaryMacAddress OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of the member Switch."
+    ::= { ruijieRrmDot11aSummaryEntry 7 }
+
+--********************************************************************
+--                                                                  **
+--                       RRM Profile Value                          **
+--                                                                  **
+--********************************************************************
+ruijieRrmDot11bForeignInterferenceThreshold OBJECT-TYPE
+    SYNTAX      INTEGER(1..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "foreign 802.11B interference threshold between 0 and 100
+            percent."
+    DEFVAL { 10 }
+    ::= {ruijieRrmProfileDot11b 1 }
+
+ruijieRrmDot11bForeignNoiseThreshold OBJECT-TYPE
+    SYNTAX      INTEGER(-127..0)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            " 802.11B foreign noise threshold between -127 and 0 dBm."
+    DEFVAL { -70 }
+    ::= {ruijieRrmProfileDot11b 2 }
+
+ruijieRrmDot11bRFUtilizationThreshold OBJECT-TYPE
+    SYNTAX      INTEGER(1..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "802.11B RF utlization threshold between 0 and 100
+            percent."
+    DEFVAL { 80 }
+    ::= {ruijieRrmProfileDot11b 3 }
+
+ruijieRrmDot11bThroughputThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32(1000..10000000)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            " 802.11B throughput threshold between 1000 and 10000000"
+    DEFVAL { 1000000 }
+    ::= {ruijieRrmProfileDot11b 4 }
+
+ruijieRrmDot11bMobilesThreshold OBJECT-TYPE
+    SYNTAX      INTEGER(1..75)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "802.11B mobiles threshold between 1 and 75"
+    DEFVAL { 12 }
+    ::= {ruijieRrmProfileDot11b 5 }
+
+
+ruijieRrmDot11aForeignInterferenceThreshold OBJECT-TYPE
+    SYNTAX      INTEGER(1..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "foreign 802.11A interference threshold between 0 and 100
+            percent."
+    DEFVAL { 10 }
+    ::= {ruijieRrmProfileDot11a 1 }
+
+ruijieRrmDot11aForeignNoiseThreshold OBJECT-TYPE
+    SYNTAX      INTEGER(-127..0)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            " 802.11A foreign noise threshold between -127 and 0 dBm."
+    DEFVAL { -70 }
+    ::= {ruijieRrmProfileDot11a 2 }
+
+ruijieRrmDot11aRFUtilizationThreshold OBJECT-TYPE
+    SYNTAX      INTEGER(1..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "802.11A RF utlization threshold between 0 and 100
+            percent."
+    DEFVAL { 80 }
+    ::= {ruijieRrmProfileDot11a 3 }
+
+ruijieRrmDot11aThroughputThreshold OBJECT-TYPE
+    SYNTAX      Unsigned32(1000..10000000)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            " 802.11A throughput threshold between 1000 and 10000000"
+    DEFVAL { 1000000 }
+    ::= {ruijieRrmProfileDot11a 4 }
+
+ruijieRrmDot11aMobilesThreshold OBJECT-TYPE
+    SYNTAX      INTEGER(1..75)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "802.11A mobiles threshold between 1 and 75"
+    DEFVAL { 12 }
+    ::= {ruijieRrmProfileDot11a 5 }
+
+
+--********************************************************************
+--                                                                  **
+--                         RRM Monitor                              **
+--                                                                  **
+--********************************************************************
+ruijieRrmDot11bMonitorEnable OBJECT-TYPE
+    SYNTAX      INTEGER { enable (1), disable (0) }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable or disable monitor function."
+    DEFVAL { enable }
+    ::= { ruijieRrmMonitorDot11b 1 }
+
+ruijieRrmDot11bChannelMonitorList OBJECT-TYPE
+    SYNTAX      INTEGER {
+        all(1),
+        country(2),
+        dca(3)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+    "This attribute specifies the channels on which the switch monitors
+     noise, interference and rogues.  The first option allows
+     monitoring on all channels while the second one on only those
+     that are supported by the country of operation. the option dca
+     implies that the monitor channel list will include those channels
+     that are used by automatic channel assignment."
+    DEFVAL { country }
+    ::= { ruijieRrmMonitorDot11b 2 }
+
+ruijieRrmDot11bMonitorInterval OBJECT-TYPE
+    SYNTAX      Unsigned32(60..3600)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+       "This interval( in secs) specifies how often the AP goto off
+       channel state to monitor. Default is 300 secs"
+    DEFVAL { 180 }
+    ::= {ruijieRrmMonitorDot11b 3}
+
+ruijieRrmDot11bCoverageMeasurementInterval OBJECT-TYPE
+    SYNTAX      Unsigned32(60..3600)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+       "This interval( in secs) specifies how often do we get new
+       coverage measurements at each Ruijie AP. Default is 300 secs"
+    DEFVAL { 180 }
+    ::= {ruijieRrmMonitorDot11b 4}
+
+ruijieRrmDot11bLoadMeasurementInterval OBJECT-TYPE
+    SYNTAX      Unsigned32(60..3600)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+       "This interval( in secs) specifies how often do we get new
+       load measurements at each Ruijie AP. Default is 300 secs"
+    DEFVAL { 60 }
+    ::= {ruijieRrmMonitorDot11b 5}
+
+ruijieRrmDot11bNoiseMeasurementInterval OBJECT-TYPE
+    SYNTAX      Unsigned32(60..3600)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+       "This interval( in secs) specifies how often do we get new
+        noise and interference measurements at each Ruijie AP.
+        Default is 300 secs"
+    DEFVAL { 180 }
+    ::= { ruijieRrmMonitorDot11b 6 }
+
+ruijieRrmDot11bSignalMeasurementInterval OBJECT-TYPE
+    SYNTAX      Unsigned32(60..3600)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+       "This interval (in secs) specifies how often do we get new
+        signal strength measurements at each Ruijie AP. Default is
+        300 secs"
+    DEFVAL { 60 }
+    ::= { ruijieRrmMonitorDot11b 7 }
+
+ruijieRrmDot11bNeighborMessageInterval OBJECT-TYPE
+    SYNTAX      Unsigned32(60..3600)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+       "This interval (in secs) specifies how often the AP send
+       neighbor message"
+    DEFVAL { 60 }
+    ::= { ruijieRrmMonitorDot11b 8 }
+
+
+ruijieRrmDot11aMonitorEnable OBJECT-TYPE
+    SYNTAX      INTEGER { enable (1), disable (0) }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Enable or disable monitor function."
+    DEFVAL { enable }
+    ::= { ruijieRrmMonitorDot11a 1 }
+
+ruijieRrmDot11aChannelMonitorList OBJECT-TYPE
+    SYNTAX      INTEGER {
+        all(1),
+        country(2),
+        dca(3)
+    }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+    "This attribute specifies the channels on which the switch monitors
+     noise, interference and rogues.  The first option allows
+     monitoring on all channels while the second one on only those
+     that are supported by the country of operation. the option dca
+     implies that the monitor channel list will include those channels
+     that are used by automatic channel assignment."
+    DEFVAL { country }
+    ::= { ruijieRrmMonitorDot11a 2 }
+
+ruijieRrmDot11aMonitorInterval OBJECT-TYPE
+    SYNTAX      Unsigned32(60..3600)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+       "This interval( in secs) specifies how often the AP goto off
+       channel state to monitor. Default is 300 secs"
+    DEFVAL { 180 }
+    ::= {ruijieRrmMonitorDot11a 3}
+
+ruijieRrmDot11aCoverageMeasurementInterval OBJECT-TYPE
+    SYNTAX      Unsigned32(60..3600)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+       "This interval( in secs) specifies how often do we get new
+       coverage measurements at each Ruijie AP. Default is 300 secs"
+    DEFVAL { 180 }
+    ::= {ruijieRrmMonitorDot11a 4}
+
+ruijieRrmDot11aLoadMeasurementInterval OBJECT-TYPE
+    SYNTAX      Unsigned32(60..3600)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+       "This interval( in secs) specifies how often do we get new
+       load measurements at each Ruijie AP. Default is 300 secs"
+    DEFVAL { 60 }
+    ::= {ruijieRrmMonitorDot11a 5}
+
+ruijieRrmDot11aNoiseMeasurementInterval OBJECT-TYPE
+    SYNTAX      Unsigned32(60..3600)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+       "This interval( in secs) specifies how often do we get new
+        noise and interference measurements at each Ruijie AP.
+        Default is 300 secs"
+    DEFVAL { 180 }
+    ::= { ruijieRrmMonitorDot11a 6 }
+
+ruijieRrmDot11aSignalMeasurementInterval OBJECT-TYPE
+    SYNTAX      Unsigned32(60..3600)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+       "This interval (in secs) specifies how often do we get new
+        signal strength measurements at each Ruijie AP. Default is
+        300 secs"
+    DEFVAL { 60 }
+    ::= { ruijieRrmMonitorDot11a 7 }
+
+ruijieRrmDot11aNeighborMessageInterval OBJECT-TYPE
+    SYNTAX      Unsigned32(60..3600)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+       "This interval (in secs) specifies how often the AP send
+       neighbor message"
+    DEFVAL { 60 }
+    ::= { ruijieRrmMonitorDot11a 8 }
+
+
+--********************************************************************
+--                                                                  **
+--                    Set Factory Defaults                          **
+--                                                                  **
+--********************************************************************
+ruijieRrmDot11bSetFactoryDefault OBJECT-TYPE
+    SYNTAX      INTEGER {default(0),activate (1)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "When set to activate all Rrm parameters are reset to
+            factory defaults"
+   ::= { ruijieRrmFactoryDot11b 1 }
+
+ruijieRrmDot11aSetFactoryDefault OBJECT-TYPE
+    SYNTAX      INTEGER {default(0),activate (1)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "When set to activate all Rrm parameters are reset to
+            factory defaults"
+   ::= { ruijieRrmFactoryDot11a 1 }
+
+
+-- *************************************************************
+-- ruijieRrmTrapControl would specify all the objects that enable/disable the
+-- the generation of traps by Ruijie Switch
+-- ruijieRrmTraps would specify all the possible traps that Ruijie Switch
+-- would need to generate
+-- *************************************************************
+
+--***************** define the ruijieRrmMIBObjects nodes *****************
+ruijieRrmTrapControl    OBJECT IDENTIFIER ::= { ruijieRrmMIBTraps 1 }
+ruijieRrmTrapVariable   OBJECT IDENTIFIER ::= { ruijieRrmMIBTraps 2 }
+ruijieRrmTraps          OBJECT IDENTIFIER ::= { ruijieRrmMIBTraps 3 }
+
+
+-- *************************************************************
+-- extra trap variables definining here
+-- *************************************************************
+-- for AP infomation
+ruijieRrmAPMacAddrTrapVariable OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "the variable of ap radio MAC address in trap"
+    ::= { ruijieRrmTrapVariable 1 }
+
+ruijieRrmAPRadioIDTrapVariable OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "the variable of radio id in trap"
+    ::= { ruijieRrmTrapVariable 2 }
+
+ruijieRrmAPRadioTypeTrapVariable OBJECT-TYPE
+    SYNTAX      INTEGER  {type80211a(0), type80211b(1)}
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "the variable of radio type in trap"
+    ::= { ruijieRrmTrapVariable 3 }
+
+-- Get Trap Value
+ruijieRrmClientNumberTrapVariable OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "the variable of client number in trap"
+    ::= { ruijieRrmTrapVariable 4 }
+
+ruijieRrmForeignInterfereTrapVariable OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "the variable of interference in trap"
+    ::= { ruijieRrmTrapVariable 5 }
+
+ruijieRrmNoiseTrapVariable OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "the variable of noise in trap"
+    ::= { ruijieRrmTrapVariable 6 }
+
+ruijieRrmThroughputTrapVariable OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "the variable of throughput in trap"
+    ::= { ruijieRrmTrapVariable 7 }
+
+ruijieRrmUtilizationTrapVariable OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "the variable of utilization in trap"
+    ::= { ruijieRrmTrapVariable 8 }
+
+-- for TPC
+ruijieRrmAPTxPowerBeforeChange OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    "The txpower level before change"
+    ::= {  ruijieRrmTrapVariable 9 }
+
+ruijieRrmAPTxPowerAfterChange OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    "The txpower level after change"
+    ::= {  ruijieRrmTrapVariable 10 }
+
+-- for DCA
+ruijieRrmAPChannelNumberBeforeChannge OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    "The channel before change"
+    ::= {  ruijieRrmTrapVariable 11 }
+
+ruijieRrmAPChannelNumberAfterChannge OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    "The channel after channge"
+    ::= {  ruijieRrmTrapVariable 12 }
+
+
+ruijieRrmDot11bGroupLeaderMacAddrTrapVariable OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of the group leader."
+    ::= { ruijieRrmTrapVariable 13 }
+
+ruijieRrmDot11aGroupLeaderMacAddrTrapVariable OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+            "The MAC address of the group leader."
+    ::= { ruijieRrmTrapVariable 14 }
+
+ruijieRrmAPChannelChangeReason OBJECT-TYPE
+    SYNTAX  	INTEGER {
+            signal(1),
+            interference(2),
+            noise(3),
+	          load(4),
+	          radar(5),
+	          other(6)
+     }
+    MAX-ACCESS 	accessible-for-notify
+    STATUS 	current
+    DESCRIPTION
+	     "The reason cause the channel changed"
+    ::= { ruijieRrmTrapVariable 15 }
+
+ruijieRrmAPChannelChangeReasonValue OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    	     "The special value along with the reason of channel change"
+    ::= {  ruijieRrmTrapVariable 16 }
+
+ruijieRrmAPTxPowerChangeCoverageFlag OBJECT-TYPE
+    SYNTAX      INTEGER {no(0),yes(1)}
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    	    "Indication the power change cause by which algorithm, TPC
+    	    Algorithm or CHD Algorithm"
+    ::= {  ruijieRrmTrapVariable 17 }
+
+ruijieRrmDFSFreeCount OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    	    "Indication the number of channel usable"
+    ::= {  ruijieRrmTrapVariable 18 }
+
+ruijieRrmAPChannelChangeCount OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+    	    "the number of channel change"
+    ::= {  ruijieRrmTrapVariable 19 }
+
+-- *************************************************************
+-- Whenever LOAD, NOISE, INTERFERENCE, COVERAGE Profile state changes
+-- from PASS to FAIL for Ruijie AP IF, notification will be sent, if
+-- configured to do so.
+-- *************************************************************
+
+ruijieRrmAPDot11bProfileTrapControlMask OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "This mask describes what events merit traps to network
+            management. If the bit for a particular event is turned
+            on then notification will be generated on event occurance.
+                Event                    corresponding bit
+                -----                    -----------------
+                ClientNumProfileFail             1
+                LoadProfileFail                  2
+                NoiseProfileFail                 4
+                InterferenceProfileFail          8
+                PerformanceProfileFailed         16
+           "
+    DEFVAL { 0 }
+    ::= { ruijieRrmTrapControl 1 }
+
+ruijieRrmAPDot11aProfileTrapControlMask OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "This mask describes what events merit traps to network
+            management. If the bit for a particular event is turned
+            on then notification will be generated on event occurance.
+                Event                    corresponding bit
+                -----                    -----------------
+                ClientNumProfileFail             1
+                LoadProfileFail                  2
+                NoiseProfileFail                 4
+                InterferenceProfileFail          8
+                PerformanceProfileFailed         16
+           "
+    DEFVAL { 0 }
+    ::= { ruijieRrmTrapControl 2 }
+
+ruijieRrmAPClientNumProfileFailed NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieRrmAPMacAddrTrapVariable,
+        ruijieRrmAPRadioIDTrapVariable,
+        ruijieRrmAPRadioTypeTrapVariable,
+        ruijieRrmClientNumberTrapVariable
+    }
+    STATUS current
+    DESCRIPTION
+        "too many clients "
+    ::= { ruijieRrmTraps 1 }
+
+ruijieRrmAPLoadProfileFailed NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieRrmAPMacAddrTrapVariable,
+        ruijieRrmAPRadioIDTrapVariable,
+        ruijieRrmAPRadioTypeTrapVariable,
+        ruijieRrmUtilizationTrapVariable
+    }
+    STATUS current
+    DESCRIPTION
+        "When LOAD Profile state changes from PASS to FAIL,
+         notification will be sent with Dot3 MAC address of Ruijie
+         AP and slot ID of Ruijie AP IF. This trap sending can be
+         enable/disable using ruijieRrmRrmProfileTrapControlFlag "
+    ::= { ruijieRrmTraps 2 }
+
+ruijieRrmAPNoiseProfileFailed NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieRrmAPMacAddrTrapVariable,
+        ruijieRrmAPRadioIDTrapVariable,
+        ruijieRrmAPRadioTypeTrapVariable,
+        ruijieRrmNoiseTrapVariable
+    }
+    STATUS current
+    DESCRIPTION
+        "When Noise Profile state changes from PASS to FAIL,
+         notification will be sent with Dot3 MAC address of Ruijie
+         AP and slot ID of Ruijie AP IF. This trap sending can be
+         enable/disable using ruijieRrmRrmProfileTrapControlFlag "
+    ::= { ruijieRrmTraps 3 }
+
+ruijieRrmAPInterferenceProfileFailed NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieRrmAPMacAddrTrapVariable,
+        ruijieRrmAPRadioIDTrapVariable,
+        ruijieRrmAPRadioTypeTrapVariable,
+        ruijieRrmForeignInterfereTrapVariable
+    }
+    STATUS current
+    DESCRIPTION
+        "When Interference Profile state changes from PASS to FAIL,
+         notification will be sent with Dot3 MAC address of Ruijie
+         AP and slot ID of Ruijie AP IF. This trap sending can be
+         enable/disable using ruijieRrmRrmProfileTrapControlFlag "
+    ::= { ruijieRrmTraps 4 }
+
+ruijieRrmAPPerformanceProfileFailed NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieRrmAPMacAddrTrapVariable,
+        ruijieRrmAPRadioIDTrapVariable,
+        ruijieRrmAPRadioTypeTrapVariable,
+        ruijieRrmThroughputTrapVariable
+    }
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { ruijieRrmTraps 5 }
+
+ruijieRrmAPClientNumProfileUpdatedToPass NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieRrmAPMacAddrTrapVariable,
+        ruijieRrmAPRadioIDTrapVariable,
+        ruijieRrmAPRadioTypeTrapVariable,
+        ruijieRrmClientNumberTrapVariable
+    }
+    STATUS current
+    DESCRIPTION
+        ""
+    ::= { ruijieRrmTraps 6 }
+
+ruijieRrmAPLoadProfileUpdatedToPass NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieRrmAPMacAddrTrapVariable,
+        ruijieRrmAPRadioIDTrapVariable,
+        ruijieRrmAPRadioTypeTrapVariable,
+        ruijieRrmUtilizationTrapVariable
+    }
+    STATUS current
+    DESCRIPTION
+        "When LOAD Profile state changes from FAIL to PASSt this
+         notification will be sent with Dot3 MAC address of Ruijie
+         AP and slot ID of Ruijie AP IF. This trap sending can be
+         enable/disable using ruijieRrmRrmProfileTrapControlFlag "
+    ::= { ruijieRrmTraps 7 }
+
+ruijieRrmAPNoiseProfileUpdatedToPass NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieRrmAPMacAddrTrapVariable,
+        ruijieRrmAPRadioIDTrapVariable,
+        ruijieRrmAPRadioTypeTrapVariable,
+        ruijieRrmNoiseTrapVariable
+    }
+    STATUS current
+    DESCRIPTION
+        "When Noise Profile state changes from FAIL tp PASS,
+         notification will be sent with Dot3 MAC address of Ruijie
+         AP and slot ID of Ruijie AP IF. This trap sending can be
+         enable/disable using ruijieRrmRrmProfileTrapControlFlag "
+    ::= { ruijieRrmTraps 8 }
+
+ruijieRrmAPInterferenceProfileUpdatedToPass NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieRrmAPMacAddrTrapVariable,
+        ruijieRrmAPRadioIDTrapVariable,
+        ruijieRrmAPRadioTypeTrapVariable,
+        ruijieRrmForeignInterfereTrapVariable
+    }
+    STATUS current
+    DESCRIPTION
+        "When Interference Profile state changes from FAIL tp PASS,
+         notification will be sent with Dot3 MAC address of Ruijie
+         AP and slot ID of Ruijie AP IF. This trap sending can be
+         enable /disable using ruijieRrmRrmProfileTrapControlFlag "
+    ::= { ruijieRrmTraps 9 }
+
+ruijieRrmAPPerformanceProfileUpdatedToPass NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieRrmAPMacAddrTrapVariable,
+        ruijieRrmAPRadioIDTrapVariable,
+        ruijieRrmAPRadioTypeTrapVariable,
+        ruijieRrmThroughputTrapVariable
+    }
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { ruijieRrmTraps 10 }
+
+
+ruijieRrmAPDot11bParamUpdateTrapControlMask OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "Mac Parameters are updated for a Ruijie AP interface
+            whenever Dynamic Algorithm are run. This mask describes
+            what update events merit traps to network management. If
+            the bit for a particular event is turned on then
+            notification will be generated on event occurance.
+                Event                    corresponding bit
+                -----                    -----------------
+                TxPowerChange                  1
+                ChannelChange                  2
+           "
+    DEFVAL { 0 }
+    ::= { ruijieRrmTrapControl 3 }
+
+ruijieRrmAPDot11aParamUpdateTrapControlMask OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "Mac Parameters are updated for a Ruijie AP interface
+            whenever Dynamic Algorithm are run. This mask describes
+            what update events merit traps to network management. If
+            the bit for a particular event is turned on then
+            notification will be generated on event occurance.
+                Event                    corresponding bit
+                -----                    -----------------
+                TxPowerChange                  1
+                ChannelChange                  2
+           "
+    DEFVAL { 0 }
+    ::= { ruijieRrmTrapControl 4 }
+
+ruijieRrmAPCurrentTxPowerChanged NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieRrmAPMacAddrTrapVariable,
+        ruijieRrmAPRadioIDTrapVariable,
+        ruijieRrmAPRadioTypeTrapVariable,
+        ruijieRrmAPTxPowerBeforeChange,
+        ruijieRrmAPTxPowerAfterChange,
+        ruijieRrmAPTxPowerChangeCoverageFlag
+    }
+    STATUS current
+    DESCRIPTION
+        "Whenever dynamic algorithms are running and
+         ruijieRrmAPIfPhyPowerAutomaticOn is true, Ruijie AP Interface's
+         CurrentTxPower might get updated by algorithm. When
+         this occurs notification will be sent with Dot3 MAC address of
+         Ruijie AP and slot ID of Ruijie AP IF along with the
+         currentTxPower for this Ruijie AP IF"
+    ::= { ruijieRrmTraps 11 }
+
+ruijieRrmAPCurrentChannelChanged NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieRrmAPMacAddrTrapVariable,
+        ruijieRrmAPRadioIDTrapVariable,
+        ruijieRrmAPRadioTypeTrapVariable,
+        ruijieRrmAPChannelNumberBeforeChannge,
+        ruijieRrmAPChannelNumberAfterChannge,
+        ruijieRrmAPChannelChangeReason,
+        ruijieRrmAPChannelChangeReasonValue,
+        ruijieRrmAPChannelChangeCount
+    }
+    STATUS current
+    DESCRIPTION
+        "Whenever dynamic algorithms are running and
+         ruijieRrmAPIfPhyChannelAutomaticOn is true, Ruijie AP
+         Interface's CurrentChannel might get updated by algorithm.
+         When this occurs notification will be sent with Dot3 MAC
+         address of Ruijie AP and slot ID of Ruijie AP IF along
+         with the currentChannel for this Ruijie AP IF"
+    ::= { ruijieRrmTraps 12 }
+
+
+-- *************************************************************
+-- Also, when dynamic grouping is done and new Group leader is choosen
+-- NMS needs to be informed so that necessary updates can be done in
+-- NMS.
+-- *************************************************************
+
+ruijieRrmDot11bGroupingDone NOTIFICATION-TYPE
+    OBJECTS { ruijieRrmDot11bGroupLeaderMacAddrTrapVariable }
+    STATUS current
+    DESCRIPTION
+        "When Grouping is done, this notification will be sent from the
+         previous Group Leader where grouping algorithm was run. It has
+         MAC address of the new Group Leader."
+    ::= { ruijieRrmTraps 13 }
+
+ruijieRrmDot11aGroupingDone NOTIFICATION-TYPE
+    OBJECTS { ruijieRrmDot11aGroupLeaderMacAddrTrapVariable }
+    STATUS current
+    DESCRIPTION
+        "When Grouping is done, this notification will be sent from the
+         previous Group Leader where grouping algorithm was run. It has
+         MAC address of the new Group Leader."
+    ::= { ruijieRrmTraps 14 }
+
+
+ruijieRrmDot11bDFSFreeCountBelowThreshold NOTIFICATION-TYPE
+    OBJECTS { ruijieRrmDFSFreeCount }
+    STATUS current
+    DESCRIPTION
+        "When the free channel in 802.11b DCA too few, this notification
+         will be sent"
+    ::= { ruijieRrmTraps 15 }
+
+ruijieRrmDot11aDFSFreeCountBelowThreshold NOTIFICATION-TYPE
+    OBJECTS { ruijieRrmDFSFreeCount }
+    STATUS current
+    DESCRIPTION
+        "When the free channel in 802.11b DCA too few, this notification
+         will be sent"
+    ::= { ruijieRrmTraps 16 }
+
+ruijieRrmNeighborAPInterference NOTIFICATION-TYPE
+    OBJECTS { ruijieRrmAPMacAddrTrapVariable }
+    STATUS current
+    DESCRIPTION
+        "notice when find interference form neighbor AP"
+    ::= { ruijieRrmTraps 17 }
+
+ruijieRrmStationInterference NOTIFICATION-TYPE
+    OBJECTS { ruijieRrmAPMacAddrTrapVariable }
+    STATUS current
+    DESCRIPTION
+        "notice when find interference form station"
+    ::= { ruijieRrmTraps 18 }
+
+ruijieRrmOtherDiveceInterference NOTIFICATION-TYPE
+    OBJECTS { ruijieRrmAPMacAddrTrapVariable }
+    STATUS current
+    DESCRIPTION
+        "notice when find interference form other divece"
+    ::= { ruijieRrmTraps 19 }
+
+--***************** define the ruijieRrmMIBConformance nodes ************
+ruijieRrmMIBCompliances OBJECT IDENTIFIER ::= { ruijieRrmMIBConformance 1 }
+ruijieRrmMIBGroups      OBJECT IDENTIFIER ::= { ruijieRrmMIBConformance 2 }
+
+--********************************************************************
+--                                                                  **
+--           compliance statements                                  **
+--                                                                  **
+--********************************************************************
+ruijieRrmMIBCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for entities which implement
+            the Ruijie RRM module"
+    MODULE  -- this module
+        MANDATORY-GROUPS {
+            ruijieRrmMIBGroup,
+            ruijieRrmTrapsGroup
+        }
+    ::= { ruijieRrmMIBCompliances 1 }
+
+--********************************************************************
+--                                                                  **
+--           units of conformance                                   **
+--                                                                  **
+--********************************************************************
+ruijieRrmMIBGroup OBJECT-GROUP
+    OBJECTS {
+
+--Begin rf group
+        ruijieRrmRFNetworkName,
+
+--Begin AP auto-rf
+				ruijieRrmAPName,
+				ruijieRrmAPIfThresholdRadioType,
+				ruijieRrmAPIfForeignInterferenceThreshold,
+				ruijieRrmAPIfForeignNoiseThreshold,
+				ruijieRrmAPIfRFUtilizationThreshold,
+				ruijieRrmAPIfThroughputThreshold,
+				ruijieRrmAPIfMobilesThreshold,
+				ruijieRrmAPIfThresholdMacAddr,
+        ruijieRrmAPIfThresholdRadioType,
+        ruijieRrmAPIfThresholdName,
+
+				ruijieRrmAPIfLoadRxUtilization,
+				ruijieRrmAPIfLoadTxUtilization,
+				ruijieRrmAPIfLoadChannelUtilization,
+				ruijieRrmAPIfLoadNumOfClients,
+				ruijieRrmAPIfPoorSNRClients,
+				ruijieRrmAPIfLoadName,
+        ruijieRrmAPIfLoadMacAddr,
+        ruijieRrmAPIfLoadSlotId,
+        ruijieRrmAPIfThroughput,
+
+				ruijieRrmAPIfInterferenceChannelNo,
+				ruijieRrmAPIfInterferencePower,
+				ruijieRrmAPIfInterferenceUtilization,
+				ruijieRrmAPIfInterferenceName,
+        ruijieRrmAPIfInterferenceMacAddr,
+        ruijieRrmAPIfInterferenceSlotId,
+
+				ruijieRrmAPIfNoiseChannelNo,
+				ruijieRrmAPIfDBNoisePower,
+				ruijieRrmAPIfNoiseName,
+        ruijieRrmAPIfNoiseMacAddr,
+        ruijieRrmAPIfNoiseSlotId,
+
+				ruijieRrmAPIfLoadProfileState,
+				ruijieRrmAPIfInterferenceProfileState,
+				ruijieRrmAPIfNoiseProfileState,
+				ruijieRrmAPIfCoverageProfileState,
+				ruijieRrmAPIfPerformanceProfileState,
+				ruijieRrmAPIfProfileName,
+        ruijieRrmAPIfProfileMacAddr,
+        ruijieRrmAPIfProfileSlotId,
+
+				ruijieRrmAPIfRxNeighborMacAddress,
+				ruijieRrmAPIfRxNeighborSlot,
+				ruijieRrmAPIfRxNeighborIpAddress,
+				ruijieRrmAPIfRxNeighborRSSI,
+				ruijieRrmAPIfRxNeighborSNR,
+				ruijieRrmAPIfRxNeighborChannel,
+				ruijieRrmAPIfRxNeighborChannelWidth,
+				ruijieRrmAPIfRxNeighborName,
+        ruijieRrmAPIfRxNeighborMacAddr,
+        ruijieRrmAPIfRxNeighborSlotId,
+
+				ruijieRrmAPIfStationRSSICoverageIndex,
+				ruijieRrmAPIfRSSILevel,
+				ruijieRrmAPIfStationCountOnRSSI,
+				ruijieRrmAPIfStationRSSIName,
+        ruijieRrmAPIfStationRSSIMacAddr,
+        ruijieRrmAPIfStationRSSISlotId,
+
+				ruijieRrmAPIfStationSNRCoverageIndex,
+				ruijieRrmAPIfSNRLevel,
+				ruijieRrmAPIfStationCountOnSNR,
+				ruijieRrmAPIfStationSNRName,
+        ruijieRrmAPIfStationSNRMacAddr,
+        ruijieRrmAPIfStationSNRSlotId,
+
+				ruijieRrmAPIfRecommendedChannelNumber,
+				ruijieRrmAPIfRecommendedTxPowerLevel,
+				ruijieRrmAPIfRecommendedRTSThreshold,
+				ruijieRrmAPIfRecommendedFragmentationThreshold,
+				ruijieRrmAPIfRecommendedName,
+        ruijieRrmAPIfRecommendedMacAddr,
+        ruijieRrmAPIfRecommendedSlotId,
+
+     		ruijieRrmAPRadioID,
+     		ruijieRrmAPRadioType,
+     		ruijieRrmAPRealName,
+        ruijieRrmAPMacAddr,
+
+        ruijieRrmAPIfThroughputMacAddr,
+        ruijieRrmAPIfThroughputSlotId,
+        ruijieRrmAPIfThroughputAPName,
+     	ruijieRrmAPIfThroughputRx,
+   	ruijieRrmAPIfThroughputTx,
+   	ruijieRrmAPIfThroughputTotal,
+
+        ruijieRrmAPSnrBSSIDMacAddr,
+        ruijieRrmAPSnrBSSIDSlotId,
+        ruijieRrmAPSnrBSSIDAPName,
+     	ruijieRrmAPSnrBSSIDAverageSignalStrength,
+   	ruijieRrmAPSnrBSSIDSignalPkts,
+   	ruijieRrmAPSnrBSSIDHighestRxSignalStrength,
+   	ruijieRrmAPSnrBSSIDLowestRxSignalStrength,
+   	ruijieRrmAPSnrBSSIDSampleTime,
+
+--Begin ruijieRrmDCA
+        ruijieRrmDot11bDynamicChannelAssignment,
+        ruijieRrmDot11bAnchorTime,
+        ruijieRrmDot11bChannalWidth11n,
+        ruijieRrmDot11bDynamicChannelUpdateInterval,
+        ruijieRrmDot11bDCASensitivity,
+        ruijieRrmDot11bForeignInterfereFactorEnable,
+        ruijieRrmDot11bLoadFactorEnable,
+        ruijieRrmDot11bNoiseFactorEnable,
+        ruijieRrmDot11bChannelUpdateCmdInvoke,
+        ruijieRrmDot11bDCAChannelIndex,
+        ruijieRrmDot11bDCAChannelOperation,
+        ruijieRrmDot11aDynamicChannelAssignment,
+        ruijieRrmDot11aAnchorTime,
+        ruijieRrmDot11aChannalWidth11n,
+        ruijieRrmDot11aDynamicChannelUpdateInterval,
+        ruijieRrmDot11aDCASensitivity,
+        ruijieRrmDot11aForeignInterfereFactorEnable,
+        ruijieRrmDot11aLoadFactorEnable,
+        ruijieRrmDot11aNoiseFactorEnable,
+        ruijieRrmDot11aChannelUpdateCmdInvoke,
+        ruijieRrmDot11aDCAChannelIndex,
+        ruijieRrmDot11aDCAChannelOperation,
+
+--Begin ruijieRrmTPC
+        ruijieRrmDot11bDTPCSupport,
+        ruijieRrmDot11bDynamicTransmitPowerControl,
+        ruijieRrmDot11bDynamicTxPowerControlInterval,
+        ruijieRrmDot11bCurrentTxPowerLevel,
+        ruijieRrmDot11bPowerUpdateCmdInvoke,
+        ruijieRrmDot11bTXPowerThreshold,
+        ruijieRrmDot11bTPCNeighborNumber,
+        ruijieRrmDot11aDTPCSupport,
+        ruijieRrmDot11aDynamicTransmitPowerControl,
+        ruijieRrmDot11aDynamicTxPowerControlInterval,
+        ruijieRrmDot11aCurrentTxPowerLevel,
+        ruijieRrmDot11aPowerUpdateCmdInvoke,
+        ruijieRrmDot11aTXPowerThreshold,
+        ruijieRrmDot11aTPCNeighborNumber,
+
+--Begin ruijieRrmCHD
+        ruijieRrmDot11bCoverageEnable,
+        ruijieRrmDot11bCoverageExceptionGlobal,
+        ruijieRrmDot11bCoverageLevelGlobal,
+        ruijieRrmDot11bCoverageDataRSSIThreshold,
+        ruijieRrmDot11bCoverageVoiceRSSIThreshold,
+        ruijieRrmDot11bCoverageDataPacketCount,
+        ruijieRrmDot11bCoverageVoicePacketCount,
+        ruijieRrmDot11bCoverageDataFailRate,
+        ruijieRrmDot11bCoverageVoiceFailRate,
+        ruijieRrmDot11aCoverageEnable,
+        ruijieRrmDot11aCoverageExceptionGlobal,
+        ruijieRrmDot11aCoverageLevelGlobal,
+        ruijieRrmDot11aCoverageDataRSSIThreshold,
+        ruijieRrmDot11aCoverageVoiceRSSIThreshold,
+        ruijieRrmDot11aCoverageDataPacketCount,
+        ruijieRrmDot11aCoverageVoicePacketCount,
+        ruijieRrmDot11aCoverageDataFailRate,
+        ruijieRrmDot11aCoverageVoiceFailRate,
+
+--Begin ruijieRrmGroup
+        ruijieRrmDot11bGlobalAutomaticGrouping,
+        ruijieRrmDot11bGroupLeaderMacAddr,
+        ruijieRrmDot11bGroupLeader,
+        ruijieRrmDot11bGroupLastUpdateTime,
+        ruijieRrmDot11bGroupInterval,
+        ruijieRrmDot11bPeerMacAddress,
+        ruijieRrmDot11bPeerIpAddress,
+        ruijieRrmDot11bAPname,
+        ruijieRrmDot11bAPRadioID,
+        ruijieRrmDot11bAPChannel,
+        ruijieRrmDot11bAPTxPower,
+        ruijieRrmDot11bAPChannelRrmChangeFlag,
+        ruijieRrmDot11bAPTxPowerRrmChangeFlag,
+        ruijieRrmDot11bSummaryMacAddress,
+
+        ruijieRrmDot11aGlobalAutomaticGrouping,
+        ruijieRrmDot11aGroupLeader,
+        ruijieRrmDot11aGroupLastUpdateTime,
+        ruijieRrmDot11aGroupInterval,
+        ruijieRrmDot11aPeerMacAddress,
+        ruijieRrmDot11aPeerIpAddress,
+        ruijieRrmDot11aAPname,
+        ruijieRrmDot11aAPRadioID,
+        ruijieRrmDot11aAPChannel,
+        ruijieRrmDot11aAPTxPower,
+        ruijieRrmDot11aAPChannelRrmChangeFlag,
+        ruijieRrmDot11aAPTxPowerRrmChangeFlag,
+        ruijieRrmDot11aSummaryMacAddress,
+
+--Begin ruijieRrmProfile
+        ruijieRrmDot11bForeignInterferenceThreshold,
+        ruijieRrmDot11bForeignNoiseThreshold,
+        ruijieRrmDot11bRFUtilizationThreshold,
+        ruijieRrmDot11bThroughputThreshold,
+        ruijieRrmDot11bMobilesThreshold,
+        ruijieRrmDot11aForeignInterferenceThreshold,
+        ruijieRrmDot11aForeignNoiseThreshold,
+        ruijieRrmDot11aRFUtilizationThreshold,
+        ruijieRrmDot11aThroughputThreshold,
+        ruijieRrmDot11aMobilesThreshold,
+
+--Begin ruijieRrmMonitor
+        ruijieRrmDot11bMonitorEnable,
+        ruijieRrmDot11bChannelMonitorList,
+        ruijieRrmDot11bMonitorInterval,
+        ruijieRrmDot11bCoverageMeasurementInterval,
+        ruijieRrmDot11bLoadMeasurementInterval,
+        ruijieRrmDot11bNoiseMeasurementInterval,
+        ruijieRrmDot11bSignalMeasurementInterval,
+        ruijieRrmDot11bNeighborMessageInterval,
+        ruijieRrmDot11aMonitorEnable,
+        ruijieRrmDot11aChannelMonitorList,
+        ruijieRrmDot11aMonitorInterval,
+        ruijieRrmDot11aCoverageMeasurementInterval,
+        ruijieRrmDot11aLoadMeasurementInterval,
+        ruijieRrmDot11aNoiseMeasurementInterval,
+        ruijieRrmDot11aSignalMeasurementInterval,
+        ruijieRrmDot11aNeighborMessageInterval,
+
+--Begin ruijieRrmFactory
+        ruijieRrmDot11bSetFactoryDefault,
+        ruijieRrmDot11aSetFactoryDefault
+    }
+    STATUS      current
+    DESCRIPTION
+        "This collection of objects provide the information
+         about Ruijie Radio Resource Management Configuration
+         Parameters. These objects are defined under ruijieRrmRrm object."
+    ::= { ruijieRrmMIBGroups 1 }
+
+ruijieRrmTrapsGroup OBJECT-GROUP
+    OBJECTS {
+--Begin ruijieRrmTrapControl
+        ruijieRrmAPDot11bProfileTrapControlMask,
+        ruijieRrmAPDot11aProfileTrapControlMask,
+        ruijieRrmAPDot11bParamUpdateTrapControlMask,
+        ruijieRrmAPDot11aParamUpdateTrapControlMask,
+
+--Begin ruijieRrmTrapVariable
+-- for Ap info
+        ruijieRrmAPMacAddrTrapVariable,
+        ruijieRrmAPRadioIDTrapVariable,
+        ruijieRrmAPRadioTypeTrapVariable,
+-- for Trap value
+        ruijieRrmClientNumberTrapVariable,
+        ruijieRrmForeignInterfereTrapVariable,
+        ruijieRrmNoiseTrapVariable,
+        ruijieRrmThroughputTrapVariable,
+        ruijieRrmUtilizationTrapVariable,
+-- for TPC
+        ruijieRrmAPTxPowerBeforeChange,
+        ruijieRrmAPTxPowerAfterChange,
+        ruijieRrmAPTxPowerChangeCoverageFlag,
+
+-- for DCA
+        ruijieRrmAPChannelNumberBeforeChannge,
+        ruijieRrmAPChannelNumberAfterChannge,
+        ruijieRrmAPChannelChangeReason,
+        ruijieRrmAPChannelChangeReasonValue,
+        ruijieRrmAPChannelChangeCount,
+        ruijieRrmDFSFreeCount,
+
+-- for leader
+        ruijieRrmDot11bGroupLeaderMacAddrTrapVariable,
+        ruijieRrmDot11aGroupLeaderMacAddrTrapVariable
+    }
+    STATUS      current
+    DESCRIPTION
+        "This collection of objects provide the information
+         about Ruijie Trap Configuration and Trap definition.
+         These objects are defined under ruijieRrmTrap."
+    ::= { ruijieRrmMIBGroups 2 }
+
+ruijieRrmTrap NOTIFICATION-GROUP
+    NOTIFICATIONS {
+        ruijieRrmAPClientNumProfileFailed,
+        ruijieRrmAPLoadProfileFailed,
+        ruijieRrmAPNoiseProfileFailed,
+        ruijieRrmAPInterferenceProfileFailed,
+        ruijieRrmAPPerformanceProfileFailed,
+        ruijieRrmAPClientNumProfileUpdatedToPass,
+        ruijieRrmAPLoadProfileUpdatedToPass,
+        ruijieRrmAPNoiseProfileUpdatedToPass,
+        ruijieRrmAPInterferenceProfileUpdatedToPass,
+        ruijieRrmAPPerformanceProfileUpdatedToPass,
+        ruijieRrmAPCurrentTxPowerChanged,
+        ruijieRrmAPCurrentChannelChanged,
+        ruijieRrmDot11bGroupingDone,
+        ruijieRrmDot11aGroupingDone,
+        ruijieRrmDot11bDFSFreeCountBelowThreshold,
+        ruijieRrmDot11aDFSFreeCountBelowThreshold,
+        ruijieRrmNeighborAPInterference,
+        ruijieRrmStationInterference,
+        ruijieRrmOtherDiveceInterference
+    }
+    STATUS      current
+    DESCRIPTION
+        "This  collection of objects provides all notification
+         that Switch need to generate to the Management System."
+    ::= { ruijieRrmMIBGroups 3 }
+
+END
+
+

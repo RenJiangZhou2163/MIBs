@@ -1,0 +1,95 @@
+-- ==================================================================
+-- Copyright (C) 2004-2019 New H3C Tech. Co., Ltd. All rights reserved.
+--
+-- Description: AAA MIB
+-- Reference:
+-- Version: V1.0
+-- History:
+-- V1.0 2019.03.11 The initial version, created by Yuhua
+-- ==================================================================
+HH3C-AAA-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    hh3cCommon
+        FROM HH3C-OID-MIB
+    Integer32, OBJECT-TYPE, NOTIFICATION-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI;
+
+hh3cAAA MODULE-IDENTITY
+    LAST-UPDATED "201903110000Z"
+    ORGANIZATION
+        "New H3C Tech. Co., Ltd."
+    CONTACT-INFO
+        "Platform Team New H3C Tech. Co., Ltd.
+        Hai-Dian District Beijing P.R. China
+        http://www.h3c.com
+        Zip:100085
+        "
+    DESCRIPTION
+        "The MIB module is used for managing AAA."
+
+--  Revision history
+
+REVISION     "201903110000Z"
+    DESCRIPTION  "The initial version."
+
+::= { hh3cCommon 181 }
+
+-- ----------------------------------------------------------------------
+-- hh3cAAAMibTrapOid Table
+-- ----------------------------------------------------------------------
+hh3cAAAMibTrap OBJECT IDENTIFIER ::= { hh3cAAA 1 }
+
+hh3cAAAMibTrapOid OBJECT IDENTIFIER ::= { hh3cAAAMibTrap 1 }
+hh3cAAATrapOidDefine OBJECT IDENTIFIER ::= { hh3cAAAMibTrapOid 1 }
+
+hh3cAAAUserChassis OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Chassis that online users access."
+    ::= { hh3cAAATrapOidDefine 1 }
+
+hh3cAAAUserSlot OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Slot that online users access."
+    ::= { hh3cAAATrapOidDefine 2 }
+
+hh3cAAAUserSlotMaxNumThreshold OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Threshold about the maximum number of online users on this slot."
+    ::= { hh3cAAATrapOidDefine 3 }
+
+-- ----------------------------------------------------------------------
+-- hh3cAAATraps Table
+-- ----------------------------------------------------------------------
+hh3cAAATraps      OBJECT IDENTIFIER ::= { hh3cAAAMibTrap 2 }
+hh3cAAATrapsDefine      OBJECT IDENTIFIER ::= { hh3cAAATraps 0 }
+
+hh3cAAAUserSlotMaxNum NOTIFICATION-TYPE
+    OBJECTS { hh3cAAAUserChassis,
+              hh3cAAAUserSlot,
+              hh3cAAAUserSlotMaxNumThreshold }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated when the number of online users on the slot
+         reaches the maximum user threshold.  Subsequent users are recommended
+         to access the device through another slot."
+    ::= { hh3cAAATrapsDefine 1 }
+
+hh3cAAAUserSlotMaxNumResume NOTIFICATION-TYPE
+    OBJECTS { hh3cAAAUserChassis,
+              hh3cAAAUserSlot,
+              hh3cAAAUserSlotMaxNumThreshold }
+    STATUS current
+    DESCRIPTION
+        "This trap is generated when the number of online users on the slot
+         falls below 90% of the maximum user threshold."
+    ::= { hh3cAAATrapsDefine 2 }
+END

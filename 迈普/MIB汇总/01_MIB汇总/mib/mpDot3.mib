@@ -1,0 +1,4078 @@
+DEFINITIONS ::= BEGIN
+
+transmission  OBJECT IDENTIFIER ::= {mib-2 10}
+
+dot3  OBJECT IDENTIFIER ::= {transmission 7}
+
+dot3StatsTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dot3StatsEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Statistics for a collection of ethernet-like interfaces attached to a particular system. There will be one row in this table for each ethernet-like interface in the system."
+    ::= {dot3 2}
+
+dot3StatsEntry  OBJECT-TYPE
+    SYNTAX  dot3StatsEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Statistics for a particular interface to an ethernet-like medium."
+    INDEX   {dot3StatsIndex}
+    ::= {dot3StatsTable 1}
+
+dot3StatsIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "An index value that uniquely identifies an interface to an ethernet-like medium.  The interface identified by a particular value of this index is the same interface as identified by the same value of ifIndex."
+    ::= {dot3StatsEntry 1}
+
+dot3StatsAlignmentErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames received on a particular interface that are not an integral number of octets in length and do not pass the FCS check. The count represented by an instance of this object is incremented when the alignmentError status is returned by the MAC service to the LLC (or other MAC user). Received frames for which multiple error conditions pertain are, according to the conventions of IEEE 802.3 Layer Management, counted exclusively according Flick                       Standards Track                    [Page 20] RFC 3635                   Ethernet-Like MIB              September 2003 to the error status presented to the LLC. This counter does not increment for group encoding schemes greater than 4 bits per group. For interfaces operating at 10 Gb/s, this counter can roll over in less than 5 minutes if it is incrementing at its maximum rate.  Since that amount of time could be less than a management station's poll cycle time, in order to avoid a loss of information, a management station is advised to poll the dot3HCStatsAlignmentErrors object for 10 Gb/s or faster interfaces. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3StatsEntry 2}
+
+dot3StatsFCSErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames received on a particular interface that are an integral number of octets in length but do not pass the FCS check.  This count does not include frames received with frame-too-long or frame-too-short error. The count represented by an instance of this object is incremented when the frameCheckError status is returned by the MAC service to the LLC (or other MAC user). Received frames for which multiple error conditions pertain are, according to the conventions of IEEE 802.3 Layer Management, counted exclusively according to the error status presented to the LLC. Note:  Coding errors detected by the physical layer for speeds above 10 Mb/s will cause the frame to fail the FCS check. For interfaces operating at 10 Gb/s, this counter can roll over in less than 5 minutes if Flick                       Standards Track                    [Page 21] RFC 3635                   Ethernet-Like MIB              September 2003 it is incrementing at its maximum rate.  Since that amount of time could be less than a management station's poll cycle time, in order to avoid a loss of information, a management station is advised to poll the dot3HCStatsFCSErrors object for 10 Gb/s or faster interfaces. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3StatsEntry 3}
+
+dot3StatsSingleCollisionFrames  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames that are involved in a single collision, and are subsequently transmitted successfully. A frame that is counted by an instance of this object is also counted by the corresponding instance of either the ifOutUcastPkts, ifOutMulticastPkts, or ifOutBroadcastPkts, and is not counted by the corresponding instance of the dot3StatsMultipleCollisionFrames object. This counter does not increment when the interface is operating in full-duplex mode. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3StatsEntry 4}
+
+dot3StatsMultipleCollisionFrames  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames that are involved in more Flick                       Standards Track                    [Page 22] RFC 3635                   Ethernet-Like MIB              September 2003 than one collision and are subsequently transmitted successfully. A frame that is counted by an instance of this object is also counted by the corresponding instance of either the ifOutUcastPkts, ifOutMulticastPkts, or ifOutBroadcastPkts, and is not counted by the corresponding instance of the dot3StatsSingleCollisionFrames object. This counter does not increment when the interface is operating in full-duplex mode. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3StatsEntry 5}
+
+dot3StatsSQETestErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of times that the SQE TEST ERROR is received on a particular interface. The SQE TEST ERROR is set in accordance with the rules for verification of the SQE detection mechanism in the PLS Carrier Sense Function as described in IEEE Std. 802.3, 2000 Edition, section 7.2.4.6. This counter does not increment on interfaces operating at speeds greater than 10 Mb/s, or on interfaces operating in full-duplex mode. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3StatsEntry 6}
+
+dot3StatsDeferredTransmissions  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames for which the first transmission attempt on a particular interface is delayed because the medium is busy. The count represented by an instance of this object does not include frames involved in collisions. This counter does not increment when the interface is operating in full-duplex mode. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3StatsEntry 7}
+
+dot3StatsLateCollisions  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of times that a collision is detected on a particular interface later than one slotTime into the transmission of a packet. A (late) collision included in a count represented by an instance of this object is also considered as a (generic) collision for purposes of other collision-related statistics. This counter does not increment when the interface is operating in full-duplex mode. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3StatsEntry 8}
+
+dot3StatsExcessiveCollisions  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames for which transmission on a particular interface fails due to excessive collisions. This counter does not increment when the interface is operating in full-duplex mode. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3StatsEntry 9}
+
+dot3StatsInternalMacTransmitErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames for which transmission on a particular interface fails due to an internal MAC sublayer transmit error. A frame is only counted by an instance of this object if it is not counted by the corresponding instance of either the dot3StatsLateCollisions object, the dot3StatsExcessiveCollisions object, or the dot3StatsCarrierSenseErrors object. The precise meaning of the count represented by an instance of this object is implementation- specific.  In particular, an instance of this object may represent a count of transmission errors on a particular interface that are not otherwise counted. For interfaces operating at 10 Gb/s, this counter can roll over in less than 5 minutes if it is incrementing at its maximum rate.  Since that amount of time could be less than a management station's poll cycle time, in order to avoid a loss of information, a management station is advised to poll the dot3HCStatsInternalMacTransmitErrors object for 10 Gb/s or faster interfaces. Discontinuities in the value of this counter can Flick                       Standards Track                    [Page 25] RFC 3635                   Ethernet-Like MIB              September 2003 occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3StatsEntry 10}
+
+dot3StatsCarrierSenseErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of times that the carrier sense condition was lost or never asserted when attempting to transmit a frame on a particular interface. The count represented by an instance of this object is incremented at most once per transmission attempt, even if the carrier sense condition fluctuates during a transmission attempt. This counter does not increment when the interface is operating in full-duplex mode. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3StatsEntry 11}
+
+dot3StatsFrameTooLongs  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames received on a particular interface that exceed the maximum permitted frame size. The count represented by an instance of this object is incremented when the frameTooLong status is returned by the MAC service to the LLC (or other MAC user). Received frames for which multiple error conditions pertain are, Flick                       Standards Track                    [Page 26] RFC 3635                   Ethernet-Like MIB              September 2003 according to the conventions of IEEE 802.3 Layer Management, counted exclusively according to the error status presented to the LLC. For interfaces operating at 10 Gb/s, this counter can roll over in less than 80 minutes if it is incrementing at its maximum rate.  Since that amount of time could be less than a management station's poll cycle time, in order to avoid a loss of information, a management station is advised to poll the dot3HCStatsFrameTooLongs object for 10 Gb/s or faster interfaces. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3StatsEntry 13}
+
+dot3StatsInternalMacReceiveErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames for which reception on a particular interface fails due to an internal MAC sublayer receive error. A frame is only counted by an instance of this object if it is not counted by the corresponding instance of either the dot3StatsFrameTooLongs object, the dot3StatsAlignmentErrors object, or the dot3StatsFCSErrors object. The precise meaning of the count represented by an instance of this object is implementation- specific.  In particular, an instance of this object may represent a count of receive errors on a particular interface that are not otherwise counted. For interfaces operating at 10 Gb/s, this counter can roll over in less than 5 minutes if Flick                       Standards Track                    [Page 27] RFC 3635                   Ethernet-Like MIB              September 2003 it is incrementing at its maximum rate.  Since that amount of time could be less than a management station's poll cycle time, in order to avoid a loss of information, a management station is advised to poll the dot3HCStatsInternalMacReceiveErrors object for 10 Gb/s or faster interfaces. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3StatsEntry 16}
+
+dot3StatsEtherChipSet  OBJECT-TYPE
+    SYNTAX  OBJECT IDENTIFIER
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "******** THIS OBJECT IS DEPRECATED ******** This object contains an OBJECT IDENTIFIER which identifies the chipset used to realize the interface. Ethernet-like interfaces are typically built out of several different chips. The MIB implementor is presented with a decision of which chip to identify via this object. The implementor should identify the chip which is usually called the Medium Access Control chip. If no such chip is easily identifiable, the implementor should identify the chip which actually gathers the transmit and receive statistics and error indications. This would allow a manager station to correlate the statistics and the chip generating them, giving it the ability to take into account any known anomalies in the chip. This object has been deprecated.  Implementation feedback indicates that it is of limited use for debugging network problems in the field, and the administrative overhead involved in maintaining a registry of chipset OIDs is not justified."
+    ::= {dot3StatsEntry 17}
+
+dot3StatsSymbolErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "For an interface operating at 100 Mb/s, the number of times there was an invalid data symbol when a valid carrier was present. For an interface operating in half-duplex mode at 1000 Mb/s, the number of times the receiving media is non-idle (a carrier event) for a period of time equal to or greater than slotTime, and during which there was at least one occurrence of an event that causes the PHY to indicate 'Data reception error' or 'carrier extend error' on the GMII. For an interface operating in full-duplex mode at 1000 Mb/s, the number of times the receiving media is non-idle (a carrier event) for a period of time equal to or greater than minFrameSize, and during which there was at least one occurrence of an event that causes the PHY to indicate 'Data reception error' on the GMII. For an interface operating at 10 Gb/s, the number of times the receiving media is non-idle (a carrier event) for a period of time equal to or greater than minFrameSize, and during which there was at least one occurrence of an event that causes the PHY to indicate 'Receive Error' on the XGMII. The count represented by an instance of this object is incremented at most once per carrier event, even if multiple symbol errors occur during the carrier event.  This count does not increment if a collision is present. This counter does not increment when the interface is operating at 10 Mb/s. For interfaces operating at 10 Gb/s, this counter can roll over in less than 5 minutes if it is incrementing at its maximum rate.  Since that amount of time could be less than a Flick                       Standards Track                    [Page 29] RFC 3635                   Ethernet-Like MIB              September 2003 management station's poll cycle time, in order to avoid a loss of information, a management station is advised to poll the dot3HCStatsSymbolErrors object for 10 Gb/s or faster interfaces. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3StatsEntry 18}
+
+dot3StatsDuplexStatus  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current mode of operation of the MAC entity.  'unknown' indicates that the current duplex mode could not be determined. Management control of the duplex mode is accomplished through the MAU MIB.  When an interface does not support autonegotiation, or when autonegotiation is not enabled, the duplex mode is controlled using ifMauDefaultType.  When autonegotiation is supported and enabled, duplex mode is controlled using ifMauAutoNegAdvertisedBits.  In either case, the currently operating duplex mode is reflected both in this object and in ifMauType. Note that this object provides redundant information with ifMauType.  Normally, redundant objects are discouraged.  However, in this instance, it allows a management application to determine the duplex status of an interface without having to know every possible value of ifMauType.  This was felt to be sufficiently valuable to justify the redundancy."
+    ::= {dot3StatsEntry 19}
+
+dot3StatsRateControlAbility  OBJECT-TYPE
+    SYNTAX  TruthValue
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "'true' for interfaces operating at speeds above 1000 Mb/s that support Rate Control through lowering the average data rate of the MAC sublayer, with frame granularity, and 'false' otherwise."
+    ::= {dot3StatsEntry 20}
+
+dot3StatsRateControlStatus  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current Rate Control mode of operation of the MAC sublayer of this interface."
+    ::= {dot3StatsEntry 21}
+
+dot3CollTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dot3CollEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A collection of collision histograms for a particular set of interfaces."
+    ::= {dot3 5}
+
+dot3CollEntry  OBJECT-TYPE
+    SYNTAX  dot3CollEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A cell in the histogram of per-frame collisions for a particular interface.  An Flick                       Standards Track                    [Page 31] RFC 3635                   Ethernet-Like MIB              September 2003 instance of this object represents the frequency of individual MAC frames for which the transmission (successful or otherwise) on a particular interface is accompanied by a particular number of media collisions."
+    INDEX   {ifIndex, dot3CollCount}
+    ::= {dot3CollTable 1}
+
+dot3CollCount  OBJECT-TYPE
+    SYNTAX  Integer32 (1..16)
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The number of per-frame media collisions for which a particular collision histogram cell represents the frequency on a particular interface."
+    ::= {dot3CollEntry 2}
+
+dot3CollFrequencies  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of individual MAC frames for which the transmission (successful or otherwise) on a particular interface occurs after the frame has experienced exactly the number of collisions in the associated dot3CollCount object. For example, a frame which is transmitted on interface 77 after experiencing exactly 4 collisions would be indicated by incrementing only dot3CollFrequencies.77.4. No other instance of dot3CollFrequencies would be incremented in this example. This counter does not increment when the interface is operating in full-duplex mode. Discontinuities in the value of this counter can Flick                       Standards Track                    [Page 32] RFC 3635                   Ethernet-Like MIB              September 2003 occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3CollEntry 3}
+
+dot3Tests  OBJECT IDENTIFIER ::= {dot3 6}
+
+dot3TestTdr  OBJECT IDENTIFIER ::= {dot3Tests 1}
+
+dot3TestLoopBack  OBJECT IDENTIFIER ::= {dot3Tests 2}
+
+dot3Errors  OBJECT IDENTIFIER ::= {dot3 7}
+
+dot3ErrorInitError  OBJECT IDENTIFIER ::= {dot3Errors 1}
+
+dot3ErrorLoopbackError  OBJECT IDENTIFIER ::= {dot3Errors 2}
+
+dot3ControlTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dot3ControlEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A table of descriptive and status information about the MAC Control sublayer on the ethernet-like interfaces attached to a particular system.  There will be one row in this table for each ethernet-like interface in the system which implements the MAC Control sublayer.  If some, but not all, of the ethernet-like interfaces in the system implement the MAC Control sublayer, there will be fewer rows in this table than in the dot3StatsTable."
+    ::= {dot3 9}
+
+dot3ControlEntry  OBJECT-TYPE
+    SYNTAX  dot3ControlEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An entry in the table, containing information about the MAC Control sublayer on a single ethernet-like interface."
+    INDEX   {dot3StatsIndex}
+    ::= {dot3ControlTable 1}
+
+dot3ControlFunctionsSupported  OBJECT-TYPE
+    SYNTAX  BITS {
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A list of the possible MAC Control functions implemented for this interface."
+    ::= {dot3ControlEntry 1}
+
+dot3ControlInUnknownOpcodes  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of MAC Control frames received on this interface that contain an opcode that is not supported by this device. For interfaces operating at 10 Gb/s, this counter can roll over in less than 5 minutes if it is incrementing at its maximum rate.  Since that amount of time could be less than a management station's poll cycle time, in order to avoid a loss of information, a management station is advised to poll the dot3HCControlInUnknownOpcodes object for 10 Gb/s or faster interfaces. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3ControlEntry 2}
+
+dot3HCControlInUnknownOpcodes  OBJECT-TYPE
+    SYNTAX  Counter64
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of MAC Control frames received on this interface that contain an opcode that is not supported by this device. This counter is a 64 bit version of dot3ControlInUnknownOpcodes.  It should be used on interfaces operating at 10 Gb/s or faster. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3ControlEntry 3}
+
+dot3PauseTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dot3PauseEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A table of descriptive and status information about the MAC Control PAUSE function on the ethernet-like interfaces attached to a particular system. There will be one row in this table for each ethernet-like interface in the system which supports the MAC Control PAUSE function (i.e., the 'pause' bit in the corresponding instance of dot3ControlFunctionsSupported is set).  If some, but not all, of the ethernet-like interfaces in the system implement the MAC Control PAUSE function (for example, if some interfaces only support half-duplex), there will be fewer rows in this table than in the dot3StatsTable."
+    ::= {dot3 10}
+
+dot3PauseEntry  OBJECT-TYPE
+    SYNTAX  dot3PauseEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An entry in the table, containing information about the MAC Control PAUSE function on a single ethernet-like interface."
+    INDEX   {dot3StatsIndex}
+    ::= {dot3PauseTable 1}
+
+dot3PauseAdminMode  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "This object is used to configure the default administrative PAUSE mode for this interface. This object represents the administratively-configured PAUSE mode for this interface.  If auto-negotiation is not enabled or is not implemented for the active MAU attached to this interface, the value of this object determines the operational PAUSE mode of the interface whenever it is operating in full-duplex mode.  In this case, a set to this object will force the interface into the specified mode. If auto-negotiation is implemented and enabled for the MAU attached to this interface, the PAUSE mode for this interface is determined by auto-negotiation, and the value of this object denotes the mode to which the interface will automatically revert if/when auto-negotiation is later disabled.  Note that when auto-negotiation is running, administrative control of the PAUSE mode may be accomplished using the ifMauAutoNegCapAdvertisedBits object in the MAU-MIB. Note that the value of this object is ignored when the interface is not operating in full-duplex mode. An attempt to set this object to 'enabledXmit(2)' or 'enabledRcv(3)' will fail on interfaces that do not support operation at greater than 100 Mb/s."
+    ::= {dot3PauseEntry 1}
+
+dot3PauseOperMode  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This object reflects the PAUSE mode currently Flick                       Standards Track                    [Page 36] RFC 3635                   Ethernet-Like MIB              September 2003 in use on this interface, as determined by either (1) the result of the auto-negotiation function or (2) if auto-negotiation is not enabled or is not implemented for the active MAU attached to this interface, by the value of dot3PauseAdminMode.  Interfaces operating at 100 Mb/s or less will never return 'enabledXmit(2)' or 'enabledRcv(3)'.  Interfaces operating in half-duplex mode will always return 'disabled(1)'.  Interfaces on which auto-negotiation is enabled but not yet completed should return the value 'disabled(1)'."
+    ::= {dot3PauseEntry 2}
+
+dot3InPauseFrames  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of MAC Control frames received on this interface with an opcode indicating the PAUSE operation. This counter does not increment when the interface is operating in half-duplex mode. For interfaces operating at 10 Gb/s, this counter can roll over in less than 5 minutes if it is incrementing at its maximum rate.  Since that amount of time could be less than a management station's poll cycle time, in order to avoid a loss of information, a management station is advised to poll the dot3HCInPauseFrames object for 10 Gb/s or faster interfaces. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3PauseEntry 3}
+
+dot3OutPauseFrames  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of MAC Control frames transmitted on this interface with an opcode indicating the PAUSE operation. This counter does not increment when the interface is operating in half-duplex mode. For interfaces operating at 10 Gb/s, this counter can roll over in less than 5 minutes if it is incrementing at its maximum rate.  Since that amount of time could be less than a management station's poll cycle time, in order to avoid a loss of information, a management station is advised to poll the dot3HCOutPauseFrames object for 10 Gb/s or faster interfaces. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3PauseEntry 4}
+
+dot3HCInPauseFrames  OBJECT-TYPE
+    SYNTAX  Counter64
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of MAC Control frames received on this interface with an opcode indicating the PAUSE operation. This counter does not increment when the interface is operating in half-duplex mode. This counter is a 64 bit version of dot3InPauseFrames.  It should be used on interfaces operating at 10 Gb/s or faster. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3PauseEntry 5}
+
+dot3HCOutPauseFrames  OBJECT-TYPE
+    SYNTAX  Counter64
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of MAC Control frames transmitted on this interface with an opcode indicating the PAUSE operation. This counter does not increment when the interface is operating in half-duplex mode. This counter is a 64 bit version of dot3OutPauseFrames.  It should be used on interfaces operating at 10 Gb/s or faster. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3PauseEntry 6}
+
+dot3HCStatsTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dot3HCStatsEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A table containing 64-bit versions of error counters from the dot3StatsTable.  The 32-bit versions of these counters may roll over quite quickly on higher speed ethernet interfaces. The counters that have 64-bit versions in this table are the counters that apply to full-duplex interfaces, since 10 Gb/s and faster ethernet-like interfaces do not support half-duplex, and very few 1000 Mb/s ethernet-like interfaces support half-duplex. Entries in this table are recommended for interfaces capable of operating at 1000 Mb/s or faster, and are required for interfaces capable of operating at 10 Gb/s or faster.  Lower speed ethernet-like interfaces do not need entries in this table, in which case there may be fewer entries in this table than in the dot3StatsTable. However, implementations containing interfaces with a mix of speeds may choose to implement entries in this table for Flick                       Standards Track                    [Page 39] RFC 3635                   Ethernet-Like MIB              September 2003 all ethernet-like interfaces."
+    ::= {dot3 11}
+
+dot3HCStatsEntry  OBJECT-TYPE
+    SYNTAX  dot3HCStatsEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An entry containing 64-bit statistics for a single ethernet-like interface."
+    INDEX   {dot3StatsIndex}
+    ::= {dot3HCStatsTable 1}
+
+dot3HCStatsAlignmentErrors  OBJECT-TYPE
+    SYNTAX  Counter64
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames received on a particular interface that are not an integral number of octets in length and do not pass the FCS check. The count represented by an instance of this object is incremented when the alignmentError status is returned by the MAC service to the LLC (or other MAC user). Received frames for which multiple error conditions pertain are, according to the conventions of IEEE 802.3 Layer Management, counted exclusively according to the error status presented to the LLC. This counter does not increment for group encoding schemes greater than 4 bits per group. This counter is a 64 bit version of dot3StatsAlignmentErrors.  It should be used on interfaces operating at 10 Gb/s or faster. Discontinuities in the value of this counter can occur at re-initialization of the management Flick                       Standards Track                    [Page 40] RFC 3635                   Ethernet-Like MIB              September 2003 system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3HCStatsEntry 1}
+
+dot3HCStatsFCSErrors  OBJECT-TYPE
+    SYNTAX  Counter64
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames received on a particular interface that are an integral number of octets in length but do not pass the FCS check.  This count does not include frames received with frame-too-long or frame-too-short error. The count represented by an instance of this object is incremented when the frameCheckError status is returned by the MAC service to the LLC (or other MAC user). Received frames for which multiple error conditions pertain are, according to the conventions of IEEE 802.3 Layer Management, counted exclusively according to the error status presented to the LLC. Note:  Coding errors detected by the physical layer for speeds above 10 Mb/s will cause the frame to fail the FCS check. This counter is a 64 bit version of dot3StatsFCSErrors.  It should be used on interfaces operating at 10 Gb/s or faster. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3HCStatsEntry 2}
+
+dot3HCStatsInternalMacTransmitErrors  OBJECT-TYPE
+    SYNTAX  Counter64
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames for which transmission on a particular interface fails due to an internal MAC sublayer transmit error. A frame is only Flick                       Standards Track                    [Page 41] RFC 3635                   Ethernet-Like MIB              September 2003 counted by an instance of this object if it is not counted by the corresponding instance of either the dot3StatsLateCollisions object, the dot3StatsExcessiveCollisions object, or the dot3StatsCarrierSenseErrors object. The precise meaning of the count represented by an instance of this object is implementation- specific.  In particular, an instance of this object may represent a count of transmission errors on a particular interface that are not otherwise counted. This counter is a 64 bit version of dot3StatsInternalMacTransmitErrors.  It should be used on interfaces operating at 10 Gb/s or faster. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3HCStatsEntry 3}
+
+dot3HCStatsFrameTooLongs  OBJECT-TYPE
+    SYNTAX  Counter64
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames received on a particular interface that exceed the maximum permitted frame size. The count represented by an instance of this object is incremented when the frameTooLong status is returned by the MAC service to the LLC (or other MAC user). Received frames for which multiple error conditions pertain are, according to the conventions of IEEE 802.3 Layer Management, counted exclusively according to the error status presented to the LLC. This counter is a 64 bit version of dot3StatsFrameTooLongs.  It should be used on interfaces operating at 10 Gb/s or faster. Discontinuities in the value of this counter can Flick                       Standards Track                    [Page 42] RFC 3635                   Ethernet-Like MIB              September 2003 occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3HCStatsEntry 4}
+
+dot3HCStatsInternalMacReceiveErrors  OBJECT-TYPE
+    SYNTAX  Counter64
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A count of frames for which reception on a particular interface fails due to an internal MAC sublayer receive error. A frame is only counted by an instance of this object if it is not counted by the corresponding instance of either the dot3StatsFrameTooLongs object, the dot3StatsAlignmentErrors object, or the dot3StatsFCSErrors object. The precise meaning of the count represented by an instance of this object is implementation- specific.  In particular, an instance of this object may represent a count of receive errors on a particular interface that are not otherwise counted. This counter is a 64 bit version of dot3StatsInternalMacReceiveErrors.  It should be used on interfaces operating at 10 Gb/s or faster. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3HCStatsEntry 5}
+
+dot3HCStatsSymbolErrors  OBJECT-TYPE
+    SYNTAX  Counter64
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "For an interface operating at 100 Mb/s, the number of times there was an invalid data symbol when a valid carrier was present. Flick                       Standards Track                    [Page 43] RFC 3635                   Ethernet-Like MIB              September 2003 For an interface operating in half-duplex mode at 1000 Mb/s, the number of times the receiving media is non-idle (a carrier event) for a period of time equal to or greater than slotTime, and during which there was at least one occurrence of an event that causes the PHY to indicate 'Data reception error' or 'carrier extend error' on the GMII. For an interface operating in full-duplex mode at 1000 Mb/s, the number of times the receiving media is non-idle (a carrier event) for a period of time equal to or greater than minFrameSize, and during which there was at least one occurrence of an event that causes the PHY to indicate 'Data reception error' on the GMII. For an interface operating at 10 Gb/s, the number of times the receiving media is non-idle (a carrier event) for a period of time equal to or greater than minFrameSize, and during which there was at least one occurrence of an event that causes the PHY to indicate 'Receive Error' on the XGMII. The count represented by an instance of this object is incremented at most once per carrier event, even if multiple symbol errors occur during the carrier event.  This count does not increment if a collision is present. This counter is a 64 bit version of dot3StatsSymbolErrors.  It should be used on interfaces operating at 10 Gb/s or faster. Discontinuities in the value of this counter can occur at re-initialization of the management system, and at other times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= {dot3HCStatsEntry 6}
+
+dot5  OBJECT IDENTIFIER ::= {transmission 9}
+
+dot5Table  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dot5Entry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "This table contains Token Ring interface parameters and state variables, one entry per 802.5 interface."
+    ::= {dot5 1}
+
+dot5Entry  OBJECT-TYPE
+    SYNTAX  Dot5Entry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A list of Token Ring status and parameter values for an 802.5 interface."
+    ::= {dot5Table 1}
+
+dot5IfIndex  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value of this object identifies the 802.5 interface for which this entry contains management information.  The value of this object for a particular interface has the same value as the ifIndex object, defined in MIB-II for the same interface."
+    ::= {dot5Entry 1}
+
+dot5Commands  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "When this object is set to the value of open(2), the station should go into the open state.  The progress and success of the open is given by the values of the objects dot5RingState and dot5RingOpenStatus. When this object is set to the value of reset(3)"
+    ::= {dot5Entry 2}
+
+dot5RingStatus  OBJECT-TYPE
+    SYNTAX  INTEGER (0..262143)
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current interface status which can be used to diagnose fluctuating problems that can occur on token rings, after a station has successfully been added to the ring. Before an open is completed, this object has the value for the 'no status' condition. "
+    ::= {dot5Entry 3}
+
+dot5RingState  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current interface state with respect to entering or leaving the ring."
+    ::= {dot5Entry 4}
+
+dot5RingOpenStatus  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This object indicates the success, or the reason for failure, of the station's most recent attempt to enter the ring."
+    ::= {dot5Entry 5}
+
+dot5RingSpeed  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The ring-speed at the next insertion into the ring.  Note that this may or may not be different to the current ring-speed which is given by MIB-II's ifSpeed.  For interfaces which do not support changing ring-speed, dot5RingSpeed can only be set to its c"
+    ::= {dot5Entry 6}
+
+dot5UpStream  OBJECT-TYPE
+    SYNTAX  MacAddress
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The MAC-address of the up stream neighbor station in the ring."
+    ::= {dot5Entry 7}
+
+dot5ActMonParticipate  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "If this object has a value of true(1) then this interface will participate in the active monitor selection process.  If the value is false(2) then it will not. Setting this object does not take effect until the next Active Monitor election, and might not"
+    ::= {dot5Entry 8}
+
+dot5Functional  OBJECT-TYPE
+    SYNTAX  MacAddress
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The bit mask of all Token Ring functional addresses for which this interface will accept frames."
+    ::= {dot5Entry 9}
+
+dot5LastBeaconSent  OBJECT-TYPE
+    SYNTAX  TimeStamp
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value of MIB-II's sysUpTime object at which the local system last transmitted a Beacon frame on this interface."
+    ::= {dot5Entry 10}
+
+dot5StatsTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dot5StatsEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A table containing Token Ring statistics, one entry per 802.5 interface. All the statistics are defined using the syntax Counter32 as 32-bit wrap around counters.  Thus, if an interface's hardware maintains these statistics in 16-bit counters, then the a"
+    ::= {dot5 2}
+
+dot5StatsEntry  OBJECT-TYPE
+    SYNTAX  Dot5StatsEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An entry contains the 802.5 statistics for a particular interface."
+    ::= {dot5StatsTable 1}
+
+dot5StatsIfIndex  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value of this object identifies the 802.5 interface for which this entry contains management information.  The value of this object for a particular interface has the same value as MIB-II's ifIndex object for the same interface."
+    ::= {dot5StatsEntry 1}
+
+dot5StatsLineErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This counter is incremented when a frame or token is copied or repeated by a station, the E bit is zero in the frame or token and one of the following conditions exists: 1) there is a non-data bit (J or K bit) between the SD and the ED of the frame or to"
+    ::= {dot5StatsEntry 2}
+
+dot5StatsBurstErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This counter is incremented when a station detects the absence of transitions for five half-bit timers (burst-five error)."
+    ::= {dot5StatsEntry 3}
+
+dot5StatsACErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This counter is incremented when a station receives an AMP or SMP frame in which A is equal to C is equal to 0, and then receives another SMP frame with A is equal to C is equal to 0 without first receiving an AMP frame. It denotes a station that cannot "
+    ::= {dot5StatsEntry 4}
+
+dot5StatsAbortTransErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This counter is incremented when a station transmits an abort delimiter while transmitting."
+    ::= {dot5StatsEntry 5}
+
+dot5StatsInternalErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This counter is incremented when a station recognizes an internal error."
+    ::= {dot5StatsEntry 6}
+
+dot5StatsLostFrameErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This counter is incremented when a station is transmitting and its TRR timer expires. This condition denotes a condition where a transmitting station in strip mode does not receive the trailer of the frame before the TRR timer goes off."
+    ::= {dot5StatsEntry 7}
+
+dot5StatsReceiveCongestions  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This counter is incremented when a station recognizes a frame addressed to its specific address, but has no available buffer space indicating that the station is congested."
+    ::= {dot5StatsEntry 8}
+
+dot5StatsFrameCopiedErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This counter is incremented when a station recognizes a frame addressed to its specific address and detects that the FS field A bits are set to 1 indicating a possible line hit or duplicate address."
+    ::= {dot5StatsEntry 9}
+
+dot5StatsTokenErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This counter is incremented when a station acting as the active monitor recognizes an error condition that needs a token transmitted."
+    ::= {dot5StatsEntry 10}
+
+dot5StatsSoftErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of Soft Errors the interface has detected. It directly corresponds to the number of Report Error MAC frames that this interface has transmitted. Soft Errors are those which are recoverable by the MAC layer protocols."
+    ::= {dot5StatsEntry 11}
+
+dot5StatsHardErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of times this interface has detected an immediately recoverable fatal error.  It denotes the number of times this interface is either transmitting or receiving beacon MAC frames."
+    ::= {dot5StatsEntry 12}
+
+dot5StatsSignalLoss  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of times this interface has detected the loss of signal condition from the ring."
+    ::= {dot5StatsEntry 13}
+
+dot5StatsTransmitBeacons  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of times this interface has transmitted a beacon frame."
+    ::= {dot5StatsEntry 14}
+
+dot5StatsRecoverys  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of Claim Token MAC frames received or transmitted after the interface has received a Ring Purge MAC frame.  This counter signifies the number of times the ring has been purged and is being recovered back into a normal operating state."
+    ::= {dot5StatsEntry 15}
+
+dot5StatsLobeWires  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of times the interface has detected an open or short circuit in the lobe data path.  The adapter will be closed and dot5RingState will signify this condition."
+    ::= {dot5StatsEntry 16}
+
+dot5StatsRemoves  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of times the interface has received a Remove Ring Station MAC frame request.  When this frame is received the interface will enter the close state and dot5RingState will signify this condition."
+    ::= {dot5StatsEntry 17}
+
+dot5StatsSingles  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of times the interface has sensed that it is the only station on the ring.  This will happen if the interface is the first one up on a ring, or if there is a hardware problem."
+    ::= {dot5StatsEntry 18}
+
+dot5StatsFreqErrors  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of times the interface has detected that the frequency of the incoming signal differs from the expected frequency by more than that specified by the IEEE 802.5 standard."
+    ::= {dot5StatsEntry 19}
+
+dot5Tests  OBJECT IDENTIFIER ::= {dot5 3}
+
+dot5TestInsertFunc  OBJECT IDENTIFIER ::= {dot5Tests 1}
+
+dot5TestFullDuplexLoopBack  OBJECT IDENTIFIER ::= {dot5Tests 2}
+
+dot5ChipSets  OBJECT IDENTIFIER ::= {dot5 4}
+
+dot5ChipSetIBM16  OBJECT IDENTIFIER ::= {dot5ChipSets 1}
+
+dot5ChipSetTItms380  OBJECT IDENTIFIER ::= {dot5ChipSets 2}
+
+dot5ChipSetTItms380c16  OBJECT IDENTIFIER ::= {dot5ChipSets 3}
+
+dot5TimerTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dot5TimerEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "This table contains Token Ring interface timer values, one entry per 802.5 interface."
+    ::= {dot5 5}
+
+dot5TimerEntry  OBJECT-TYPE
+    SYNTAX  Dot5TimerEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A list of Token Ring timer values for an 802.5 interface."
+    ::= {dot5TimerTable 1}
+
+dot5TimerIfIndex  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value of this object identifies the 802.5 interface for which this entry contains timer values.  The value of this object for a particular interface has the same value as MIB-II's ifIndex object for the same interface."
+    ::= {dot5TimerEntry 1}
+
+dot5TimerReturnRepeat  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The time-out value used to ensure the interface will return to Repeat State, in units of 100 micro-seconds.  The value should be greater than the maximum ring latency."
+    ::= {dot5TimerEntry 2}
+
+dot5TimerHolding  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Maximum period of time a station is permitted to transmit frames after capturing a token, in units of 100 micro-seconds."
+    ::= {dot5TimerEntry 3}
+
+dot5TimerQueuePDU  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The time-out value for enqueuing of an SMP PDU after reception of an AMP or SMP frame in which the A and C bits were equal to 0, in units of 100 micro-seconds."
+    ::= {dot5TimerEntry 4}
+
+dot5TimerValidTransmit  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The time-out value used by the active monitor to detect the absence of valid transmissions, in units of 100 micro-seconds."
+    ::= {dot5TimerEntry 5}
+
+dot5TimerNoToken  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The time-out value used to recover from various-related error situations. If N is the maximum number of stations on the ring, the value of this timer is normally: dot5TimerReturnRepeat + N*dot5TimerHolding."
+    ::= {dot5TimerEntry 6}
+
+dot5TimerActiveMon  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The time-out value used by the active monitor to stimulate the enqueuing of an AMP PDU for transmission, in units of 100 micro-seconds."
+    ::= {dot5TimerEntry 7}
+
+dot5TimerStandbyMon  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The time-out value used by the stand-by monitors to ensure that there is an active monitor on the ring and to detect a continuous stream of tokens, in units of 100 micro-seconds."
+    ::= {dot5TimerEntry 8}
+
+dot5TimerErrorReport  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The time-out value which determines how often a station shall send a Report Error MAC frame to report its error counters, in units of 100 micro-seconds."
+    ::= {dot5TimerEntry 9}
+
+dot5TimerBeaconTransmit  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The time-out value which determines how long a station shall remain in the state of transmitting Beacon frames before entering the Bypass state, in units of 100 micro-seconds."
+    ::= {dot5TimerEntry 10}
+
+dot5TimerBeaconReceive  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The time-out value which determines how long a station shall receive Beacon frames from its downstream neighbor before entering the Bypass state, in units of 100 micro-seconds."
+    ::= {dot5TimerEntry 11}
+
+dot5Conformance  OBJECT IDENTIFIER ::= {dot5 6}
+
+dot5Groups  OBJECT IDENTIFIER ::= {dot5Conformance 1}
+
+dot5Compliances  OBJECT IDENTIFIER ::= {dot5Conformance 2}
+
+isdnMib  OBJECT IDENTIFIER ::= {transmission 20}
+
+isdnMibObjects  OBJECT IDENTIFIER ::= {isdnMib 1}
+
+isdnBasicRateGroup  OBJECT IDENTIFIER ::= {isdnMibObjects 1}
+
+isdnBasicRateTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF IsdnBasicRateEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Table containing configuration and operational parameters for all physical Basic Rate interfaces on this managed device."
+    ::= {isdnBasicRateGroup 1}
+
+isdnBasicRateEntry  OBJECT-TYPE
+    SYNTAX  IsdnBasicRateEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An entry in the ISDN Basic Rate Table."
+    ::= {isdnBasicRateTable 1}
+
+isdnBasicRateIfType  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The physical interface type. For 'S/T' interfaces, also called 'Four-wire Basic Access Interface', the value of this object is isdns(75). For 'U' interfaces, also called 'Two-wire Basic Access Interface', the value of this object is isdnu(76)."
+    ::= {isdnBasicRateEntry 1}
+
+isdnBasicRateLineTopology  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The line topology to be used for this interface. Note that setting isdnBasicRateIfType to isdns(75) does not necessarily mean a line topology of point-to-multipoint."
+    ::= {isdnBasicRateEntry 2}
+
+isdnBasicRateIfMode  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The physical interface mode. For TE mode, the value of this object is te(1). For NT mode, the value of this object is nt(2)."
+    ::= {isdnBasicRateEntry 3}
+
+isdnBasicRateSignalMode  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The signaling channel operational mode for this interface. If active(1) there is a signaling channel on this interface. If inactive(2) a signaling channel is not available."
+    ::= {isdnBasicRateEntry 4}
+
+isdnBearerGroup  OBJECT IDENTIFIER ::= {isdnMibObjects 2}
+
+isdnBearerTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF IsdnBearerEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "This table defines port specific operational, statistics and active call data for ISDN B channels. Each entry in this table describes one B (bearer) channel."
+    ::= {isdnBearerGroup 1}
+
+isdnBearerEntry  OBJECT-TYPE
+    SYNTAX  IsdnBearerEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Operational and statistics information relating to one port. A port is a single B channel."
+    ::= {isdnBearerTable 1}
+
+isdnBearerChannelType  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The B channel type. If the B channel is connected to a dialup line, this object has a value of dialup(1). In this case, it is controlled by an associated signaling channel. If the B channel is connected to a leased line, this object has a value of leased"
+    ::= {isdnBearerEntry 1}
+
+isdnBearerOperStatus  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current call control state for this port. idle(1):       The B channel is idle. No call or call attempt is going on. connecting(2): A connection attempt (outgoing call) is being made on this interface. connected(3):  An incoming call is in the proces"
+    ::= {isdnBearerEntry 2}
+
+isdnBearerChannelNumber  OBJECT-TYPE
+    SYNTAX  INTEGER (1..30)
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The identifier being used by a signaling protocol to identify this B channel, also referred to as B channel number. If the Agent also supports the DS0 MIB, the values of isdnBearerChannelNumber and dsx0Ds0Number must be identical for a given B channel."
+    ::= {isdnBearerEntry 3}
+
+isdnBearerPeerAddress  OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The ISDN address the current or last call is or was connected to. In some cases, the format of this information can not be predicted, since it largely depends on the type of switch or PBX the device is connected to. Therefore, the detailed format of this"
+    ::= {isdnBearerEntry 4}
+
+isdnBearerPeerSubAddress  OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The ISDN subaddress the current or last call is or was connected to. The subaddress is an user supplied string of up to 20 IA5 characters and is transmitted transparently through the network. If the peer subaddress is not available, this object has a len"
+    ::= {isdnBearerEntry 5}
+
+isdnBearerCallOrigin  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The call origin for the current or last call. If since system startup there was no call on this interface, this object has a value of unknown(1)."
+    ::= {isdnBearerEntry 6}
+
+isdnBearerInfoType  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The Information Transfer Capability for the current or last call. speech(2) refers to a non-data connection, whereas audio31(6) and audio7(7) refer to data mode connections. Note that Q.931, chapter 4.5.5, originally defined audio7(7) as '7 kHz audio' an"
+    ::= {isdnBearerEntry 7}
+
+isdnBearerMultirate  OBJECT-TYPE
+    SYNTAX  TruthValue
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This flag indicates if the current or last call used multirate. The actual information transfer rate, in detail specified in octet 4.1 (rate multiplier), is the sum of all B channel ifSpeed values for the hyperchannel. If since system startup there was n"
+    ::= {isdnBearerEntry 8}
+
+isdnBearerCallSetupTime  OBJECT-TYPE
+    SYNTAX  TimeStamp
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value of sysUpTime when the ISDN setup message for the current or last call was sent or received. If since system startup there has been no call on this interface, this object has a value of zero."
+    ::= {isdnBearerEntry 9}
+
+isdnBearerCallConnectTime  OBJECT-TYPE
+    SYNTAX  TimeStamp
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value of sysUpTime when the ISDN connect message for the current or last call was sent or received. If since system startup there has been no call on this interface, this object has a value of zero."
+    ::= {isdnBearerEntry 10}
+
+isdnBearerChargedUnits  OBJECT-TYPE
+    SYNTAX  Gauge32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of charged units for the current or last connection. For incoming calls or if charging information is not supplied by the switch, the value of this object is zero."
+    ::= {isdnBearerEntry 11}
+
+isdnSignalingGroup  OBJECT IDENTIFIER ::= {isdnMibObjects 3}
+
+isdnSignalingGetIndex  OBJECT-TYPE
+    SYNTAX  TestAndIncr
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The recommended procedure for selecting a new index for isdnSignalingTable row creation is to GET the value of this object, and then to SET the object with the same value. If the SET operation succeeds, the manager can use this value as an index to creat"
+    ::= {isdnSignalingGroup 1}
+
+isdnSignalingTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF IsdnSignalingEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "ISDN signaling table containing configuration and operational parameters for all ISDN signaling channels on this managed device."
+    ::= {isdnSignalingGroup 2}
+
+isdnSignalingEntry  OBJECT-TYPE
+    SYNTAX  IsdnSignalingEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An entry in the ISDN Signaling Table. To create a new entry, only isdnSignalingProtocol needs to be specified before isdnSignalingStatus can become active(1)."
+    ::= {isdnSignalingTable 1}
+
+isdnSignalingIndex  OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The index value which uniquely identifies an entry in the isdnSignalingTable."
+    ::= {isdnSignalingEntry 1}
+
+isdnSignalingIfIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The ifIndex value of the interface associated with this signaling channel."
+    ::= {isdnSignalingEntry 2}
+
+isdnSignalingProtocol  OBJECT-TYPE
+    SYNTAX  IsdnSignalingProtocol
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The particular protocol type supported by the switch providing access to the ISDN network to which this signaling channel is connected."
+    ::= {isdnSignalingEntry 3}
+
+isdnSignalingCallingAddress  OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The ISDN Address to be assigned to this signaling channel. More specifically, this is the 'Calling Address information element' as being passed to the switch in outgoing call setup messages. It can be an EAZ (1TR6), a calling number (DSS1, ETSI) or any o"
+    ::= {isdnSignalingEntry 4}
+
+isdnSignalingSubAddress  OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Supplementary information to the ISDN address assigned to this signaling channel. Usually, this is the subaddress as defined in Q.931. If there is no such number defined or required, this is a zero length string. The subaddress is used for incoming calls"
+    ::= {isdnSignalingEntry 5}
+
+isdnSignalingBchannelCount  OBJECT-TYPE
+    SYNTAX  Integer32 (1..65535)
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The total number of B channels (bearer channels) managed by this signaling channel. The default value of this object depends on the physical interface type and is either 2 for Basic Rate interfaces or 24 (30) for Primary Rate interfaces."
+    ::= {isdnSignalingEntry 6}
+
+isdnSignalingInfoTrapEnable  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Indicates whether isdnMibCallInformation traps should be generated for calls on this signaling channel."
+    ::= {isdnSignalingEntry 7}
+
+isdnSignalingStatus  OBJECT-TYPE
+    SYNTAX  RowStatus
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This object is used to create and delete rows in the isdnSignalingTable."
+    ::= {isdnSignalingEntry 8}
+
+isdnSignalingStatsTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF IsdnSignalingStatsEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "ISDN signaling table containing statistics information for all ISDN signaling channels on this managed device. Only statistical information which is not already being counted in the ifTable is being defined in this table."
+    ::= {isdnSignalingGroup 3}
+
+isdnSignalingStatsEntry  OBJECT-TYPE
+    SYNTAX  IsdnSignalingStatsEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An entry in the ISDN Signaling statistics Table."
+    ::= {isdnSignalingStatsTable 1}
+
+isdnSigStatsInCalls  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of incoming calls on this interface."
+    ::= {isdnSignalingStatsEntry 1}
+
+isdnSigStatsInConnected  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of incoming calls on this interface which were actually connected."
+    ::= {isdnSignalingStatsEntry 2}
+
+isdnSigStatsOutCalls  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of outgoing calls on this interface."
+    ::= {isdnSignalingStatsEntry 3}
+
+isdnSigStatsOutConnected  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of outgoing calls on this interface which were actually connected."
+    ::= {isdnSignalingStatsEntry 4}
+
+isdnSigStatsChargedUnits  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of charging units on this interface since system startup. Only the charging units applying to the local interface, i.e. for originated calls or for calls with 'Reverse charging' being active, are counted here."
+    ::= {isdnSignalingStatsEntry 5}
+
+isdnLapdTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF IsdnLapdEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Table containing configuration and statistics information for all LAPD (D channel Data Link) interfaces on this managed device. Only statistical information which is not already being counted in the ifTable is being defined in this table."
+    ::= {isdnSignalingGroup 4}
+
+isdnLapdEntry  OBJECT-TYPE
+    SYNTAX  IsdnLapdEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An entry in the LAPD Table."
+    ::= {isdnLapdTable 1}
+
+isdnLapdPrimaryChannel  OBJECT-TYPE
+    SYNTAX  TruthValue
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "If set to true(1), this D channel is the designated primary D channel if D channel backup is active. There must be exactly one primary D channel configured. If D channel backup is not used, this object has a value of true(1)."
+    ::= {isdnLapdEntry 1}
+
+isdnLapdOperStatus  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The operational status of this interface: inactive  all layers are inactive l1Active  layer 1 is activated, layer 2 datalink not established l2Active  layer 1 is activated, layer 2 datalink established."
+    ::= {isdnLapdEntry 2}
+
+isdnLapdPeerSabme  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of peer SABME frames received on this interface. This is the number of peer-initiated new connections on this interface."
+    ::= {isdnLapdEntry 3}
+
+isdnLapdRecvdFrmr  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of LAPD FRMR response frames received. This is the number of framing errors on this interface."
+    ::= {isdnLapdEntry 4}
+
+isdnEndpointGroup  OBJECT IDENTIFIER ::= {isdnMibObjects 4}
+
+isdnEndpointGetIndex  OBJECT-TYPE
+    SYNTAX  TestAndIncr
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The recommended procedure for selecting a new index for isdnEndpointTable row creation is to GET the value of this object, and then to SET the object with the same value. If the SET operation succeeds, the manager can use this value as an index to create"
+    ::= {isdnEndpointGroup 1}
+
+isdnEndpointTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF IsdnEndpointEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Table containing configuration for Terminal Endpoints."
+    ::= {isdnEndpointGroup 2}
+
+isdnEndpointEntry  OBJECT-TYPE
+    SYNTAX  IsdnEndpointEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An entry in the Terminal Endpoint Table. The value of isdnEndpointIfType must be supplied for a row in this table to become active."
+    ::= {isdnEndpointTable 1}
+
+isdnEndpointIndex  OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The index value which uniquely identifies an entry in the isdnEndpointTable."
+    ::= {isdnEndpointEntry 1}
+
+isdnEndpointIfIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The ifIndex value of the interface associated with this Terminal Endpoint."
+    ::= {isdnEndpointEntry 2}
+
+isdnEndpointIfType  OBJECT-TYPE
+    SYNTAX  IANAifType
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The interface type for this Terminal Endpoint. Interface types of x25ple(40) and isdn(63) are allowed. The interface type is identical to the value of ifType in the associated ifEntry."
+    ::= {isdnEndpointEntry 3}
+
+isdnEndpointTeiType  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The type of TEI (Terminal Endpoint Identifier) used for this Terminal Endpoint. In case of dynamic(1), the TEI value is selected by the switch. In case of static(2), a valid TEI value has to be entered in the isdnEndpointTeiValue object. The default valu"
+    ::= {isdnEndpointEntry 4}
+
+isdnEndpointTeiValue  OBJECT-TYPE
+    SYNTAX  INTEGER ( 0..255 )
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The TEI (Terminal Endpoint Identifier) value for this Terminal Endpoint. If isdnEndpointTeiType is set to static(2), valid numbers are 0..63, while otherwise the value is set internally. The default value of this object is 0 for static TEI assignment. Th"
+    ::= {isdnEndpointEntry 5}
+
+isdnEndpointSpid  OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The Service profile IDentifier (SPID) information for this Terminal Endpoint. The SPID is composed of 9-20 numeric characters. This information has to be defined in addition to the local number for some switch protocol types, e.g. Bellcore NI-1 and NI-2."
+    ::= {isdnEndpointEntry 6}
+
+isdnEndpointStatus  OBJECT-TYPE
+    SYNTAX  RowStatus
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This object is used to create and delete rows in the isdnEndpointTable."
+    ::= {isdnEndpointEntry 7}
+
+isdnDirectoryGroup  OBJECT IDENTIFIER ::= {isdnMibObjects 5}
+
+isdnDirectoryTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF IsdnDirectoryEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Table containing Directory Numbers."
+    ::= {isdnDirectoryGroup 1}
+
+isdnDirectoryEntry  OBJECT-TYPE
+    SYNTAX  IsdnDirectoryEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An entry in the Directory Number Table. All objects in an entry must be set for a new row to become active."
+    ::= {isdnDirectoryTable 1}
+
+isdnDirectoryIndex  OBJECT-TYPE
+    SYNTAX  INTEGER ( 1..'7fffffff'h )
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The index value which uniquely identifies an entry in the isdnDirectoryTable."
+    ::= {isdnDirectoryEntry 1}
+
+isdnDirectoryNumber  OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A Directory Number. Directory Numbers are used to identify incoming calls on the signaling channel given in isdnDirectorySigIndex. The format of this information largely depends on the type of switch or PBX the device is connected to. Therefore, the deta"
+    ::= {isdnDirectoryEntry 2}
+
+isdnDirectorySigIndex  OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An index pointing to an ISDN signaling channel. Incoming calls are accepted on this signaling channel if the isdnDirectoryNumber is presented as Called Number in the SETUP message."
+    ::= {isdnDirectoryEntry 3}
+
+isdnDirectoryStatus  OBJECT-TYPE
+    SYNTAX  RowStatus
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "This object is used to create and delete rows in the isdnDirectoryTable."
+    ::= {isdnDirectoryEntry 4}
+
+isdnMibTrapPrefix  OBJECT IDENTIFIER ::= {isdnMib 2}
+
+isdnMibTraps  OBJECT IDENTIFIER ::= {isdnMibTrapPrefix 0}
+
+isdnMibConformance  OBJECT IDENTIFIER ::= {isdnMib 3}
+
+isdnMibCompliances  OBJECT IDENTIFIER ::= {isdnMibConformance 1}
+
+isdnMibGroups  OBJECT IDENTIFIER ::= {isdnMibConformance 2}
+
+dialControlMib  OBJECT IDENTIFIER ::= {transmission 21}
+
+dialControlMibObjects  OBJECT IDENTIFIER ::= {dialControlMib 1}
+
+dialCtlConfiguration  OBJECT IDENTIFIER ::= {dialControlMibObjects 1}
+
+dialCtlAcceptMode  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The security level for acceptance of incoming calls. acceptNone(1)  - incoming calls will not be accepted acceptAll(2)   - incoming calls will be accepted, even if there is no matching entry in the dialCtlPeerCfgTable acceptKnown(3) - incoming calls will"
+    ::= {dialCtlConfiguration 1}
+
+dialCtlTrapEnable  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "This object indicates whether dialCtlPeerCallInformation and dialCtlPeerCallSetup traps should be generated for all peers. If the value of this object is enabled(1), traps will be generated for all peers. If the value of this object is disabled(2), traps"
+    ::= {dialCtlConfiguration 2}
+
+dialCtlPeer  OBJECT IDENTIFIER ::= {dialControlMibObjects 2}
+
+dialCtlPeerCfgTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF DialCtlPeerCfgEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The list of peers from which the managed device will accept calls or to which it will place them."
+    ::= {dialCtlPeer 1}
+
+dialCtlPeerCfgEntry  OBJECT-TYPE
+    SYNTAX  DialCtlPeerCfgEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Configuration data for a single Peer. This entry is effectively permanent, and contains information to identify the peer, how to connect to the peer, how to identify the peer and its permissions. The value of dialCtlPeerCfgOriginateAddress must be specif"
+    ::= {dialCtlPeerCfgTable 1}
+
+dialCtlPeerCfgId  OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "This object identifies a single peer. There may be several entries in this table for one peer, defining different ways of reaching this peer. Thus, there may be several entries in this table with the same value of dialCtlPeerCfgId. Multiple entries for o"
+    ::= {dialCtlPeerCfgEntry 1}
+
+dialCtlPeerCfgIfType  OBJECT-TYPE
+    SYNTAX  IANAifType
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The interface type to be used for calling this peer. In case of ISDN, the value of isdn(63) is to be used."
+    ::= {dialCtlPeerCfgEntry 2}
+
+dialCtlPeerCfgLowerIf  OBJECT-TYPE
+    SYNTAX  InterfaceIndexOrZero
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "ifIndex value of an interface the peer will have to be called on. For example, on an ISDN interface, this can be the ifIndex value of a D channel or the ifIndex value of a B channel, whatever is appropriate for a given peer. As an example, for Basic Rate"
+    ::= {dialCtlPeerCfgEntry 3}
+
+dialCtlPeerCfgOriginateAddress  OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Call Address at which the peer will be called. Think of this as the set of characters following 'ATDT ' or the 'phone number' included in a D channel call request. The structure of this information will be switch type specific. If there is no address inf"
+    ::= {dialCtlPeerCfgEntry 4}
+
+dialCtlPeerCfgAnswerAddress  OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Calling Party Number information element, as for example passed in an ISDN SETUP message by a PBX or switch, for incoming calls. This address can be used to identify the peer. If this address is either unknown or identical to dialCtlPeerCfgOriginateAddre"
+    ::= {dialCtlPeerCfgEntry 5}
+
+dialCtlPeerCfgSubAddress  OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Subaddress at which the peer will be called. If the subaddress is undefined for the given media or unused, this is a zero length string."
+    ::= {dialCtlPeerCfgEntry 6}
+
+dialCtlPeerCfgClosedUserGroup  OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Closed User Group at which the peer will be called. If the Closed User Group is undefined for the given media or unused, this is a zero length string."
+    ::= {dialCtlPeerCfgEntry 7}
+
+dialCtlPeerCfgSpeed  OBJECT-TYPE
+    SYNTAX  INTEGER (0..2147483647)
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The desired information transfer speed in bits/second when calling this peer. The detailed media specific information, e.g. information type and information transfer rate for ISDN circuits, has to be extracted from this object. If the transfer speed to b"
+    ::= {dialCtlPeerCfgEntry 8}
+
+dialCtlPeerCfgInfoType  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The Information Transfer Capability to be used when calling this peer. speech(2) refers to a non-data connection, whereas audio31(6) and audio7(7) refer to data mode connections."
+    ::= {dialCtlPeerCfgEntry 9}
+
+dialCtlPeerCfgPermission  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Applicable permissions. callback(4) either rejects the call and then calls back, or uses the 'Reverse charging' information element if it is available. Note that callback(4) is supposed to control charging, not security, and applies to callback prior to "
+    ::= {dialCtlPeerCfgEntry 10}
+
+dialCtlPeerCfgInactivityTimer  OBJECT-TYPE
+    SYNTAX  INTEGER (0..2147483647)
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The connection will be automatically disconnected if no longer carrying useful data for a time period, in seconds, specified in this object. Useful data in this context refers to forwarding packets, including routing information; it excludes the encapsul"
+    ::= {dialCtlPeerCfgEntry 11}
+
+dialCtlPeerCfgMinDuration  OBJECT-TYPE
+    SYNTAX  INTEGER (0..2147483647)
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Minimum duration of a call in seconds, starting from the time the call is connected until the call is disconnected. This is to accomplish the fact that in most countries charging applies to units of time, which should be matched as closely as possible."
+    ::= {dialCtlPeerCfgEntry 12}
+
+dialCtlPeerCfgMaxDuration  OBJECT-TYPE
+    SYNTAX  INTEGER (0..2147483647)
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Maximum call duration in seconds. Zero means 'unlimited'."
+    ::= {dialCtlPeerCfgEntry 13}
+
+dialCtlPeerCfgCarrierDelay  OBJECT-TYPE
+    SYNTAX  INTEGER (0..2147483647)
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The call timeout time in seconds. The default value of zero means that the call timeout as specified for the media in question will apply."
+    ::= {dialCtlPeerCfgEntry 14}
+
+dialCtlPeerCfgCallRetries  OBJECT-TYPE
+    SYNTAX  INTEGER (0..2147483647)
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The number of calls to a non-responding address that may be made. A retry count of zero means there is no bound. The intent is to bound the number of successive calls to an address which is inaccessible, or which refuses those calls. Some countries regul"
+    ::= {dialCtlPeerCfgEntry 15}
+
+dialCtlPeerCfgRetryDelay  OBJECT-TYPE
+    SYNTAX  INTEGER (0..2147483647)
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The time in seconds between call retries if a peer cannot be reached. A value of zero means that call retries may be done without any delay."
+    ::= {dialCtlPeerCfgEntry 16}
+
+dialCtlPeerCfgFailureDelay  OBJECT-TYPE
+    SYNTAX  INTEGER (0..2147483647)
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The time in seconds after which call attempts are to be placed again after a peer has been noticed to be unreachable, i.e. after dialCtlPeerCfgCallRetries unsuccessful call attempts. A value of zero means that a peer will not be called again after dialCt"
+    ::= {dialCtlPeerCfgEntry 17}
+
+dialCtlPeerCfgTrapEnable  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "This object indicates whether dialCtlPeerCallInformation and dialCtlPeerCallSetup traps should be generated for this peer."
+    ::= {dialCtlPeerCfgEntry 18}
+
+dialCtlPeerCfgStatus  OBJECT-TYPE
+    SYNTAX  RowStatus
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Status of one row in this table."
+    ::= {dialCtlPeerCfgEntry 19}
+
+dialCtlPeerStatsTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF DialCtlPeerStatsEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Statistics information for each peer entry. There will be one entry in this table for each entry in the dialCtlPeerCfgTable."
+    ::= {dialCtlPeer 2}
+
+dialCtlPeerStatsEntry  OBJECT-TYPE
+    SYNTAX  DialCtlPeerStatsEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Statistics information for a single Peer. This entry is effectively permanent, and contains information describing the last call attempt as well as supplying statistical information."
+    ::= {dialCtlPeerStatsTable 1}
+
+dialCtlPeerStatsConnectTime  OBJECT-TYPE
+    SYNTAX  AbsoluteCounter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Accumulated connect time to the peer since system startup. This is the total connect time, i.e. the connect time for outgoing calls plus the time for incoming calls."
+    ::= {dialCtlPeerStatsEntry 1}
+
+dialCtlPeerStatsChargedUnits  OBJECT-TYPE
+    SYNTAX  AbsoluteCounter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The total number of charging units applying to this peer since system startup. Only the charging units applying to the local interface, i.e. for originated calls or for calls with 'Reverse charging' being active, will be counted here."
+    ::= {dialCtlPeerStatsEntry 2}
+
+dialCtlPeerStatsSuccessCalls  OBJECT-TYPE
+    SYNTAX  AbsoluteCounter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Number of completed calls to this peer."
+    ::= {dialCtlPeerStatsEntry 3}
+
+dialCtlPeerStatsFailCalls  OBJECT-TYPE
+    SYNTAX  AbsoluteCounter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Number of failed call attempts to this peer since system startup."
+    ::= {dialCtlPeerStatsEntry 4}
+
+dialCtlPeerStatsAcceptCalls  OBJECT-TYPE
+    SYNTAX  AbsoluteCounter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Number of calls from this peer accepted since system startup."
+    ::= {dialCtlPeerStatsEntry 5}
+
+dialCtlPeerStatsRefuseCalls  OBJECT-TYPE
+    SYNTAX  AbsoluteCounter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Number of calls from this peer refused since system startup."
+    ::= {dialCtlPeerStatsEntry 6}
+
+dialCtlPeerStatsLastDisconnectCause  OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE (0..4))
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The encoded network cause value associated with the last call. This object will be updated whenever a call is started or cleared. The value of this object will depend on the interface type as well as on the protocol and protocol version being used on thi"
+    ::= {dialCtlPeerStatsEntry 7}
+
+dialCtlPeerStatsLastDisconnectText  OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "ASCII text describing the reason for the last call termination. This object exists because it would be impossible for a management station to store all possible cause values for all types of interfaces. It should be used only if a management station is u"
+    ::= {dialCtlPeerStatsEntry 8}
+
+dialCtlPeerStatsLastSetupTime  OBJECT-TYPE
+    SYNTAX  TimeStamp
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value of sysUpTime when the last call to this peer was started. For ISDN media, this will be the time when the setup message was received from or sent to the network. This object will be updated whenever a call is started or cleared."
+    ::= {dialCtlPeerStatsEntry 9}
+
+callActive  OBJECT IDENTIFIER ::= {dialControlMibObjects 3}
+
+callActiveTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF CallActiveEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A table containing information about active calls to a specific destination."
+    ::= {callActive 1}
+
+callActiveEntry  OBJECT-TYPE
+    SYNTAX  CallActiveEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The information regarding a single active Connection. An entry in this table will be created when a call is started. An entry in this table will be deleted when an active call clears."
+    ::= {callActiveTable 1}
+
+callActiveSetupTime  OBJECT-TYPE
+    SYNTAX  TimeStamp
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The value of sysUpTime when the call associated to this entry was started. This will be useful for an NMS to retrieve all calls after a specific time. Also, this object can be useful in finding large delays between the time the call was started and the t"
+    ::= {callActiveEntry 1}
+
+callActiveIndex  OBJECT-TYPE
+    SYNTAX  INTEGER (1..'7fffffff'h)
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Small index variable to distinguish calls that start in the same hundredth of a second."
+    ::= {callActiveEntry 2}
+
+callActivePeerAddress  OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number this call is connected to. If the number is not available, then it will have a length of zero."
+    ::= {callActiveEntry 3}
+
+callActivePeerSubAddress  OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The subaddress this call is connected to. If the subaddress is undefined or not available, this will be a zero length string."
+    ::= {callActiveEntry 4}
+
+callActivePeerId  OBJECT-TYPE
+    SYNTAX  INTEGER (0..2147483647)
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This is the Id value of the peer table entry to which this call was made. If a peer table entry for this call does not exist or is unknown, the value of this object will be zero."
+    ::= {callActiveEntry 5}
+
+callActivePeerIfIndex  OBJECT-TYPE
+    SYNTAX  INTEGER (0..2147483647)
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This is the ifIndex value of the peer table entry to which this call was made. If a peer table entry for this call does not exist or is unknown, the value of this object will be zero."
+    ::= {callActiveEntry 6}
+
+callActiveLogicalIfIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndexOrZero
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This is the ifIndex value of the logical interface through which this call was made. For ISDN media, this would be the ifIndex of the B channel which was used for this call. If the ifIndex value is unknown, the value of this object will be zero."
+    ::= {callActiveEntry 7}
+
+callActiveConnectTime  OBJECT-TYPE
+    SYNTAX  TimeStamp
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value of sysUpTime when the call was connected. If the call is not connected, this object will have a value of zero."
+    ::= {callActiveEntry 8}
+
+callActiveCallState  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current call state. unknown(1)     - The call state is unknown. connecting(2)  - A connection attempt (outgoing call) is being made. connected(3)   - An incoming call is in the process of validation. active(4)      - The call is active. "
+    ::= {callActiveEntry 9}
+
+callActiveCallOrigin  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The call origin."
+    ::= {callActiveEntry 10}
+
+callActiveChargedUnits  OBJECT-TYPE
+    SYNTAX  AbsoluteCounter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of charged units for this connection. For incoming calls or if charging information is not supplied by the switch, the value of this object will be zero."
+    ::= {callActiveEntry 11}
+
+callActiveInfoType  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The information type for this call."
+    ::= {callActiveEntry 12}
+
+callActiveTransmitPackets  OBJECT-TYPE
+    SYNTAX  AbsoluteCounter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of packets which were transmitted for this call."
+    ::= {callActiveEntry 13}
+
+callActiveTransmitBytes  OBJECT-TYPE
+    SYNTAX  AbsoluteCounter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of bytes which were transmitted for this call."
+    ::= {callActiveEntry 14}
+
+callActiveReceivePackets  OBJECT-TYPE
+    SYNTAX  AbsoluteCounter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of packets which were received for this call."
+    ::= {callActiveEntry 15}
+
+callActiveReceiveBytes  OBJECT-TYPE
+    SYNTAX  AbsoluteCounter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of bytes which were received for this call."
+    ::= {callActiveEntry 16}
+
+callHistory  OBJECT IDENTIFIER ::= {dialControlMibObjects 4}
+
+callHistoryTableMaxLength  OBJECT-TYPE
+    SYNTAX  INTEGER (0..2147483647)
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The upper limit on the number of entries that the callHistoryTable may contain.  A value of 0 will prevent any history from being retained. When this table is full, the oldest entry will be deleted and the new one will be created."
+    ::= {callHistory 1}
+
+callHistoryRetainTimer  OBJECT-TYPE
+    SYNTAX  INTEGER (0..2147483647)
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The minimum amount of time that an callHistoryEntry will be maintained before being deleted. A value of 0 will prevent any history from being retained in the callHistoryTable, but will neither prevent callCompletion traps being generated nor affect other"
+    ::= {callHistory 2}
+
+callHistoryTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF CallHistoryEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A table containing information about specific calls to a specific destination."
+    ::= {callHistory 3}
+
+callHistoryEntry  OBJECT-TYPE
+    SYNTAX  CallHistoryEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The information regarding a single Connection."
+    ::= {callHistoryTable 1}
+
+callHistoryPeerAddress  OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number this call was connected to. If the number is not available, then it will have a length of zero."
+    ::= {callHistoryEntry 1}
+
+callHistoryPeerSubAddress  OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The subaddress this call was connected to. If the subaddress is undefined or not available, this will be a zero length string."
+    ::= {callHistoryEntry 2}
+
+callHistoryPeerId  OBJECT-TYPE
+    SYNTAX  INTEGER (0..2147483647)
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This is the Id value of the peer table entry to which this call was made. If a peer table entry for this call does not exist, the value of this object will be zero."
+    ::= {callHistoryEntry 3}
+
+callHistoryPeerIfIndex  OBJECT-TYPE
+    SYNTAX  INTEGER (0..2147483647)
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This is the ifIndex value of the peer table entry to which this call was made. If a peer table entry for this call does not exist, the value of this object will be zero."
+    ::= {callHistoryEntry 4}
+
+callHistoryLogicalIfIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This is the ifIndex value of the logical interface through which this call was made. For ISDN media, this would be the ifIndex of the B channel which was used for this call."
+    ::= {callHistoryEntry 5}
+
+callHistoryDisconnectCause  OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE (0..4))
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The encoded network cause value associated with this call. The value of this object will depend on the interface type as well as on the protocol and protocol version being used on this interface. Some references for possible cause values are given below."
+    ::= {callHistoryEntry 6}
+
+callHistoryDisconnectText  OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "ASCII text describing the reason for call termination. This object exists because it would be impossible for a management station to store all possible cause values for all types of interfaces. It should be used only if a management station is unable to "
+    ::= {callHistoryEntry 7}
+
+callHistoryConnectTime  OBJECT-TYPE
+    SYNTAX  TimeStamp
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value of sysUpTime when the call was connected."
+    ::= {callHistoryEntry 8}
+
+callHistoryDisconnectTime  OBJECT-TYPE
+    SYNTAX  TimeStamp
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value of sysUpTime when the call was disconnected."
+    ::= {callHistoryEntry 9}
+
+callHistoryCallOrigin  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The call origin."
+    ::= {callHistoryEntry 10}
+
+callHistoryChargedUnits  OBJECT-TYPE
+    SYNTAX  AbsoluteCounter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of charged units for this connection. For incoming calls or if charging information is not supplied by the switch, the value of this object will be zero."
+    ::= {callHistoryEntry 11}
+
+callHistoryInfoType  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The information type for this call."
+    ::= {callHistoryEntry 12}
+
+callHistoryTransmitPackets  OBJECT-TYPE
+    SYNTAX  AbsoluteCounter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of packets which were transmitted while this call was active."
+    ::= {callHistoryEntry 13}
+
+callHistoryTransmitBytes  OBJECT-TYPE
+    SYNTAX  AbsoluteCounter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of bytes which were transmitted while this call was active."
+    ::= {callHistoryEntry 14}
+
+callHistoryReceivePackets  OBJECT-TYPE
+    SYNTAX  AbsoluteCounter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of packets which were received while this call was active."
+    ::= {callHistoryEntry 15}
+
+callHistoryReceiveBytes  OBJECT-TYPE
+    SYNTAX  AbsoluteCounter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of bytes which were received while this call was active."
+    ::= {callHistoryEntry 16}
+
+dialControlMibTrapPrefix  OBJECT IDENTIFIER ::= {dialControlMib 2}
+
+dialControlMibTraps  OBJECT IDENTIFIER ::= {dialControlMibTrapPrefix 0}
+
+ds3  OBJECT IDENTIFIER ::= {transmission 30}
+
+dsx3ConfigTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dsx3ConfigEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The DS3/E3 Configuration table."
+    ::= {ds3 5}
+
+dsx3ConfigEntry  OBJECT-TYPE
+    SYNTAX  Dsx3ConfigEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the DS3/E3 Configuration table."
+    ::= {dsx3ConfigTable 1}
+
+dsx3LineIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "This object should be made equal to ifIndex.  The next paragraph describes its previous usage. Making the object equal to ifIndex allows propoer use of ifStackTable. Previously, this object was the identifier of a DS3/E3 Interface on a managed device.  I"
+    ::= {dsx3ConfigEntry 1}
+
+dsx3IfIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  4
+    DESCRIPTION
+            "This value for this object is equal to the value of ifIndex from the Interfaces table of MIB II (RFC 1213)."
+    ::= {dsx3ConfigEntry 2}
+
+dsx3TimeElapsed  OBJECT-TYPE
+    SYNTAX  INTEGER (0..899)
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of seconds that have elapsed since the beginning of the near end current error- measurement period.  If, for some reason, such as an adjustment in the system's time-of-day clock, the current interval exceeds the maximum value, the agent will r"
+    ::= {dsx3ConfigEntry 3}
+
+dsx3ValidIntervals  OBJECT-TYPE
+    SYNTAX  INTEGER (0..96)
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of previous near end intervals for which data was collected.  The value will be 96 unless the interface was brought online within the last 24 hours, in which case the value will be the number of complete 15 minute near end intervals since the "
+    ::= {dsx3ConfigEntry 4}
+
+dsx3LineType  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "This variable indicates the variety of DS3 C-bit or E3 application implementing this interface. The type of interface affects the interpretation of the usage and error statistics.  The rate of DS3 is 44.736 Mbps and E3 is 34.368 Mbps.  The dsx3ClearChann"
+    ::= {dsx3ConfigEntry 5}
+
+dsx3LineCoding  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "This variable describes the variety of Zero Code Suppression used on this interface, which in turn affects a number of its characteristics. dsx3B3ZS and e3HDB3 refer to the use of specified patterns of normal bits and bipolar violations which are used to"
+    ::= {dsx3ConfigEntry 6}
+
+dsx3SendCode  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "This variable indicates what type of code is being sent across the DS3/E3 interface by the device.  (These are optional for E3 interfaces.) Setting this variable causes the interface to begin sending the code requested. The values mean: dsx3SendNoCode se"
+    ::= {dsx3ConfigEntry 7}
+
+dsx3CircuitIdentifier  OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..255))
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "This variable contains the transmission vendor's circuit identifier, for the purpose of facilitating troubleshooting."
+    ::= {dsx3ConfigEntry 8}
+
+dsx3LoopbackConfig  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "This variable represents the desired loopback configuration of the DS3/E3 interface. The values mean: dsx3NoLoop Not in the loopback state.  A device that is not capable of performing a loopback on the interface shall always return this as its value. dsx"
+    ::= {dsx3ConfigEntry 9}
+
+dsx3LineStatus  OBJECT-TYPE
+    SYNTAX  INTEGER (1..4095)
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "This variable indicates the Line Status of the interface.  It contains loopback state information and failure state information.  The dsx3LineStatus is a bit map represented as a sum, therefore, it can represent multiple failures and a loopback (see dsx3"
+    ::= {dsx3ConfigEntry 10}
+
+dsx3TransmitClockSource  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "The source of Transmit Clock. loopTiming indicates that the recovered receive clock is used as the transmit clock. localTiming indicates that a local clock source is used or that an external clock is attached to the box containing the interface. throughT"
+    ::= {dsx3ConfigEntry 11}
+
+dsx3InvalidIntervals  OBJECT-TYPE
+    SYNTAX  INTEGER (0..96)
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of intervals in the range from 0 to dsx3ValidIntervals for which no data is available.  This object will typically be zero except in cases where the data for some intervals are not available (e.g., in proxy situations)."
+    ::= {dsx3ConfigEntry 12}
+
+dsx3LineLength  OBJECT-TYPE
+    SYNTAX  INTEGER (0..64000)
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "The length of the ds3 line in meters.  This object provides information for line build out circuitry if it exists and can use this object to adjust the line build out."
+    ::= {dsx3ConfigEntry 13}
+
+dsx3LineStatusLastChange  OBJECT-TYPE
+    SYNTAX  TimeStamp
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The value of MIB II's sysUpTime object at the time this DS3/E3 entered its current line status state.  If the current state was entered prior to the last re-initialization of the proxy-agent, then this object contains a zero value."
+    ::= {dsx3ConfigEntry 14}
+
+dsx3LineStatusChangeTrapEnable  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "Indicates whether dsx3LineStatusChange traps should be generated for this interface."
+    ::= {dsx3ConfigEntry 15}
+
+dsx3LoopbackStatus  OBJECT-TYPE
+    SYNTAX  INTEGER (1..127)
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This variable represents the current state of the loopback on the DS3 interface.  It contains information about loopbacks established by a manager and remotely from the far end. The dsx3LoopbackStatus is a bit map represented as a sum, therefore is can r"
+    ::= {dsx3ConfigEntry 16}
+
+dsx3Channelization  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "Indicates whether this ds3/e3 is channelized or unchannelized.  The value of enabledDs1 indicates that this is a DS3 channelized into DS1s.  The value of enabledDs3 indicated that this is a DS3 channelized into DS2s.  Setting this object will cause the c"
+    ::= {dsx3ConfigEntry 17}
+
+dsx3Ds1ForRemoteLoop  OBJECT-TYPE
+    SYNTAX  INTEGER (0..29)
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "Indicates which ds1/e1 on this ds3/e3 will be indicated in the remote ds1 loopback request.  A value of 0 means no DS1 will be looped.  A value of 29 means all ds1s/e1s will be looped."
+    ::= {dsx3ConfigEntry 18}
+
+dsx3CurrentTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dsx3CurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The DS3/E3 current table contains various statistics being collected for the current 15 minute interval."
+    ::= {ds3 6}
+
+dsx3CurrentEntry  OBJECT-TYPE
+    SYNTAX  Dsx3CurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the DS3/E3 Current table."
+    ::= {dsx3CurrentTable 1}
+
+dsx3CurrentIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The index value which uniquely identifies the DS3/E3 interface to which this entry is applicable.  The interface identified by a particular value of this index is the same interface as identified by the same value an dsx3LineIndex object instance."
+    ::= {dsx3CurrentEntry 1}
+
+dsx3CurrentPESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of P-bit Errored Seconds."
+    ::= {dsx3CurrentEntry 2}
+
+dsx3CurrentPSESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of P-bit Severely Errored Seconds."
+    ::= {dsx3CurrentEntry 3}
+
+dsx3CurrentSEFSs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Severely Errored Framing Seconds."
+    ::= {dsx3CurrentEntry 4}
+
+dsx3CurrentUASs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Unavailable Seconds."
+    ::= {dsx3CurrentEntry 5}
+
+dsx3CurrentLCVs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Line Coding Violations."
+    ::= {dsx3CurrentEntry 6}
+
+dsx3CurrentPCVs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of P-bit Coding Violations."
+    ::= {dsx3CurrentEntry 7}
+
+dsx3CurrentLESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of Line Errored Seconds."
+    ::= {dsx3CurrentEntry 8}
+
+dsx3CurrentCCVs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of C-bit Coding Violations."
+    ::= {dsx3CurrentEntry 9}
+
+dsx3CurrentCESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of C-bit Errored Seconds."
+    ::= {dsx3CurrentEntry 10}
+
+dsx3CurrentCSESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of C-bit Severely Errored Seconds."
+    ::= {dsx3CurrentEntry 11}
+
+dsx3IntervalTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dsx3IntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The DS3/E3 Interval Table contains various statistics collected by each DS3/E3 Interface over the previous 24 hours of operation.  The past 24 hours are broken into 96 completed 15 minute intervals.  Each row in this table represents one such interval (i"
+    ::= {ds3 7}
+
+dsx3IntervalEntry  OBJECT-TYPE
+    SYNTAX  Dsx3IntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the DS3/E3 Interval table."
+    ::= {dsx3IntervalTable 1}
+
+dsx3IntervalIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The index value which uniquely identifies the DS3/E3 interface to which this entry is applicable.  The interface identified by a particular value of this index is the same interface as identified by the same value an dsx3LineIndex object instance."
+    ::= {dsx3IntervalEntry 1}
+
+dsx3IntervalNumber  OBJECT-TYPE
+    SYNTAX  INTEGER (1..96)
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "A number between 1 and 96, where 1 is the most recently completed 15 minute interval and 96 is the 15 minutes interval completed 23 hours and 45 minutes prior to interval 1."
+    ::= {dsx3IntervalEntry 2}
+
+dsx3IntervalPESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of P-bit Errored Seconds."
+    ::= {dsx3IntervalEntry 3}
+
+dsx3IntervalPSESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of P-bit Severely Errored Seconds."
+    ::= {dsx3IntervalEntry 4}
+
+dsx3IntervalSEFSs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Severely Errored Framing Seconds."
+    ::= {dsx3IntervalEntry 5}
+
+dsx3IntervalUASs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Unavailable Seconds.  This object may decrease if the occurance of unavailable seconds occurs across an inteval boundary."
+    ::= {dsx3IntervalEntry 6}
+
+dsx3IntervalLCVs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Line Coding Violations."
+    ::= {dsx3IntervalEntry 7}
+
+dsx3IntervalPCVs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of P-bit Coding Violations."
+    ::= {dsx3IntervalEntry 8}
+
+dsx3IntervalLESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of Line Errored  Seconds  (BPVs  or illegal  zero  sequences)."
+    ::= {dsx3IntervalEntry 9}
+
+dsx3IntervalCCVs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of C-bit Coding Violations."
+    ::= {dsx3IntervalEntry 10}
+
+dsx3IntervalCESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of C-bit Errored Seconds."
+    ::= {dsx3IntervalEntry 11}
+
+dsx3IntervalCSESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of C-bit Severely Errored Seconds."
+    ::= {dsx3IntervalEntry 12}
+
+dsx3IntervalValidData  OBJECT-TYPE
+    SYNTAX  TruthValue
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This variable indicates if the data for this interval is valid."
+    ::= {dsx3IntervalEntry 13}
+
+dsx3TotalTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dsx3TotalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The DS3/E3 Total Table contains the cumulative sum of the various statistics for the 24 hour period preceding the current interval."
+    ::= {ds3 8}
+
+dsx3TotalEntry  OBJECT-TYPE
+    SYNTAX  Dsx3TotalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the DS3/E3 Total table."
+    ::= {dsx3TotalTable 1}
+
+dsx3TotalIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The index value which uniquely identifies the DS3/E3 interface to which this entry is applicable.  The interface identified by a particular value of this index is the same interface as identified by the same value an dsx3LineIndex object instance."
+    ::= {dsx3TotalEntry 1}
+
+dsx3TotalPESs  OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of P-bit Errored Seconds, encountered by a DS3 interface in the previous 24 hour interval. Invalid 15 minute intervals count as 0."
+    ::= {dsx3TotalEntry 2}
+
+dsx3TotalPSESs  OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of P-bit Severely Errored Seconds, encountered by a DS3 interface in the previous 24 hour interval. Invalid 15 minute intervals count as 0."
+    ::= {dsx3TotalEntry 3}
+
+dsx3TotalSEFSs  OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Severely Errored Framing Seconds, encountered by a DS3/E3 interface in the previous 24 hour interval. Invalid 15 minute intervals count as 0."
+    ::= {dsx3TotalEntry 4}
+
+dsx3TotalUASs  OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Unavailable Seconds, encountered by a DS3 interface in the previous 24 hour interval. Invalid 15 minute intervals count as 0."
+    ::= {dsx3TotalEntry 5}
+
+dsx3TotalLCVs  OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Line Coding Violations encountered by a DS3/E3 interface in the previous 24 hour interval. Invalid 15 minute intervals count as 0."
+    ::= {dsx3TotalEntry 6}
+
+dsx3TotalPCVs  OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of P-bit Coding Violations, encountered by a DS3 interface in the previous 24 hour interval. Invalid 15 minute intervals count as 0."
+    ::= {dsx3TotalEntry 7}
+
+dsx3TotalLESs  OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of Line Errored  Seconds  (BPVs  or illegal  zero  sequences) encountered by a DS3/E3 interface in the previous 24 hour interval. Invalid 15 minute intervals count as 0."
+    ::= {dsx3TotalEntry 8}
+
+dsx3TotalCCVs  OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of C-bit Coding Violations encountered by a DS3 interface in the previous 24 hour interval. Invalid 15 minute intervals count as 0."
+    ::= {dsx3TotalEntry 9}
+
+dsx3TotalCESs  OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of C-bit Errored Seconds encountered by a DS3 interface in the previous 24 hour interval. Invalid 15 minute intervals count as 0."
+    ::= {dsx3TotalEntry 10}
+
+dsx3TotalCSESs  OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of C-bit Severely Errored Seconds encountered by a DS3 interface in the previous 24 hour interval. Invalid 15 minute intervals count as 0."
+    ::= {dsx3TotalEntry 11}
+
+dsx3FarEndConfigTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dsx3FarEndConfigEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The DS3 Far End Configuration Table contains configuration information reported in the C-bits from the remote end."
+    ::= {ds3 9}
+
+dsx3FarEndConfigEntry  OBJECT-TYPE
+    SYNTAX  Dsx3FarEndConfigEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the DS3 Far End Configuration table."
+    ::= {dsx3FarEndConfigTable 1}
+
+dsx3FarEndLineIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The index value which uniquely identifies the DS3 interface to which this entry is applicable.  The interface identified by a particular value of this index is the same interface as identified by the same value an dsx3LineIndex object instance."
+    ::= {dsx3FarEndConfigEntry 1}
+
+dsx3FarEndEquipCode  OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..10))
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "This is the Far End Equipment Identification code that describes the specific piece of equipment. It is sent within the Path Identification Message."
+    ::= {dsx3FarEndConfigEntry 2}
+
+dsx3FarEndLocationIDCode  OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..11))
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "This is the Far End Location Identification code that describes the specific location of the equipment.  It is sent within the Path Identification Message."
+    ::= {dsx3FarEndConfigEntry 3}
+
+dsx3FarEndFrameIDCode  OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..10))
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "This is the Far End Frame Identification code that identifies where the equipment is located within a building at a given location.  It is sent within the Path Identification Message."
+    ::= {dsx3FarEndConfigEntry 4}
+
+dsx3FarEndUnitCode  OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..6))
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "This is the Far End code that identifies the equipment location within a bay.  It is sent within the Path Identification Message."
+    ::= {dsx3FarEndConfigEntry 5}
+
+dsx3FarEndFacilityIDCode  OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..38))
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "This code identifies a specific Far End DS3 path. It is sent within the Path Identification Message."
+    ::= {dsx3FarEndConfigEntry 6}
+
+dsx3FarEndCurrentTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dsx3FarEndCurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The DS3 Far End Current table contains various statistics being collected for the current 15 minute interval.  The statistics are collected from the far end block error code within the C- bits."
+    ::= {ds3 10}
+
+dsx3FarEndCurrentEntry  OBJECT-TYPE
+    SYNTAX  Dsx3FarEndCurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the DS3 Far End Current table."
+    ::= {dsx3FarEndCurrentTable 1}
+
+dsx3FarEndCurrentIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The index value which uniquely identifies the DS3 interface to which this entry is applicable.  The interface identified by a particular value of this index is identical to the interface identified by the same value of dsx3LineIndex."
+    ::= {dsx3FarEndCurrentEntry 1}
+
+dsx3FarEndTimeElapsed  OBJECT-TYPE
+    SYNTAX  INTEGER (0..899)
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of seconds that have elapsed since the beginning of the far end current error-measurement period.  If, for some reason, such as an adjustment in the system's time-of-day clock, the current interval exceeds the maximum value, the agent will ret"
+    ::= {dsx3FarEndCurrentEntry 2}
+
+dsx3FarEndValidIntervals  OBJECT-TYPE
+    SYNTAX  INTEGER (0..96)
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of previous far end intervals for which data was collected.  The value will be 96 unless the interface was brought online within the last 24 hours, in which case the value will be the number of complete 15 minute far end intervals since the in"
+    ::= {dsx3FarEndCurrentEntry 3}
+
+dsx3FarEndCurrentCESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far Far End C-bit Errored Seconds."
+    ::= {dsx3FarEndCurrentEntry 4}
+
+dsx3FarEndCurrentCSESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End C-bit Severely Errored Seconds."
+    ::= {dsx3FarEndCurrentEntry 5}
+
+dsx3FarEndCurrentCCVs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End C-bit Coding Violations reported via the far end block error count."
+    ::= {dsx3FarEndCurrentEntry 6}
+
+dsx3FarEndCurrentUASs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End unavailable seconds."
+    ::= {dsx3FarEndCurrentEntry 7}
+
+dsx3FarEndInvalidIntervals  OBJECT-TYPE
+    SYNTAX  INTEGER (0..96)
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of intervals in the range from 0 to dsx3FarEndValidIntervals for which no data is available.  This object will typically be zero except in cases where the data for some intervals are not available (e.g., in proxy situations)."
+    ::= {dsx3FarEndCurrentEntry 8}
+
+dsx3FarEndIntervalTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dsx3FarEndIntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The DS3 Far End Interval Table contains various statistics collected by each DS3 interface over the previous 24 hours of operation.  The past 24 hours are broken into 96 completed 15 minute intervals."
+    ::= {ds3 11}
+
+dsx3FarEndIntervalEntry  OBJECT-TYPE
+    SYNTAX  Dsx3FarEndIntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the DS3 Far End Interval table."
+    ::= {dsx3FarEndIntervalTable 1}
+
+dsx3FarEndIntervalIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The index value which uniquely identifies the DS3 interface to which this entry is applicable.  The interface identified by a particular value of this index is identical to the interface identified by the same value of dsx3LineIndex."
+    ::= {dsx3FarEndIntervalEntry 1}
+
+dsx3FarEndIntervalNumber  OBJECT-TYPE
+    SYNTAX  INTEGER (1..96)
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "A number between 1 and 96, where 1 is the most recently completed 15 minute interval and 96 is the 15 minutes interval completed 23 hours and 45 minutes prior to interval 1."
+    ::= {dsx3FarEndIntervalEntry 2}
+
+dsx3FarEndIntervalCESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End C-bit Errored Seconds encountered by a DS3 interface in one of the previous 96, individual 15 minute, intervals. In the case where the agent is a proxy and data is not available, return noSuchInstance."
+    ::= {dsx3FarEndIntervalEntry 3}
+
+dsx3FarEndIntervalCSESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End C-bit Severely Errored Seconds."
+    ::= {dsx3FarEndIntervalEntry 4}
+
+dsx3FarEndIntervalCCVs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End C-bit Coding Violations reported via the far end block error count."
+    ::= {dsx3FarEndIntervalEntry 5}
+
+dsx3FarEndIntervalUASs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End unavailable seconds."
+    ::= {dsx3FarEndIntervalEntry 6}
+
+dsx3FarEndIntervalValidData  OBJECT-TYPE
+    SYNTAX  TruthValue
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "This variable indicates if the data for this interval is valid."
+    ::= {dsx3FarEndIntervalEntry 7}
+
+dsx3FarEndTotalTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dsx3FarEndTotalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The DS3 Far End Total Table contains the cumulative sum of the various statistics for the 24 hour period preceding the current interval."
+    ::= {ds3 12}
+
+dsx3FarEndTotalEntry  OBJECT-TYPE
+    SYNTAX  Dsx3FarEndTotalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the DS3 Far End Total table."
+    ::= {dsx3FarEndTotalTable 1}
+
+dsx3FarEndTotalIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The index value which uniquely identifies the DS3 interface to which this entry is applicable.  The interface identified by a particular value of this index is identical to the interface identified by the same value of dsx3LineIndex."
+    ::= {dsx3FarEndTotalEntry 1}
+
+dsx3FarEndTotalCESs  OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End C-bit Errored Seconds encountered by a DS3 interface in the previous 24 hour interval. Invalid 15 minute intervals count as 0."
+    ::= {dsx3FarEndTotalEntry 2}
+
+dsx3FarEndTotalCSESs  OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End C-bit Severely Errored Seconds encountered by a DS3 interface in the previous 24 hour interval. Invalid 15 minute intervals count as 0."
+    ::= {dsx3FarEndTotalEntry 3}
+
+dsx3FarEndTotalCCVs  OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End C-bit Coding Violations reported via the far end block error count encountered by a DS3 interface in the previous 24 hour interval. Invalid 15 minute intervals count as 0."
+    ::= {dsx3FarEndTotalEntry 4}
+
+dsx3FarEndTotalUASs  OBJECT-TYPE
+    SYNTAX  PerfTotalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End unavailable seconds encountered by a DS3 interface in the previous 24 hour interval.  Invalid 15 minute intervals count as 0."
+    ::= {dsx3FarEndTotalEntry 5}
+
+dsx3FracTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Dsx3FracEntry
+    ACCESS  not-accessible
+    STATUS  4
+    DESCRIPTION
+            "This table is deprecated in favour of using ifStackTable. Implementation of this table was optional.  It was designed for those systems dividing a DS3/E3 into channels containing different data streams that are of local interest. The DS3/E3 fractional ta"
+    ::= {ds3 13}
+
+dsx3FracEntry  OBJECT-TYPE
+    SYNTAX  Dsx3FracEntry
+    ACCESS  not-accessible
+    STATUS  4
+    DESCRIPTION
+            "An entry in the DS3 Fractional table."
+    ::= {dsx3FracTable 1}
+
+dsx3FracIndex  OBJECT-TYPE
+    SYNTAX  INTEGER (1..'7fffffff'h)
+    ACCESS  read-only
+    STATUS  4
+    DESCRIPTION
+            "The index value which uniquely identifies  the DS3  interface  to which this entry is applicable The interface identified by a  particular value of  this  index is the same interface as identified by the same value  an  dsx3LineIndex object instance."
+    ::= {dsx3FracEntry 1}
+
+dsx3FracNumber  OBJECT-TYPE
+    SYNTAX  INTEGER (1..31)
+    ACCESS  read-only
+    STATUS  4
+    DESCRIPTION
+            "The channel number for this entry."
+    ::= {dsx3FracEntry 2}
+
+dsx3FracIfIndex  OBJECT-TYPE
+    SYNTAX  INTEGER (1..'7fffffff'h)
+    ACCESS  read-write
+    STATUS  4
+    DESCRIPTION
+            "An index value that uniquely identifies an interface.  The interface identified by a particular value of this index is the same interface as  identified by the same value an ifIndex object instance. If no interface is currently using a channel, the value"
+    ::= {dsx3FracEntry 3}
+
+ds3Conformance  OBJECT IDENTIFIER ::= {ds3 14}
+
+ds3Traps  OBJECT IDENTIFIER ::= {ds3 15}
+
+rs232  OBJECT IDENTIFIER ::= {transmission 33}
+
+rs232Number  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of ports (regardless of their current state) in the RS-232-like general port table."
+    ::= {rs232 1}
+
+rs232PortTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Rs232PortEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A list of port entries.  The number of entries is given by the value of rs232Number."
+    ::= {rs232 2}
+
+rs232PortEntry  OBJECT-TYPE
+    SYNTAX  Rs232PortEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Status and parameter values for a port."
+    ::= {rs232PortTable 1}
+
+rs232PortIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value of ifIndex for the port.  By convention and if possible, hardware port numbers map directly to external connectors.  The value for each port must remain constant at least from one re-initialization of the network management agent to the next."
+    ::= {rs232PortEntry 1}
+
+rs232PortType  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The port's hardware type."
+    ::= {rs232PortEntry 2}
+
+rs232PortInSigNumber  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of input signals for the port in the input signal table (rs232PortInSigTable).  The table contains entries only for those signals the software can detect and that are useful to observe."
+    ::= {rs232PortEntry 3}
+
+rs232PortOutSigNumber  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of output signals for the port in the output signal table (rs232PortOutSigTable).  The table contains entries only for those signals the software can assert and that are useful to observe."
+    ::= {rs232PortEntry 4}
+
+rs232PortInSpeed  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The port's input speed in bits per second.  Note that non-standard values, such as 9612, are probably not allowed on most implementations."
+    ::= {rs232PortEntry 5}
+
+rs232PortOutSpeed  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The port's output speed in bits per second.  Note that non-standard values, such as 9612, are probably not allowed on most implementations."
+    ::= {rs232PortEntry 6}
+
+rs232PortInFlowType  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The port's type of input flow control.  'none' indicates no flow control at this level. 'ctsRts' and 'dsrDtr' indicate use of the indicated hardware signals."
+    ::= {rs232PortEntry 7}
+
+rs232PortOutFlowType  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The port's type of output flow control.  'none' indicates no flow control at this level. 'ctsRts' and 'dsrDtr' indicate use of the indicated hardware signals."
+    ::= {rs232PortEntry 8}
+
+rs232AsyncPortTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Rs232AsyncPortEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A list of asynchronous port entries.  Entries need not exist for synchronous ports."
+    ::= {rs232 3}
+
+rs232AsyncPortEntry  OBJECT-TYPE
+    SYNTAX  Rs232AsyncPortEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Status and parameter values for an asynchronous port."
+    ::= {rs232AsyncPortTable 1}
+
+rs232AsyncPortIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A unique value for each port.  Its value is the same as rs232PortIndex for the port."
+    ::= {rs232AsyncPortEntry 1}
+
+rs232AsyncPortBits  OBJECT-TYPE
+    SYNTAX  INTEGER (5..8)
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The port's number of bits in a character."
+    ::= {rs232AsyncPortEntry 2}
+
+rs232AsyncPortStopBits  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The port's number of stop bits."
+    ::= {rs232AsyncPortEntry 3}
+
+rs232AsyncPortParity  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The port's sense of a character parity bit."
+    ::= {rs232AsyncPortEntry 4}
+
+rs232AsyncPortAutobaud  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "A control for the port's ability to automatically sense input speed. When rs232PortAutoBaud is 'enabled', a port may autobaud to values different from the set values for speed, parity, and character size.  As a result a network management system may temp"
+    ::= {rs232AsyncPortEntry 5}
+
+rs232AsyncPortParityErrs  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total number of characters with a parity error, input from the port since system re-initialization and while the port state was 'up' or 'test'."
+    ::= {rs232AsyncPortEntry 6}
+
+rs232AsyncPortFramingErrs  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total number of characters with a framing error, input from the port since system re-initialization and while the port state was 'up' or 'test'."
+    ::= {rs232AsyncPortEntry 7}
+
+rs232AsyncPortOverrunErrs  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total number of characters with an overrun error, input from the port since system re-initialization and while the port state was 'up' or 'test'."
+    ::= {rs232AsyncPortEntry 8}
+
+rs232SyncPortTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Rs232SyncPortEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A list of asynchronous port entries.  Entries need not exist for synchronous ports."
+    ::= {rs232 4}
+
+rs232SyncPortEntry  OBJECT-TYPE
+    SYNTAX  Rs232SyncPortEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Status and parameter values for a synchronous port."
+    ::= {rs232SyncPortTable 1}
+
+rs232SyncPortIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A unique value for each port.  Its value is the same as rs232PortIndex for the port."
+    ::= {rs232SyncPortEntry 1}
+
+rs232SyncPortClockSource  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "Source of the port's bit rate clock. 'split' means the transmit clock is internal and the receive clock is external."
+    ::= {rs232SyncPortEntry 2}
+
+rs232SyncPortFrameCheckErrs  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total number of frames with an invalid frame check sequence, input from the port since system re-initialization and while the port state was 'up' or 'test'."
+    ::= {rs232SyncPortEntry 3}
+
+rs232SyncPortTransmitUnderrunErrs  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total number of frames that failed to be transmitted on the port since system re-initialization and while the port state was 'up' or 'test' because data was not available to the transmitter in time."
+    ::= {rs232SyncPortEntry 4}
+
+rs232SyncPortReceiveOverrunErrs  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total number of frames that failed to be received on the port since system re-initialization and while the port state was 'up' or 'test' because the receiver did not accept the data in time."
+    ::= {rs232SyncPortEntry 5}
+
+rs232SyncPortInterruptedFrames  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total number of frames that failed to be received or transmitted on the port due to loss of modem signals since system re-initialization and while the port state was 'up' or 'test'."
+    ::= {rs232SyncPortEntry 6}
+
+rs232SyncPortAbortedFrames  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Number of frames aborted on the port due to receiving an abort sequence since system re-initialization and while the port state was 'up' or 'test'."
+    ::= {rs232SyncPortEntry 7}
+
+rs232SyncPortRole  OBJECT-TYPE
+    SYNTAX  INTEGER  
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The role the device is playing that is using this port. dte    means the device is performing the role of data terminal equipment dce    means the device is performing the role of data circuit-terminating equipment."
+    ::= {rs232SyncPortEntry 8}
+
+rs232SyncPortEncoding  OBJECT-TYPE
+    SYNTAX  INTEGER  
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The bit stream encoding technique that is in effect for this port. nrz    for Non-Return to Zero encoding nrzi   for Non-Return to Zero Inverted encoding."
+    ::= {rs232SyncPortEntry 9}
+
+rs232SyncPortRTSControl  OBJECT-TYPE
+    SYNTAX  INTEGER  
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The method used to control the Request To Send (RTS) signal. controlled  when the DTE is asserts RTS each time data needs to be transmitted and drops RTS at some point after data transmission begins. If rs232SyncPortRole is 'dte', the RTS is an output si"
+    ::= {rs232SyncPortEntry 10}
+
+rs232SyncPortRTSCTSDelay  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The interval (in milliseconds) that the DCE must wait after it sees RTS asserted before asserting CTS.  This object exists in support of older synchronous devices that cannot recognize CTS within a certain interval after it asserts RTS."
+    ::= {rs232SyncPortEntry 11}
+
+rs232SyncPortMode  OBJECT-TYPE
+    SYNTAX  INTEGER  
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The mode of operation of the port with respect to the direction and simultaneity of data transfer. fdx              when frames on the data link can be transmitted and received at the same time hdx              when frames can either be received from the"
+    ::= {rs232SyncPortEntry 12}
+
+rs232SyncPortIdlePattern  OBJECT-TYPE
+    SYNTAX  INTEGER  
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The bit pattern used to indicate an idle line."
+    ::= {rs232SyncPortEntry 13}
+
+rs232SyncPortMinFlags  OBJECT-TYPE
+    SYNTAX  Integer32
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The minimum number of flag patterns this port needs in order to recognize the end of one frame and the start of the next.  Plausible values are 1 and 2."
+    ::= {rs232SyncPortEntry 14}
+
+rs232InSigTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Rs232InSigEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A list of port input control signal entries implemented and visible to the software on the port, and useful to monitor."
+    ::= {rs232 5}
+
+rs232InSigEntry  OBJECT-TYPE
+    SYNTAX  Rs232InSigEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Input control signal status for a hardware port."
+    ::= {rs232InSigTable 1}
+
+rs232InSigPortIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value of rs232PortIndex for the port to which this entry belongs."
+    ::= {rs232InSigEntry 1}
+
+rs232InSigName  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Identification of a hardware signal, as follows: rts    Request to Send cts    Clear to Send dsr    Data Set Ready dtr    Data Terminal Ready ri     Ring Indicator dcd    Received Line Signal Detector sq     Signal Quality Detector srs    Data Signaling "
+    ::= {rs232InSigEntry 2}
+
+rs232InSigState  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current signal state."
+    ::= {rs232InSigEntry 3}
+
+rs232InSigChanges  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of times the signal has changed from 'on' to 'off' or from 'off' to 'on'."
+    ::= {rs232InSigEntry 4}
+
+rs232OutSigTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Rs232OutSigEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A list of port output control signal entries implemented and visible to the software on the port, and useful to monitor."
+    ::= {rs232 6}
+
+rs232OutSigEntry  OBJECT-TYPE
+    SYNTAX  Rs232OutSigEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Output control signal status for a hardware port."
+    ::= {rs232OutSigTable 1}
+
+rs232OutSigPortIndex  OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value of rs232PortIndex for the port to which this entry belongs."
+    ::= {rs232OutSigEntry 1}
+
+rs232OutSigName  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Identification of a hardware signal, as follows: rts    Request to Send cts    Clear to Send dsr    Data Set Ready dtr    Data Terminal Ready ri     Ring Indicator dcd    Received Line Signal Detector sq     Signal Quality Detector srs    Data Signaling "
+    ::= {rs232OutSigEntry 2}
+
+rs232OutSigState  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The current signal state."
+    ::= {rs232OutSigEntry 3}
+
+rs232OutSigChanges  OBJECT-TYPE
+    SYNTAX  Counter32
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of times the signal has changed from 'on' to 'off' or from 'off' to 'on'."
+    ::= {rs232OutSigEntry 4}
+
+rs232Conformance  OBJECT IDENTIFIER ::= {rs232 7}
+
+rs232Groups  OBJECT IDENTIFIER ::= {rs232Conformance 1}
+
+rs232Compliances  OBJECT IDENTIFIER ::= {rs232Conformance 2}
+
+sonetMIB  OBJECT IDENTIFIER ::= {transmission 39}
+
+sonetObjects  OBJECT IDENTIFIER ::= {sonetMIB 1}
+
+sonetMedium  OBJECT IDENTIFIER ::= {sonetObjects 1}
+
+sonetMediumTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetMediumEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The SONET/SDH Medium table."
+    ::= {sonetMedium 1}
+
+sonetMediumEntry  OBJECT-TYPE
+    SYNTAX  SonetMediumEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the SONET/SDH Medium table."
+    ::= {sonetMediumTable 1}
+
+sonetMediumType  OBJECT-TYPE
+    SYNTAX  INTEGER  
+            }
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "This variable identifies whether a SONET or a SDH signal is used across this interface."
+    ::= {sonetMediumEntry 1}
+
+sonetMediumTimeElapsed  OBJECT-TYPE
+    SYNTAX  Integer32 (1..900)
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of seconds, including partial seconds, that have elapsed since the beginning of the current measurement period. If, for some reason, such as an adjustment in the system's time-of-day clock, the current interval exceeds the maximum value, the a"
+    ::= {sonetMediumEntry 2}
+
+sonetMediumValidIntervals  OBJECT-TYPE
+    SYNTAX  Integer32 (0..96)
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of previous 15-minute intervals for which data was collected. A SONET/SDH interface must be capable of supporting at least n intervals. The minimum value of n is 4. The default of n is 32. The maximum value of n is 96. The value will be <n> un"
+    ::= {sonetMediumEntry 3}
+
+sonetMediumLineCoding  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "This variable describes the line coding for this interface. The B3ZS and CMI are used for electrical SONET/SDH signals (STS-1 and STS-3). The Non-Return to Zero (NRZ) and the Return to Zero are used for optical SONET/SDH signals."
+    ::= {sonetMediumEntry 4}
+
+sonetMediumLineType  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "This variable describes the line type for this interface. The line types are Short and Long Range Single Mode fiber or Multi-Mode fiber interfaces, and coax and UTP for electrical interfaces.  The value sonetOther should be used when the Line Type is not"
+    ::= {sonetMediumEntry 5}
+
+sonetMediumCircuitIdentifier  OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..255))
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "This variable contains the transmission vendor's circuit identifier, for the purpose of facilitating troubleshooting. Note that the circuit identifier, if available, is also represented by ifPhysAddress."
+    ::= {sonetMediumEntry 6}
+
+sonetMediumInvalidIntervals  OBJECT-TYPE
+    SYNTAX  Integer32 (0..96)
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The number of intervals in the range from 0 to sonetMediumValidIntervals for which no data is available. This object will typically be zero except in cases where the data for some intervals are not available (e.g., in proxy situations)."
+    ::= {sonetMediumEntry 7}
+
+sonetMediumLoopbackConfig  OBJECT-TYPE
+    SYNTAX  OCTET STRING(SIZE(1))
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The current loopback state of the SONET/SDH interface.  The values mean: sonetNoLoop Not in the loopback state. A device that is not capable of performing a loopback on this interface shall always return this value. sonetFacilityLoop The received signal "
+    ::= {sonetMediumEntry 8}
+
+sonetSESthresholdSet  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "An enumerated integer indicating which recognized set of SES thresholds that the agent uses for determining severely errored seconds and unavailable time. other(1) None of the following. bellcore1991(2) Bellcore TR-NWT-000253, 1991 [32], or ANSI T1M1.3/9"
+    ::= {sonetMedium 2}
+
+sonetSection  OBJECT IDENTIFIER ::= {sonetObjects 2}
+
+sonetSectionCurrentTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetSectionCurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The SONET/SDH Section Current table."
+    ::= {sonetSection 1}
+
+sonetSectionCurrentEntry  OBJECT-TYPE
+    SYNTAX  SonetSectionCurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the SONET/SDH Section Current table."
+    ::= {sonetSectionCurrentTable 1}
+
+sonetSectionCurrentStatus  OBJECT-TYPE
+    SYNTAX  Integer32 (1..6)
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "This variable indicates the status of the interface. The sonetSectionCurrentStatus is a bit map represented as a sum, therefore, it can represent multiple defects simultaneously. The sonetSectionNoDefect should be set if and only if no other flag is set."
+    ::= {sonetSectionCurrentEntry 1}
+
+sonetSectionCurrentESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Errored Seconds encountered by a SONET/SDH Section in the current 15 minute interval."
+    ::= {sonetSectionCurrentEntry 2}
+
+sonetSectionCurrentSESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Severely Errored Seconds encountered by a SONET/SDH Section in the current 15 minute interval."
+    ::= {sonetSectionCurrentEntry 3}
+
+sonetSectionCurrentSEFSs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Severely Errored Framing Seconds encountered by a SONET/SDH Section in the current 15 minute interval."
+    ::= {sonetSectionCurrentEntry 4}
+
+sonetSectionCurrentCVs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Coding Violations encountered by a SONET/SDH Section in the current 15 minute interval."
+    ::= {sonetSectionCurrentEntry 5}
+
+sonetSectionIntervalTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetSectionIntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The SONET/SDH Section Interval table."
+    ::= {sonetSection 2}
+
+sonetSectionIntervalEntry  OBJECT-TYPE
+    SYNTAX  SonetSectionIntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the SONET/SDH Section Interval table."
+    ::= {sonetSectionIntervalTable 1}
+
+sonetSectionIntervalNumber  OBJECT-TYPE
+    SYNTAX  Integer32 (1..96)
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "A number between 1 and 96, which identifies the interval for which the set of statistics is available. The interval identified by 1 is the most recently completed 15 minute interval, and the interval identified by N is the interval immediately preceding "
+    ::= {sonetSectionIntervalEntry 1}
+
+sonetSectionIntervalESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Errored Seconds encountered by a SONET/SDH Section in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetSectionIntervalEntry 2}
+
+sonetSectionIntervalSESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Severely Errored Seconds encountered by a SONET/SDH Section in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetSectionIntervalEntry 3}
+
+sonetSectionIntervalSEFSs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Severely Errored Framing Seconds encountered by a SONET/SDH Section in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetSectionIntervalEntry 4}
+
+sonetSectionIntervalCVs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Coding Violations encountered by a SONET/SDH Section in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetSectionIntervalEntry 5}
+
+sonetSectionIntervalValidData  OBJECT-TYPE
+    SYNTAX  TruthValue
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "This variable indicates if the data for this interval is valid."
+    ::= {sonetSectionIntervalEntry 6}
+
+sonetLine  OBJECT IDENTIFIER ::= {sonetObjects 3}
+
+sonetLineCurrentTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetLineCurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The SONET/SDH Line Current table."
+    ::= {sonetLine 1}
+
+sonetLineCurrentEntry  OBJECT-TYPE
+    SYNTAX  SonetLineCurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the SONET/SDH Line Current table."
+    ::= {sonetLineCurrentTable 1}
+
+sonetLineCurrentStatus  OBJECT-TYPE
+    SYNTAX  Integer32 (1..6)
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "This variable indicates the status of the interface. The sonetLineCurrentStatus is a bit map represented as a sum, therefore, it can represent multiple defects simultaneously. The sonetLineNoDefect should be set if and only if no other flag is set. The v"
+    ::= {sonetLineCurrentEntry 1}
+
+sonetLineCurrentESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Errored Seconds encountered by a SONET/SDH Line in the current 15 minute interval."
+    ::= {sonetLineCurrentEntry 2}
+
+sonetLineCurrentSESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Severely Errored Seconds encountered by a SONET/SDH Line in the current 15 minute interval."
+    ::= {sonetLineCurrentEntry 3}
+
+sonetLineCurrentCVs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Coding Violations encountered by a SONET/SDH Line in the current 15 minute interval."
+    ::= {sonetLineCurrentEntry 4}
+
+sonetLineCurrentUASs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Unavailable Seconds encountered by a SONET/SDH Line in the current 15 minute interval."
+    ::= {sonetLineCurrentEntry 5}
+
+sonetLineIntervalTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetLineIntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The SONET/SDH Line Interval table."
+    ::= {sonetLine 2}
+
+sonetLineIntervalEntry  OBJECT-TYPE
+    SYNTAX  SonetLineIntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the SONET/SDH Line Interval table."
+    ::= {sonetLineIntervalTable 1}
+
+sonetLineIntervalNumber  OBJECT-TYPE
+    SYNTAX  Integer32 (1..96)
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "A number between 1 and 96, which identifies the interval for which the set of statistics is available. The interval identified by 1 is the most recently completed 15 minute interval, and the interval identified by N is the interval immediately preceding "
+    ::= {sonetLineIntervalEntry 1}
+
+sonetLineIntervalESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Errored Seconds encountered by a SONET/SDH Line in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetLineIntervalEntry 2}
+
+sonetLineIntervalSESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Severely Errored Seconds encountered by a SONET/SDH Line in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetLineIntervalEntry 3}
+
+sonetLineIntervalCVs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Coding Violations encountered by a SONET/SDH Line in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetLineIntervalEntry 4}
+
+sonetLineIntervalUASs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Unavailable Seconds encountered by a SONET/SDH Line in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetLineIntervalEntry 5}
+
+sonetLineIntervalValidData  OBJECT-TYPE
+    SYNTAX  TruthValue
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "This variable indicates if the data for this interval is valid."
+    ::= {sonetLineIntervalEntry 6}
+
+sonetFarEndLine  OBJECT IDENTIFIER ::= {sonetObjects 4}
+
+sonetFarEndLineCurrentTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetFarEndLineCurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The SONET/SDH Far End Line Current table."
+    ::= {sonetFarEndLine 1}
+
+sonetFarEndLineCurrentEntry  OBJECT-TYPE
+    SYNTAX  SonetFarEndLineCurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the SONET/SDH Far End Line Current table."
+    ::= {sonetFarEndLineCurrentTable 1}
+
+sonetFarEndLineCurrentESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Errored Seconds encountered by a SONET/SDH interface in the current 15 minute interval."
+    ::= {sonetFarEndLineCurrentEntry 1}
+
+sonetFarEndLineCurrentSESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Severely Errored Seconds encountered by a SONET/SDH Medium/Section/Line interface in the current 15 minute interval."
+    ::= {sonetFarEndLineCurrentEntry 2}
+
+sonetFarEndLineCurrentCVs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Coding Violations reported via the far end block error count encountered by a SONET/SDH Medium/Section/Line interface in the current 15 minute interval."
+    ::= {sonetFarEndLineCurrentEntry 3}
+
+sonetFarEndLineCurrentUASs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Unavailable Seconds encountered by a SONET/SDH Medium/Section/Line interface in the current 15 minute interval."
+    ::= {sonetFarEndLineCurrentEntry 4}
+
+sonetFarEndLineIntervalTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetFarEndLineIntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The SONET/SDH Far End Line Interval table."
+    ::= {sonetFarEndLine 2}
+
+sonetFarEndLineIntervalEntry  OBJECT-TYPE
+    SYNTAX  SonetFarEndLineIntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the SONET/SDH Far End Line Interval table."
+    ::= {sonetFarEndLineIntervalTable 1}
+
+sonetFarEndLineIntervalNumber  OBJECT-TYPE
+    SYNTAX  Integer32 (1..96)
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "A number between 1 and 96, which identifies the interval for which the set of statistics is available. The interval identified by 1 is the most recently completed 15 minute interval, and the interval identified by N is the interval immediately preceding "
+    ::= {sonetFarEndLineIntervalEntry 1}
+
+sonetFarEndLineIntervalESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Errored Seconds encountered by a SONET/SDH Line interface in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetFarEndLineIntervalEntry 2}
+
+sonetFarEndLineIntervalSESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Severely Errored Seconds encountered by a SONET/SDH Line interface in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetFarEndLineIntervalEntry 3}
+
+sonetFarEndLineIntervalCVs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Coding Violations reported via the far end block error count encountered by a SONET/SDH Line interface in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetFarEndLineIntervalEntry 4}
+
+sonetFarEndLineIntervalUASs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Unavailable Seconds encountered by a SONET/SDH Line interface in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetFarEndLineIntervalEntry 5}
+
+sonetFarEndLineIntervalValidData  OBJECT-TYPE
+    SYNTAX  TruthValue
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "This variable indicates if the data for this interval is valid."
+    ::= {sonetFarEndLineIntervalEntry 6}
+
+sonetObjectsPath  OBJECT IDENTIFIER ::= {sonetMIB 2}
+
+sonetPath  OBJECT IDENTIFIER ::= {sonetObjectsPath 1}
+
+sonetPathCurrentTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetPathCurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The SONET/SDH Path Current table."
+    ::= {sonetPath 1}
+
+sonetPathCurrentEntry  OBJECT-TYPE
+    SYNTAX  SonetPathCurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the SONET/SDH Path Current table."
+    ::= {sonetPathCurrentTable 1}
+
+sonetPathCurrentWidth  OBJECT-TYPE
+    SYNTAX  INTEGER  
+            }
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "A value that indicates the type of the SONET/SDH Path.  For SONET, the assigned types are the STS-Nc SPEs, where N = 1, 3, 12, 24, and 48. STS-1 is equal to 51.84 Mbps.  For SDH, the assigned types are the STM-Nc VCs, where N = 1, 4, and 16."
+    ::= {sonetPathCurrentEntry 1}
+
+sonetPathCurrentStatus  OBJECT-TYPE
+    SYNTAX  Integer32 (1..62)
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "This variable indicates the status of the interface. The sonetPathCurrentStatus is a bit map represented as a sum, therefore, it can represent multiple defects simultaneously. The sonetPathNoDefect should be set if and only if no other flag is set. The v"
+    ::= {sonetPathCurrentEntry 2}
+
+sonetPathCurrentESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Errored Seconds encountered by a SONET/SDH Path in the current 15 minute interval."
+    ::= {sonetPathCurrentEntry 3}
+
+sonetPathCurrentSESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Severely Errored Seconds encountered by a SONET/SDH Path in the current 15 minute interval."
+    ::= {sonetPathCurrentEntry 4}
+
+sonetPathCurrentCVs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Coding Violations encountered by a SONET/SDH Path in the current 15 minute interval."
+    ::= {sonetPathCurrentEntry 5}
+
+sonetPathCurrentUASs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Unavailable Seconds encountered by a Path in the current 15 minute interval."
+    ::= {sonetPathCurrentEntry 6}
+
+sonetPathIntervalTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetPathIntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The SONET/SDH Path Interval table."
+    ::= {sonetPath 2}
+
+sonetPathIntervalEntry  OBJECT-TYPE
+    SYNTAX  SonetPathIntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the SONET/SDH Path Interval table."
+    ::= {sonetPathIntervalTable 1}
+
+sonetPathIntervalNumber  OBJECT-TYPE
+    SYNTAX  Integer32 (1..96)
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "A number between 1 and 96, which identifies the interval for which the set of statistics is available. The interval identified by 1 is the most recently completed 15 minute interval, and the interval identified by N is the interval immediately preceding "
+    ::= {sonetPathIntervalEntry 1}
+
+sonetPathIntervalESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Errored Seconds encountered by a SONET/SDH Path in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetPathIntervalEntry 2}
+
+sonetPathIntervalSESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Severely Errored Seconds encountered by a SONET/SDH Path in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetPathIntervalEntry 3}
+
+sonetPathIntervalCVs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Coding Violations encountered by a SONET/SDH Path in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetPathIntervalEntry 4}
+
+sonetPathIntervalUASs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Unavailable Seconds encountered by a Path in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetPathIntervalEntry 5}
+
+sonetPathIntervalValidData  OBJECT-TYPE
+    SYNTAX  TruthValue
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "This variable indicates if the data for this interval is valid."
+    ::= {sonetPathIntervalEntry 6}
+
+sonetFarEndPath  OBJECT IDENTIFIER ::= {sonetObjectsPath 2}
+
+sonetFarEndPathCurrentTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetFarEndPathCurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The SONET/SDH Far End Path Current table."
+    ::= {sonetFarEndPath 1}
+
+sonetFarEndPathCurrentEntry  OBJECT-TYPE
+    SYNTAX  SonetFarEndPathCurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the SONET/SDH Far End Path Current table."
+    ::= {sonetFarEndPathCurrentTable 1}
+
+sonetFarEndPathCurrentESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Errored Seconds encountered by a SONET/SDH interface in the current 15 minute interval."
+    ::= {sonetFarEndPathCurrentEntry 1}
+
+sonetFarEndPathCurrentSESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Severely Errored Seconds encountered by a SONET/SDH Path interface in the current 15 minute interval."
+    ::= {sonetFarEndPathCurrentEntry 2}
+
+sonetFarEndPathCurrentCVs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Coding Violations reported via the far end block error count encountered by a SONET/SDH Path interface in the current 15 minute interval."
+    ::= {sonetFarEndPathCurrentEntry 3}
+
+sonetFarEndPathCurrentUASs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Unavailable Seconds encountered by a SONET/SDH Path interface in the current 15 minute interval."
+    ::= {sonetFarEndPathCurrentEntry 4}
+
+sonetFarEndPathIntervalTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetFarEndPathIntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The SONET/SDH Far End Path Interval table."
+    ::= {sonetFarEndPath 2}
+
+sonetFarEndPathIntervalEntry  OBJECT-TYPE
+    SYNTAX  SonetFarEndPathIntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the SONET/SDH Far End Path Interval table."
+    ::= {sonetFarEndPathIntervalTable 1}
+
+sonetFarEndPathIntervalNumber  OBJECT-TYPE
+    SYNTAX  Integer32 (1..96)
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "A number between 1 and 96, which identifies the interval for which the set of statistics is available. The interval identified by 1 is the most recently completed 15 minute interval, and the interval identified by N is the interval immediately preceding "
+    ::= {sonetFarEndPathIntervalEntry 1}
+
+sonetFarEndPathIntervalESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Errored Seconds encountered by a SONET/SDH Path interface in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetFarEndPathIntervalEntry 2}
+
+sonetFarEndPathIntervalSESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Severely Errored Seconds encountered by a SONET/SDH Path interface in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetFarEndPathIntervalEntry 3}
+
+sonetFarEndPathIntervalCVs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Coding Violations reported via the far end block error count encountered by a SONET/SDH Path interface in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetFarEndPathIntervalEntry 4}
+
+sonetFarEndPathIntervalUASs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Unavailable Seconds encountered by a SONET/SDH Path interface in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetFarEndPathIntervalEntry 5}
+
+sonetFarEndPathIntervalValidData  OBJECT-TYPE
+    SYNTAX  TruthValue
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "This variable indicates if the data for this interval is valid."
+    ::= {sonetFarEndPathIntervalEntry 6}
+
+sonetObjectsVT  OBJECT IDENTIFIER ::= {sonetMIB 3}
+
+sonetVT  OBJECT IDENTIFIER ::= {sonetObjectsVT 1}
+
+sonetVTCurrentTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetVTCurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The SONET/SDH VT Current table."
+    ::= {sonetVT 1}
+
+sonetVTCurrentEntry  OBJECT-TYPE
+    SYNTAX  SonetVTCurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the SONET/SDH VT Current table."
+    ::= {sonetVTCurrentTable 1}
+
+sonetVTCurrentWidth  OBJECT-TYPE
+    SYNTAX  INTEGER 
+            }
+    ACCESS  read-write
+    STATUS  5
+    DESCRIPTION
+            "A value that indicates the type of the SONET VT and SDH VC.  Assigned widths are VT1.5/VC11, VT2/VC12, VT3, VT6/VC2, and VT6c."
+    ::= {sonetVTCurrentEntry 1}
+
+sonetVTCurrentStatus  OBJECT-TYPE
+    SYNTAX  Integer32 (1..126)
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "This variable indicates the status of the interface. The sonetVTCurrentStatus is a bit map represented as a sum, therefore, it can represent multiple defects and failures simultaneously. The sonetVTNoDefect should be set if and only if no other flag is s"
+    ::= {sonetVTCurrentEntry 2}
+
+sonetVTCurrentESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Errored Seconds encountered by a SONET/SDH VT in the current 15 minute interval."
+    ::= {sonetVTCurrentEntry 3}
+
+sonetVTCurrentSESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Severely Errored Seconds encountered by a SONET/SDH VT in the current 15 minute interval."
+    ::= {sonetVTCurrentEntry 4}
+
+sonetVTCurrentCVs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Coding Violations encountered by a SONET/SDH VT in the current 15 minute interval."
+    ::= {sonetVTCurrentEntry 5}
+
+sonetVTCurrentUASs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Unavailable Seconds encountered by a VT in the current 15 minute interval."
+    ::= {sonetVTCurrentEntry 6}
+
+sonetVTIntervalTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetVTIntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The SONET/SDH VT Interval table."
+    ::= {sonetVT 2}
+
+sonetVTIntervalEntry  OBJECT-TYPE
+    SYNTAX  SonetVTIntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the SONET/SDH VT Interval table."
+    ::= {sonetVTIntervalTable 1}
+
+sonetVTIntervalNumber  OBJECT-TYPE
+    SYNTAX  Integer32 (1..96)
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "A number between 1 and 96, which identifies the interval for which the set of statistics is available. The interval identified by 1 is the most recently completed 15 minute interval, and the interval identified by N is the interval immediately preceding "
+    ::= {sonetVTIntervalEntry 1}
+
+sonetVTIntervalESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Errored Seconds encountered by a SONET/SDH VT in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetVTIntervalEntry 2}
+
+sonetVTIntervalSESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Severely Errored Seconds encountered by a SONET/SDH VT in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetVTIntervalEntry 3}
+
+sonetVTIntervalCVs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Coding Violations encountered by a SONET/SDH VT in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetVTIntervalEntry 4}
+
+sonetVTIntervalUASs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Unavailable Seconds encountered by a VT in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetVTIntervalEntry 5}
+
+sonetVTIntervalValidData  OBJECT-TYPE
+    SYNTAX  TruthValue
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "This variable indicates if the data for this interval is valid."
+    ::= {sonetVTIntervalEntry 6}
+
+sonetFarEndVT  OBJECT IDENTIFIER ::= {sonetObjectsVT 2}
+
+sonetFarEndVTCurrentTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetFarEndVTCurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The SONET/SDH Far End VT Current table."
+    ::= {sonetFarEndVT 1}
+
+sonetFarEndVTCurrentEntry  OBJECT-TYPE
+    SYNTAX  SonetFarEndVTCurrentEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the SONET/SDH Far End VT Current table."
+    ::= {sonetFarEndVTCurrentTable 1}
+
+sonetFarEndVTCurrentESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Errored Seconds encountered by a SONET/SDH interface in the current 15 minute interval."
+    ::= {sonetFarEndVTCurrentEntry 1}
+
+sonetFarEndVTCurrentSESs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Severely Errored Seconds encountered by a SONET/SDH VT interface in the current 15 minute interval."
+    ::= {sonetFarEndVTCurrentEntry 2}
+
+sonetFarEndVTCurrentCVs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Coding Violations reported via the far end block error count encountered by a SONET/SDH VT interface in the current 15 minute interval."
+    ::= {sonetFarEndVTCurrentEntry 3}
+
+sonetFarEndVTCurrentUASs  OBJECT-TYPE
+    SYNTAX  PerfCurrentCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Unavailable Seconds encountered by a SONET/SDH VT interface in the current 15 minute interval."
+    ::= {sonetFarEndVTCurrentEntry 4}
+
+sonetFarEndVTIntervalTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SonetFarEndVTIntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "The SONET/SDH Far End VT Interval table."
+    ::= {sonetFarEndVT 2}
+
+sonetFarEndVTIntervalEntry  OBJECT-TYPE
+    SYNTAX  SonetFarEndVTIntervalEntry
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "An entry in the SONET/SDH Far End VT Interval table."
+    ::= {sonetFarEndVTIntervalTable 1}
+
+sonetFarEndVTIntervalNumber  OBJECT-TYPE
+    SYNTAX  Integer32 (1..96)
+    ACCESS  not-accessible
+    STATUS  5
+    DESCRIPTION
+            "A number between 1 and 96, which identifies the interval for which the set of statistics is available. The interval identified by 1 is the most recently completed 15 minute interval, and the interval identified by N is the interval immediately preceding "
+    ::= {sonetFarEndVTIntervalEntry 1}
+
+sonetFarEndVTIntervalESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Errored Seconds encountered by a SONET/SDH VT interface in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetFarEndVTIntervalEntry 2}
+
+sonetFarEndVTIntervalSESs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Severely Errored Seconds encountered by a SONET/SDH VT interface in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetFarEndVTIntervalEntry 3}
+
+sonetFarEndVTIntervalCVs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Coding Violations reported via the far end block error count encountered by a SONET/SDH VT interface in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetFarEndVTIntervalEntry 4}
+
+sonetFarEndVTIntervalUASs  OBJECT-TYPE
+    SYNTAX  PerfIntervalCount
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "The counter associated with the number of Far End Unavailable Seconds encountered by a SONET/SDH VT interface in a particular 15-minute interval in the past 24 hours."
+    ::= {sonetFarEndVTIntervalEntry 5}
+
+sonetFarEndVTIntervalValidData  OBJECT-TYPE
+    SYNTAX  TruthValue
+    ACCESS  read-only
+    STATUS  5
+    DESCRIPTION
+            "This variable indicates if the data for this interval is valid."
+    ::= {sonetFarEndVTIntervalEntry 6}
+
+sonetConformance  OBJECT IDENTIFIER ::= {sonetMIB 4}
+
+sonetGroups  OBJECT IDENTIFIER ::= {sonetConformance 1}
+
+sonetCompliances  OBJECT IDENTIFIER ::= {sonetConformance 2}
+
+adsltcmib  OBJECT IDENTIFIER ::= {transmission 2}
+END
