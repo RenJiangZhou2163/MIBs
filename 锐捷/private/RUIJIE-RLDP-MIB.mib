@@ -1,0 +1,319 @@
+-- *****************************************************************
+-- RUIJIE-RLDP-MIB.mib:  Ruijie RLDP MIB file
+--
+-- September 2019, htian
+--
+-- Copyright (c) 2019 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-RLDP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32,
+        Counter32
+                FROM SNMPv2-SMI
+        VlanId
+                FROM Q-BRIDGE-MIB
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        IfIndex
+                FROM RUIJIE-TC        
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieRldpMIB MODULE-IDENTITY
+        LAST-UPDATED "201909170000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie RLDP mibs."
+        REVISION      "201909170000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 162}
+
+ruijieRldpMIBObjects OBJECT IDENTIFIER ::= { ruijieRldpMIB 1 }
+
+
+ -- RLDP(Rapid Link Detection Protocol) Loop Detect information table
+ -- RLDP Loop Detect info on individual local ports
+ --
+
+ ruijieRldpLoopTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF RuijieRldpLoopEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+             "A table get RLDP Loop Detect information on individual
+              interfaces."
+     ::= { ruijieRldpMIBObjects 1 }
+
+ ruijieRldpLoopEntry OBJECT-TYPE
+     SYNTAX  RuijieRldpLoopEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+             "RLDP Loop Detect information for a particular
+              port. The port must be contained in the same chassis as the
+              RLDP agent."
+     INDEX   { ruijieRldpLoopIfIndex }
+     ::= { ruijieRldpLoopTable 1 }
+
+ RuijieRldpLoopEntry ::=
+     SEQUENCE {
+         ruijieRldpLoopIfIndex
+             IfIndex,
+         ruijieRldpLoopVlan
+             Integer32, 
+         ruijieRldpLoopState
+             INTEGER,   
+         ruijieRldpLoopAction
+             INTEGER 
+     }
+
+ ruijieRldpLoopIfIndex OBJECT-TYPE
+     SYNTAX  IfIndex
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "The interface on which this entry's equivalence
+             is effective.  The interface identified by a
+             particular value of this index is the same
+             interface as identified by the same value of
+             ifIndex."
+     ::= { ruijieRldpLoopEntry 1 }
+
+ ruijieRldpLoopVlan OBJECT-TYPE
+     SYNTAX  Integer32
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "The VLAN of RLDP Loop Detect on port."
+     ::= { ruijieRldpLoopEntry 2 }
+     
+ ruijieRldpLoopState OBJECT-TYPE
+    SYNTAX  INTEGER { 
+             normal(1), -- Link Normal.
+             error(2) -- Link Detected Loop error.
+         }
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "The state of RLDP Loop Detect on port."
+     ::= { ruijieRldpLoopEntry 3 }
+     
+ ruijieRldpLoopAction OBJECT-TYPE
+    SYNTAX  INTEGER { 
+             disable(0), -- turn off the RLDP function on port
+             warning(1), -- warning when detected Loop error on VLAN.
+             block(2), -- block interface when detected Loop error on VLAN.
+             shutdown-port(3), -- shutdown interface when detected Loop error on VLAN.
+             shutdown-svi(4), -- shutdown svi port when detected Loop error on VLAN.
+             isolate-vlan(5) -- isolate VLAN when detected Loop error on VLAN.
+         }
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "The configured action of RLDP Loop Detect on port."
+     ::= { ruijieRldpLoopEntry 4 }        
+
+
+-- ruijieRldpVlanLoopTable:
+-- RLDP Loop Detect info on VLAN
+--
+   
+ ruijieRldpVlanLoopTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF RuijieRldpVlanLoopEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+             "A table get RLDP Loop Detect information on VLAN."
+     ::= { ruijieRldpMIBObjects 2 }
+
+ ruijieRldpVlanLoopEntry OBJECT-TYPE
+     SYNTAX  RuijieRldpVlanLoopEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+             "RLDP Loop Detect information on VLAN for a particular
+              port. The port must be contained in the same chassis as the
+              RLDP agent"
+     INDEX   { ruijieRldpVlanLoopIfIndex, 
+               ruijieRldpVlanLoopVlan }
+     ::= { ruijieRldpVlanLoopTable 1 }
+
+ RuijieRldpVlanLoopEntry ::=
+     SEQUENCE {
+         ruijieRldpVlanLoopIfIndex
+             IfIndex,
+         ruijieRldpVlanLoopVlan
+             VlanId,
+         ruijieRldpVlanLoopState
+             INTEGER,
+         ruijieRldpVlanLoopAction
+             INTEGER
+     }
+
+ ruijieRldpVlanLoopIfIndex OBJECT-TYPE
+     SYNTAX  IfIndex
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "The interface on which this entry's equivalence
+             is effective.  The interface identified by a
+             particular value of this index is the same
+             interface as identified by the same value of
+             ifIndex."
+     ::= { ruijieRldpVlanLoopEntry 1 }
+
+ ruijieRldpVlanLoopVlan OBJECT-TYPE
+        SYNTAX VlanId
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The VLAN of RLDP Loop Detect on port."
+        ::= { ruijieRldpVlanLoopEntry 2 }
+
+ ruijieRldpVlanLoopState OBJECT-TYPE
+        SYNTAX  INTEGER {
+              normal(1), -- Link Normal.
+              error(2) -- Link Detected Loop error.
+             }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The state of RLDP Loop Detect on VLAN."
+        ::= { ruijieRldpVlanLoopEntry 3 }
+     
+ ruijieRldpVlanLoopAction OBJECT-TYPE
+        SYNTAX  INTEGER { 
+             warning(1), -- Warning when detected Loop error on VLAN.
+             block(2), -- Block interface when detected Loop error on VLAN.
+             shutdown-port(3), -- Shutdown interface when detected Loop error on VLAN.
+             shutdown-svi(4), -- Shutdown SVI port when detected Loop error on VLAN.
+             isolate-vlan(5) -- Isolate the VLAN when detected Loop error on VLAN.
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The configured action of RLDP Loop Detect on port."
+        ::= { ruijieRldpVlanLoopEntry 4 }
+
+
+--
+-- ***********************************************************
+-- 
+--        R L D P   M I B   N O T I F I C A T I O N S
+-- 
+-- *********************************************************** 
+--
+
+ruijieRldpTraps      OBJECT IDENTIFIER ::= { ruijieRldpMIB 2 }
+
+rldpLoopStateChange NOTIFICATION-TYPE
+    OBJECTS { ruijieRldpLoopIfIndex, ruijieRldpLoopVlan, ruijieRldpLoopState, ruijieRldpLoopAction } 
+    STATUS  current
+    DESCRIPTION
+        "This notification is generated when the device detected a loop.
+        This notification is also generated when the device recovers from the loop.
+
+        <ruijieRldpLoopIfIndex> is The interface identified by a
+             particular value of this index is the same
+             interface as identified by the same value of
+             ifIndex.
+
+        <ruijieRldpLoopVlan> is the VLAN where the loop occurs on the interface.
+             
+        <ruijieRldpLoopState> is the detected state of interface and supports the following values
+             1 - loop recover.
+             2 - loop detected.
+
+        <ruijieRldpLoopAction> is the anti-ring strategy adopted by RLDP when a loop occurs." 
+    ::= { ruijieRldpTraps 1 } 
+
+rldpVlanLoopStateChange NOTIFICATION-TYPE
+    OBJECTS { ruijieRldpVlanLoopIfIndex, ruijieRldpVlanLoopVlan, ruijieRldpVlanLoopState, ruijieRldpVlanLoopAction }
+    STATUS  current
+    DESCRIPTION
+        "This notification is generated when the device detected a vlanloop.
+        This notification is also generated when the device recovers from the vlanloop.
+            
+        <ruijieRldpVlanLoopIfIndex> is The interface identified by a
+             particular value of this index is the same
+             interface as identified by the same value of
+             ifIndex.
+
+        <ruijieRldpVlanLoopVlan> is the VLAN where the loop occurs on the interface. 
+        
+        <ruijieRldpVlanLoopState> is the detected state of interface and supports the following values
+             1 - loop recover on VLAN.
+             2 - loop detected on VLAN.
+
+        <ruijieRldpVlanLoopAction> is the anti-ring strategy adopted by RLDP when a loop occurs on VLAN."
+    ::= { ruijieRldpTraps 2 }
+
+    
+-- conformance information
+         
+ruijieRldpMIBConformance OBJECT IDENTIFIER ::= { ruijieRldpMIB 3 }
+ruijieRldpMIBCompliances OBJECT IDENTIFIER ::= { ruijieRldpMIBConformance 1 }
+ruijieRldpMIBGroups      OBJECT IDENTIFIER ::= { ruijieRldpMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieRldpMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for SNMP entities which implement
+                 the RLDP MIB."
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieRldpLoopMIBGroup, 
+                                   ruijieRldpVlanLoopMIBGroup
+                 }
+        ::= { ruijieRldpMIBCompliances 1 }
+
+
+-- MIB groupings
+
+ruijieRldpLoopMIBGroup OBJECT-GROUP
+        OBJECTS {
+         ruijieRldpLoopIfIndex,
+         ruijieRldpLoopVlan,
+         ruijieRldpLoopState,
+         ruijieRldpLoopAction
+        }
+        STATUS  current
+        DESCRIPTION
+                "The collection of objects which are used to configure the
+                 Rapid Link Detection Protocol implementation behavior.
+                 This group is mandatory for agents which implement the 
+                 loop detect function."
+        ::= { ruijieRldpMIBGroups 1 } 
+
+ ruijieRldpVlanLoopMIBGroup OBJECT-GROUP
+        OBJECTS {
+         ruijieRldpVlanLoopIfIndex,
+         ruijieRldpVlanLoopVlan,
+         ruijieRldpVlanLoopState,
+         ruijieRldpVlanLoopAction
+        }
+        STATUS  current
+        DESCRIPTION
+                "The collection of objects which are used to represent Rapid Link
+                 Detection Protocol statistics.
+                 This group is mandatory for agents which implement the 
+                 loop detect function on VLAN."
+        ::= { ruijieRldpMIBGroups 2 } 
+
+END

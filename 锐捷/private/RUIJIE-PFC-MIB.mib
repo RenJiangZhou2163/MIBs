@@ -1,0 +1,293 @@
+-- *****************************************************************
+-- RUIJIE-PFC-MIB.mib:  Ruijie Priority-flow-control MIB file
+--
+-- 2017-12-18, Weilin1
+--
+-- Copyright (c) 2017 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-PFC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        NOTIFICATION-TYPE,
+        Integer32,
+        Counter32,
+        Counter64,
+        Unsigned32
+                FROM SNMPv2-SMI
+        DisplayString
+                FROM SNMPv2-TC
+        Gauge
+                FROM RFC1155-SMI                
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ConfigStatus,
+        IfIndex
+                FROM RUIJIE-TC
+        ifIndex
+                FROM RFC1213-MIB
+        ruijieMgmt
+                FROM RUIJIE-SMI
+        InterfaceIndex
+                FROM IF-MIB;
+                
+ruijiePfcMIB    MODULE-IDENTITY
+       LAST-UPDATED    "201712180000Z"
+       ORGANIZATION    "Ruijie Networks Co.,Ltd."
+       CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie priority-flow-control interface priority counter mibs."
+        REVISION      "201712180000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 157}
+
+ruijiePfcCounterMIBObjects  OBJECT IDENTIFIER ::= { ruijiePfcMIB 1 }
+ruijiePfcMIBConformance     OBJECT IDENTIFIER ::= { ruijiePfcMIB 2 }
+
+--****************************************************************
+-- Pfc Counter Objects
+--****************************************************************
+
+ruijiePfcIfPriorityCounterTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijiePfcIfPriorityCounterEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of Pfc interface priority counter objects."
+        ::= { ruijiePfcCounterMIBObjects 1 }
+    
+ruijiePfcIfPriorityCounterEntry OBJECT-TYPE
+        SYNTAX RuijiePfcIfPriorityCounterEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains Pfc interface priority counters."
+        INDEX   { 
+                    ruijieIfIndex,
+                    ruijiePfcPriority
+                }
+        ::= { ruijiePfcIfPriorityCounterTable 1 }
+
+RuijiePfcIfPriorityCounterEntry ::=
+        SEQUENCE {
+            ruijieIfIndex                   IfIndex,
+            ruijiePfcPriority               Integer32,
+            ruijiePfcRequests               Counter64,
+            ruijiePfcRequestsRate           Counter64,
+            ruijiePfcRequestsRate1st        Counter64,
+            ruijiePfcRequestsRate1stTime    DisplayString,
+            ruijiePfcRequestsRate2nd        Counter64,
+            ruijiePfcRequestsRate2ndTime    DisplayString,
+            ruijiePfcRequestsRate3rd        Counter64, 
+            ruijiePfcRequestsRate3rdTime    DisplayString,       
+            ruijiePfcIndications            Counter64,
+            ruijiePfcIndicationsRate        Counter64,
+            ruijiePfcIndicationsRate1st     Counter64,
+            ruijiePfcIndicationsRate1stTime DisplayString,
+            ruijiePfcIndicationsRate2nd     Counter64,
+            ruijiePfcIndicationsRate2ndTime DisplayString,
+            ruijiePfcIndicationsRate3rd     Counter64, 
+            ruijiePfcIndicationsRate3rdTime DisplayString
+        }
+
+ruijieIfIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Port index."
+        ::= { ruijiePfcIfPriorityCounterEntry 1 }
+
+ruijiePfcPriority OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "PFC priority value(0-7)."
+        ::= { ruijiePfcIfPriorityCounterEntry 2 }
+           
+ruijiePfcRequests OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "A count of the invoked PFC M_CONTROL.request primitives.
+    
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as cleared by administrator."
+        ::= { ruijiePfcIfPriorityCounterEntry 3 }
+    
+ruijiePfcRequestsRate OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The rate of PFC requests."
+        ::= { ruijiePfcIfPriorityCounterEntry 4 }
+
+ruijiePfcRequestsRate1st OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The first fastest rate of PFC requests in the history.
+            The unit is pps(packets per second)."
+        ::= { ruijiePfcIfPriorityCounterEntry 5 }
+
+ruijiePfcRequestsRate1stTime OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The moment of the first fastest rate of PFC requests in the history."
+        ::= { ruijiePfcIfPriorityCounterEntry 6 }
+
+ruijiePfcRequestsRate2nd OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The second fastest rate of PFC requests in the history.
+            The unit is pps(packets per second)."
+        ::= { ruijiePfcIfPriorityCounterEntry 7 }
+
+ruijiePfcRequestsRate2ndTime OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The moment of the second fastest rate of PFC requests in the history."
+        ::= { ruijiePfcIfPriorityCounterEntry 8 }
+
+ruijiePfcRequestsRate3rd OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The third fastest rate of PFC requests in the history.
+            The unit is pps(packets per second)."
+        ::= { ruijiePfcIfPriorityCounterEntry 9 }
+
+ruijiePfcRequestsRate3rdTime OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The moment of the third fastest rate of PFC requests in the history."
+        ::= { ruijiePfcIfPriorityCounterEntry 10 }       
+   
+ruijiePfcIndications OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "A count of the received PFC M_CONTROL.indication primitives.
+    
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as cleared by administrator."
+        ::= { ruijiePfcIfPriorityCounterEntry 11 }
+    
+ruijiePfcIndicationsRate OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The rate of PFC indications."
+        ::= { ruijiePfcIfPriorityCounterEntry 12 }
+
+ruijiePfcIndicationsRate1st OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The first fastest rate of PFC indications in the history.
+            The unit is pps(packets per second)."
+        ::= { ruijiePfcIfPriorityCounterEntry 13 }
+
+ruijiePfcIndicationsRate1stTime OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The moment of the first fastest rate of PFC indications in the history."
+        ::= { ruijiePfcIfPriorityCounterEntry 14 }
+
+ruijiePfcIndicationsRate2nd OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The second fastest rate of PFC indications in the history.
+            The unit is pps(packets per second)."
+        ::= { ruijiePfcIfPriorityCounterEntry 15 }
+
+ruijiePfcIndicationsRate2ndTime OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The moment of the second fastest rate of PFC indications in the history."
+        ::= { ruijiePfcIfPriorityCounterEntry 16 }
+
+ruijiePfcIndicationsRate3rd OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The third fastest rate of PFC indications in the history.
+            The unit is pps(packets per second)."
+        ::= { ruijiePfcIfPriorityCounterEntry 17 }
+
+ruijiePfcIndicationsRate3rdTime OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The moment of the third fastest rate of PFC indications in the history."
+        ::= { ruijiePfcIfPriorityCounterEntry 18 }
+
+        
+--****************************************************************
+-- Pfc Counter Conformance
+--****************************************************************
+
+ruijiePfcIfPriorityCounterMIBGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieIfIndex,
+            ruijiePfcPriority,
+            ruijiePfcRequests,
+            ruijiePfcRequestsRate,
+            ruijiePfcRequestsRate1st,
+            ruijiePfcRequestsRate1stTime,
+            ruijiePfcRequestsRate2nd,
+            ruijiePfcRequestsRate2ndTime,
+            ruijiePfcRequestsRate3rd, 
+            ruijiePfcRequestsRate3rdTime,       
+            ruijiePfcIndications,
+            ruijiePfcIndicationsRate,
+            ruijiePfcIndicationsRate1st,
+            ruijiePfcIndicationsRate1stTime,
+            ruijiePfcIndicationsRate2nd,
+            ruijiePfcIndicationsRate2ndTime,
+            ruijiePfcIndicationsRate3rd, 
+            ruijiePfcIndicationsRate3rdTime 
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects contain Pfc interface priority counters."
+        ::= { ruijiePfcMIBConformance 1 }         
+
+END

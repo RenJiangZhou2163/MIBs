@@ -1,0 +1,283 @@
+-- *****************************************************************
+-- RUIJIE-INTERFACE-MIB.mib:  Ruijie interface statis MIB file
+--
+-- Aug 2020, mapf
+-- 
+-- Copyright (c) 2003 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- *****************************************************************
+
+RUIJIE-INTERFACE-STATIS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        NOTIFICATION-TYPE,
+        Integer32,
+        OBJECT-TYPE,
+        Counter32,
+        Counter64,
+        Unsigned32,
+        IpAddress
+                FROM SNMPv2-SMI
+        IfIndex
+               FROM RUIJIE-TC
+        ruijieInterfaceMIB
+               FROM RUIJIE-INTERFACE-MIB;
+
+ruijieInterfaceStatisMIB MODULE-IDENTITY
+        LAST-UPDATED "201002010000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie interface mibs."
+        REVISION      "201002010000Z"
+        DESCRIPTION
+                "Add a table about vlan."
+        REVISION      "200203200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieInterfaceMIB 4}
+
+
+ruijieIfErrStatisTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIfErrStatisEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of interface errors statis objects."
+        ::= { ruijieInterfaceStatisMIB 1 }
+    
+ruijieIfErrStatisEntry OBJECT-TYPE
+        SYNTAX RuijieIfErrStatisEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains interface errors statis information."
+        INDEX { ruijieIfErrStatisIndex }
+        ::= { ruijieIfErrStatisTable 1 }
+
+RuijieIfErrStatisEntry ::=
+        SEQUENCE {
+            ruijieIfErrStatisIndex IfIndex,
+            ruijieIfUnderSize Counter64,
+            ruijieIfOverSize Counter64,
+            ruijieIfCollisions Counter64,
+            ruijieIfFragments Counter64,
+            ruijieIfJabbers Counter64,
+            ruijieIfCRCerror Counter64,
+            ruijieIfAlignerror Counter64,
+            ruijieIfFECerror Counter64
+        }
+
+ruijieIfErrStatisIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " "
+        ::= { ruijieIfErrStatisEntry 1 }
+
+ruijieIfUnderSize OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The counter of receiving packets which is less than 64byte."
+        ::= { ruijieIfErrStatisEntry 2 } 
+
+ruijieIfOverSize OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The counter of receiving packets which is over than 1518byte."
+        ::= { ruijieIfErrStatisEntry 3 } 
+
+ruijieIfCollisions OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The counter of packets which is collision."
+        ::= { ruijieIfErrStatisEntry 4 } 
+
+ruijieIfFragments OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The counter of receiving packets which is less than 64byte with errors, such as CRC error."
+        ::= { ruijieIfErrStatisEntry 5 } 
+
+ruijieIfJabbers OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The counter of receiving packets which is over than 1518byte with errors, such as CRC error."
+        ::= { ruijieIfErrStatisEntry 6 } 
+
+ruijieIfCRCerror OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The counter of receiving packets with CRC error."
+        ::= { ruijieIfErrStatisEntry 7 } 
+
+ruijieIfAlignerror OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The counter of receiving packets with alignment error."
+        ::= { ruijieIfErrStatisEntry 8 } 
+
+ruijieIfFECerror OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The counter of receiving packets with CRC error, which is same as ruijieIfCRCerror."
+        ::= { ruijieIfErrStatisEntry 9 } 
+
+ruijieIfIpStatisTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIfIpStatisEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of interface errors statis objects."
+        ::= { ruijieInterfaceStatisMIB 2 }
+    
+ruijieIfIpStatisEntry OBJECT-TYPE
+        SYNTAX RuijieIfIpStatisEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains interface errors statis information."
+        INDEX { ruijieIfIpStatisIndex, ruijieIfIpstatisIPVersion}
+        ::= { ruijieIfIpStatisTable 1 }
+
+RuijieIfIpStatisEntry ::=
+        SEQUENCE {
+            ruijieIfIpStatisIndex IfIndex,
+            ruijieIfIpstatisIPVersion INTEGER,
+            ruijieIfIpInBitsRate Counter64,
+            ruijieIfIpInPktRate Counter64,
+            ruijieIfIpOutBitsRate Counter64,
+            ruijieIfIpOutPktRate Counter64,
+            ruijieIfIpInOctets Counter64,
+            ruijieIfIpInPkts Counter64,
+            ruijieIfIpOutOctets Counter64,
+            ruijieIfIpOutPkts Counter64
+        }
+
+ruijieIfIpStatisIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " "
+        ::= { ruijieIfIpStatisEntry 1 }
+
+ruijieIfIpstatisIPVersion OBJECT-TYPE
+        SYNTAX INTEGER {
+            unknown(0),
+            ipv4(1),
+            ipv6(2)
+        }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The version of ip protocol."
+        ::= { ruijieIfIpStatisEntry 2 } 
+
+ruijieIfIpInBitsRate OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+         "The average input bit-rate over a period of time(configuration by interface command 'load-interval') 
+          in bits per second on this interface in IP datagrams."
+        ::= { ruijieIfIpStatisEntry 3 } 
+
+ruijieIfIpInPktRate OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+         "The average input packet-rate over a period of time(configuration by interface command 'load-interval') 
+          in bits per second on this interface in IP datagrams."
+        ::= { ruijieIfIpStatisEntry 4 } 
+
+ruijieIfIpOutBitsRate OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+         "The average output bit-rate over a period of time(configuration by interface command 'load-interval') 
+          in bits per second on this interface in IP datagrams."
+        ::= { ruijieIfIpStatisEntry 5 } 
+
+ruijieIfIpOutPktRate OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+         "The average output packet-rate over a period of time(configuration by interface command 'load-interval') 
+          in bits per second on this interface in IP datagrams."
+        ::= { ruijieIfIpStatisEntry 6 } 
+
+ruijieIfIpInOctets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+          "The total number of octets of IP packets received on the interface, 
+          including error packets.
+          Discontinuities in the value of this counter can occur at
+          re-initialization of the management system, and at other
+          times as indicated by the value of ifCounterDiscontinuityTime."
+        ::= { ruijieIfIpStatisEntry 7 }
+
+ruijieIfIpInPkts OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+          "The number of IP packets received on the interface, 
+          including error packets.
+          Discontinuities in the value of this counter can occur at
+          re-initialization of the management system, and at other
+          times as indicated by the value of ifCounterDiscontinuityTime."
+        ::= { ruijieIfIpStatisEntry 8 }
+
+ruijieIfIpOutOctets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+          "The total number of octets of IP packets transmitted out of the interface, 
+          including error packets.
+          Discontinuities in the value of this counter can occur at
+          re-initialization of the management system, and at other
+          times as indicated by the value of ifCounterDiscontinuityTime."
+        ::= { ruijieIfIpStatisEntry 9 }
+
+ruijieIfIpOutPkts OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+          "The number of IP packets transmitted out of the interface, 
+          including error packets.
+          Discontinuities in the value of this counter can occur at
+          re-initialization of the management system, and at other
+          times as indicated by the value of ifCounterDiscontinuityTime."
+        ::= { ruijieIfIpStatisEntry 10 }
+END

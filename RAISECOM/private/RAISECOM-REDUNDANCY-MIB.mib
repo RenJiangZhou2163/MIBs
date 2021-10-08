@@ -1,0 +1,276 @@
+-- *****************************************************************
+-- RAISECOM-REDUNDANCY-MIB.mib:  Raisecom redundancy and pluggable MIB file
+--
+-- Sep.2003,  guody
+--
+-- Copyright (c) 2002 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RAISECOM-REDUNDANCY-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32
+                FROM SNMPv2-SMI
+        DisplayString
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ruijieMgmt
+                FROM RAISECOM-SMI;
+
+ruijieRedundancyMIB MODULE-IDENTITY
+        LAST-UPDATED "200309100000Z"
+        ORGANIZATION "Raisecom Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@raisecom.com.cn"
+        DESCRIPTION
+                "This module defines raisecom redundancy mibs."
+        REVISION      "200309200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 34}
+
+ruijieRedundancyMIBObjects OBJECT IDENTIFIER ::= { ruijieRedundancyMIB 1 }
+
+ruijieRedundancyForceSwitchover OBJECT-TYPE
+        SYNTAX INTEGER 
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Setting any values except for 0 resets the current supervisor engine and enables the redundancy standby
+             supervisor engine to start working. The object value is always be 0. "
+        ::= { ruijieRedundancyMIBObjects 1 }
+
+ruijieMainCPU OBJECT-TYPE
+   	SYNTAX  INTEGER {
+                increasing(0), -- Supervisor engine in slot with low number is prior to be in the master state.
+                decreasing(1)  -- Supervisor engine in slot with high number is prior to be in the master state.
+             }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+          "The object determines which supervisor engine is prior to be in the master state when redundancy event occurs.
+           In fact, it might be inconsistent with the expectation. For example, the supervisor engine prior to be in the 
+           master state fails to start." 
+        ::= { ruijieRedundancyMIBObjects 2 }
+
+
+ruijiePluggableMIBObjects OBJECT IDENTIFIER ::= { ruijieRedundancyMIB 2 } 
+
+ruijiePluggableModuleInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijiePluggableModuleInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Table of entrance to the module settings." 
+        ::= { ruijiePluggableMIBObjects  1 }
+    
+ruijiePluggableModuleInfoEntry OBJECT-TYPE
+        SYNTAX RuijiePluggableModuleInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entrance to the module settings."  
+        INDEX { ruijiePluggableModuleInfoDeviceIndex, ruijiePluggableModuleInfoSlotIndex }
+        ::= { ruijiePluggableModuleInfoTable 1 }
+
+RuijiePluggableModuleInfoEntry ::= 
+        SEQUENCE {
+             ruijiePluggableModuleInfoDeviceIndex Integer32,
+             ruijiePluggableModuleInfoSlotIndex Integer32,
+             ruijiePluggableModuleStatus INTEGER,
+             ruijiePluggableModuleConfigType INTEGER,
+             ruijiePluggableModuleConfigSwVer DisplayString,
+             ruijiePluggableModuleOnlineSwVer DisplayString,
+             ruijiePluggableModuleConfigInfoDescr DisplayString,
+             ruijiePluggableModuleOnlineInfoDescr DisplayString,
+             ruijiePluggableModuleConfigPortsNum Integer32,
+             ruijiePluggableModuleOnlinePortsNum Integer32,
+             ruijiePluggableModuleAction  INTEGER
+        }
+    
+ruijiePluggableModuleInfoDeviceIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The index of device which the module is in." 
+        ::= { ruijiePluggableModuleInfoEntry 1 }
+    
+ruijiePluggableModuleInfoSlotIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The index of slot which the module is in."  
+        ::= { ruijiePluggableModuleInfoEntry 2 }
+
+ruijiePluggableModuleStatus  OBJECT-TYPE
+        SYNTAX  INTEGER {
+                none(0),          --Module is not existed. Module type has not been pre-set, either.  
+                ok(1),            --Module works normally.
+                installed(2),     --Pre-set the module  
+                conflict(3),      --Conflict between the pre-set module and actual plugged module type. 
+                removed(4),       --Remove the module 
+                uninstalled(5),   --Unistall the module, but the module is still plugged. 
+                verIncompatible(6), --Version incompatibility 
+                cannot-ruijieup(7), --Can not start the module  
+                resetting(8),       --Resetting the module 
+                master(9),          --Supervisor engine is in the master state. 
+                backup(10)          --Supervisor engine is in the backup state. 
+                
+             }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Module state."
+        ::= { ruijiePluggableModuleInfoEntry 3 }
+
+
+
+ruijiePluggableModuleConfigType OBJECT-TYPE
+        SYNTAX INTEGER{
+                none(0),     --The module has not been plugged.
+                m6800-24T-4SFP-4GT(1),
+                m6800-32T-4SFP-GT(2), 
+                m6800-32FMT(3), 
+                m6800-12GB(4),
+                m6800-24SFP(5), 
+                m6800-12SFP-GT(6),
+                m6800-1XENPAK(7),
+                m6800-2XENPAK(8),
+                m6800-MSC(9),
+                m6800-CM(10),
+                m6800-24GT-8SFP(11)
+             }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Use this object to add the module configuration. Without setting any type(none), the system automatically 
+             sets all parameters to the default value according to module type to be back. When the object are reading,
+             the system is back to the set type of none." 
+	::= { ruijiePluggableModuleInfoEntry 4 }
+
+ruijiePluggableModuleConfigSwVer OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+          "Version of configured module." 
+        ::= { ruijiePluggableModuleInfoEntry 5 }
+
+
+ruijiePluggableModuleOnlineSwVer OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+          "The actual version of the plugged module." 
+        ::= { ruijiePluggableModuleInfoEntry 6 }
+
+
+ruijiePluggableModuleConfigInfoDescr OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Module name configuration. Different models have different module names.
+             It is null when there is no module configuration." 
+        ::= { ruijiePluggableModuleInfoEntry 7 }
+    
+ruijiePluggableModuleOnlineInfoDescr  OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Module name of actual plugged module.Different models have different module names.
+             It is null when there is no module configuration." 
+        ::= { ruijiePluggableModuleInfoEntry 8 }           
+
+ruijiePluggableModuleConfigPortsNum OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Configure the module port numbe."
+        ::= { ruijiePluggableModuleInfoEntry 9 }
+
+ruijiePluggableModuleOnlinePortsNum OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The actual port number of the plugged module."  
+        ::= { ruijiePluggableModuleInfoEntry 10 }
+
+ruijiePluggableModuleAction  OBJECT-TYPE
+        SYNTAX INTEGER{
+                none(0),         --Read the information  
+                reset(1),        --Reset the module 
+                clearAllConf(2), --Restore all the module configurations to the default 
+                uninstall(3)     --Unistall this module 
+              }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object contains the operations to the module:
+             Module reset(1)
+             Restore all settings to the default value(2)
+             Module remove(3)
+             When reading the object value, it always be back to zero." 
+        ::= { ruijiePluggableModuleInfoEntry 11 }           
+
+
+ruijieRedundancyMIBConformance OBJECT IDENTIFIER ::= { ruijieRedundancyMIB 3 }
+ruijieRedundancyMIBCompliances OBJECT IDENTIFIER ::= { ruijieRedundancyMIBConformance 1 }
+ruijieRedundancyMIBGroups      OBJECT IDENTIFIER ::= { ruijieRedundancyMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieRedundancyMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Raisecom System MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieRedundancyMIBGroup
+                 }
+        ::= { ruijieRedundancyMIBCompliances 1 }
+                
+-- units of conformance
+
+ruijieRedundancyMIBGroup OBJECT-GROUP
+        OBJECTS {
+               ruijieRedundancyForceSwitchover, 
+               ruijieMainCPU,
+               ruijiePluggableModuleInfoDeviceIndex,
+               ruijiePluggableModuleInfoSlotIndex,
+               ruijiePluggableModuleStatus,
+               ruijiePluggableModuleConfigType,
+               ruijiePluggableModuleConfigSwVer,
+               ruijiePluggableModuleOnlineSwVer,
+               ruijiePluggableModuleConfigInfoDescr,
+               ruijiePluggableModuleOnlineInfoDescr,
+               ruijiePluggableModuleConfigPortsNum,
+               ruijiePluggableModuleOnlinePortsNum,
+               ruijiePluggableModuleAction
+
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing system information and
+                opertion to a Raisecom agent."
+        ::= { ruijieRedundancyMIBGroups  1 } 
+  
+END
+

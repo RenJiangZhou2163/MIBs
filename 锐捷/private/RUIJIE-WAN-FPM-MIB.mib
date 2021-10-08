@@ -1,0 +1,296 @@
+-- *****************************************************************
+-- RUIJIE-WAN-FPM-MIB.mib:  Ruijie Link-Detect MIB file
+--
+-- March 2017, meishichao
+--
+-- Copyright (c) 2017 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-WAN-FPM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        NOTIFICATION-TYPE,
+        OBJECT-TYPE,
+		Unsigned32
+                FROM SNMPv2-SMI   
+        RowStatus, 
+        DateAndTime
+                FROM SNMPv2-TC
+		InetAddressType, InetAddress
+                FROM INET-ADDRESS-MIB
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        IfIndex
+                FROM RUIJIE-TC
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+                
+ruijieWanFpmMIB MODULE-IDENTITY
+        LAST-UPDATED "201701200000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie wan-fpm link detect mibs."
+        REVISION      "201701200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 153}
+
+ruijieWanFpmMIBObjects OBJECT IDENTIFIER ::= { ruijieWanFpmMIB 1 }
+ruijieWanFpmMonitor OBJECT IDENTIFIER ::= { ruijieWanFpmMIB 2 }
+-- ===============================================
+-- Results Table
+-- ===============================================
+    ruijieWanFpmResultsTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RuijieWanFpmResultsEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The results of these operations are stored in the ruijieWanFpmResultsTable."
+        ::= { ruijieWanFpmMIBObjects 1 }
+
+    ruijieWanFpmResultsEntry OBJECT-TYPE
+        SYNTAX      RuijieWanFpmResultsEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Defines an entry in the ruijieWanFpmResultsTable.  The
+            ruijieWanFpmResultsTable has the same indexing as the
+            ruijieWanFpmCtlTable so that a ruijieWanFpmResultsEntry
+            corresponds to the ruijieWanFpmCtlEntry that caused it to
+            be created."
+        INDEX { ruijieWanFpmResultsIfIndex }
+        ::= { ruijieWanFpmResultsTable 1 }
+
+    RuijieWanFpmResultsEntry ::=
+        SEQUENCE { 
+		   ruijieWanFpmResultsIfIndex             IfIndex,
+		   ruijieWanFpmResultsMode                INTEGER,
+		   ruijieWanFpmResultsPeerIp              InetAddress,
+           ruijieWanFpmResultsNetworkAF           InetAddressType,
+		   ruijieWanFpmResultsSessStatus          INTEGER,
+		   ruijieWanFpmResultsLinkQuality         INTEGER,
+		   ruijieWanFpmResultsWorseAction         INTEGER,
+		   ruijieWanFpmResultsRTT                 Unsigned32,
+		   ruijieWanFpmResultsJitter              Unsigned32,
+		   ruijieWanFpmResultsUpDroprate          Unsigned32,
+		   ruijieWanFpmResultsDownDroprate        Unsigned32,
+		   ruijieWanFpmResultsByteTxSpeed         Unsigned32,
+		   ruijieWanFpmResultsByteRxSpeed         Unsigned32,
+		   ruijieWanFpmResultsPktsTxSpeed         Unsigned32,
+		   ruijieWanFpmResultsPktsRxSpeed         Unsigned32,
+           ruijieWanFpmResultsCresteTime          DateAndTime,
+		   ruijieWanFpmResultsTrapType            INTEGER,
+		   ruijieWanFpmResultsSessId              Unsigned32
+        }
+ 
+    ruijieWanFpmResultsIfIndex OBJECT-TYPE
+        SYNTAX      IfIndex 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The current interface index which is detected."
+        ::= { ruijieWanFpmResultsEntry 1 }
+ 
+    ruijieWanFpmResultsMode OBJECT-TYPE
+        SYNTAX      INTEGER {
+                             passive(1),   -- detect is working in active mode
+                             active(2)  -- detect is working in passive mode
+                           }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Reflects the Link-Detect mode of a interface:
+                active(1),   -- detect is working in active mode
+                passive(2)  -- detect is working in passive mode."
+        ::= { ruijieWanFpmResultsEntry 2 }
+
+    ruijieWanFpmResultsPeerIp OBJECT-TYPE
+        SYNTAX      InetAddress
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This object reports the IP address which belongs to the other side of the detected link."
+        ::= { ruijieWanFpmResultsEntry 3 }
+
+    ruijieWanFpmResultsNetworkAF OBJECT-TYPE
+        SYNTAX      InetAddressType
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Reflects the type of the Link-Detect protocal."
+        ::= { ruijieWanFpmResultsEntry 4 }
+		
+    ruijieWanFpmResultsSessStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                             up(1),    -- detect protocal is UP
+                             down(2),  -- detect protocal is DOWN
+							 reserved(3)
+                           }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Reflects the state of the Link-Detect protocal:
+                UP(1),   -- detect session is UP
+                DOWN(2)  -- detect session is DOWN."
+        ::= { ruijieWanFpmResultsEntry 5 }
+		
+    ruijieWanFpmResultsLinkQuality OBJECT-TYPE
+        SYNTAX      INTEGER {
+                             well(1),   -- Link quality is good
+                             worse(2),  -- Link quality is worse
+							 reserved(3)
+                           }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Reflects the quality of a Link:
+                well(1),   -- Link quality is good
+                worse(2)  -- Link quality is worse."
+        ::= { ruijieWanFpmResultsEntry 6 }
+		
+		
+    ruijieWanFpmResultsWorseAction OBJECT-TYPE
+        SYNTAX      INTEGER {
+                             forward(1),    -- forward the packets deal when the Link quality is getting worse
+                             unforward(2)  -- drop the packets deal when the Link quality is getting worse
+                           }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The action which will be taken when the Link quality is getting worse:
+                forward(1),    -- forward the packets deal when the Link quality is getting worse
+                unforward(2)  -- drop the packets deal when the Link quality is getting worse."
+        ::= { ruijieWanFpmResultsEntry 7 }
+		
+    ruijieWanFpmResultsRTT OBJECT-TYPE
+        SYNTAX      Unsigned32 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The RTT of the link,us."
+        ::= { ruijieWanFpmResultsEntry 8 }
+		
+    ruijieWanFpmResultsJitter OBJECT-TYPE
+        SYNTAX      Unsigned32 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The jitter of the link,us."
+        ::= { ruijieWanFpmResultsEntry 9 }
+		
+    ruijieWanFpmResultsUpDroprate OBJECT-TYPE
+        SYNTAX      Unsigned32 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The droprate in send direction of the link."
+        ::= { ruijieWanFpmResultsEntry 10 }
+		
+    ruijieWanFpmResultsDownDroprate OBJECT-TYPE
+        SYNTAX      Unsigned32 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The droprate in receive direction of the link."
+        ::= { ruijieWanFpmResultsEntry 11 }
+		
+    ruijieWanFpmResultsByteTxSpeed OBJECT-TYPE
+        SYNTAX      Unsigned32 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The byte speed in send direction of the link."
+        ::= { ruijieWanFpmResultsEntry 12 }
+		
+    ruijieWanFpmResultsByteRxSpeed OBJECT-TYPE
+        SYNTAX      Unsigned32 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The byte speed in receive direction of the link."
+        ::= { ruijieWanFpmResultsEntry 13 }
+		
+    ruijieWanFpmResultsPktsTxSpeed OBJECT-TYPE
+        SYNTAX      Unsigned32 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The packets speed in send direction of the link."
+        ::= { ruijieWanFpmResultsEntry 14 }
+		
+    ruijieWanFpmResultsPktsRxSpeed OBJECT-TYPE
+        SYNTAX      Unsigned32 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The packets speed in receive direction of the link."
+        ::= { ruijieWanFpmResultsEntry 15 }
+		
+    ruijieWanFpmResultsCresteTime OBJECT-TYPE
+        SYNTAX      DateAndTime
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This object reports when the detect results was created."
+        ::= { ruijieWanFpmResultsEntry 16 }
+		
+    ruijieWanFpmResultsTrapType OBJECT-TYPE
+        SYNTAX      INTEGER {
+                             getPeriodResult(1),   -- get the newest period detect result
+                             getTickResult(2),     -- get the newest single tick detect result
+							 reserved(3)
+                           }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "This object reports the IP address which belongs to the other side of the detected link
+			    getPeriodResult(1),   -- get the newest period detect result
+                getTickResult(2)      -- get the newest single tick detect result."
+        ::= { ruijieWanFpmResultsEntry 17 }
+    ruijieWanFpmResultsSessId OBJECT-TYPE
+        SYNTAX      Unsigned32 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The detect session id of the link."
+        ::= { ruijieWanFpmResultsEntry 18 }
+		
+-- ===============================================
+-- definition of traps.
+-- ===============================================
+    ruijieWanFpmMonitorTRAP OBJECT IDENTIFIER ::= { ruijieWanFpmMonitor 1 }
+    ruijieWanFpmNotifications OBJECT IDENTIFIER ::= { ruijieWanFpmMonitorTRAP 1 }
+
+    ruijieWanFpmLqWell NOTIFICATION-TYPE
+        OBJECTS { 
+                  ruijieWanFpmResultsIfIndex, 
+                  ruijieWanFpmResultsSessStatus,   
+                  ruijieWanFpmResultsLinkQuality
+                }
+        STATUS     current
+        DESCRIPTION
+            "This notification is generated when an interface link quality is getting well."
+        ::= { ruijieWanFpmNotifications 1 } 
+        
+    ruijieWanFpmLqBad NOTIFICATION-TYPE
+        OBJECTS { 
+                  ruijieWanFpmResultsIfIndex, 
+                  ruijieWanFpmResultsSessStatus,   
+                  ruijieWanFpmResultsLinkQuality
+                }
+        STATUS     current
+        DESCRIPTION
+            "This notification is generated when an interface link quality is getting bad."
+        ::= { ruijieWanFpmNotifications 2 }
+		
+   END

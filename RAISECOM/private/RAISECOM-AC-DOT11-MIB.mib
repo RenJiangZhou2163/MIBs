@@ -1,0 +1,840 @@
+-- *******************************************************************
+-- RAISECOM-AC-DOT11-MIB.mib : Raisecom AC DOT11 MIB 
+-- 
+-- Oct 2009, kangxk@raisecom.com.cn
+--
+-- Copyright (c) 2009 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- *******************************************************************
+
+RAISECOM-AC-DOT11-MIB DEFINITIONS ::= BEGIN 
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Integer32
+        FROM SNMPv2-SMI 
+    TruthValue,
+    MacAddress,
+    DisplayString
+        FROM SNMPv2-TC 
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP        
+        FROM SNMPv2-CONF
+    ruijieMgmt          
+        FROM RAISECOM-SMI;   
+                         
+
+-- **********************************************
+-- * MODULE IDENTITY 
+-- ********************************************** 
+ruijieAcDot11MIB MODULE-IDENTITY 
+    LAST-UPDATED    "200911290000Z"
+    ORGANIZATION
+        "Raisecom Networks Co.,Ltd."
+    CONTACT-INFO
+        "Tel: 4008-111-000 
+           E-mail: service@raisecom.com.cn "
+        
+    DESCRIPTION
+       "
+       802.11N Module in AC for Raisecom SNC
+       This is AC device manage MIB.
+       "
+    REVISION      "200911290000Z"
+    DESCRIPTION
+       "Initial version of this MIB module."
+          
+    ::= { ruijieMgmt  65 }
+
+
+-- ***************************************************************************
+-- * Major sections 
+-- ***************************************************************************
+ruijieAcDot11MIBObjects OBJECT IDENTIFIER  ::= { ruijieAcDot11MIB 1 }
+ruijieApDot11MIBObjects OBJECT IDENTIFIER  ::= { ruijieAcDot11MIB 2 }
+ruijieWlanDot11MIBObjects OBJECT IDENTIFIER  ::= { ruijieAcDot11MIB 3 }
+
+-- ***************************************************************************
+-- * AC MIB object 
+-- ***************************************************************************
+
+-- linktest sta_mac
+ruijieAcDot11LinkTestStaTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieAcDot11LinkTestStaEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+            "DOT11 Link test a station."
+    ::= { ruijieAcDot11MIBObjects 1 }
+
+ruijieAcDot11LinkTestStaEntry OBJECT-TYPE
+    SYNTAX RuijieAcDot11LinkTestStaEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "DOT11 Link test a station."
+    INDEX   { ruijieAcDot11LinkMac }
+    ::= { ruijieAcDot11LinkTestStaTable 1 }
+
+RuijieAcDot11LinkTestStaEntry ::=
+    SEQUENCE {
+             ruijieAcDot11LinkMac MacAddress,
+             ruijieAcDot11Link DisplayString
+    }
+    
+ruijieAcDot11LinkMac OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+            "Link Test MAC."
+    ::= { ruijieAcDot11LinkTestStaEntry 1 }
+    
+ruijieAcDot11Link OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..255))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "Link Test Detail."
+    ::= { ruijieAcDot11LinkTestStaEntry 2 }
+
+-- show client details mac
+ruijieAcDot11ShowClientTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieAcDot11ShowClientEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Show client detail."
+    ::= { ruijieAcDot11MIBObjects 2 }
+
+ruijieAcDot11ShowClientEntry OBJECT-TYPE
+    SYNTAX RuijieAcDot11ShowClientEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Show client detail entry."
+    INDEX   { ruijieAcDot11ClientMac }
+    ::= { ruijieAcDot11ShowClientTable 1 }
+
+RuijieAcDot11ShowClientEntry ::=
+    SEQUENCE {
+           ruijieAcDot11ClientMac MacAddress,
+           ruijieAcDot11Client DisplayString
+    }
+    
+ruijieAcDot11ClientMac OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+            "Client MAC."
+    ::= { ruijieAcDot11ShowClientEntry 1 }
+    
+ruijieAcDot11Client OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..255))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "Client Detail."
+    ::= { ruijieAcDot11ShowClientEntry 2 }
+
+-- auth-timeout
+ruijieAcDot11AuthTimeout OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "Auth timeout."
+    ::= { ruijieAcDot11MIBObjects 3 }
+    
+-- country country_code
+ruijieAcDot11CountryTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieAcDot11CountryEntry
+    MAX-ACCESS not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The country code table."
+    ::= { ruijieAcDot11MIBObjects 4 }
+
+ruijieAcDot11CountryEntry OBJECT-TYPE
+    SYNTAX RuijieAcDot11CountryEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The country code entry."
+    INDEX   { ruijieAcDot11CountryNum }
+    ::= { ruijieAcDot11CountryTable 1 }
+
+RuijieAcDot11CountryEntry ::=
+    SEQUENCE {
+        ruijieAcDot11CountryNum    Integer32,
+        ruijieAcDot11Country       DisplayString,
+        ruijieAcDot11CountryEnable TruthValue
+    }
+
+ruijieAcDot11CountryNum OBJECT-TYPE 
+    SYNTAX Integer32
+    MAX-ACCESS not-accessible 
+    STATUS current 
+    DESCRIPTION
+        "Country Code Index NUM."
+    ::= { ruijieAcDot11CountryEntry 1}
+
+ruijieAcDot11Country OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..3))
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "AC's Country code."
+    ::= { ruijieAcDot11CountryEntry 2 }
+    
+ruijieAcDot11CountryEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "AC's Country code enable."
+    ::= { ruijieAcDot11CountryEntry 3 }
+
+
+-- ***************************************************************************
+-- * AP MIB object 
+-- ***************************************************************************
+
+-- (config-ap)#poe enable
+ruijieApDot11PoeTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieApDot11PoeEntry
+    MAX-ACCESS not-accessible 
+    STATUS current 
+    DESCRIPTION
+      "RuiJie AP POE MIB"
+    ::={ ruijieApDot11MIBObjects 1 }
+
+ruijieApDot11PoeEntry OBJECT-TYPE 
+    SYNTAX RuijieApDot11PoeEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "AP ID is the index of this MIB table."
+    INDEX { ruijieApDot11PoeAPID }
+    ::={ ruijieApDot11PoeTable 1 }
+
+RuijieApDot11PoeEntry ::=
+    SEQUENCE {
+        ruijieApDot11PoeAPID               INTEGER,
+        ruijieApDot11PoeEnable             TruthValue    
+    }
+    
+ruijieApDot11PoeAPID OBJECT-TYPE 
+    SYNTAX TruthValue
+    MAX-ACCESS not-accessible
+    STATUS current 
+    DESCRIPTION
+      "AP ID"
+    ::= { ruijieApDot11PoeEntry 1}
+    
+ruijieApDot11PoeEnable OBJECT-TYPE 
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "POE Enable."
+    ::= { ruijieApDot11PoeEntry 2}
+    
+-- (config-ap)#[no]chan-width {20 | 40}
+ruijieApDot11ChannelTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieApDot11ChannelEntry
+    MAX-ACCESS not-accessible 
+    STATUS current 
+    DESCRIPTION
+      "RuiJie AP Channel width MIB"
+    ::={ ruijieApDot11MIBObjects 2 }
+
+ruijieApDot11ChannelEntry OBJECT-TYPE 
+    SYNTAX RuijieApDot11ChannelEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "AP ID is the index of this MIB table."
+    INDEX { ruijieApDot11ChannelAPID  }
+    ::={ ruijieApDot11ChannelTable 1 }
+
+RuijieApDot11ChannelEntry ::=
+    SEQUENCE {
+        ruijieApDot11ChannelAPID            INTEGER,
+        ruijieApDot11ChannelWidthA          INTEGER,
+        ruijieApDot11ChannelWidthB          INTEGER
+    }
+    
+ruijieApDot11ChannelAPID OBJECT-TYPE 
+    SYNTAX INTEGER
+    MAX-ACCESS not-accessible
+    STATUS current 
+    DESCRIPTION
+      "AP ID"
+    ::= { ruijieApDot11ChannelEntry 1}    
+    
+ruijieApDot11ChannelWidthA OBJECT-TYPE 
+    SYNTAX INTEGER
+    MAX-ACCESS read-write 
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 Channel width."
+    DEFVAL { 20 }
+    ::= { ruijieApDot11ChannelEntry 2}
+  
+ruijieApDot11ChannelWidthB OBJECT-TYPE 
+    SYNTAX INTEGER
+    MAX-ACCESS read-write 
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 Channel width."
+    DEFVAL { 20 }
+    ::= { ruijieApDot11ChannelEntry 3}  
+
+-- (config-ap)#[no]antenne {receive|transmit} {number}
+ruijieApDot11AntenneTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieApDot11AntenneEntry
+    MAX-ACCESS not-accessible 
+    STATUS current 
+    DESCRIPTION
+      "RuiJie AP Antenne MIB"
+    ::={ ruijieApDot11MIBObjects 3 }
+
+ruijieApDot11AntenneEntry OBJECT-TYPE 
+    SYNTAX RuijieApDot11AntenneEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "AP ID is the index of this MIB table."
+    INDEX { ruijieApDot11AntenneAPID  }
+    ::={ ruijieApDot11AntenneTable 1 }
+
+RuijieApDot11AntenneEntry ::=
+    SEQUENCE {
+        ruijieApDot11AntenneAPID            INTEGER,
+        ruijieApDot11AntenneRxA             INTEGER,
+        ruijieApDot11AntenneTxA             INTEGER,
+        ruijieApDot11AntenneRxB             INTEGER,
+        ruijieApDot11AntenneTxB             INTEGER     
+    }
+    
+ruijieApDot11AntenneAPID OBJECT-TYPE 
+    SYNTAX INTEGER
+    MAX-ACCESS not-accessible
+    STATUS current 
+    DESCRIPTION
+      "AP ID"
+    ::= { ruijieApDot11AntenneEntry 1}  
+    
+ruijieApDot11AntenneRxA OBJECT-TYPE 
+    SYNTAX INTEGER (0..7)
+    MAX-ACCESS read-write 
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 Antenne Receive."
+    DEFVAL { 7 }
+    ::= { ruijieApDot11AntenneEntry 2}
+    
+ruijieApDot11AntenneTxA OBJECT-TYPE 
+    SYNTAX INTEGER (0..7)
+    MAX-ACCESS read-write 
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 Antenne Transmit."
+    DEFVAL { 7 }
+    ::= { ruijieApDot11AntenneEntry 3}
+
+ruijieApDot11AntenneRxB OBJECT-TYPE 
+    SYNTAX INTEGER (0..7)
+    MAX-ACCESS read-write 
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 Antenne Receive."
+    DEFVAL { 7 }
+    ::= { ruijieApDot11AntenneEntry 4}
+    
+ruijieApDot11AntenneTxB OBJECT-TYPE 
+    SYNTAX INTEGER (0..7)
+    MAX-ACCESS read-write 
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 Antenne Transmit."
+    DEFVAL { 7 }
+    ::= { ruijieApDot11AntenneEntry 5}
+
+
+--***************************************************************************
+--* WLAN MIB object 
+--***************************************************************************
+
+ruijieWlanDot11LoadTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieWlanDot11LoadTEntry
+    MAX-ACCESS not-accessible 
+    STATUS current 
+    DESCRIPTION
+      "RuiJie WLAN Load MIB"
+    ::={ ruijieWlanDot11MIBObjects 1 }
+
+ruijieWlanDot11LoadTEntry  OBJECT-TYPE 
+    SYNTAX RuijieWlanDot11LoadTEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "An agent MAY process one or more WLAN, which is identifed by ruijieApgWlanId.
+      In other words, wlan ID is the index of this MIB table."
+    INDEX { ruijieWlanDot11WlanId }
+    ::={ ruijieWlanDot11LoadTable 1 }
+
+RuijieWlanDot11LoadTEntry ::=
+    SEQUENCE {
+        ruijieWlanDot11WlanId             INTEGER,
+        ruijieWlanDot11Enable             TruthValue,
+        ruijieWlanDot11Window             INTEGER,
+        ruijieWlanDot11Flow               INTEGER      
+    }
+
+ruijieWlanDot11WlanId OBJECT-TYPE 
+    SYNTAX INTEGER
+    MAX-ACCESS not-accessible
+    STATUS current 
+    DESCRIPTION
+      "WLAN ID."
+    ::= { ruijieWlanDot11LoadTEntry 1}
+
+
+ruijieWlanDot11Enable OBJECT-TYPE 
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Load Balancing Enable."
+    DEFVAL { false } 
+    ::= { ruijieWlanDot11LoadTEntry 2}
+
+ruijieWlanDot11Window OBJECT-TYPE 
+    SYNTAX INTEGER (0..20)      
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Load Balancing Window Clients"   
+    ::= { ruijieWlanDot11LoadTEntry 3}
+
+ruijieWlanDot11Flow OBJECT-TYPE 
+    SYNTAX INTEGER (0..130)
+    MAX-ACCESS read-write 
+    STATUS current 
+    DESCRIPTION
+      "Load Balancing Flow Threshold"
+    ::= { ruijieWlanDot11LoadTEntry 4}
+
+--***************************************************************************
+--* 802.11N MIB object 
+--***************************************************************************
+-- (config-ac)#11A 11nsupport
+
+ruijieNetDot11AEnable OBJECT-TYPE 
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Enable."
+    DEFVAL { true } 
+    ::= { ruijieAcDot11MIBObjects 5}
+    
+ruijieNetDot11AMCS0 OBJECT-TYPE 
+    SYNTAX TruthValue     
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Support MCS 0"   
+    ::= { ruijieAcDot11MIBObjects 6}
+
+ruijieNetDot11AMCS1 OBJECT-TYPE 
+    SYNTAX TruthValue     
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Support MCS 1"   
+    ::= { ruijieAcDot11MIBObjects 7}
+    
+ruijieNetDot11AMCS2 OBJECT-TYPE 
+    SYNTAX TruthValue     
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Support MCS 2"   
+    ::= { ruijieAcDot11MIBObjects 8}
+
+ruijieNetDot11AMCS3 OBJECT-TYPE 
+    SYNTAX TruthValue     
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Support MCS 3"   
+    ::= { ruijieAcDot11MIBObjects 9}
+    
+ruijieNetDot11AMCS4 OBJECT-TYPE 
+    SYNTAX TruthValue     
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Support MCS 4"   
+    ::= { ruijieAcDot11MIBObjects 10}
+    
+ruijieNetDot11AMCS5 OBJECT-TYPE 
+    SYNTAX TruthValue     
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Support MCS 5"   
+    ::= { ruijieAcDot11MIBObjects 11}
+    
+ruijieNetDot11AMCS6 OBJECT-TYPE 
+    SYNTAX TruthValue     
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Support MCS 6"   
+    ::= { ruijieAcDot11MIBObjects 12}
+
+ruijieNetDot11AMCS7 OBJECT-TYPE 
+    SYNTAX TruthValue     
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Support MCS 7"   
+    ::= { ruijieAcDot11MIBObjects 13}
+    
+ruijieNetDot11AMCS8 OBJECT-TYPE 
+    SYNTAX TruthValue     
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Support MCS 8"   
+    ::= { ruijieAcDot11MIBObjects 14}
+    
+ruijieNetDot11AMCS9 OBJECT-TYPE 
+    SYNTAX TruthValue     
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Support MCS 9"   
+    ::= { ruijieAcDot11MIBObjects 15}
+    
+ruijieNetDot11AMCS10 OBJECT-TYPE 
+    SYNTAX TruthValue     
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Support MCS 10"   
+    ::= { ruijieAcDot11MIBObjects 16}
+    
+ruijieNetDot11AMCS11 OBJECT-TYPE 
+    SYNTAX TruthValue     
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Support MCS 11"   
+    ::= { ruijieAcDot11MIBObjects 17}
+    
+ruijieNetDot11AMCS12 OBJECT-TYPE 
+    SYNTAX TruthValue     
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Support MCS 12"   
+    ::= { ruijieAcDot11MIBObjects 18}
+    
+ruijieNetDot11AMCS13 OBJECT-TYPE 
+    SYNTAX TruthValue     
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Support MCS 13"   
+    ::= { ruijieAcDot11MIBObjects 19}
+    
+ruijieNetDot11AMCS14 OBJECT-TYPE 
+    SYNTAX TruthValue     
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Support MCS 14"   
+    ::= { ruijieAcDot11MIBObjects 20}
+    
+ruijieNetDot11AMCS15 OBJECT-TYPE 
+    SYNTAX TruthValue     
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Support MCS 15"   
+    ::= { ruijieAcDot11MIBObjects 21}   
+
+ruijieNetDot11AAMPDU OBJECT-TYPE 
+    SYNTAX INTEGER (0..7)
+    MAX-ACCESS read-write 
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11N Support AMPUD"
+    ::= { ruijieAcDot11MIBObjects 22}
+    
+-- (config-ac)#11nsupport enable radio 1
+
+ruijieNetDot11BEnable OBJECT-TYPE 
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Enable."
+    DEFVAL { true } 
+    ::= { ruijieAcDot11MIBObjects 23}
+
+ruijieNetDot11BMCS0 OBJECT-TYPE 
+    SYNTAX INTEGER (0..15)      
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Support MCS0"   
+    ::= { ruijieAcDot11MIBObjects 24}
+   
+ruijieNetDot11BMCS1 OBJECT-TYPE 
+    SYNTAX INTEGER (0..15)      
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Support MCS1"   
+    ::= { ruijieAcDot11MIBObjects 25}
+   
+ruijieNetDot11BMCS2 OBJECT-TYPE 
+    SYNTAX INTEGER (0..15)      
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Support MCS2"   
+    ::= { ruijieAcDot11MIBObjects 26}
+   
+ruijieNetDot11BMCS3 OBJECT-TYPE 
+    SYNTAX INTEGER (0..15)      
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Support MCS3"   
+    ::= { ruijieAcDot11MIBObjects 27}
+   
+ruijieNetDot11BMCS4 OBJECT-TYPE 
+    SYNTAX INTEGER (0..15)      
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Support MCS4"   
+    ::= { ruijieAcDot11MIBObjects 28}
+    
+ruijieNetDot11BMCS5 OBJECT-TYPE 
+    SYNTAX INTEGER (0..15)      
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Support MCS5"   
+    ::= { ruijieAcDot11MIBObjects 29}  
+   
+ruijieNetDot11BMCS6 OBJECT-TYPE 
+    SYNTAX INTEGER (0..15)      
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Support MCS6"   
+    ::= { ruijieAcDot11MIBObjects 30}
+   
+ruijieNetDot11BMCS7 OBJECT-TYPE 
+    SYNTAX INTEGER (0..15)      
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Support MCS7"   
+    ::= { ruijieAcDot11MIBObjects 31}
+   
+ruijieNetDot11BMCS8 OBJECT-TYPE 
+    SYNTAX INTEGER (0..15)      
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Support MCS8"   
+    ::= { ruijieAcDot11MIBObjects 32}
+    
+ruijieNetDot11BMCS9 OBJECT-TYPE 
+    SYNTAX INTEGER (0..15)      
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Support MCS9"   
+    ::= { ruijieAcDot11MIBObjects 33}
+    
+ruijieNetDot11BMCS10 OBJECT-TYPE 
+    SYNTAX INTEGER (0..15)      
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Support MCS10"   
+    ::= { ruijieAcDot11MIBObjects 34}
+
+ruijieNetDot11BMCS11 OBJECT-TYPE 
+    SYNTAX INTEGER (0..15)      
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Support MCS11"   
+    ::= { ruijieAcDot11MIBObjects 35}
+    
+ruijieNetDot11BMCS12 OBJECT-TYPE 
+    SYNTAX INTEGER (0..15)      
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Support MCS12"   
+    ::= { ruijieAcDot11MIBObjects 36}
+
+ruijieNetDot11BMCS13 OBJECT-TYPE 
+    SYNTAX INTEGER (0..15)      
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Support MCS13"   
+    ::= { ruijieAcDot11MIBObjects 37}
+    
+ruijieNetDot11BMCS14 OBJECT-TYPE 
+    SYNTAX INTEGER (0..15)      
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Support MCS14"   
+    ::= { ruijieAcDot11MIBObjects 38}
+
+ruijieNetDot11BMCS15 OBJECT-TYPE 
+    SYNTAX INTEGER (0..15)      
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Support MCS15"   
+    ::= { ruijieAcDot11MIBObjects 39}
+            
+ruijieNetDot11BAMPDU OBJECT-TYPE 
+    SYNTAX INTEGER (0..7)
+    MAX-ACCESS read-write 
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11N Support AMPUD"
+    ::= { ruijieAcDot11MIBObjects 40}
+
+-- (config-ac)#11gsupport radio 1
+ruijieNetDot11AGEnable OBJECT-TYPE 
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 1 11G Spport Enable."
+    DEFVAL { true } 
+    ::= { ruijieAcDot11MIBObjects 41}
+    
+-- (config-ac)#11gsupport radio 2
+ruijieNetDot11BGEnable OBJECT-TYPE 
+    SYNTAX TruthValue
+    MAX-ACCESS read-write
+    STATUS current 
+    DESCRIPTION
+      "Radio 2 11G Spport Enable."
+    DEFVAL { true } 
+    ::= { ruijieAcDot11MIBObjects 42}
+    
+    
+--********************************************************************
+--                                                                  **
+--           conformance information                                **
+--                                                                  **
+--********************************************************************
+ruijieAcDot11MIBConformance OBJECT IDENTIFIER ::= { ruijieAcDot11MIB 5 }
+ruijieAcDot11MIBCompliances OBJECT IDENTIFIER ::= { ruijieAcDot11MIBConformance 1 }
+ruijieAcDot11MIBGroups      OBJECT IDENTIFIER ::= { ruijieAcDot11MIBConformance 2 }
+
+
+--********************************************************************
+--                                                                  **
+--           compliance statements                                  **
+--                                                                  **
+--********************************************************************
+ruijieAcDot11MIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Raisecom Ac dot11 Manager."
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieAcDot11MIBGroup}
+        ::= { ruijieAcDot11MIBCompliances 1 }
+
+
+--********************************************************************
+--                                                                  **
+--           units of conformance                                   **
+--                                                                  **
+--********************************************************************
+ruijieAcDot11MIBGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieAcDot11Link,
+            ruijieAcDot11Client,
+            ruijieAcDot11AuthTimeout,
+            ruijieAcDot11Country,
+            ruijieAcDot11CountryEnable,
+            ruijieApDot11PoeEnable,
+            ruijieApDot11ChannelWidthA,
+            ruijieApDot11ChannelWidthB,
+            ruijieApDot11AntenneRxA,
+            ruijieApDot11AntenneTxA,
+            ruijieApDot11AntenneRxB,
+            ruijieApDot11AntenneTxB,
+            ruijieWlanDot11Enable,
+            ruijieWlanDot11Window,
+            ruijieWlanDot11Flow,
+            ruijieNetDot11AEnable,
+            ruijieNetDot11AMCS0,
+            ruijieNetDot11AMCS1,
+            ruijieNetDot11AMCS2,
+            ruijieNetDot11AMCS3,
+            ruijieNetDot11AMCS4,
+            ruijieNetDot11AMCS5,
+            ruijieNetDot11AMCS6,
+            ruijieNetDot11AMCS7,
+            ruijieNetDot11AMCS8,
+            ruijieNetDot11AMCS9,
+            ruijieNetDot11AMCS10,
+            ruijieNetDot11AMCS11,
+            ruijieNetDot11AMCS12,
+            ruijieNetDot11AMCS13,
+            ruijieNetDot11AMCS14,
+            ruijieNetDot11AMCS15,
+            ruijieNetDot11AAMPDU,
+            ruijieNetDot11BEnable,
+            ruijieNetDot11BMCS0,
+            ruijieNetDot11BMCS1,
+            ruijieNetDot11BMCS2,
+            ruijieNetDot11BMCS3,
+            ruijieNetDot11BMCS4,
+            ruijieNetDot11BMCS5,
+            ruijieNetDot11BMCS6,
+            ruijieNetDot11BMCS7,
+            ruijieNetDot11BMCS8,
+            ruijieNetDot11BMCS9,
+            ruijieNetDot11BMCS10,
+            ruijieNetDot11BMCS11,
+            ruijieNetDot11BMCS12,
+            ruijieNetDot11BMCS13,
+            ruijieNetDot11BMCS14,
+            ruijieNetDot11BMCS15,
+            ruijieNetDot11BAMPDU,
+            ruijieNetDot11AGEnable,
+            ruijieNetDot11BGEnable    
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing ac dot11 manager (echo) ability to a
+                Raisecom agent."
+        ::= { ruijieAcDot11MIBGroups 1 }
+END

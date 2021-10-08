@@ -1,0 +1,907 @@
+
+-- *******************************************************************
+-- RAISECOM-CAPWAP-DHCP-MIB.mib : Raisecom WLAN DHCP MIB 
+-- 
+-- Nov 2009, chenfg1
+--
+-- Copyright (c) 2009 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- *******************************************************************
+--
+RAISECOM-CAPWAP-DHCP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS 
+        MODULE-IDENTITY, 
+        OBJECT-TYPE,
+		Integer32,
+	NOTIFICATION-TYPE,	
+        Unsigned32,
+        IpAddress
+                FROM SNMPv2-SMI
+        OBJECT-GROUP,
+        MODULE-COMPLIANCE
+                FROM SNMPv2-CONF
+        TruthValue,
+        RowStatus,
+        DisplayString,
+        MacAddress
+                FROM SNMPv2-TC 
+        ruijieMgmt
+                FROM RAISECOM-SMI
+        ruijieIfIndex 
+                FROM RAISECOM-INTERFACE-MIB;
+
+--********************************************************************
+--*  MODULE IDENTITY
+--********************************************************************
+
+ruijieCapwapDhcpMIB    MODULE-IDENTITY
+       LAST-UPDATED    "200911100000Z"
+       ORGANIZATION    "Raisecom Networks Co.,Ltd."
+       CONTACT-INFO  
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@raisecom.com.cn"
+
+        DESCRIPTION             
+                "This MIB is intended to be implemented on all those
+                devices operating as Central controllers, that
+                terminate the Light Weight Access Point Protocol
+                tunnel from Raisecom Light-weight CAPWAP Access Points.
+
+                This MIB is used to show and configure Dynamic Host
+		        Configuration Protocol (DHCP) related statistics.
+
+
+                The relationship between CC and the CAPWAP APs
+                can be depicted as follows:
+
+        +......+     +......+     +......+           +......+
+        +      +     +      +     +      +           +      +
+        +  CC  +     +  CC  +     +  CC  +           +  CC  +
+        +      +     +      +     +      +           +      +
+        +......+     +......+     +......+           +......+
+          ..            .             .                 .
+          ..            .             .                 .
+         .  .            .             .                 .
+        .    .            .             .                 .
+       .      .            .             .                 .
+      .        .            .             .                 .
+   +......+ +......+     +......+      +......+          +......+
+   +      + +      +     +      +      +      +          +      +
+   +  AP  + +  AP  +     +  AP  +      +  AP  +          +  AP  +
+   +      + +      +     +      +      +      +          +      +
+   +......+ +......+     +......+      +......+          +......+
+              .              .             .                 .
+            .  .              .             .                 .
+           .    .              .             .                 .
+          .      .              .             .                 .
+         .        .              .             .                 .
+      +......+ +......+     +......+      +......+          +......+
+      +      + +      +     +      +      +      +          +      +
+      +  MN  + +  MN  +     +  MN  +      +  MN  +          +  MN  +
+      +      + +      +     +      +      +      +          +      +
+      +......+ +......+     +......+      +......+          +......+
+
+
+                The CAPWAP tunnel exists between the controller and
+                the APs.  The MNs communicate with the APs through
+                the protocol defined by the 802.11 standard.
+
+                CAPWAP APs, upon bootup, discover and join one of the
+                controllers and the controller pushes the configuration,
+                that includes the WLAN parameters, to the CAPWAP APs.
+                The APs then encapsulate all the 802.11 frames from
+                wireless clients inside CAPWAP frames and forward
+                the CAPWAP frames to the controller.
+
+                                   GLOSSARY
+
+                Access Point ( AP )
+
+                An entity that contains an 802.11 medium access
+                control ( MAC ) and physical layer ( PHY ) interface
+                and provides access to the distribution services via
+                the wireless medium for associated clients.  
+
+                CAPWAP APs encapsulate all the 802.11 frames in
+                CAPWAP frames and sends them to the controller to which
+                it is logically connected.
+
+                Central Controller ( CC )
+
+                The central entity that terminates the CAPWAP protocol
+                tunnel from the CAPWAP APs.  Throughout this MIB,
+                this entity also referred to as 'controller'. 
+
+                Light Weight Access Point Protocol ( CAPWAP ) 
+
+                This is a generic protocol that defines the 
+                communication between the Access Points and the
+                Central Controller.
+
+                Mobile Node ( MN )
+
+                A roaming 802.11 wireless device in a wireless
+                network associated with an access point. Mobile Node,
+                Mobile Station(Ms) and client are used interchangeably. 
+                
+                REFERENCE
+ 
+                [1] Wireless LAN Medium Access Control ( MAC ) and
+                Physical Layer ( PHY ) Specifications.
+  
+                [2] Draft-obara-capwap-capwap-00.txt, IETF Light 
+                Weight Access Point Protocol "
+        
+        REVISION      "200911100000Z"
+        DESCRIPTION
+                "Initial version of this MIB module. "
+        ::= { ruijieMgmt 58 }
+
+ruijieCapwapDhcpMIBTrap    OBJECT IDENTIFIER 
+    ::= { ruijieCapwapDhcpMIB 0 }
+
+ruijieCapwapDhcpMIBObjects OBJECT IDENTIFIER 
+    ::= { ruijieCapwapDhcpMIB 1 }
+
+ruijieCapwapDhcpGlobalConfig OBJECT IDENTIFIER
+	::= { ruijieCapwapDhcpMIBObjects 1 }
+
+ruijieCapwapDhcpShowStats OBJECT IDENTIFIER
+	::= { ruijieCapwapDhcpMIBObjects 2 }
+	
+ruijieCapwapDhcpServerConfig OBJECT IDENTIFIER
+	::= { ruijieCapwapDhcpMIBObjects 3 }
+	
+ruijieCapwapDhcpRelayConfig OBJECT IDENTIFIER
+	::= { ruijieCapwapDhcpMIBObjects 4 }
+	
+	
+--*************************************************
+--DHCP Global Config
+--*************************************************
+
+ruijieLDhcpClearAllStats    OBJECT-TYPE
+	SYNTAX	                TruthValue
+	MAX-ACCESS              read-write
+	STATUS	                current
+	DESCRIPTION
+	"This attribute when set to true, clears
+	all the statistics of the DHCP server."
+	::= { ruijieCapwapDhcpGlobalConfig  1 }
+	
+ruijieLDhcpStartService    OBJECT-TYPE
+	SYNTAX	                INTEGER {
+                            enable(1),
+                            disable(0)
+                            }
+	MAX-ACCESS              read-write
+	STATUS	                current
+	DESCRIPTION
+	"this attribute when set to true, start DHCP
+	service."
+	::= { ruijieCapwapDhcpGlobalConfig  2 }
+	
+ruijieDhcpClientMacAddress  OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS accessible-for-notify
+        STATUS  current
+        DESCRIPTION
+            "This trap is sent when the dhcp client failed to request address"
+        ::= { ruijieCapwapDhcpGlobalConfig 3 }
+
+ruijieLDhcpStartTIService OBJECT-TYPE
+	SYNTAX INTEGER {
+                enable(1),
+                disable(0)
+            }
+	MAX-ACCESS read-write
+	STATUS current
+	DESCRIPTION
+	"this attribute when set to true, start DHCP
+	 terminal identify service."
+	::= { ruijieCapwapDhcpGlobalConfig  4 }
+
+ruijieDhcpServerTlvNum OBJECT-TYPE
+        SYNTAX    INTEGER
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+                  "Dhcp Server info TLV number"
+        ::= { ruijieCapwapDhcpGlobalConfig 5 }
+
+ruijieDhcpServerTlv OBJECT-TYPE
+        SYNTAX    DisplayString
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+              "Dhcp Server info TLV strings"
+        ::= { ruijieCapwapDhcpGlobalConfig 6 }
+
+--********************************************************
+--DHCP stats group
+--********************************************************
+			
+ruijieLDhcpDiscoverPkts     OBJECT-TYPE
+	SYNTAX                  Unsigned32
+	UNITS                   "packets"
+	MAX-ACCESS              read-only
+	STATUS                  current   
+	DESCRIPTION
+    "This object represents the number of DHCP discover
+	Packets sent by the controller."
+	::= { ruijieCapwapDhcpShowStats  1 }
+
+ruijieLDhcpRequestPkts      OBJECT-TYPE
+	SYNTAX                  Unsigned32
+	UNITS                   "packets"
+	MAX-ACCESS              read-only
+	STATUS                  current   
+	DESCRIPTION
+	"This object represents the number of DHCP request
+	packets sent by the controller."
+	::= { ruijieCapwapDhcpShowStats  2 }
+
+ruijieLDhcpDeclinePkts      OBJECT-TYPE
+	SYNTAX                  Unsigned32
+	UNITS                   "packets"
+	MAX-ACCESS              read-only
+	STATUS                  current  
+	DESCRIPTION
+    "This object represents the number of DHCP decline
+	Packets received by the controller."
+	::= { ruijieCapwapDhcpShowStats  3 }
+
+ruijieLDhcpInformPkts       OBJECT-TYPE
+	SYNTAX                  Unsigned32
+	UNITS                   "packets"
+	MAX-ACCESS              read-only
+	STATUS                  current   
+	DESCRIPTION
+	"This object represents the number of DHCP 
+	inform packets."
+	::= { ruijieCapwapDhcpShowStats  4 }
+
+ruijieLDhcpReleasePkts      OBJECT-TYPE
+	SYNTAX                  Unsigned32
+	UNITS                   "packets"
+	MAX-ACCESS              read-only
+	STATUS                  current   
+	DESCRIPTION
+    "This object represents the number of DHCP 
+	release packets."
+    ::= { ruijieCapwapDhcpShowStats  5 }
+
+ruijieLDhcpReplyPkts        OBJECT-TYPE
+	SYNTAX                  Unsigned32
+	UNITS                   "packets"
+	MAX-ACCESS              read-only
+	STATUS                  current   
+	DESCRIPTION
+	"This object represents the number of DHCP reply
+	Packets received by the controller."
+	::= { ruijieCapwapDhcpShowStats  6 }
+
+ruijieLDhcpOfferPkts        OBJECT-TYPE
+	SYNTAX                  Unsigned32
+	UNITS                   "packets"
+	MAX-ACCESS              read-only
+	STATUS                  current   
+	DESCRIPTION
+    "This object represents the number of DHCP 
+	offer packets."
+    ::= { ruijieCapwapDhcpShowStats  7 }
+
+ruijieLDhcpAckPkts          OBJECT-TYPE
+    SYNTAX                  Unsigned32
+  	UNITS                   "packets"
+  	MAX-ACCESS              read-only
+  	STATUS                  current   
+  	DESCRIPTION
+    "This object represents the number of Ack  packets"
+    ::= { ruijieCapwapDhcpShowStats  8 }
+
+ruijieLDhcpNakPkts          OBJECT-TYPE
+	SYNTAX                  Unsigned32
+	UNITS                   "packets"
+	MAX-ACCESS              read-only
+	STATUS                  current   
+	DESCRIPTION
+    "This object represents the number of Nak packets"
+	::= { ruijieCapwapDhcpShowStats  9 }
+
+
+ruijieLDhcpReqTimes          OBJECT-TYPE
+	SYNTAX                  Unsigned32
+	UNITS                     "packets"
+	MAX-ACCESS              read-only
+	STATUS                  current   
+	DESCRIPTION
+             "This object represents the number of request packets"
+	::= { ruijieCapwapDhcpShowStats  10 }
+
+ruijieLDhcpReqSucTimes           OBJECT-TYPE
+	SYNTAX                  Unsigned32
+	UNITS                   "packets"
+	MAX-ACCESS              read-only
+	STATUS                  current   
+	DESCRIPTION
+             "This object represents the number of Success Reqeust packets"
+	::= { ruijieCapwapDhcpShowStats  11 }	
+
+--********************************************************
+--DHCP Server config 
+--********************************************************
+    ruijieDhcpScopeTable OBJECT-TYPE
+         SYNTAX      SEQUENCE OF RuijieDhcpScopeEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "A table listing the Scopes defined on the
+                      switch's DHCP Server."
+         ::= { ruijieCapwapDhcpServerConfig 1 }
+
+    ruijieDhcpScopeEntry OBJECT-TYPE
+         SYNTAX      RuijieDhcpScopeEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Switch's DHCP Server Scope entry."
+         INDEX       { ruijieDhcpScopeIndex }
+         ::= { ruijieDhcpScopeTable 1 }
+
+    RuijieDhcpScopeEntry ::= SEQUENCE {
+             ruijieDhcpScopeIndex                        Unsigned32,
+             ruijieDhcpScopeName                         DisplayString,
+             ruijieDhcpScopeLeaseTime                    Integer32,
+             ruijieDhcpScopeNetwork                      IpAddress,
+             ruijieDhcpScopeNetmask                      IpAddress,
+	         ruijieDhcpScopePoolStartAddress             IpAddress,
+             ruijieDhcpScopePoolEndAddress               IpAddress,
+             ruijieDhcpScopeDefaultRouterAddress1        IpAddress,
+             ruijieDhcpScopeDefaultRouterAddress2        IpAddress,
+             ruijieDhcpScopeDefaultRouterAddress3        IpAddress,
+             ruijieDhcpScopeDnsDomainName                DisplayString,
+             ruijieDhcpScopeDnsServerAddress1            IpAddress,
+             ruijieDhcpScopeDnsServerAddress2            IpAddress,
+             ruijieDhcpScopeDnsServerAddress3            IpAddress,
+             ruijieDhcpScopeNetbiosNameServerAddress1    IpAddress,
+             ruijieDhcpScopeNetbiosNameServerAddress2    IpAddress,
+             ruijieDhcpScopeNetbiosNameServerAddress3    IpAddress,
+	         ruijieDhcpScopeState                        INTEGER,
+             ruijieDhcpScopeRowStatus                    RowStatus,
+             ruijieDhcpIPPoolUsage                       Integer32,
+             ruijieDhcpoption43                          IpAddress,
+             ruijieDhcpoption138                         IpAddress,
+             ruijieDhcpReqtimes                          Unsigned32,
+             ruijieDhcpReqSuctimes                       Unsigned32,
+             ruijieDhcpTotalIPNum                        Integer32,		
+             ruijieDhcpCurrentUsedIPNum                  Integer32,
+             ruijieDhcpOffertimes                        Unsigned32,
+             ruijieDhcpAcktimes                          Unsigned32
+             }
+
+    ruijieDhcpScopeIndex OBJECT-TYPE
+         SYNTAX      Unsigned32(1..15)
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "DHCP Scope Identifier Index."
+         ::= { ruijieDhcpScopeEntry 1 }
+
+    ruijieDhcpScopeName OBJECT-TYPE
+         SYNTAX      DisplayString(SIZE(1..64))
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "DHCP Scope Name."
+         ::= { ruijieDhcpScopeEntry 2 }
+
+    ruijieDhcpScopeLeaseTime OBJECT-TYPE
+         SYNTAX      Integer32(120..8640000)
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "DHCP Scope Lease time in seconds."
+         ::= { ruijieDhcpScopeEntry 3 }
+
+    ruijieDhcpScopeNetwork OBJECT-TYPE
+         SYNTAX      IpAddress
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "IP Address of the DHCP Scope Network. This is
+                     the address which is used to determine the DHCP
+                     scope a remote Switch is attaching to."
+         ::= { ruijieDhcpScopeEntry 4 }
+
+    ruijieDhcpScopeNetmask OBJECT-TYPE
+         SYNTAX      IpAddress
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "The DHCP Scope Netmask. This the subnet mask for
+                      the address pool."
+         ::= { ruijieDhcpScopeEntry 5 }
+		 
+    ruijieDhcpScopePoolStartAddress OBJECT-TYPE
+         SYNTAX      IpAddress
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "The DHCP Scope address pool start IP address."
+         ::= { ruijieDhcpScopeEntry 6 }
+
+    ruijieDhcpScopePoolEndAddress OBJECT-TYPE
+         SYNTAX      IpAddress
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "The DHCP Scope address pool end IP address."
+         ::= { ruijieDhcpScopeEntry 7 }
+
+    ruijieDhcpScopeDefaultRouterAddress1 OBJECT-TYPE
+         SYNTAX      IpAddress
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "IP Address of the DHCP Scope's default Router
+                     1."
+         ::= { ruijieDhcpScopeEntry 8 }
+
+    ruijieDhcpScopeDefaultRouterAddress2 OBJECT-TYPE
+         SYNTAX      IpAddress
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "IP Address of the DHCP Scope's default Router
+                     2."
+         ::= { ruijieDhcpScopeEntry 9 }
+
+    ruijieDhcpScopeDefaultRouterAddress3 OBJECT-TYPE
+         SYNTAX      IpAddress
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "IP Address of the DHCP Scope's default Router
+                     3."
+         ::= { ruijieDhcpScopeEntry 10 }
+
+    ruijieDhcpScopeDnsDomainName OBJECT-TYPE
+         SYNTAX      DisplayString(SIZE(0..64))
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "DNS Domain name for the DHCP Scope."
+         ::= { ruijieDhcpScopeEntry 11 }
+
+    ruijieDhcpScopeDnsServerAddress1 OBJECT-TYPE
+         SYNTAX      IpAddress
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "IP Address of the DHCP Scope's DNS Server 1."
+         ::= { ruijieDhcpScopeEntry 12 }
+
+    ruijieDhcpScopeDnsServerAddress2 OBJECT-TYPE
+         SYNTAX      IpAddress
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "IP Address of the DHCP Scope's DNS Server 2."
+         ::= { ruijieDhcpScopeEntry 13 }
+
+    ruijieDhcpScopeDnsServerAddress3 OBJECT-TYPE
+         SYNTAX      IpAddress
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "IP Address of the DHCP Scope's DNS Server 3."
+         ::= { ruijieDhcpScopeEntry 14 }
+
+    ruijieDhcpScopeNetbiosNameServerAddress1 OBJECT-TYPE
+         SYNTAX      IpAddress
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "IP Address of DHCP Scope's Netbios Name Server
+                     1."
+         ::= { ruijieDhcpScopeEntry 15 }
+
+    ruijieDhcpScopeNetbiosNameServerAddress2 OBJECT-TYPE
+         SYNTAX      IpAddress
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "IP Address of DHCP Scope's Netbios Name Server
+                     2."
+         ::= { ruijieDhcpScopeEntry 16 }
+
+    ruijieDhcpScopeNetbiosNameServerAddress3 OBJECT-TYPE
+         SYNTAX      IpAddress
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "IP Address of DHCP Scope's Netbios Name Server
+                     3."
+         ::= { ruijieDhcpScopeEntry 17 }
+		
+    ruijieDhcpScopeState OBJECT-TYPE
+         SYNTAX      INTEGER {
+                     disable(0),
+                     enable(1)
+                     }
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                      "DHCP Scope's State."
+         ::= { ruijieDhcpScopeEntry 18 }
+
+    ruijieDhcpScopeRowStatus OBJECT-TYPE
+         SYNTAX      RowStatus
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "Dhcp Scope entry row status."
+         ::= { ruijieDhcpScopeEntry 19 }
+
+    ruijieDhcpIPPoolUsage OBJECT-TYPE
+         SYNTAX      Integer32(0..100)
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "DHCP pool use rate."
+         ::= { ruijieDhcpScopeEntry 20 }
+
+    ruijieDhcpoption43 OBJECT-TYPE
+         SYNTAX      IpAddress
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "use DHCP option43 to set ac ipaddress."
+         ::= { ruijieDhcpScopeEntry 21 }
+
+    ruijieDhcpoption138 OBJECT-TYPE
+         SYNTAX      IpAddress
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "use DHCP option138 to set ac ipaddress."
+         ::= { ruijieDhcpScopeEntry 22 }         
+ 
+    ruijieDhcpReqtimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "use DHCP pool reqest times."
+         ::= { ruijieDhcpScopeEntry 23 }       
+
+    ruijieDhcpReqSuctimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "use DHCP pool request successful times."
+         ::= { ruijieDhcpScopeEntry 24 }     
+    ruijieDhcpTotalIPNum	OBJECT-TYPE
+    		 SYNTAX		Integer32
+    		 MAX-ACCESS	read-only
+    		 STATUS		current
+    		 DESCRIPTION
+				"total IP address amount of DHCP pool. "  	
+    		 ::= { ruijieDhcpScopeEntry 25 }
+    ruijieDhcpCurrentUsedIPNum	OBJECT-TYPE
+    		 SYNTAX		Integer32
+    		 MAX-ACCESS	read-only
+    		 STATUS		current
+    		 DESCRIPTION  
+				"current used IP amount of DHCP pool."	
+    		 ::= { ruijieDhcpScopeEntry 26 } 
+
+    ruijieDhcpOffertimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "DHCP pool offer times."
+         ::= { ruijieDhcpScopeEntry 27 }   
+
+    ruijieDhcpAcktimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "DHCP pool ack times."
+         ::= { ruijieDhcpScopeEntry 28 }   
+
+
+--*******************************************************************
+--DHCP Server Config :  external DHCP Server IP Address on VLAN
+--*******************************************************************
+    ruijieDhcpServerIpVlanTable OBJECT-TYPE
+         SYNTAX      SEQUENCE OF RuijieDhcpServerIpVlanEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "A table of DHCP server IP Allocation situation."
+         ::= { ruijieCapwapDhcpServerConfig 2 }
+               
+    ruijieDhcpServerIpVlanEntry OBJECT-TYPE
+         SYNTAX      RuijieDhcpServerIpVlanEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "DHCP server ip address table entry."
+         INDEX       { ruijieDhcpServerIpVlanIndex }
+         ::= { ruijieDhcpServerIpVlanTable 1 }
+         
+    RuijieDhcpServerIpVlanEntry ::= SEQUENCE {
+             ruijieDhcpServerIpVlanIndex              Unsigned32,
+             ruijieDhcpServerIpVlanOnlineUserNum      Unsigned32
+             }
+
+    ruijieDhcpServerIpVlanIndex OBJECT-TYPE
+         SYNTAX      Unsigned32(1..4094)
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Global DHCP server Vlan index."
+         ::= { ruijieDhcpServerIpVlanEntry 1 }
+
+    ruijieDhcpServerIpVlanOnlineUserNum OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "The Number of Online User"
+         ::= { ruijieDhcpServerIpVlanEntry 2 }
+
+
+--*******************************************************************
+--DHCP Relay Config :  external DHCP Server Address 
+--*******************************************************************
+    ruijieDhcpGlobalServerAddrTable OBJECT-TYPE
+         SYNTAX      SEQUENCE OF RuijieDhcpGlobalServerAddrEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "A table listing the global external DHCP server 
+                     address configed for DHCP relay."
+         ::= { ruijieCapwapDhcpRelayConfig 1 }
+               
+    ruijieDhcpGlobalServerAddrEntry OBJECT-TYPE
+         SYNTAX      RuijieDhcpGlobalServerAddrEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Global DHCP server address entry configed for DHCP 
+                     relay. Upto 20 entries may be added."
+         INDEX       { ruijieDhcpGlobalServerIndex }
+         ::= { ruijieDhcpGlobalServerAddrTable 1 }
+         
+    RuijieDhcpGlobalServerAddrEntry ::= SEQUENCE {
+             ruijieDhcpGlobalServerIndex      Integer32,
+             ruijieDhcpGlobalServerAddress    IpAddress,
+             ruijieDhcpGlobalServerRowStatus  RowStatus
+             }
+
+    ruijieDhcpGlobalServerIndex OBJECT-TYPE
+         SYNTAX      Integer32(1..20)
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Global DHCP server index."
+         ::= { ruijieDhcpGlobalServerAddrEntry 1 }
+
+    ruijieDhcpGlobalServerAddress OBJECT-TYPE
+         SYNTAX      IpAddress
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "IP Address of the Global DHCP server"
+         ::= { ruijieDhcpGlobalServerAddrEntry 2 }
+
+    ruijieDhcpGlobalServerRowStatus OBJECT-TYPE
+         SYNTAX      RowStatus
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "This is the status column for this row and used
+                      to create and delete specific instances of rows
+                      in this table. "
+         ::= { ruijieDhcpGlobalServerAddrEntry 3 }
+
+
+--*******************************************************************
+--DHCP Relay Config :  external DHCP Server Address on interface
+--*******************************************************************
+
+    ruijieDhcpIntfServerAddrTable OBJECT-TYPE
+         SYNTAX      SEQUENCE OF RuijieDhcpIntfServerAddrEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "A table listing the  external DHCP server address 
+                     on interface configed for DHCP relay."
+         ::= { ruijieCapwapDhcpRelayConfig 2 }
+   
+    ruijieDhcpIntfServerAddrEntry OBJECT-TYPE
+         SYNTAX      RuijieDhcpIntfServerAddrEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Extern DHCP server address entry configed on interface 
+                 for DHCP relay. Upto 20 entries may be added on a interface."
+         INDEX       { ruijieIfIndex, ruijieDhcpIntfServerIndex}
+         ::= { ruijieDhcpIntfServerAddrTable 1 }
+         
+    RuijieDhcpIntfServerAddrEntry ::= SEQUENCE {
+             ruijieDhcpIntfServerIndex      Integer32,
+             ruijieDhcpIntfServerAddress    IpAddress,
+             ruijieDhcpIntfServerRowStatus  RowStatus
+             }
+
+    ruijieDhcpIntfServerIndex OBJECT-TYPE
+         SYNTAX      Integer32 (1..20) 
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Interface DHCP server index."
+         ::= { ruijieDhcpIntfServerAddrEntry 1 }
+
+    ruijieDhcpIntfServerAddress OBJECT-TYPE
+         SYNTAX      IpAddress
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "IP Address of the Global DHCP server"
+         ::= { ruijieDhcpIntfServerAddrEntry 2 }
+
+    ruijieDhcpIntfServerRowStatus OBJECT-TYPE
+         SYNTAX      RowStatus
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "This is the status column for this row and used
+                      to create and delete specific instances of rows
+                      in this table. "
+         ::= { ruijieDhcpIntfServerAddrEntry 3 }
+
+
+--*******************************************************************
+-- DHCP trap
+--*******************************************************************
+     ruijieDhcpAddressExhaustTrap       NOTIFICATION-TYPE
+        OBJECTS {
+             ruijieDhcpScopeName
+        }
+        STATUS  current
+        DESCRIPTION
+            "This trap is sent when the dhcp pool is full"
+        ::= { ruijieCapwapDhcpMIBTrap 1 }
+
+     ruijieDhcpAddressExhaustRecovTrap  NOTIFICATION-TYPE
+        OBJECTS {
+             ruijieDhcpScopeName
+        }
+        STATUS  current
+        DESCRIPTION
+            "This trap is sent when the dhcp pool recover from full"
+        ::= { ruijieCapwapDhcpMIBTrap 2 }
+        
+    ruijieDhcpClientFailTrap  NOTIFICATION-TYPE
+        OBJECTS {
+             ruijieDhcpClientMacAddress
+        }
+        STATUS  current
+        DESCRIPTION
+            "This trap is sent when the dhcp client failed to request address"
+        ::= { ruijieCapwapDhcpMIBTrap 3 }
+
+    ruijieDhcpServerInfoTrap NOTIFICATION-TYPE
+        OBJECTS    {
+            ruijieDhcpServerTlvNum,
+            ruijieDhcpServerTlv
+        }
+        STATUS     current
+        DESCRIPTION
+            "DHCP Server Offline info Trap."
+        ::= { ruijieCapwapDhcpMIBTrap 4 }
+
+
+ruijieCapwapDhcpMIBConformance OBJECT IDENTIFIER ::= { ruijieCapwapDhcpMIB 2 }
+ruijieCapwapDhcpMIBCompliances OBJECT IDENTIFIER ::= { ruijieCapwapDhcpMIBConformance 1 }
+ruijieCapwapDhcpMIBGroups      OBJECT IDENTIFIER ::= { ruijieCapwapDhcpMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieCapwapDhcpMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Raisecom Capwap Dhcp MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieCapwapDhcpMIBGroup,
+				        ruijieCapwapDhcpServerConfigGroup,
+				        ruijieCapwapDhcpRelayGlobalConfigGroup,
+				        ruijieCapwapDhcpRelayIntfConfigGroup
+                }
+        ::= { ruijieCapwapDhcpMIBCompliances 1 }
+                
+-- units of conformance
+
+ruijieCapwapDhcpMIBGroup OBJECT-GROUP
+        OBJECTS {
+              ruijieLDhcpClearAllStats,
+	        ruijieLDhcpStartService,
+              ruijieLDhcpDiscoverPkts,
+              ruijieLDhcpRequestPkts,
+              ruijieLDhcpDeclinePkts,
+              ruijieLDhcpInformPkts,
+              ruijieLDhcpReleasePkts,
+              ruijieLDhcpReplyPkts,
+              ruijieLDhcpOfferPkts,
+              ruijieLDhcpAckPkts,
+              ruijieLDhcpNakPkts,
+              ruijieLDhcpReqTimes,
+              ruijieLDhcpReqSucTimes
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing capwap dhcp information and
+                opertion to a Raisecom agent."
+        ::= { ruijieCapwapDhcpMIBGroups 1 } 
+		
+ruijieCapwapDhcpServerConfigGroup OBJECT-GROUP
+        OBJECTS {
+             ruijieDhcpScopeName,
+             ruijieDhcpScopeLeaseTime,
+             ruijieDhcpScopeNetwork,
+             ruijieDhcpScopeNetmask,
+             ruijieDhcpScopeDefaultRouterAddress1,
+             ruijieDhcpScopeDefaultRouterAddress2,
+             ruijieDhcpScopeDefaultRouterAddress3,
+             ruijieDhcpScopeDnsDomainName,
+             ruijieDhcpScopeDnsServerAddress1,
+             ruijieDhcpScopeDnsServerAddress2,
+             ruijieDhcpScopeDnsServerAddress3,
+             ruijieDhcpScopeNetbiosNameServerAddress1,
+             ruijieDhcpScopeNetbiosNameServerAddress2,
+             ruijieDhcpScopeNetbiosNameServerAddress3,
+	      ruijieDhcpScopeState,
+             ruijieDhcpScopeRowStatus,
+             ruijieDhcpIPPoolUsage,
+             ruijieDhcpoption43,
+             ruijieDhcpoption138
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing capwap dhcp server config information."
+        ::= { ruijieCapwapDhcpMIBGroups 2 } 
+
+
+ruijieCapwapDhcpRelayGlobalConfigGroup OBJECT-GROUP
+        OBJECTS {
+             ruijieDhcpGlobalServerAddress,
+             ruijieDhcpGlobalServerRowStatus
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing capwap dhcp relay config information."
+        ::= { ruijieCapwapDhcpMIBGroups 3 } 
+        
+ruijieCapwapDhcpRelayIntfConfigGroup OBJECT-GROUP
+        OBJECTS {
+             ruijieDhcpIntfServerAddress,
+             ruijieDhcpIntfServerRowStatus
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing capwap dhcp relay config information."
+        ::= { ruijieCapwapDhcpMIBGroups 4 } 
+
+END

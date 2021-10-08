@@ -1,0 +1,329 @@
+-- *****************************************************************
+-- RUIJIE-MAPINFO-MNG-MIB.mib:  Ruijie MAPINFO MNG MIB file
+--
+-- March 2002, Wuzg
+--
+-- Copyright (c) 2002 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-MAPINFO-MNG-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Counter32,
+        Counter64,
+        Unsigned32,
+        Integer32,
+        IpAddress
+                FROM SNMPv2-SMI
+        InetAddressType, 
+        InetAddress
+                FROM INET-ADDRESS-MIB
+        Counter
+                FROM RFC1155-SMI
+        TruthValue,
+        DisplayString,
+        RowStatus,
+        MacAddress
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ConfigStatus,
+        IfIndex
+                FROM RUIJIE-TC
+        EnabledStatus 
+                FROM P-BRIDGE-MIB       
+        radiusAuthServerAddress,
+        radiusAuthClientServerPortNumber
+            FROM RADIUS-AUTH-CLIENT-MIB
+        radiusAccServerAddress, 
+        radiusAccClientServerPortNumber
+            FROM RADIUS-ACC-CLIENT-MIB
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieMapinfoMngMIB MODULE-IDENTITY
+        LAST-UPDATED "200203200000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie Mapinf Mng mibs."
+        REVISION      "2016073200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 150}
+
+ruijieMapinfoMngMIBObjects OBJECT IDENTIFIER ::= { ruijieMapinfoMngMIB 1 }
+
+ruijieUserObjects OBJECT IDENTIFIER ::= { ruijieMapinfoMngMIBObjects 1 }
+ruijieFluxObjects OBJECT IDENTIFIER ::= { ruijieMapinfoMngMIBObjects 2 }
+
+--
+-- ruijie Micro-Ap User information
+-- 
+ruijieUserTable OBJECT-TYPE
+  SYNTAX  SEQUENCE OF RuijieUserEntry
+  MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The table of User which from Micro-Ap."
+        ::= { ruijieUserObjects 1 }
+
+
+ruijieUserEntry OBJECT-TYPE
+        SYNTAX  RuijieUserEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The entry of User who come from Micro-Ap."
+        INDEX   { ruijieUserMacAddress,ruijieUserVid}
+        ::= { ruijieUserTable 1 }
+
+
+RuijieUserEntry ::=
+    SEQUENCE {
+            ruijieUserMacAddress MacAddress,
+            ruijieUserVid Unsigned32,
+            ruijieUserDevMacAddress MacAddress,
+            ruijieUserDevSlot Unsigned32,
+            ruijieUserMapPort Unsigned32,                      
+            ruijieUserRowStatus ConfigStatus
+            }
+            
+ruijieUserMacAddress OBJECT-TYPE
+        SYNTAX       MacAddress
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The MacAddress of user who come from Micro-AP."    
+        ::= { ruijieUserEntry 1 }
+
+ruijieUserVid OBJECT-TYPE
+        SYNTAX       Unsigned32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The VID of user who come from Micro-AP."    
+        ::= { ruijieUserEntry 2 }            
+      
+ruijieUserDevMacAddress OBJECT-TYPE
+        SYNTAX       MacAddress
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The Mac Address of Ap-dev which Micro-AP link to."    
+        ::= { ruijieUserEntry 3 }
+      
+ruijieUserDevSlot OBJECT-TYPE
+        SYNTAX       Unsigned32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The Slot of Ap-dev which Micro-AP link to."    
+        ::= { ruijieUserEntry 4 } 
+        
+ruijieUserMapPort OBJECT-TYPE
+        SYNTAX       Unsigned32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The Port of Micro-AP which the User link to."    
+        ::= { ruijieUserEntry 5 }         
+        
+ruijieUserRowStatus OBJECT-TYPE
+        SYNTAX  ConfigStatus
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "The object indicate creat or delete of ruijieUserTable." 
+         ::= { ruijieUserEntry 6 }
+         
+--
+-- ruijie Micro-Ap flux information
+-- 
+ruijieFluxTable OBJECT-TYPE
+  SYNTAX  SEQUENCE OF RuijieFluxEntry
+  MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The table of Flux of Micri-AP."
+        ::= { ruijieFluxObjects 1 }
+
+
+ruijieFluxEntry OBJECT-TYPE
+        SYNTAX  RuijieFluxEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The entry of Flux of Micri-AP."
+        INDEX   { ruijieFluxDevMacAddress, ruijieFluxDevSlot, ruijieFluxMapPort}
+        ::= { ruijieFluxTable 1 }
+
+
+RuijieFluxEntry ::=
+    SEQUENCE {
+            ruijieFluxDevMacAddress MacAddress,
+            ruijieFluxDevSlot Unsigned32,
+            ruijieFluxMapPort Unsigned32,
+            ruijieFluxMapPortState INTEGER(0..1),
+            ruijieFluxInputBps Counter64,
+            ruijieFluxOutputBps Counter64,
+            ruijieFluxInputPackets Counter64,
+            ruijieFluxOutputPackets Counter64,
+            ruijieFluxInputBytes Counter64,
+            ruijieFluxOutputBytes Counter64,                 
+            ruijieFluxRowStatus ConfigStatus
+            }
+            
+ruijieFluxDevMacAddress OBJECT-TYPE
+        SYNTAX       MacAddress
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The Mac Address of Ap-dev which Micro-AP link to."    
+        ::= { ruijieFluxEntry 1 }
+        
+ruijieFluxDevSlot OBJECT-TYPE
+        SYNTAX       Unsigned32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The Slot of Ap-dev which Micro-AP link to."    
+        ::= { ruijieFluxEntry 2 }        
+        
+ruijieFluxMapPort OBJECT-TYPE
+        SYNTAX       Unsigned32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The Port of Micro-AP."    
+        ::= { ruijieFluxEntry 3 }
+        
+ruijieFluxMapPortState OBJECT-TYPE
+        SYNTAX       INTEGER(0..1)
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The state of port which belong to Micro-AP."    
+        ::= { ruijieFluxEntry 4 }
+        
+ruijieFluxInputBps OBJECT-TYPE
+        SYNTAX       Counter64
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The value of input, unit: bps."    
+        ::= { ruijieFluxEntry 5 }
+        
+ruijieFluxOutputBps OBJECT-TYPE
+        SYNTAX       Counter64
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The value of output, unit: bps."    
+        ::= { ruijieFluxEntry 6 }      
+        
+ruijieFluxInputPackets OBJECT-TYPE
+        SYNTAX       Counter64
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The value of input, unit: packet."    
+        ::= { ruijieFluxEntry 7 }
+
+ruijieFluxOutputPackets OBJECT-TYPE
+        SYNTAX       Counter64
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The value of output, unit: packet."    
+        ::= { ruijieFluxEntry 8 }
+        
+ruijieFluxInputBytes OBJECT-TYPE
+        SYNTAX       Counter64
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The value of input, unit: bytes."    
+        ::= { ruijieFluxEntry 9 }
+        
+ruijieFluxOutputBytes OBJECT-TYPE
+        SYNTAX       Counter64
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The value of output, unit: bytes."    
+        ::= { ruijieFluxEntry 10 }
+        
+ruijieFluxRowStatus OBJECT-TYPE
+        SYNTAX       ConfigStatus
+        MAX-ACCESS   read-write
+        STATUS       current
+        DESCRIPTION
+            "The object indicate creat or delete of ruijieUserTable."    
+        ::= { ruijieFluxEntry 11 }                                                                  
+          
+
+ruijieMapinfoMngMIBConformance OBJECT IDENTIFIER ::= { ruijieMapinfoMngMIB 2 }
+ruijieMapinfoMngMIBCompliances OBJECT IDENTIFIER ::= { ruijieMapinfoMngMIBConformance 1 }
+ruijieMapinfoMngMIBGroups      OBJECT IDENTIFIER ::= { ruijieMapinfoMngMIBConformance 2 }
+
+-- compliance statements
+
+ruijieMapinfoMngMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                 the Ruijie MAPINFO MNG MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { 
+                        ruijieUserMIBGroup,
+                        ruijieFluxMIBGroup
+                 }
+         ::= { ruijieMapinfoMngMIBCompliances 1 }
+
+-- units of conformance
+
+ruijieUserMIBGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieUserMacAddress,
+            ruijieUserVid,
+            ruijieUserDevMacAddress,
+            ruijieUserDevSlot,
+            ruijieUserMapPort,                      
+            ruijieUserRowStatus
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing dot1x  authentication managment."
+        ::= { ruijieMapinfoMngMIBGroups 1 }
+        
+ruijieFluxMIBGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieFluxDevMacAddress,
+            ruijieFluxDevSlot,
+            ruijieFluxMapPort,
+            ruijieFluxMapPortState,
+            ruijieFluxInputBps,
+            ruijieFluxOutputBps,
+            ruijieFluxInputPackets,
+            ruijieFluxOutputPackets,
+            ruijieFluxInputBytes,
+            ruijieFluxOutputBytes,                 
+            ruijieFluxRowStatus
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing dot1x  authentication managment."
+        ::= { ruijieMapinfoMngMIBGroups 2 }
+
+END

@@ -1,6 +1,6 @@
 -- *******************************************************************
 -- RUIJIE-IP-PRIVATE-MIB.mib : Ruijie AC IP MIB file
--- May 2010, humin
+-- May 2010, humin; April 2019, zhangzh
 --
 -- Copyright (c) 2009 by Ruijie Networks Co.,Ltd.
 -- All rights reserved.
@@ -14,7 +14,11 @@ IMPORTS
         MODULE-IDENTITY,
         NOTIFICATION-TYPE,
         Counter32
-                FROM SNMPv2-SMI
+                        FROM SNMPv2-SMI
+		Ipv6Address
+		        FROM IPV6-TC
+        IfIndex
+                FROM RUIJIE-TC
         MacAddress,
         DisplayString,
         RowStatus
@@ -25,9 +29,9 @@ IMPORTS
                 FROM SNMPv2-CONF
         ruijieMgmt
                 FROM RUIJIE-SMI; 
-                
+	
 ruijieIPPrivateMgmt MODULE-IDENTITY
-    LAST-UPDATED "200909180000Z"
+	LAST-UPDATED "200909180000Z"
     ORGANIZATION "Ruijie Networks Co.,Ltd."
     CONTACT-INFO
         " 
@@ -36,7 +40,7 @@ ruijieIPPrivateMgmt MODULE-IDENTITY
     E-mail: service@ruijie.com.cn"
     DESCRIPTION
         "This module defines ac management mibs."
-    REVISION      "200909180000Z"
+	REVISION      "200909180000Z"
     DESCRIPTION
         "Initial version of this MIB module."
     ::= { ruijieMgmt 73}
@@ -83,6 +87,14 @@ ruijieIPPrivateAcNotifyIpv4ChangeIfIndex OBJECT-TYPE
         "Represents the AC Ipv4 address change on which interface."
     ::= { ruijieIPPrivateAcNtfObjects 4 }
 
+ruijieIPPrivateNotifyArpFilterInfo OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the filtered ARP information."
+    ::= { ruijieIPPrivateAcNtfObjects 5 }
+
 ruijieIPPrivateAcNotifyChangeIpv4AddressAlarm NOTIFICATION-TYPE
     OBJECTS     {
                   ruijieIPPrivateAcNotifyIpv4AddressChangeType,
@@ -95,6 +107,15 @@ ruijieIPPrivateAcNotifyChangeIpv4AddressAlarm NOTIFICATION-TYPE
         "This notification is sent by the AC when an AC's Ipv4 address is changed."
     ::= { ruijieIPPrivateAcNotifications 1 }
 
+ruijieIPPrivateNotifyArpFilter NOTIFICATION-TYPE
+    OBJECTS     {
+                    ruijieIPPrivateNotifyArpFilterInfo
+                }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent when arp packet is filtered."
+    ::= { ruijieIPPrivateAcNotifications 2 }
+    
 --********************************************************************
 --                                                                  **
 --                ac query ap's ip information	                    **
@@ -188,7 +209,7 @@ ruijieIPPrivateMIBCompliance MODULE-COMPLIANCE
                 "The compliance statement for entities which implement
                 the Ruijie Ac Manager Ac"
         MODULE  -- this module
-                MANDATORY-GROUPS { ruijieAcIPPrivateMIBGroup, ruijieAcIPPrivateTrapGroup }
+                MANDATORY-GROUPS { ruijieIPPrivateMIBGroup, ruijieIPPrivateTrapGroup }
         ::= { ruijieIPPrivateMIBCompliances 1 }
         
 
@@ -223,5 +244,176 @@ ruijieIPPrivateTrapGroup NOTIFICATION-GROUP
         "A collection of traps providing ac manager (echo) ability to a
          Ruijie agent."
     ::= { ruijieIPPrivateMIBGroups 2 }
+
+
+--********************************************************************
+--                                                                  **
+--           device interface ip/ipv6 information                   **
+--                                                                  **
+--********************************************************************    
+ruijieIfIPMIBObjects OBJECT IDENTIFIER ::= { ruijieIPPrivateMgmt 3 }
+
+--********************************************************************
+--                                                                  **
+--            table about device interface ip information           **
+--                                                                  **
+--******************************************************************** 
+
+ruijieIfIPTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieIfIPEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The Interface IP information."
+    ::= { ruijieIfIPMIBObjects 1 }
+
+ruijieIfIPEntry OBJECT-TYPE
+    SYNTAX  RuijieIfIPEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Get the Interface IP information."
+    INDEX   { ruijieIfIndex
+              }
+    ::= { ruijieIfIPTable 1 }
+
+RuijieIfIPEntry ::=
+    SEQUENCE {
+        ruijieIfIndex                    IfIndex,
+        ruijieIfIPPriIp                  IpAddress,
+        ruijieIfIP2ndIp1                 IpAddress,
+        ruijieIfIP2ndIp2              	 IpAddress,
+        ruijieIfIP2ndIp3            	 IpAddress,
+        ruijieIfIP2ndIp4            	 IpAddress				
+    }
+
+ruijieIfIndex OBJECT-TYPE
+    SYNTAX  IfIndex
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The Interface's index."
+    ::= { ruijieIfIPEntry 1}
+    
+ ruijieIfIPPriIp OBJECT-TYPE
+    SYNTAX  IpAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "The Interface's Primary IP address."
+    ::= { ruijieIfIPEntry 2}
+		
+ruijieIfIP2ndIp1 OBJECT-TYPE
+    SYNTAX  IpAddress	   
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    	"The Interface's Second IP address."
+    ::= { ruijieIfIPEntry 3}				
+    
+ruijieIfIP2ndIp2 OBJECT-TYPE
+    SYNTAX  IpAddress	   
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    	"The Interface's Third IP address."
+    ::= { ruijieIfIPEntry 4}
+
+ruijieIfIP2ndIp3 OBJECT-TYPE
+    SYNTAX  IpAddress	   
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    	"The Interface's Fourth IP address."
+    ::= { ruijieIfIPEntry 5}	
+	
+ruijieIfIP2ndIp4 OBJECT-TYPE
+    SYNTAX  IpAddress	   
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    	"The Interface's Fifth IP address."
+    ::= { ruijieIfIPEntry 6}		
+	
+
+--********************************************************************
+--                                                                  **
+--            table about device interface ipv6 information           **
+--                                                                  **
+--******************************************************************** 
+
+ruijieIfIPv6Table OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieIfIPv6Entry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The Interface IPv6 information."
+    ::= { ruijieIfIPMIBObjects 2 }
+
+ruijieIfIPv6Entry OBJECT-TYPE
+    SYNTAX  RuijieIfIPv6Entry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Get the Interface IPv6 information."
+    INDEX   { ruijieIfIPv6Index}
+    ::= { ruijieIfIPv6Table 1 }
+
+RuijieIfIPv6Entry ::=
+    SEQUENCE {
+        ruijieIfIPv6Index                 IfIndex,
+        ruijieIfIPv6LinkLocalIp           Ipv6Address,
+        ruijieIfIPv6Ip1                   Ipv6Address,
+        ruijieIfIPv6Ip2              	  Ipv6Address,
+        ruijieIfIPv6Ip3              	  Ipv6Address,
+        ruijieIfIPv6Ip4              	  Ipv6Address				
+    }
+ ruijieIfIPv6Index OBJECT-TYPE
+    SYNTAX  IfIndex
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The Interface's index."
+    ::= { ruijieIfIPv6Entry 1}
+    
+ ruijieIfIPv6LinkLocalIp  OBJECT-TYPE
+    SYNTAX  Ipv6Address
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "The Interface's IPv6 Linklocal address."
+    ::= { ruijieIfIPv6Entry 2}
+		
+ruijieIfIPv6Ip1 OBJECT-TYPE
+    SYNTAX  Ipv6Address	   
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    	"The Interface's First IPv6 address."
+    ::= { ruijieIfIPv6Entry 3}				
+    
+ruijieIfIPv6Ip2 OBJECT-TYPE
+    SYNTAX  Ipv6Address	   
+    MAX-ACCESS  read-only
+    STATUS  current 
+    DESCRIPTION
+    	"The Interface's Second IPv6 address."
+    ::= { ruijieIfIPv6Entry 4}
+
+ruijieIfIPv6Ip3 OBJECT-TYPE
+    SYNTAX  Ipv6Address	   
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    	"The Interface's Third IPv6 address."
+    ::= { ruijieIfIPv6Entry 5}	
+	
+ruijieIfIPv6Ip4 OBJECT-TYPE
+    SYNTAX  Ipv6Address	   
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    	"The Interface's Fourth IPv6 address."
+    ::= { ruijieIfIPv6Entry 6}				
     
 END

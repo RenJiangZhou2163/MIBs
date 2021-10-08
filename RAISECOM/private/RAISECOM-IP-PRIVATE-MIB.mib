@@ -1,0 +1,227 @@
+-- *******************************************************************
+-- RAISECOM-IP-PRIVATE-MIB.mib : Raisecom AC IP MIB file
+-- May 2010, humin
+--
+-- Copyright (c) 2009 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- *******************************************************************
+--
+RAISECOM-IP-PRIVATE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        IpAddress,
+        OBJECT-TYPE,
+        MODULE-IDENTITY,
+        NOTIFICATION-TYPE,
+        Counter32
+                FROM SNMPv2-SMI
+        MacAddress,
+        DisplayString,
+        RowStatus
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        NOTIFICATION-GROUP,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ruijieMgmt
+                FROM RAISECOM-SMI; 
+                
+ruijieIPPrivateMgmt MODULE-IDENTITY
+    LAST-UPDATED "200909180000Z"
+    ORGANIZATION "Raisecom Networks Co.,Ltd."
+    CONTACT-INFO
+        " 
+    Tel: 4008-111-000
+
+    E-mail: service@raisecom.com.cn"
+    DESCRIPTION
+        "This module defines ac management mibs."
+    REVISION      "200909180000Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { ruijieMgmt 73}
+
+-- ******** define the notify nodes *************
+ruijieIPPrivateAcNotificationsMIBObjects OBJECT IDENTIFIER ::= { ruijieIPPrivateMgmt 1 }
+ruijieIPPrivateAcNtfObjects              OBJECT IDENTIFIER ::= { ruijieIPPrivateAcNotificationsMIBObjects 1 }
+ruijieIPPrivateAcNotifications           OBJECT IDENTIFIER ::= { ruijieIPPrivateAcNotificationsMIBObjects 2 }
+
+-- ****************************************
+--
+--               Notify nodes
+--
+-- ****************************************
+ruijieIPPrivateAcNotifyIpv4AddressChangeType OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the AC Ipv4 address change operation, 0-del,1-add."
+    ::= { ruijieIPPrivateAcNtfObjects 1 }
+
+ruijieIPPrivateAcNotifyIpv4ChangeAddress OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the AC Ipv4 address which is changing."
+    ::= { ruijieIPPrivateAcNtfObjects 2 }
+
+ruijieIPPrivateAcNotifyIpv4ChangeAddressMask OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the AC Ipv4 address's mask which is changing."
+    ::= { ruijieIPPrivateAcNtfObjects 3 }
+
+ruijieIPPrivateAcNotifyIpv4ChangeIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the AC Ipv4 address change on which interface."
+    ::= { ruijieIPPrivateAcNtfObjects 4 }
+
+ruijieIPPrivateAcNotifyChangeIpv4AddressAlarm NOTIFICATION-TYPE
+    OBJECTS     {
+                  ruijieIPPrivateAcNotifyIpv4AddressChangeType,
+                  ruijieIPPrivateAcNotifyIpv4ChangeAddress,
+                  ruijieIPPrivateAcNotifyIpv4ChangeAddressMask,
+                  ruijieIPPrivateAcNotifyIpv4ChangeIfIndex
+                }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent by the AC when an AC's Ipv4 address is changed."
+    ::= { ruijieIPPrivateAcNotifications 1 }
+
+--********************************************************************
+--                                                                  **
+--                ac query ap's ip information	                    **
+--                                                                  **
+--********************************************************************    
+ruijieIPPrivateAcQueryApMIBObject OBJECT IDENTIFIER ::= { ruijieIPPrivateAcNotificationsMIBObjects 3 }
+ruijieIPPrivateAcQueryApInfo      OBJECT IDENTIFIER ::= { ruijieIPPrivateAcQueryApMIBObject 1}
+
+--********************************************************************
+--                                                                  **
+--            table about ac query ap's ip information              **
+--                                                                  **
+--******************************************************************** 
+ruijieIPPrivateAcQueryApMIBTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieIPPrivateApInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The Ap IP information."
+    ::= { ruijieIPPrivateAcQueryApInfo 1 }
+
+ruijieIPPrivateApInfoEntry OBJECT-TYPE
+    SYNTAX  RuijieIPPrivateApInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Get the Ap IP information."
+    INDEX   { ruijieIPPrivateAcApMacAddr,
+              ruijieIPPrivateAcApIp}
+    ::= { ruijieIPPrivateAcQueryApMIBTable 1 }
+
+RuijieIPPrivateApInfoEntry ::=
+    SEQUENCE {
+        ruijieIPPrivateAcApMacAddr                 MacAddress,
+        ruijieIPPrivateAcApIp                      IpAddress,
+        ruijieIPPrivateAcApMask                    IpAddress,
+        ruijieIPPrivateAcApGateway                 IpAddress						
+    }
+
+ruijieIPPrivateAcApMacAddr OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The AP's ethernet mac address."
+    ::= { ruijieIPPrivateApInfoEntry 1}
+    
+ruijieIPPrivateAcApIp OBJECT-TYPE
+    SYNTAX  IpAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "The AP's IP address."
+    ::= { ruijieIPPrivateApInfoEntry 2}
+		
+ruijieIPPrivateAcApMask OBJECT-TYPE
+    SYNTAX  IpAddress	   
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    	"The AP's MASK address."
+    ::= { ruijieIPPrivateApInfoEntry 3}				
+    
+ruijieIPPrivateAcApGateway OBJECT-TYPE
+    SYNTAX  IpAddress	   
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+    	"The AP's Gateway address."
+    ::= { ruijieIPPrivateApInfoEntry 4}
+
+
+--********************************************************************
+--                                                                  **
+--           conformance information                                **
+--                                                                  **
+--********************************************************************
+ruijieIPPrivateMIBConformance OBJECT IDENTIFIER ::= { ruijieIPPrivateMgmt 2 }
+ruijieIPPrivateMIBCompliances OBJECT IDENTIFIER ::= { ruijieIPPrivateMIBConformance 1 }
+ruijieIPPrivateMIBGroups      OBJECT IDENTIFIER ::= { ruijieIPPrivateMIBConformance 2 }
+
+
+--********************************************************************
+--                                                                  **
+--           compliance statements                                  **
+--                                                                  **
+--********************************************************************
+ruijieIPPrivateMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Raisecom Ac Manager Ac"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieAcIPPrivateMIBGroup, ruijieAcIPPrivateTrapGroup }
+        ::= { ruijieIPPrivateMIBCompliances 1 }
+        
+
+--********************************************************************
+--                                                                  **
+--           units of conformance                                   **
+--                                                                  **
+--********************************************************************
+ruijieIPPrivateMIBGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieIPPrivateAcNotifyIpv4AddressChangeType,
+            ruijieIPPrivateAcNotifyIpv4ChangeAddress,
+            ruijieIPPrivateAcNotifyIpv4ChangeAddressMask,
+            ruijieIPPrivateAcNotifyIpv4ChangeIfIndex,
+            ruijieIPPrivateAcApMacAddr,
+            ruijieIPPrivateAcApIp,
+            ruijieIPPrivateAcApMask,
+            ruijieIPPrivateAcApGateway 
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing ac manager (echo) ability to a
+                Raisecom agent."
+        ::= { ruijieIPPrivateMIBGroups 1 }
+
+ruijieIPPrivateTrapGroup NOTIFICATION-GROUP
+    NOTIFICATIONS {
+        ruijieIPPrivateAcNotifyChangeIpv4AddressAlarm
+    }
+    STATUS  current
+    DESCRIPTION
+        "A collection of traps providing ac manager (echo) ability to a
+         Raisecom agent."
+    ::= { ruijieIPPrivateMIBGroups 2 }
+    
+END

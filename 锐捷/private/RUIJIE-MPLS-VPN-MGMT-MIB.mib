@@ -2,6 +2,8 @@
 -- RUIJIE-MPLS-VPN-MGMT-MIB.mib:  Ruijie MPLS VPN MGMT MIB file
 --
 -- Jan 2013, Daizhibin
+-- Mar 2021, wangmeng add ruijieMplsVPNMgmtL2vpn、ruijieMplsVPNMgmtL2vpnAc
+--           ruijieMplsVPNMgmtVrfTable.ruijieMplsVPNMgmtVrfVpnRunState
 --
 -- Copyright (c) 2013 by Ruijie Networks Co.,Ltd.
 -- All rights reserved.
@@ -62,6 +64,8 @@ ruijieMplsVPNMgmtMIBConformance OBJECT IDENTIFIER ::= { ruijieMplsVPNMgmtMIB 2 }
 ruijieMplsVPNMgmtVrf            OBJECT IDENTIFIER ::= { ruijieMplsVPNMgmtMIBObjects 1 }
 ruijieMplsVPNMgmtRoute          OBJECT IDENTIFIER ::= { ruijieMplsVPNMgmtMIBObjects 2 }
 ruijieMplsVPNMgmtQos            OBJECT IDENTIFIER ::= { ruijieMplsVPNMgmtMIBObjects 3 }
+ruijieMplsVPNMgmtL2vpn          OBJECT IDENTIFIER ::= { ruijieMplsVPNMgmtMIBObjects 4 }
+ruijieMplsVPNMgmtL2vpnAc        OBJECT IDENTIFIER ::= { ruijieMplsVPNMgmtMIBObjects 5 }
 
 --****************************************************************
 -- MPLS VPN Management Vrf Configure Objects
@@ -90,7 +94,8 @@ RuijieMplsVPNMgmtVrfEntry ::=
         ruijieMplsVPNMgmtVrfName            DisplayString,
         ruijieMplsVPNMgmtVrfIntfFault       Unsigned32,
         ruijieMplsVPNMgmtVrfVpnId           VPNIdOrZero,
-        ruijieMplsVPNMgmtVrfVpnIdType       INTEGER
+        ruijieMplsVPNMgmtVrfVpnIdType       INTEGER,
+		ruijieMplsVPNMgmtVrfVpnRunState     INTEGER
     }
 
 ruijieMplsVPNMgmtVrfName OBJECT-TYPE
@@ -132,6 +137,16 @@ ruijieMplsVPNMgmtVrfVpnIdType OBJECT-TYPE
         "The VPN ID Type"
     ::= { ruijieMplsVPNMgmtVrfEntry 4 }
 
+ruijieMplsVPNMgmtVrfVpnRunState OBJECT-TYPE
+    SYNTAX INTEGER {
+        ACTIVE(1),
+        INACTIVE(2)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The VPN Running State"
+    ::= { ruijieMplsVPNMgmtVrfEntry 5 }
 
 --****************************************************************
 -- MPLS VPN Management Vrf route Objects
@@ -394,5 +409,206 @@ ruijieMplsPWFault OBJECT-TYPE
     ::= { ruijieMplsVPNMgmtQosFault 4 }
 
 
+--****************************************************************
+-- MPLS VPN Management L2VPN Configure Objects
+--****************************************************************
+
+ruijieMplsVPNMgmtL2vpnTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieMplsVPNMgmtL2vpnEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table specified ruijie mpls l2vpn information."
+    ::={ ruijieMplsVPNMgmtL2vpn 1 }
+
+ruijieMplsVPNMgmtL2vpnEntry OBJECT-TYPE
+    SYNTAX  RuijieMplsVPNMgmtL2vpnEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry in this table is meant to correspond to an entry in the l2vpn table."
+    INDEX { ruijieMplsVPNMgmtL2vpnRmUID }
+    ::= { ruijieMplsVPNMgmtL2vpnTable 1 }
+
+RuijieMplsVPNMgmtL2vpnEntry ::=
+    SEQUENCE {
+	    ruijieMplsVPNMgmtL2vpnRmUID         Unsigned32,
+        ruijieMplsVPNMgmtL2vpnNativeName    DisplayString,
+        ruijieMplsVPNMgmtL2vpnServiceType   INTEGER,
+		ruijieMplsVPNMgmtL2vpnOwner         DisplayString,
+        ruijieMplsVPNMgmtL2vpnRunState      INTEGER,
+        ruijieMplsVPNMgmtL2vpnCIR           Unsigned32,
+        ruijieMplsVPNMgmtL2vpnPIR           Unsigned32		
+    }
+
+ruijieMplsVPNMgmtL2vpnRmUID OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..64))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Indicates the rmUID of this l2vpn."
+    ::= { ruijieMplsVPNMgmtL2vpnEntry 1 }
+
+ruijieMplsVPNMgmtL2vpnNativeName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..255))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The human-readable name of this l2vpn."
+    ::= { ruijieMplsVPNMgmtL2vpnEntry 2 }
+
+ruijieMplsVPNMgmtL2vpnServiceType OBJECT-TYPE
+    SYNTAX INTEGER {
+        PWE3(1),
+        VPLS(2)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The ServiceType of this l2vpn."
+    ::= { ruijieMplsVPNMgmtL2vpnEntry 3 }
+
+ruijieMplsVPNMgmtL2vpnOwner OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..64))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The owner name of this l2vpn."
+    ::= { ruijieMplsVPNMgmtL2vpnEntry 4 }
+
+ruijieMplsVPNMgmtL2vpnRunState OBJECT-TYPE
+    SYNTAX INTEGER {
+        UP(1),
+        DOWN(2)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The Run State of this l2vpn."
+    ::= { ruijieMplsVPNMgmtL2vpnEntry 5 }
+
+ruijieMplsVPNMgmtL2vpnCIR OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..20))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Indicates the CIR of this l2vpn, unit: kbit/s."
+    ::= { ruijieMplsVPNMgmtL2vpnEntry 6 }
+
+ruijieMplsVPNMgmtL2vpnPIR OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..20))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Indicates the PIR of this l2vpn, unit: kbit/s."
+    ::= { ruijieMplsVPNMgmtL2vpnEntry 7 }
+
+
+--****************************************************************
+-- MPLS VPN Management L2VPN AC Configure Objects
+--****************************************************************
+
+ruijieMplsVPNMgmtL2vpnAcTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieMplsVPNMgmtL2vpnAcEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table specified ruijie mpls l2vpn attach circuit information."
+    ::={ ruijieMplsVPNMgmtL2vpnAc 1 }
+
+ruijieMplsVPNMgmtL2vpnAcEntry OBJECT-TYPE
+    SYNTAX  RuijieMplsVPNMgmtL2vpnAcEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Each entry in this table is meant to correspond to an entry in the l2vpn attach circuit table."
+    INDEX { ruijieMplsVPNMgmtL2vpnAcRmUID, ruijieMplsVPNMgmtL2vpnAcNermUID, ruijieMplsVPNMgmtL2vpnAcPortrmUID }
+    ::= { ruijieMplsVPNMgmtL2vpnAcTable 1 }
+
+RuijieMplsVPNMgmtL2vpnAcEntry ::=
+    SEQUENCE {
+	    ruijieMplsVPNMgmtL2vpnAcRmUID         Unsigned32,
+		ruijieMplsVPNMgmtL2vpnAcNermUID       Unsigned32,
+		ruijieMplsVPNMgmtL2vpnAcPortrmUID     Unsigned32,
+		ruijieMplsVPNMgmtL2vpnAcCvid          Unsigned32,
+		ruijieMplsVPNMgmtL2vpnAcSvid          Unsigned32,
+        ruijieMplsVPNMgmtL2vpnAcIngCIR        Unsigned32,
+        ruijieMplsVPNMgmtL2vpnAcIngPIR        Unsigned32,
+        ruijieMplsVPNMgmtL2vpnAcEgCIR         Unsigned32,
+        ruijieMplsVPNMgmtL2vpnAcEgPIR         Unsigned32		
+    }
+
+ruijieMplsVPNMgmtL2vpnAcRmUID OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..64))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Indicates the rmUID of this l2vpn."
+    ::= { ruijieMplsVPNMgmtL2vpnAcEntry 1 }
+
+ruijieMplsVPNMgmtL2vpnAcNermUID OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..64))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Indicates the attach circuit rmUID of this l2vpn."
+    ::= { ruijieMplsVPNMgmtL2vpnAcEntry 2 }
+	
+ruijieMplsVPNMgmtL2vpnAcPortrmUID OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..64))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Indicates the port of attach circuit rmUID of this l2vpn."
+    ::= { ruijieMplsVPNMgmtL2vpnAcEntry 3 }
+
+ruijieMplsVPNMgmtL2vpnAcCvid OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..50))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Indicates the custom vid of attach circuit of this l2vpn."
+    ::= { ruijieMplsVPNMgmtL2vpnAcEntry 4 }
+
+ruijieMplsVPNMgmtL2vpnAcSvid OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..50))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Indicates the service vid of attach circuit of this l2vpn."
+    ::= { ruijieMplsVPNMgmtL2vpnAcEntry 5 }
+
+ruijieMplsVPNMgmtL2vpnAcIngCIR OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..20))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Indicates the ingress CIR of attach circuit of this l2vpn, unit: kbit/s."
+    ::= { ruijieMplsVPNMgmtL2vpnAcEntry 6 }
+
+ruijieMplsVPNMgmtL2vpnAcIngPIR OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..20))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Indicates the ingress PIR of attach circuit of this l2vpn, unit: kbit/s."
+    ::= { ruijieMplsVPNMgmtL2vpnAcEntry 7 }
+
+ruijieMplsVPNMgmtL2vpnAcEgCIR OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..20))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Indicates the egress CIR of attach circuit of this l2vpn, unit: kbit/s."
+    ::= { ruijieMplsVPNMgmtL2vpnAcEntry 8 }
+
+ruijieMplsVPNMgmtL2vpnAcEgPIR OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..20))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Indicates the egress PIR of attach circuit of this l2vpn, unit: kbit/s."
+    ::= { ruijieMplsVPNMgmtL2vpnAcEntry 9 }
+	
 END
                 

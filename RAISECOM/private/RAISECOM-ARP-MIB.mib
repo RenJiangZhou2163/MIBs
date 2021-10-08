@@ -1,0 +1,282 @@
+-- *****************************************************************
+-- RAISECOM-ARP-MIB.mib:  Raisecom Arp MIB file
+--
+-- March 2002, Wuzg
+--
+-- Copyright (c) 2002 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RAISECOM-ARP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        IpAddress,
+        Integer32,
+        Counter32
+                FROM SNMPv2-SMI
+        RowStatus,
+        PhysAddress
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        IfIndex
+                FROM RAISECOM-TC        
+        ruijieMgmt
+                FROM RAISECOM-SMI;
+
+ruijieArpMIB MODULE-IDENTITY
+        LAST-UPDATED "200203200000Z"
+        ORGANIZATION "Raisecom Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@raisecom.com.cn"
+        DESCRIPTION
+                "This module defines raisecom arp mibs."
+        REVISION      "200203200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 2}
+
+ruijieArpMIBObjects OBJECT IDENTIFIER ::= { ruijieArpMIB 1 }
+
+
+ -- IP Address Translation table
+
+ -- The IP address translation table contain the IpAddress to
+ -- `physical' address equivalences for ARP(Address Resolution Protocol). 
+   
+ ruijieArpTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF RuijieArpEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+             "The IP Address Translation table used for mapping
+             from IP addresses to physical addresses."
+     ::= { ruijieArpMIBObjects 1 }
+
+ ruijieArpEntry OBJECT-TYPE
+     SYNTAX  RuijieArpEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+             "Each entry contains one IpAddress to `physical'
+             address equivalence."
+     INDEX   { ruijieArpIfIndex,
+               ruijieArpNetAddress }
+     ::= { ruijieArpTable 1 }
+
+ RuijieArpEntry ::=
+     SEQUENCE {
+         ruijieArpIfIndex
+             IfIndex,
+         ruijieArpPhysAddress
+             PhysAddress,
+         ruijieArpNetAddress
+             IpAddress,
+         ruijieArpRemainAge
+             Integer32,    
+         ruijieArpType
+             INTEGER,
+         ruijieArpEntryType
+             INTEGER,    
+         ruijieArpStatus   
+             RowStatus 
+     }
+
+ ruijieArpIfIndex OBJECT-TYPE
+     SYNTAX  IfIndex
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "The interface on which this entry's equivalence
+             is effective.  The interface identified by a
+             particular value of this index is the same
+             interface as identified by the same value of
+             ifIndex."
+     ::= { ruijieArpEntry 1 }
+
+ ruijieArpPhysAddress OBJECT-TYPE
+     SYNTAX  PhysAddress
+     MAX-ACCESS  read-create
+     STATUS  current
+     DESCRIPTION
+             "The media-dependent `physical' address."
+     ::= { ruijieArpEntry 2 }
+
+ ruijieArpNetAddress OBJECT-TYPE
+     SYNTAX  IpAddress
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "The IpAddress corresponding to the media-
+             dependent `physical' address."
+     ::= { ruijieArpEntry 3 }
+
+ ruijieArpRemainAge OBJECT-TYPE
+     SYNTAX  Integer32
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "The remain age of this ARP entry, in units of minute"
+     ::= { ruijieArpEntry 4 }
+     
+ ruijieArpType OBJECT-TYPE
+     SYNTAX  INTEGER {
+                 arpa(1)       -- none of the following
+             }
+     MAX-ACCESS  read-create
+     STATUS  current
+     DESCRIPTION
+             "The ARP type of the entry."
+     ::= { ruijieArpEntry 5 }
+
+ ruijieArpEntryType OBJECT-TYPE
+     SYNTAX  INTEGER {
+                 static(1),   -- arp entry which is configured manually, these entries will not aging
+                 dynamic(2), -- learnd by system, thest entry  may aging.
+                 interface(3), -- the arp entry of the corresponding ip of the interface
+                 vrrp(4), -- arp entry which is added by the vrrp protocol
+                 trusted(5) -- arp entrty which is added through the smp server
+             }
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "The entry type."
+     ::= { ruijieArpEntry 6 }        
+        
+ ruijieArpStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "entry status of this entry. and the means in this enviraments can
+            reffer to the text-convention definition of the RowStatus."
+    ::= { ruijieArpEntry 7 }        
+                
+
+
+
+ --  Interface configure for ARP(Address Resolution Protocol)
+   
+ ruijieArpIfTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF RuijieArpIfEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+             "Interface configure for ARP(Address Resolution Protocol)."
+     ::= { ruijieArpMIBObjects 2 }
+
+ ruijieArpIfEntry OBJECT-TYPE
+     SYNTAX  RuijieArpIfEntry
+     MAX-ACCESS  not-accessible
+     STATUS  current
+     DESCRIPTION
+             "Each entry contains a interface configure for ARP"
+     INDEX   { ruijieArpIfIfIndex}
+     ::= { ruijieArpIfTable 1 }
+
+ RuijieArpIfEntry ::=
+     SEQUENCE {
+         ruijieArpIfIfIndex
+             IfIndex,
+         ruijieArpIfCacheTimeOut
+             INTEGER
+     }
+
+ ruijieArpIfIfIndex OBJECT-TYPE
+     SYNTAX  IfIndex
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+             "The interface on which this entry's equivalence
+             is effective.  The interface identified by a
+             particular value of this index is the same
+             interface as identified by the same value of
+             ifIndex."
+     ::= { ruijieArpIfEntry 1 }
+                  
+ ruijieArpIfCacheTimeOut OBJECT-TYPE
+        SYNTAX INTEGER (60..18000)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Aging time in units of second of Arp table"
+        ::= { ruijieArpIfEntry 2 }
+
+ --  Counter for ARP(Address Resolution Protocol)
+
+ ruijieArpCurrentTotalNumber OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of current total arp entrys this system have"
+        ::= { ruijieArpMIBObjects 3 }        
+
+ ruijieArpCurrentUnresolveNumber OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of current unresolve arp entrys this system have"
+        ::= { ruijieArpMIBObjects 4 }        
+         
+ruijieArpMIBConformance OBJECT IDENTIFIER ::= { ruijieArpMIB 2 }
+ruijieArpMIBCompliances OBJECT IDENTIFIER ::= { ruijieArpMIBConformance 1 }
+ruijieArpMIBGroups      OBJECT IDENTIFIER ::= { ruijieArpMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieArpMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Raisecom Arp MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieArpMIBGroup
+                 }
+--        OBJECT           ipNetToMediaIfIndex
+--        MIN-ACCESS       read-only
+--        DESCRIPTION     "Write access is not required."
+--
+--        OBJECT           ipNetToMediaPhysAddress
+--        MIN-ACCESS       read-create
+--        DESCRIPTION     "read-create access is permitted."
+--        
+--        OBJECT           ipNetToMediaNetAddress
+--        MIN-ACCESS       read-only
+--        DESCRIPTION     "Write access is not required."
+        
+        ::= { ruijieArpMIBCompliances 1 }
+                
+-- units of conformance
+
+ruijieArpMIBGroup OBJECT-GROUP
+        OBJECTS {
+         ruijieArpIfIndex,
+         ruijieArpPhysAddress,
+         ruijieArpNetAddress,
+         ruijieArpRemainAge,    
+         ruijieArpType,
+         ruijieArpEntryType,
+         ruijieArpStatus, 
+         ruijieArpIfIfIndex,
+         ruijieArpIfCacheTimeOut,
+         ruijieArpCurrentTotalNumber,
+         ruijieArpCurrentUnresolveNumber
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing arp management and
+                opertion to a Raisecom agent."
+        ::= { ruijieArpMIBGroups 1 } 
+  
+END

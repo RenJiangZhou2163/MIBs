@@ -15,6 +15,7 @@ IMPORTS
         MODULE-IDENTITY,
         OBJECT-TYPE,
         Counter32,
+        Counter64,
         Unsigned32,
         Integer32,
         IpAddress
@@ -558,11 +559,11 @@ ruijieDot1xAccountUpdateStatus OBJECT-TYPE
         ::= { ruijieDot1xAuthObjects 17 }  
 
 ruijieDot1xAcctInterimInterval OBJECT-TYPE
-        SYNTAX  Unsigned32 (60..65535)
+        SYNTAX  Unsigned32 (60..31536000)
         MAX-ACCESS  read-write
         STATUS  current
         DESCRIPTION
-            "Account Interim Interval"
+            "Account Interim Interval(seconds), should be multiples of 60"
         ::= { ruijieDot1xAuthObjects 18 }               
        
 ruijieDot1xEapolTagEnabled OBJECT-TYPE
@@ -606,7 +607,7 @@ ruijieDot1xIfUserMaxIndex OBJECT-TYPE
         ::= { ruijieDot1xIfUserMaxEntry 1 }
 
 ruijieDot1xIfUserMaxNum OBJECT-TYPE
-        SYNTAX Unsigned32 (1..4000)
+        SYNTAX Unsigned32 (1..1000000)
         MAX-ACCESS read-write
         STATUS current
         DESCRIPTION
@@ -1234,7 +1235,106 @@ ruijieAuthUserForVPNDel OBJECT-TYPE
              Reading this object always return null string."
         ::= { ruijieAuthUserObjects 3 }
 
+--
+-- ruijie online user information
+--        
+ruijieOnlineUserTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieOnlineUserEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The table of online User Info."
+        ::= { ruijieAuthUserObjects 4 }
 
+ruijieOnlineUserEntry OBJECT-TYPE
+        SYNTAX  RuijieOnlineUserEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The entry of online User Info table."
+        INDEX   {ruijieOnlineUserSessionId}
+        ::= { ruijieOnlineUserTable 1 }
+
+RuijieOnlineUserEntry ::=
+    SEQUENCE {
+            ruijieOnlineUserSessionId DisplayString,
+            ruijieOnlineUserVid Unsigned32,
+            ruijieOnlineUserMacAddress MacAddress,
+            ruijieOnlineUserPort INTEGER,
+            ruijieOnlineUserName DisplayString,
+            ruijieOnlineUserIpAddr IpAddress,
+            ruijieOnlineUserStatus ConfigStatus
+            }
+
+ruijieOnlineUserSessionId OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            " The Session Id of online User ."
+         ::= { ruijieOnlineUserEntry 1 }
+
+ruijieOnlineUserVid OBJECT-TYPE
+        SYNTAX       Unsigned32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The VID of vlan which the address blongs to."    
+        ::= { ruijieOnlineUserEntry 2 }
+
+ruijieOnlineUserMacAddress OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            " The MAC Address of online User ."
+          ::= { ruijieOnlineUserEntry 3 }
+
+ruijieOnlineUserPort OBJECT-TYPE
+        SYNTAX  INTEGER 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            " The interface of online User ."
+        ::= { ruijieOnlineUserEntry 4 }
+
+ruijieOnlineUserName OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The Name of online User."
+           ::= { ruijieOnlineUserEntry 5 }
+
+ruijieOnlineUserIpAddr OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            " The IP Address of online User ."
+         ::= { ruijieOnlineUserEntry 6 }
+         
+ruijieOnlineUserStatus OBJECT-TYPE
+        SYNTAX  ConfigStatus
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "Setting this object to 'invalid' will close a authenticated user,
+             set its value to valid will cause no action of agent,
+             when query always return value valid." 
+         ::= { ruijieOnlineUserEntry 7 }
+
+--
+-- ruijie aaa version
+--        
+ruijieAaaVersion OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Ruijie Authentication/Accounting/Authorization(AAA) Version"
+        ::= { ruijieAuthUserObjects 5 }
+         
 -- authorization mode objects
 
 ruijieIpAuthorizationMode OBJECT-TYPE
@@ -1242,7 +1342,8 @@ ruijieIpAuthorizationMode OBJECT-TYPE
                 disable(1),       
                 dhcpServer(2),
                 radiusServer(3),
-                supplicant(4)
+                supplicant(4),
+                mixed(5)
                 }
         MAX-ACCESS  read-write
         STATUS  current
@@ -1252,7 +1353,8 @@ ruijieIpAuthorizationMode OBJECT-TYPE
                              server is legit.
              radiusServer(3) - limit ip address of user, only ip address assigned by the radius
                               server is legit.
-             supplicant(4) - mac+ip+port indicates different users (get the IP adress through supplicant)"
+             supplicant(4) - mac+ip+port indicates different users (get the IP adress through supplicant)
+             mixed(5) - limit ip address of user, ip address may be from supplicant, radiusServer or dhcpServer."
         ::= { ruijieAuthModeObjects 1 }    
 ---
 ---Client probe
@@ -1334,7 +1436,8 @@ ruijieAuthenMethodListType OBJECT-TYPE
                     enable(4),  -- for enable.
                     web(5),     -- for inter portal.
                     cmweb(6),   -- for cmweb.
-                    mt(7)       -- for mt.
+                    mt(7),      -- for mt.
+                    general(8)  -- for general.
                     }
         MAX-ACCESS  read-only
         STATUS      current

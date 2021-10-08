@@ -1,0 +1,666 @@
+-- *******************************************************************
+-- RAISECOM-EGHA-MIB.mib: Raisecom EGHA MIB file
+-- June 2015, lishengcao
+--
+-- Copyright (c) 2015 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- *******************************************************************
+--
+RAISECOM-EGHA-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        OBJECT-TYPE,
+        MODULE-IDENTITY,
+        IpAddress,
+        NOTIFICATION-TYPE
+                FROM SNMPv2-SMI
+        Gauge
+                FROM RFC1155-SMI
+        MacAddress,
+        DisplayString
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        NOTIFICATION-GROUP,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ruijieMgmt
+                FROM RAISECOM-SMI;
+
+ruijieEghaMIB MODULE-IDENTITY
+        LAST-UPDATED "201506010000Z"
+        ORGANIZATION "$Company$"
+        CONTACT-INFO
+            " 
+        Tel: $Telephone$
+
+        E-mail: $E-mail$"
+        DESCRIPTION
+            "This module defines EGHA management mibs."
+        REVISION "201506010000Z"
+        DESCRIPTION
+            "Initial version of this MIB module."
+    ::= { ruijieMgmt 139}
+
+--********************************************************************
+--                                                                  **
+--                         EGHA objects root                         **
+--                                                                  **
+--********************************************************************
+ruijieEghaMIBObjects OBJECT IDENTIFIER ::= { ruijieEghaMIB 1 }
+
+
+--***************** the EGHA Topology nodes ********************
+ruijieEghaTopo OBJECT IDENTIFIER ::= { ruijieEghaMIBObjects 1 }
+
+ruijieEghaTopoShape OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        chain(1),
+                        ring(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA system topology shape"
+    ::= { ruijieEghaTopo 1 }
+
+ruijieEghaTopoConn OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The switch topology connection layout of the EGHA system"
+    ::= { ruijieEghaTopo 2 }
+
+
+--***************** the EGHA device nodes *********************
+ruijieEghaDeviceInfo OBJECT IDENTIFIER ::= { ruijieEghaMIBObjects 2 }
+
+ruijieEghaDomainID OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA system domain ID"
+    ::= { ruijieEghaDeviceInfo 1 }
+
+ruijieEghaDeviceTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF  RuijieEghaDeviceEntry
+        MAX-ACCESS          not-accessible 
+        STATUS              current         
+        DESCRIPTION     
+            "The whole device information in EGHA system"
+    ::= { ruijieEghaDeviceInfo 2 }
+
+ruijieEghaDeviceEntry OBJECT-TYPE
+        SYNTAX      RuijieEghaDeviceEntry 
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The device information entry"
+        INDEX       { ruijieEghaDeviceID }
+    ::= { ruijieEghaDeviceTable 1 }
+
+RuijieEghaDeviceEntry ::=
+        SEQUENCE {
+            ruijieEghaDeviceID           INTEGER,   
+            ruijieEghaDeviceMac          MacAddress,
+            ruijieEghaDevicePri          INTEGER,
+            ruijieEghaDeviceDescr        DisplayString,
+            ruijieEghaDeviceStatus       INTEGER,
+            ruijieEghaDeviceRole         INTEGER
+        }
+
+ruijieEghaDeviceID OBJECT-TYPE
+        SYNTAX      INTEGER 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA system member device identifier"
+    ::= { ruijieEghaDeviceEntry 1 }
+
+ruijieEghaDeviceMac OBJECT-TYPE
+        SYNTAX      MacAddress 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA system member device mac address"
+    ::= { ruijieEghaDeviceEntry 2 }
+
+ruijieEghaDevicePri OBJECT-TYPE
+        SYNTAX      INTEGER 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA system member device priority"
+    ::= { ruijieEghaDeviceEntry 3 }
+
+ruijieEghaDeviceDescr OBJECT-TYPE
+        SYNTAX      DisplayString 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA system member device description information"
+    ::= { ruijieEghaDeviceEntry 4 }
+
+ruijieEghaDeviceStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        ok(1),
+                        recovery(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA system member device status information"
+    ::= { ruijieEghaDeviceEntry 5 }
+
+ruijieEghaDeviceRole OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        active(1),
+                        standby(2),
+                        candidate(3)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA system member device role information"
+    ::= { ruijieEghaDeviceEntry 6 }
+
+
+--***************** the EGHA link nodes *********************
+ruijieEghaLink OBJECT IDENTIFIER ::= { ruijieEghaMIBObjects 3 }
+
+ruijieEghaPortTable OBJECT-TYPE 
+        SYNTAX SEQUENCE OF  RuijieEghaPortEntry
+        MAX-ACCESS          not-accessible 
+        STATUS              current
+        DESCRIPTION
+            "The EGHA keeplive port members table"
+    ::= { ruijieEghaLink 1 }
+
+ruijieEghaPortEntry OBJECT-TYPE
+        SYNTAX      RuijieEghaPortEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The EGHA port members entry"
+        INDEX       { ruijieEghaPortIfIndex } 
+    ::= { ruijieEghaPortTable 1 }
+
+RuijieEghaPortEntry ::=
+        SEQUENCE {
+            ruijieEghaPortIfIndex     INTEGER,       
+            ruijieEghaApIf            DisplayString,
+            ruijieEghaPortState       INTEGER,
+            ruijieEghaPortPeerIfIndex INTEGER
+        }
+
+ruijieEghaPortIfIndex OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA keeplive port index"
+    ::= { ruijieEghaPortEntry 1 }
+    
+ruijieEghaApIf OBJECT-TYPE    
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA AP interface name"
+    ::= { ruijieEghaPortEntry 2 }
+
+ruijieEghaPortState OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        down(1),        
+                        up(2),
+                        ok(3),
+                        disable(4),
+                        aged(5)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA keeplive port's state"
+    ::= { ruijieEghaPortEntry 3 }
+
+ruijieEghaPortPeerIfIndex OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA keeplive port's peer port index"
+    ::= { ruijieEghaPortEntry 4 }
+    
+ruijieEghaApTable OBJECT-TYPE 
+        SYNTAX SEQUENCE OF  RuijieEghaApEntry
+        MAX-ACCESS          not-accessible 
+        STATUS              current
+        DESCRIPTION
+            "The EGHA AP table"
+    ::= { ruijieEghaLink 2 }
+
+ruijieEghaApEntry OBJECT-TYPE
+        SYNTAX      RuijieEghaApEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The EGHA AP entry"
+        INDEX       { ruijieEghaApIndex } 
+    ::= { ruijieEghaApTable 1 }
+
+RuijieEghaApEntry ::=
+        SEQUENCE {   
+            ruijieEghaApIndex         INTEGER,
+            ruijieEghaApUptime        DisplayString
+        }
+    
+ruijieEghaApIndex OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA AP index"
+    ::= { ruijieEghaApEntry 1 }
+
+ruijieEghaApUptime OBJECT-TYPE    
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA AP UP time"
+    ::= { ruijieEghaApEntry 2 }
+
+
+--***************** the EGHA DAD nodes *********************
+ruijieEghaDad OBJECT IDENTIFIER ::= { ruijieEghaMIBObjects 4 }
+
+ruijieEghaDadExIntfTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF  RuijieEghaDadExIntfEntry
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION
+            "The EGHA dual-active excluded interface table"
+    ::= { ruijieEghaDad 1 }
+
+ruijieEghaDadExIntfEntry OBJECT-TYPE
+        SYNTAX      RuijieEghaDadExIntfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The EGHA dual-active excluded interface entry"
+        INDEX       { ruijieEghaDadExIfIndex }
+    ::= { ruijieEghaDadExIntfTable 1 }
+
+RuijieEghaDadExIntfEntry ::=
+        SEQUENCE {
+            ruijieEghaDadExIfIndex   INTEGER
+        }
+
+ruijieEghaDadExIfIndex OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA dual-active excluded interface index"
+    ::= { ruijieEghaDadExIntfEntry 1 }
+    
+ruijieEghaDadAP OBJECT IDENTIFIER ::= { ruijieEghaDad 2 }
+
+ruijieEghaDadAPEnable OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        yes(1),
+                        no(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicate wheather DAD AP detection is enable"
+    ::= { ruijieEghaDadAP 1}
+    
+ruijieEghaDadAPIfIndex OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA DAD AP interface index"
+    ::= { ruijieEghaDadAP 2}
+    
+ruijieEghaDadAPIfStatus OBJECT-TYPE    
+        SYNTAX      INTEGER {
+                        down(1),
+                        up(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA DAD AP interface status"
+    ::= { ruijieEghaDadAP 3 }
+
+ruijieEghaDadAPMemberIfTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF  RuijieEghaDadAPMemberIfEntry
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION
+            "The EGHA DAD AP member interface table"
+    ::= { ruijieEghaDadAP 4 }
+
+ruijieEghaDadAPMemberIfEntry OBJECT-TYPE
+        SYNTAX      RuijieEghaDadAPMemberIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The EGHA DAD AP member interface entry"
+        INDEX {ruijieEghaDadAPMemberIfindex}
+    ::= { ruijieEghaDadAPMemberIfTable 1 }
+
+RuijieEghaDadAPMemberIfEntry ::=
+        SEQUENCE {
+            ruijieEghaDadAPMemberIfindex INTEGER,
+            ruijieEghaDadAPMemberIfStatus INTEGER
+        }
+
+ruijieEghaDadAPMemberIfindex OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA DAD AP member interface index"
+    ::= { ruijieEghaDadAPMemberIfEntry 1 }
+    
+ruijieEghaDadAPMemberIfStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        down(1),
+                        up(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA DAD AP member interface status"
+    ::= { ruijieEghaDadAPMemberIfEntry 2 }
+
+ruijieEghaDadAPRelayIfTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF  RuijieEghaDadAPRelayIfEntry
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION
+            "The EGHA DAD AP relay interface table"
+    ::= { ruijieEghaDadAP 5 }
+
+ruijieEghaDadAPRelayIfEntry OBJECT-TYPE
+        SYNTAX      RuijieEghaDadAPRelayIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The EGHA DAD AP relay interface entry"
+        INDEX       { ruijieEghaDadAPRelayIfIndex }
+    ::= { ruijieEghaDadAPRelayIfTable 1 }
+
+RuijieEghaDadAPRelayIfEntry ::=
+        SEQUENCE {
+            ruijieEghaDadAPRelayIfIndex   INTEGER
+        }
+
+ruijieEghaDadAPRelayIfIndex OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA DAD AP relay interface index"
+    ::= { ruijieEghaDadAPRelayIfEntry 1 }
+    
+ruijieEghaDadBFD OBJECT IDENTIFIER ::= { ruijieEghaDad 3 }
+
+ruijieEghaDadBFDEnable OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        yes(1),
+                        no(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicate wheather BFD detection is enable"
+    ::= { ruijieEghaDadBFD 1 }
+
+ruijieEghaDadBFDIfTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF  RuijieEghaDadBFDIfEntry
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION
+            "The EGHA BFD interface table"
+    ::= { ruijieEghaDadBFD 2 }
+
+ruijieEghaDadBFDIfEntry OBJECT-TYPE
+        SYNTAX      RuijieEghaDadBFDIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The EGHA BFD interface entry"
+        INDEX { 
+            ruijieEghaDadBFDIfIndex1,
+            ruijieEghaDadBFDIfIndex2
+        }
+    ::= { ruijieEghaDadBFDIfTable 1 }
+
+RuijieEghaDadBFDIfEntry ::=
+        SEQUENCE {
+            ruijieEghaDadBFDIfIndex1   INTEGER,
+            ruijieEghaDadBFDIfIndex2   INTEGER,
+            ruijieEghaDadBFDIfStatus   INTEGER
+        }
+
+ruijieEghaDadBFDIfIndex1 OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA BFD interface index"
+    ::= { ruijieEghaDadBFDIfEntry 1 }
+    
+ruijieEghaDadBFDIfIndex2 OBJECT-TYPE    
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA BFD interface index"
+    ::= { ruijieEghaDadBFDIfEntry 2 }
+    
+ruijieEghaDadBFDIfStatus OBJECT-TYPE    
+        SYNTAX      INTEGER {
+                        down(1),
+                        up(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA BFD interface status"
+    ::= { ruijieEghaDadBFDIfEntry 3 }
+        
+    
+--***************** the EGHA forward nodes *********************
+ruijieEghaForward OBJECT IDENTIFIER ::= { ruijieEghaMIBObjects 5 }
+
+ruijieEghaForwardApllf OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        on(1),
+                        off(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicate wheather AP local forward first is on"
+    ::= { ruijieEghaForward 1 }
+
+ruijieEghaForwardEcmpllf OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        on(1),
+                        off(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Indicate wheather ECMP local forward first is on"
+    ::= { ruijieEghaForward 2 }
+
+
+--******************* the EGHA Version nodes *********************
+ruijieEghaVersion OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The EGHA system version"
+    ::= { ruijieEghaMIBObjects 6 }
+
+
+--********************************************************************
+--                                                                  **
+--                          traps nodes                             **
+--                                                                  **
+--********************************************************************
+ruijieEghaMIBTraps OBJECT IDENTIFIER ::= { ruijieEghaMIB 2 }
+ruijieEghaTrapsNtfObjects OBJECT IDENTIFIER ::= { ruijieEghaMIBTraps 1 } 
+
+ruijieEghaDeviceState OBJECT-TYPE    
+        SYNTAX      INTEGER {
+                        plugin(1),
+                        remove(2)
+                    }
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "The description of device change state"
+    ::= { ruijieEghaTrapsNtfObjects 1 }
+
+ruijieEghaSlotID OBJECT-TYPE    
+        SYNTAX      INTEGER 
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "The description of slot id"
+    ::= { ruijieEghaTrapsNtfObjects 2 }
+
+ruijieEghaDadResult OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        good(1),
+                        bad(2)
+                    }
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "The description of dual-active detection results"
+    ::= { ruijieEghaTrapsNtfObjects 3 }
+
+ruijieEghaTrapsNotifications OBJECT IDENTIFIER ::= { ruijieEghaMIBTraps 2 }
+
+ruijieEghaNotifyTopoChange NOTIFICATION-TYPE
+        OBJECTS     {
+                        ruijieEghaTopoShape
+                    }
+        STATUS      current
+        DESCRIPTION
+            "This notification is send by EGHA master when topology shape change"
+    ::= { ruijieEghaTrapsNotifications 1 }
+    
+ruijieEghaNotifyDeviceChange NOTIFICATION-TYPE
+        OBJECTS     {
+                        ruijieEghaDeviceID,
+                        ruijieEghaDeviceState
+                    }
+        STATUS      current
+        DESCRIPTION
+            "This notification is send by EGHA master when device plugin or remove"
+    ::= { ruijieEghaTrapsNotifications 2 }
+
+ruijieEghaNotifyDeviceRoleChange NOTIFICATION-TYPE
+        OBJECTS     {
+                        ruijieEghaDeviceID,
+                        ruijieEghaSlotID,
+                        ruijieEghaDeviceRole
+                    }
+        STATUS      current
+        DESCRIPTION
+            "This notification is send by EGHA master when device role change"
+    ::= { ruijieEghaTrapsNotifications 3 }
+
+ruijieEghaNotifyDad NOTIFICATION-TYPE
+        OBJECTS     {
+                        ruijieEghaDadResult
+                    }
+        STATUS      current
+        DESCRIPTION
+            "This notification is send by EGHA master when dual-active device detected"
+    ::= { ruijieEghaTrapsNotifications 4 }
+
+--********************************************************************
+--                                                                  **
+--                conformance information                           **
+--                                                                  **
+--********************************************************************
+ruijieEghaMIBConformance OBJECT IDENTIFIER ::= { ruijieEghaMIB 3}
+ruijieEghaMIBCompliances OBJECT IDENTIFIER ::= { ruijieEghaMIBConformance 1}
+ruijieEghaMIBGroups OBJECT IDENTIFIER ::= { ruijieEghaMIBConformance 2}
+
+--***************** compliance information ********************
+ruijieEghaMIBCompliance MODULE-COMPLIANCE
+        STATUS current
+        DESCRIPTION
+            "The compliance statement for entities which implement the Raisecom EGHA"
+        MODULE 
+            MANDATORY-GROUPS { ruijieEghaMIBObjectsGroup, ruijieEghaMIBTrapsGroup }  
+    ::= { ruijieEghaMIBCompliances 1 }
+
+--***************** units of conformance ********************
+ruijieEghaMIBObjectsGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieEghaTopoShape,
+            ruijieEghaTopoConn,
+            ruijieEghaDomainID,
+            ruijieEghaDeviceID,
+            ruijieEghaDeviceMac,
+            ruijieEghaDevicePri,
+            ruijieEghaDeviceDescr,
+            ruijieEghaDeviceStatus,
+            ruijieEghaDeviceRole,
+            ruijieEghaPortIfIndex,
+            ruijieEghaApIf,
+            ruijieEghaPortState,
+            ruijieEghaPortPeerIfIndex,
+            ruijieEghaApUptime,
+            ruijieEghaDadExIfIndex,
+            ruijieEghaDadAPEnable,
+            ruijieEghaDadAPIfIndex,
+            ruijieEghaDadAPIfStatus,
+            ruijieEghaDadAPMemberIfindex,
+            ruijieEghaDadAPMemberIfStatus,
+            ruijieEghaDadAPRelayIfIndex,
+            ruijieEghaDadBFDEnable,
+            ruijieEghaDadBFDIfIndex1,
+            ruijieEghaDadBFDIfIndex2,
+            ruijieEghaDadBFDIfStatus,
+            ruijieEghaForwardApllf,
+            ruijieEghaForwardEcmpllf,
+            ruijieEghaVersion,
+            ruijieEghaDeviceState,
+            ruijieEghaSlotID,
+            ruijieEghaDadResult
+        }
+        STATUS  current
+        DESCRIPTION
+            "A collection of objects providing EGHA running status to a Raisecom agent"
+    ::= { ruijieEghaMIBGroups 1 }
+
+ruijieEghaMIBTrapsGroup NOTIFICATION-GROUP
+        NOTIFICATIONS {
+            ruijieEghaNotifyTopoChange,
+            ruijieEghaNotifyDeviceChange,
+            ruijieEghaNotifyDeviceRoleChange,
+            ruijieEghaNotifyDad
+        }
+        STATUS current
+        DESCRIPTION 
+            "A collection of traps providing EGHA running status to a Raisecom agent"
+    ::= { ruijieEghaMIBGroups 2 }
+
+END
+

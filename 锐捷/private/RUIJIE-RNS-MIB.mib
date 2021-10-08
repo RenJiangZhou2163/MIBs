@@ -1,0 +1,1579 @@
+-- *****************************************************************
+-- RUIJIE-RNS-MIB.mib:  Ruijie RNS MIB file
+--
+-- March 2019, Yelinquan
+--
+-- Copyright (c) 2019 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-RNS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS       
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Gauge32,
+        Integer32,
+        Unsigned32,
+        Counter32
+                FROM SNMPv2-SMI
+        DisplayString,
+        TruthValue,
+        RowStatus,
+        TEXTUAL-CONVENTION
+                FROM SNMPv2-TC
+        EnabledStatus 
+                FROM P-BRIDGE-MIB
+        InetAddressType,
+        InetAddress,
+        InetPortNumber
+                FROM INET-ADDRESS-MIB
+        InterfaceIndex
+                FROM IF-MIB
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+
+
+ruijieRnsMIB MODULE-IDENTITY 
+        LAST-UPDATED "201903040000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie RNS mibs."
+        REVISION      "201903040000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 160 }
+--
+-- Textual conventions
+--
+        RnsType ::= TEXTUAL-CONVENTION
+            STATUS current
+            DESCRIPTION 
+                "Type of RNS detection"
+            SYNTAX INTEGER {
+                unknown(0),
+                icmpEcho(1),
+                dns(2),
+                tcpConnect(3),
+                udpEcho(4)
+            }
+
+--
+-- Node definitions
+--
+        rnsBase OBJECT IDENTIFIER ::= { ruijieRnsMIB 1 }
+
+        rnsReset OBJECT-TYPE
+            SYNTAX EnabledStatus
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Clears all the rns configurations.(Currently unsupported)"
+            DEFVAL { disabled }
+            ::= { rnsBase 1 }
+        
+        rnsClearStat OBJECT-TYPE
+            SYNTAX EnabledStatus
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Clears all the rns statistics.(Currently unsupported)"
+            DEFVAL { disabled }
+            ::= { rnsBase 2}
+        
+        rnsNumOfDetectEntry OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The total number of current configuration detections.(Currently unsupported)"
+            ::= { rnsBase 3 }
+        
+        rnsSupportDetectType OBJECT-TYPE
+            SYNTAX BITS {
+                icmpEcho(0),
+                dns(1),
+                tcpConnect(2),
+                udpEcho(3)
+            }
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION 
+                "Detect type that the current device supports.
+                Data structure of the type is in the format of bits. 
+                Each bit represents a detect type.(Currently unsupported)"
+            ::= { rnsBase 4 }
+
+        rnsAdmin OBJECT IDENTIFIER ::= { ruijieRnsMIB 2 }
+
+        rnsDetectTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RnsDetectEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of RNS detection definitions."
+            ::= { rnsAdmin 1 }
+
+        rnsDetectEntry OBJECT-TYPE
+            SYNTAX RnsDetectEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Defines an entry in the rnsDetectTable."
+            INDEX { rnsDetectId }
+            ::= { rnsDetectTable 1 }
+
+        RnsDetectEntry ::=
+            SEQUENCE { 
+                rnsDetectId
+                    Integer32,
+                rnsDetectTag
+                    DisplayString,
+                rnsDetectType
+                    RnsType,
+                rnsDetectFrequency
+                    Unsigned32,
+                rnsDetectTimeout
+                    Unsigned32,
+                rnsDetectThreshold
+                    Unsigned32,
+                rnsDetectTargetHost
+                    DisplayString,
+                rnsDetectTargetPort
+                    InetPortNumber,
+                rnsDetectSourceAddress
+                    InetAddress,
+                rnsDetectOutInterface
+                    DisplayString, 
+                rnsDetectIsMgmt
+                    TruthValue,
+                rnsDetectNexthopAddressType
+                    InetAddressType,
+                rnsDetectNexthopAddress
+                    InetAddress,
+                rnsDetectVrfName
+                    DisplayString,
+                rnsDetectDataSize
+                    Unsigned32,
+                rnsDetectDSField
+                    Unsigned32,
+                rnsDetectStatus
+                    RowStatus
+             }
+        
+        rnsDetectId OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Id of RNS detect instance."
+            ::= { rnsDetectEntry 1 }
+        
+        rnsDetectTag OBJECT-TYPE
+            SYNTAX DisplayString (SIZE (0..79))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Description of the detect instance."
+            ::= { rnsDetectEntry 2 }
+        
+        rnsDetectType OBJECT-TYPE
+            SYNTAX RnsType
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The type of the detect instance. This node cannot be modified
+                 if the corresponding instance has been created."
+            ::= { rnsDetectEntry 3 }
+        
+        rnsDetectFrequency OBJECT-TYPE
+            SYNTAX Unsigned32 (10..604800000)
+            UNITS "millisecond" 
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Specifies the interval when the detect instance repeats."
+            DEFVAL { 60000 }
+            ::= { rnsDetectEntry 4 }
+        
+        rnsDetectTimeout OBJECT-TYPE
+            SYNTAX Unsigned32 (10..604800000)
+            UNITS "millisecond" 
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Specifies the duration to wait for the completion of detect instance repeats."
+            DEFVAL { 5000 }
+            ::= { rnsDetectEntry 5 }
+        
+        rnsDetectThreshold OBJECT-TYPE
+            SYNTAX Unsigned32 (0..60000)
+            UNITS "millisecond" 
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Represents the threshold of RTD (Round Trip Delay). If the 
+                RTT violates the threshold, the corresponding counter will 
+                increase."
+            DEFVAL { 5000 }
+            ::= { rnsDetectEntry 6 }
+        
+        rnsDetectTargetHost OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Represents the hostname of destination. This node cannot be modified
+                 if the corresponding instance has been created. The issued type of this node
+                 is OctetString instead of IpAddress due to the hostname support, 
+                 if a malformed ip address is set to this node, a bad value error will occur when 
+                 activing the entire row."
+            ::= { rnsDetectEntry 7 }
+        
+        rnsDetectTargetPort OBJECT-TYPE
+            SYNTAX InetPortNumber
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Represents the port number of destination. This node should be ignored 
+                 if the detect type is icmp-echo, and it cannot be modified if the 
+                 corresponding instance has been created."
+            ::= { rnsDetectEntry 8 }
+                
+        rnsDetectSourceAddress OBJECT-TYPE
+            SYNTAX InetAddress
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Represents the address of source. This node cannot be modified
+                 if the corresponding instance has been created. The issued type of this node
+                 is OctetString instead of IpAddress due to the future IPv6 support, 
+                 if a malformed ip address is set to this node, a bad value error will occur when 
+                 activing the entire row."
+            ::= { rnsDetectEntry 9 }
+        
+        rnsDetectOutInterface OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "Specified the out interface, from which probe 
+                 of the detect instance are sent. This node cannot 
+                 be modified if the corresponding instance has been created."
+            ::= { rnsDetectEntry 10 }
+            
+        rnsDetectIsMgmt OBJECT-TYPE
+            SYNTAX TruthValue
+            MAX-ACCESS  read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates whether the out interface is Mgmt port. This node 
+                 cannot be modified if the corresponding instance has been created."
+            ::= { rnsDetectEntry 11 }
+        
+        rnsDetectNexthopAddressType OBJECT-TYPE
+            SYNTAX InetAddressType
+            MAX-ACCESS  read-create
+            STATUS current
+            DESCRIPTION
+                "Represents the address type of nexthop."
+            ::= { rnsDetectEntry 12 }
+        
+        rnsDetectNexthopAddress OBJECT-TYPE
+            SYNTAX InetAddress
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Represents the address of nexthop. This node cannot be modified
+                 if the corresponding instance has been created. The issued type of this node
+                 is OctetString instead of IpAddress due to the future IPv6 support, 
+                 if a malformed ip address is set to this node, a bad value error will occur when 
+                 activing the entire row."
+            ::= { rnsDetectEntry 13 }
+        
+        rnsDetectVrfName OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Specifies the VRF name."
+            ::= { rnsDetectEntry 14 }
+        
+        rnsDetectDataSize OBJECT-TYPE
+            SYNTAX      Unsigned32 (36..1472)
+            UNITS       "octets"
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "The size of data field in packet. value range: 36 to 1472 octets."
+            DEFVAL { 36 }
+            ::= { rnsDetectEntry 15 }
+        
+        rnsDetectDSField OBJECT-TYPE
+            SYNTAX Unsigned32 (0..255)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Specifies the Differentiated Services (DS) field in the IP 
+                packet. The DS field is defined as the Type Of Service (TOS) 
+                octet in IPv4 header or as the Traffic Class octet in IPv6 
+                header."
+            DEFVAL { 0 }
+            ::= { rnsDetectEntry 16 }
+            
+        rnsDetectStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "To set the value of this object can create or delete the 
+                specified detect instance and the records belonging to it."
+            REFERENCE
+              "See definition of RowStatus in RFC 2579, 'Textual
+              Conventions for SMIv2.'"
+            ::= { rnsDetectEntry 17 }
+
+        rnsScheduleTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RnsScheduleEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "RNS detect schedule."
+            ::= { rnsAdmin 3 }
+        
+        rnsScheduleEntry OBJECT-TYPE
+            SYNTAX RnsScheduleEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Set start-up of rns detect instance."
+            INDEX { rnsScheduleId }
+            ::= { rnsScheduleTable 1 }
+        
+        RnsScheduleEntry ::=
+            SEQUENCE { 
+                rnsScheduleId
+                    Integer32,
+                rnsScheduleStartType
+                    INTEGER,
+                rnsScheduleStartTime
+                    DisplayString,
+                rnsScheduleLife
+                    DisplayString,
+                rnsScheduleRecurring
+                    EnabledStatus,
+                rnsScheduleStatus
+                    RowStatus
+            }
+            
+        rnsScheduleId OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Id of RNS detect instance."
+            ::= { rnsScheduleEntry 1 }
+        
+        rnsScheduleStartType OBJECT-TYPE
+            SYNTAX INTEGER {
+                pending(0),
+                startNow(1),
+                startAt(2),
+                startAfter(3)
+            }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Specifies the start type of the detect instance. This node 
+                 is used together with rnsScheduleStartTime. This node cannot 
+                 be modified if the corresponding instance has been created."
+            ::= { rnsScheduleEntry 2 }
+        
+        rnsScheduleStartTime OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Specifies the start time of the test instance. This node can
+                 only be set or modified if the start type is startAt or startAfter.
+                 This node should be set using the following formats:
+                 1. month-dayThh:mm:ss, eg:08-28T10:50:33
+                 2. hh:mm:ss, eg:10:50:33."
+            ::= { rnsScheduleEntry 3 }
+        
+        rnsScheduleLife OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Specifies the aging time of the detect instance, the time 
+                 how long the detect instance will be reserved in RNS, after 
+                 the test instance is inactive. Setting the value to 0 
+                 indicates reserving the detect instance eternally."
+            ::= { rnsScheduleEntry 4 }
+            
+        
+        rnsScheduleRecurring OBJECT-TYPE
+            SYNTAX EnabledStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Specifies the recurring flag of the detect instance. If enabled,
+                the detect instance that reach end of life will restart everyday."
+            DEFVAL { disabled }
+            ::= { rnsScheduleEntry 5 }
+            
+        rnsScheduleStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "To set the value of this object can create or delete the 
+                specified detect instance and the records belonging to it."
+            REFERENCE
+                "See definition of RowStatus in RFC 2579, 'Textual
+                Conventions for SMIv2.'"
+            ::= { rnsScheduleEntry 6 }
+        
+        rnsClearStatisTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RnsClearStatisEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "RNS Clear Statis."
+            ::= { rnsAdmin 2 }
+        
+        rnsClearStatisEntry OBJECT-TYPE
+            SYNTAX RnsClearStatisEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "clear rns detect instance."
+            INDEX { rnsClearStatisId }
+            ::= { rnsClearStatisTable 1 }
+        
+        RnsClearStatisEntry ::=
+            SEQUENCE { 
+                rnsClearStatisId
+                    Integer32,
+                rnsClearStatisClear
+                    INTEGER
+            }
+            
+        rnsClearStatisId OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Id of clear RNS statis, 0:represent clear all statistics.
+                 (1-500)clear oneof ID"
+            ::= { rnsClearStatisEntry 1 }
+        
+        rnsClearStatisClear OBJECT-TYPE
+            SYNTAX INTEGER {
+                        disclear(0),
+                        clear(1)
+                    }
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "Specifies the start type of the detect instance. This node 
+                 is used together with rnsScheduleStartTime. This node cannot 
+                 be modified if the corresponding instance has been created."
+            ::= { rnsClearStatisEntry 2 }
+            
+        rnsStats OBJECT IDENTIFIER ::= { ruijieRnsMIB 3 }
+        
+        rnsResultsTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RnsResultsEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Defines the detect Results Table for detect instance."
+            ::= { rnsStats 1 }
+        
+        rnsResultsEntry OBJECT-TYPE
+            SYNTAX RnsResultsEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Defines the detect result of detect instance."
+            INDEX { rnsResultsId }
+            ::= { rnsResultsTable 1 }
+        
+        RnsResultsEntry ::=
+            SEQUENCE {
+                rnsResultsId
+                    Integer32,
+                rnsResultsLatestStatus
+                    INTEGER,
+                rnsResultsSuccessfuls
+                    Counter32,
+                rnsResultsFailures
+                    Counter32,
+                rnsResultsAttempts
+                    Counter32,
+                rnsResultsRttAvg
+                    Gauge32,
+                rnsResultsRttMin
+                    Gauge32,
+                rnsResultsRttMax
+                    Gauge32,
+                rnsResultsRTDOverThresholds
+                    Counter32,
+                rnsResultsTimeouts
+                    Counter32,
+                rnsResultsBusies
+                    Counter32,
+                rnsResultsJitter
+                    Counter32,
+                rnsResultsSquareSumRtt
+                    Gauge32,
+                rnsResultsLossRatio
+                    DisplayString,
+                rnsResultsLossRatioPermillage
+                    DisplayString,
+                rnsResultsNoconnect
+                    Counter32,
+                rnsResultsDisconnect
+                    Counter32,
+                rnsResultsIntervalerr
+                    Counter32,
+                rnsResultsSeqerr
+                    Counter32,
+                rnsResultsLastrecvtm
+                    DisplayString
+            }
+        
+        rnsResultsId OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Id of RNS detect instance."
+            ::= { rnsResultsEntry 1 }
+        
+        rnsResultsLatestStatus OBJECT-TYPE
+            SYNTAX INTEGER {
+                noResult(0),
+                success(1),
+                failure(2)
+            }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The latest status of detect."
+            ::= { rnsResultsEntry 2 }
+        
+        rnsResultsSuccessfuls OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+               "The times of successful detections."
+            ::= { rnsResultsEntry 3 }
+        
+        rnsResultsFailures OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+               "The times of failure detections."
+            ::= { rnsResultsEntry 4 }
+        
+        rnsResultsAttempts OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+               "The times of successful and failure detections."
+            ::= { rnsResultsEntry 5 }
+        
+        rnsResultsRttAvg OBJECT-TYPE 
+            SYNTAX      Gauge32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The average of RTTs that were successfully measured by detections."
+            ::= { rnsResultsEntry 6 }
+        
+        rnsResultsRttMin OBJECT-TYPE 
+            SYNTAX      Gauge32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The minimum of RTTs that were successfully measured by detections."
+            ::= { rnsResultsEntry 7 }
+        
+        rnsResultsRttMax OBJECT-TYPE 
+            SYNTAX      Gauge32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The maximum of RTTs that were successfully measured by detections."
+            ::= { rnsResultsEntry 8 }
+        
+        rnsResultsRTDOverThresholds OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The times of successful detectios tha RTD (Round Trip Delay)
+                 over the threshold."
+            ::= { rnsResultsEntry 9 }
+
+        rnsResultsTimeouts OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The number of occasions when a RNS detection was not
+                 completed before a timeout occurred."
+            ::= { rnsResultsEntry 10 }
+
+        rnsResultsBusies OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The times of failure to apply resource due to the busy system.
+                such as apply memory or create socket failure."
+            ::= { rnsResultsEntry 11 }
+        
+        rnsResultsJitter OBJECT-TYPE
+            SYNTAX      Counter32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The time difference in packet inter-arrival time, which is given by percentage value."
+            ::= { rnsResultsEntry 12 }
+
+        rnsResultsSquareSumRtt OBJECT-TYPE
+            SYNTAX      Gauge32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The sum of squares RTTs that were successfully measured by detections."
+            ::= { rnsResultsEntry 13 }
+
+        rnsResultsLossRatio OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "The two way packet of loss ratio value of the rns detections is expressed by percentage."
+            ::= { rnsResultsEntry 14 }
+
+        rnsResultsLossRatioPermillage OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "The two way packet of loss ratio value of the rns detections is expressed by permillage."
+            ::= { rnsResultsEntry 15 }
+
+        rnsResultsNoconnect OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "The times of packet loss detections caused by noconnect."
+            ::= { rnsResultsEntry 16 }
+
+        rnsResultsDisconnect OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "The times of packet loss detections caused by disconnect."
+            ::= { rnsResultsEntry 17 }
+
+        rnsResultsIntervalerr OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "The times of packet loss detections caused by internal errors."
+            ::= { rnsResultsEntry 18 }
+
+        rnsResultsSeqerr OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "The times of sequence error detections."
+            ::= { rnsResultsEntry 19 }
+
+        rnsResultsLastrecvtm OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Specifies the received time of the last detection. This node can
+                 only be set or modified if the start type is startAt or startAfter.
+                 This node should be set using the following formats:
+                 1. month-dayThh:mm:ss, eg:08-28T10:50:33
+                 2. hh:mm:ss, eg:10:50:33."
+            ::= { rnsResultsEntry 20 }
+
+        rnsServer OBJECT IDENTIFIER ::= { ruijieRnsMIB 4 }
+
+        rnsServerUdpPort OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Represents the port number of rns server, the value range is 1025 to 65535."
+            DEFVAL {0}
+            ::= { rnsServer 1 }
+
+        rnsTwampLight OBJECT IDENTIFIER ::= { ruijieRnsMIB 5 }
+        
+        rnsTwampLightControllerAdmin OBJECT IDENTIFIER ::= { rnsTwampLight 1 }
+        
+        rnsTwampLightClientEnable OBJECT-TYPE
+            SYNTAX      INTEGER {
+                        enable(1),
+                        disable(2)
+                    }
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+            "Defines enable/disable TWAMP Light client"
+            ::= { rnsTwampLightControllerAdmin 1}
+            
+        rnsTwampLightSenderEnable OBJECT-TYPE
+            SYNTAX      INTEGER {
+                        enable(1),
+                        disable(2)
+                    }
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+            "Defines enable/disable TWAMP Light sender."
+            ::= { rnsTwampLightControllerAdmin 2}
+
+        rnsTwampLightClientTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RnsTwampLightClientEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Defines the configuration Table for TWAMP Controller client."
+            ::= { rnsTwampLightControllerAdmin 3 }
+
+        rnsTwampLightClientEntry OBJECT-TYPE
+            SYNTAX RnsTwampLightClientEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Defines the configuration Table for TWAMP Controller client."
+            INDEX { rnsTwampClientSessionId }
+            ::= { rnsTwampLightClientTable 1}
+
+        RnsTwampLightClientEntry ::=
+            SEQUENCE { 
+                rnsTwampClientSessionId
+                    Integer32,
+                rnsTwampClientSenderIP
+                    InetAddress,
+                rnsTwampClientReflectorIP
+                    InetAddress,
+                rnsTwampClientSenderPort
+                    Unsigned32,
+                rnsTwampClientReflectorPort
+                    Unsigned32,
+                rnsTwampClientSenderVrfName
+                    DisplayString,
+                rnsTwampClientDscp
+                    Unsigned32,
+                rnsTwampClientPaddLength
+                    Unsigned32,
+                rnsTwampClientPadValue
+                    INTEGER,
+                rnsTwampClientDelayHighThreshold
+                    Unsigned32,
+                rnsTwampClientDelayLowThreshold
+                    Unsigned32,
+                rnsTwampClientJitterHighThreshold
+                    Unsigned32,
+                rnsTwampClientJitterLowThreshold
+                    Unsigned32,
+                rnsTwampClientLossHighThreshold
+                    Unsigned32,
+                rnsTwampClientLossLowThreshold
+                    Unsigned32,
+                rnsTwampClientBindInterface
+                    DisplayString,
+                rnsTwampClientResetStatic
+                    INTEGER,
+                rnsTwampClientDescription 
+                    DisplayString,
+                rnsTwampClientStatus
+                    RowStatus
+             }
+        
+        rnsTwampClientSessionId OBJECT-TYPE
+            SYNTAX Integer32 (1..2048)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Session Id of TWAMP light instance."
+            ::= { rnsTwampLightClientEntry 1 }
+
+        rnsTwampClientSenderIP OBJECT-TYPE
+            SYNTAX InetAddress
+            MAX-ACCESS  read-create
+            STATUS current
+            DESCRIPTION
+                "Represents the IP address of TWAMP light sender."
+            ::= { rnsTwampLightClientEntry 2 }
+
+        rnsTwampClientReflectorIP OBJECT-TYPE
+            SYNTAX InetAddress
+            MAX-ACCESS  read-create
+            STATUS current
+            DESCRIPTION
+                "Represents the IP address of TWAMP light Reflector."
+            ::= { rnsTwampLightClientEntry 3 }
+
+        rnsTwampClientSenderPort OBJECT-TYPE
+            SYNTAX InetPortNumber
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The UDP port of TWAMP light Sender.the valid value is
+                {(862,863),(1025..65535)}."
+            ::= { rnsTwampLightClientEntry 4 }
+
+        rnsTwampClientReflectorPort OBJECT-TYPE
+            SYNTAX InetPortNumber
+            MAX-ACCESS  read-create
+            STATUS current
+            DESCRIPTION
+                "The UDP port of TWAMP light Reflector.the valid value is
+                {(862,863),(1025..65535)}."
+            ::= { rnsTwampLightClientEntry 5 }
+
+        rnsTwampClientSenderVrfName OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS  read-create
+            STATUS current
+            DESCRIPTION
+                "Represents the VRF name of TWAMP light Session."
+            ::= { rnsTwampLightClientEntry 6 }
+
+        rnsTwampClientDscp OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Define the pririoty of TWAMP light Session."
+            ::= { rnsTwampLightClientEntry 7 }
+        
+        rnsTwampClientPaddLength OBJECT-TYPE
+            SYNTAX      Unsigned32 (32..1454)
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+               "Define the padding lenght of TWAMP light Session packets."
+            DEFVAL { 128 }
+            ::= { rnsTwampLightClientEntry 8 }
+        
+        rnsTwampClientPadValue OBJECT-TYPE
+            SYNTAX      INTEGER {
+                allzero(0),
+                value0x55(1),
+                value0xaa(2),
+                allone(3)
+            }
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+               "Define the value of padding TWAMP light Session packets,
+                 allzero:0;value0x55:85;value0xaa:170;allone:255."
+            ::= { rnsTwampLightClientEntry 9 }
+
+        rnsTwampClientDelayHighThreshold OBJECT-TYPE
+            SYNTAX Unsigned32(2..1000)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The High Threshold of delay.the unit is ms."
+            ::= { rnsTwampLightClientEntry 10 }
+
+        rnsTwampClientDelayLowThreshold OBJECT-TYPE
+            SYNTAX Unsigned32(1..999)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The Low Threshold of delay.the unit is ms."
+            ::= { rnsTwampLightClientEntry 11 }
+
+        rnsTwampClientJitterHighThreshold OBJECT-TYPE
+            SYNTAX Unsigned32(2..1000)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The High Threshold of Jitter.the unit is ms."
+            ::= { rnsTwampLightClientEntry 12 }
+
+        rnsTwampClientJitterLowThreshold OBJECT-TYPE
+            SYNTAX Unsigned32(1..999)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The Low Threshold of Jitter.the unit is ms."
+            ::= { rnsTwampLightClientEntry 13 }
+
+        rnsTwampClientLossHighThreshold OBJECT-TYPE
+            SYNTAX Unsigned32(2..999999)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The High Threshold of loss ratio:
+                the unit is 0.0001%."
+            ::= { rnsTwampLightClientEntry 14 }
+
+        rnsTwampClientLossLowThreshold OBJECT-TYPE
+            SYNTAX Unsigned32(1..999998)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The Low Threshold of Loss ratio:
+                the unit is 0.0001%."
+            ::= { rnsTwampLightClientEntry 15 }
+
+        rnsTwampClientBindInterface OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "Specified the bind interface,  which the session bind to."
+            ::= { rnsTwampLightClientEntry 16 }  
+
+        rnsTwampClientResetStatic OBJECT-TYPE
+            SYNTAX INTEGER {
+                donotrestsession(0),
+                restsession(1)
+            }            
+            MAX-ACCESS  read-write
+            STATUS current
+            DESCRIPTION
+                "Represet the if reset the TWAMP session,
+                donotrestsession:don't reset the the session equal to rnsTwampClientSessionId   
+                restsession:reset the session equal to rnsTwampClientSessionId."
+            ::= { rnsTwampLightClientEntry 17 } 
+
+        rnsTwampClientDescription OBJECT-TYPE
+            SYNTAX      DisplayString
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+               "The Description of TWAMP light Session."
+            ::= { rnsTwampLightClientEntry 18 }
+
+        rnsTwampClientStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "To set the value of this object can create or delete the 
+                specified detect instance and the records belonging to it."
+            REFERENCE
+              "See definition of RowStatus in RFC 2579, 'Textual
+              Conventions for SMIv2.'"
+            ::= { rnsTwampLightClientEntry 19 }
+            
+        rnsTwampLightSenderTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RnsTwampLightSenderEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Defines the configuration Table for TWAMP Sender."
+            ::= { rnsTwampLightControllerAdmin 4 }
+            
+        rnsTwampLightSenderEntry OBJECT-TYPE
+            SYNTAX RnsTwampLightSenderEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Defines the configuration Entry for TWAMP Sender."
+            INDEX { rnsTwampSenderSessionId }
+            ::= { rnsTwampLightSenderTable 1}
+            
+        RnsTwampLightSenderEntry ::=
+            SEQUENCE { 
+                rnsTwampSenderSessionId
+                    Integer32,
+                rnsTwampSessionType
+                    INTEGER,
+                rnsTwampSenderSessionDuration
+                    Unsigned32,
+                rnsTwampSenderPacketCount
+                    Unsigned32,
+                rnsTwampSenderSessionPeriod
+                    Unsigned32,
+                rnsTwampSenderSessionTimeOut
+                    Unsigned32,
+                rnsTwampSenderStatus
+                    RowStatus
+             }
+        
+        rnsTwampSenderSessionId OBJECT-TYPE
+            SYNTAX Integer32 (1..2048)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Start the session Id of TWAMP light instance."
+            ::= { rnsTwampLightSenderEntry 1 }
+
+        rnsTwampSessionType OBJECT-TYPE
+            SYNTAX INTEGER {
+                duration(0),
+                packetCount(1),
+                continual(2)
+            }
+            MAX-ACCESS  read-create
+            STATUS current
+            DESCRIPTION
+                "Represents TWAMP Session type:
+                Duration means the rnsTwampSenderSessionDuration is valid,rnsTwampSenderPacketCount is invalid;
+                PacketCount means the rnsTwampSenderPacketCount is valid,rnsTwampSenderSessionDuration is invalid;
+                means rnsTwampSenderPacketCount and rnsTwampSenderSessionDuration is invalid
+                no_start:means the session isn't start"
+            ::= { rnsTwampLightSenderEntry 2 }
+
+        rnsTwampSenderSessionDuration OBJECT-TYPE
+            SYNTAX Unsigned32 (30..3600)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The Continual time the packets send,the unit is second."
+            ::= { rnsTwampLightSenderEntry 3 }
+
+        rnsTwampSenderPacketCount OBJECT-TYPE
+            SYNTAX Unsigned32 (100..30000)
+            MAX-ACCESS  read-create
+            STATUS current
+            DESCRIPTION
+                "The total packets sent in this session."
+            ::= { rnsTwampLightSenderEntry 4 }
+
+        rnsTwampSenderSessionPeriod OBJECT-TYPE
+            SYNTAX Unsigned32 (1..300)
+            MAX-ACCESS  read-create
+            STATUS current
+            DESCRIPTION
+                "the period time send packet.the unit is 100ms."
+            ::= { rnsTwampLightSenderEntry 5 }
+            
+        rnsTwampSenderSessionTimeOut OBJECT-TYPE
+            SYNTAX Unsigned32 (1..60)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Time out of received response packets,the unit is second."
+            ::= { rnsTwampLightSenderEntry 6 }    
+            
+        rnsTwampSenderStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "To set the value of this object can create or delete the 
+                specified detect instance and the records belonging to it."
+            REFERENCE
+              "See definition of RowStatus in RFC 2579, 'Textual
+              Conventions for SMIv2.'"
+            ::= { rnsTwampLightSenderEntry 7 }
+            
+        rnsTwampLightStaticTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RnsTwampLightStaticEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Defines the static information of TWAMP Session."
+            ::= { rnsTwampLightControllerAdmin 5 }
+            
+        rnsTwampLightStaticEntry OBJECT-TYPE
+            SYNTAX RnsTwampLightStaticEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Defines the static information of All TWAMP Ligt Session,
+                the statistics is Cumulative Count."
+            INDEX { rnsTwampLightStaticSessionId }
+            ::= { rnsTwampLightStaticTable 1}
+
+        RnsTwampLightStaticEntry ::=
+            SEQUENCE { 
+                rnsTwampLightStaticSessionId
+                    Integer32,
+                rnsTwampLightMinDelayValue
+                    Counter32,
+                rnsTwampLightMaxDelayValue
+                    Counter32,
+                rnsTwampLightAvgDelayValue
+                    Counter32,
+                rnsTwampLightDelayAlamrStatus
+                    INTEGER,
+                rnsTwampLightMinJitterValue
+                    Counter32,
+                rnsTwampLightMaxJitterValue
+                    Counter32,
+                rnsTwampLightAvgJitterValue
+                    Counter32,
+                rnsTwampLightJitterAlamrStatus
+                    INTEGER,
+                rnsTwampLightSendpacketsNum
+                    Counter32,
+                rnsTwampLightReceivepacketsNum
+                    Counter32,
+                rnsTwampLightLostCount
+                    Counter32,
+                rnsTwampLightLossRatio
+                    DisplayString,
+                rnsTwampLightLossRatioAlamrStatus
+                    INTEGER
+             }
+
+        rnsTwampLightStaticSessionId OBJECT-TYPE
+            SYNTAX Integer32 (1..2048)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+            "Session Id of TWAMP light instance."
+            ::= { rnsTwampLightStaticEntry 1 }
+
+        rnsTwampLightMinDelayValue OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "Represents the minimum two way delay value of the TWAMP session.
+                the units is ms,if rnsTwampSessionType is duration,this means the
+                recent 100 times statics."
+            ::= { rnsTwampLightStaticEntry 2 }
+
+        rnsTwampLightMaxDelayValue OBJECT-TYPE
+            SYNTAX Counter32      
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "Represents the maximum two way delay value of the TWAMP session.
+                the units is ms,if rnsTwampSessionType is duration,this means the 
+                recent 100 times statics"
+            ::= { rnsTwampLightStaticEntry 3 }
+
+        rnsTwampLightAvgDelayValue OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "Represents the average two way delay value of the TWAMP session.
+                the units is ms,if rnsTwampSessionType is duration,this means the 
+                recent 100 times statics"
+            ::= { rnsTwampLightStaticEntry 4 }
+            
+        rnsTwampLightDelayAlamrStatus OBJECT-TYPE
+            SYNTAX INTEGER {
+                noalarm(0),
+                alarmproduce(1),
+                alarmrecover(2)
+            }            
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "Represents if the rtt alarm peduced:
+                noalarm: no alram produced
+                alarmproduce: rtt alarm produced
+                alarmrecover: rtt alarm recover to normal"
+            ::= { rnsTwampLightStaticEntry 5 }
+            
+        rnsTwampLightMinJitterValue OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "Represents the minimum two way Jitter value of the TWAMP session.
+                the units is ms,if rnsTwampSessionType is duration,this means the 
+                recent 100 times statics"
+            ::= { rnsTwampLightStaticEntry 6 }
+
+        rnsTwampLightMaxJitterValue OBJECT-TYPE
+            SYNTAX Counter32      
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "Represents the maximum two way Jitter value of the TWAMP session.
+                the units is ms,if rnsTwampSessionType is duration,this means the 
+                recent 100 times statics"
+            ::= { rnsTwampLightStaticEntry 7 }
+
+        rnsTwampLightAvgJitterValue OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "Represents the average two way Jitter value of the TWAMP session.
+                the units is ms,if rnsTwampSessionType is duration,this means the 
+                recent 100 times statics"
+            ::= { rnsTwampLightStaticEntry 8 }
+
+        rnsTwampLightJitterAlamrStatus OBJECT-TYPE
+            SYNTAX INTEGER {
+                noalarm(0),
+                alarmproduce(1),
+                alarmrecover(2)
+            }            
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "Represents if the Jitter alarm peduced:
+                noalarm: no alram produced
+                alarmproduce: Jitter alarm produced
+                alarmrecover: Jitter alarm recover to normal"
+            ::= { rnsTwampLightStaticEntry 9 }
+
+        rnsTwampLightSendpacketsNum OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "Represents the two way sent packets value of the TWAMP session."
+            ::= { rnsTwampLightStaticEntry 10 }
+
+        rnsTwampLightReceivepacketsNum OBJECT-TYPE
+            SYNTAX Counter32
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "Represents the two way received packets value of the TWAMP session."
+            ::= { rnsTwampLightStaticEntry 11 }
+
+        rnsTwampLightLostCount OBJECT-TYPE
+            SYNTAX Counter32      
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "Represents the two way lost packet count value of the TWAMP session."
+            ::= { rnsTwampLightStaticEntry 12 }
+
+        rnsTwampLightLossRatio OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "Represents the two way packet loss ratio value of the TWAMP session."
+            ::= { rnsTwampLightStaticEntry 13 } 
+
+        rnsTwampLightLossRatioAlamrStatus OBJECT-TYPE
+            SYNTAX INTEGER {
+                noalarm(0),
+                alarmproduce(1),
+                alarmrecover(2)
+            }            
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "Represents if the LossRatio alarm peduced:
+                noalarm(0): no alram produced
+                alarmproduce(1): LossRatio alarm produced
+                alarmrecover(2): LossRatio alarm recover to normal"
+            ::= { rnsTwampLightStaticEntry 14 }
+
+        rnsTwampLightOperTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RnsTwampLightOperEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Defines the operation Table for TWAMP session."
+            ::= { rnsTwampLightControllerAdmin 7 }
+
+        rnsTwampLightOperEntry OBJECT-TYPE
+            SYNTAX RnsTwampLightOperEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Defines the operation Table for TWAMP Sender."
+            INDEX { rnsTwampLightOperSessionId }
+            ::= { rnsTwampLightOperTable 1}
+
+        RnsTwampLightOperEntry ::=
+            SEQUENCE { 
+                rnsTwampLightOperSessionId
+                    Integer32,
+                rnsTwampLightOperSessionState
+                    INTEGER,
+                rnsTwampLightOperSessionMode
+                    INTEGER,
+                rnsTwampLightOperSessionStartTime
+                    DisplayString,
+                rnsTwampLightOperSessionStopTime
+                    DisplayString
+             }
+        
+        rnsTwampLightOperSessionId OBJECT-TYPE
+            SYNTAX Integer32 (1..2048)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Session Id of TWAMP light instance."
+            ::= { rnsTwampLightOperEntry 1 }
+
+        rnsTwampLightOperSessionState OBJECT-TYPE
+            SYNTAX INTEGER {
+                active(0),
+                stopped(1),
+                inactive(2),
+                isNotStartup(3),
+                absenceResource(4),
+                boardFault(5)
+            }
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "Represet the state of the TWAMP session,
+                active:the session has been started
+                stopped:the session has beed stopped
+                inactive:the session is abnormal
+                don't startup：don't start this session
+                absence of resource：Lack of resources such as boards
+                board fault：board fault."
+            ::= { rnsTwampLightOperEntry 2 }
+
+        rnsTwampLightOperSessionMode OBJECT-TYPE
+            SYNTAX INTEGER {
+                unauthenticated(0),
+                authenticated(1),
+                encryption(2)
+            }   
+            MAX-ACCESS  read-only
+            STATUS current
+            DESCRIPTION
+                "the session mode,only support unauthenticated mode."
+            ::= { rnsTwampLightOperEntry 3 }
+
+        rnsTwampLightOperSessionStartTime OBJECT-TYPE
+            SYNTAX DisplayString 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Specifies the start time of the TWAMP sesson. This node can
+                 only be set or modified if the start type is startAt or startAfter.
+                 This node should be set using the following formats:
+                 1. month-dayThh:mm:ss, eg:08-28T10:50:33
+                 2. hh:mm:ss, eg:10:50:33."
+            ::= { rnsTwampLightOperEntry 4 }
+
+        rnsTwampLightOperSessionStopTime OBJECT-TYPE
+            SYNTAX DisplayString 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Specifies the stop time of the TWAMP sesson. This node can
+                 only be set or modified if the start type is startAt or startAfter.
+                 This node should be set using the following formats:
+                 1. month-dayThh:mm:ss, eg:08-28T10:50:33
+                 2. hh:mm:ss, eg:10:50:33."
+            ::= { rnsTwampLightOperEntry 5 }
+
+        rnsTwampLightResponderAdmin OBJECT IDENTIFIER ::= { rnsTwampLight 2 }
+
+        rnsTwampLightResponderEnable OBJECT-TYPE
+            SYNTAX      INTEGER {
+                        enable(1),
+                        disable(2)
+                    }
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+            "Defines enable/disable TWAMP Responder."
+            ::= { rnsTwampLightResponderAdmin 1}    
+
+        rnsTwampLightResponderTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RnsTwampLightResponderEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Defines the configuration Table for TWAMP responder."
+            ::= { rnsTwampLightResponderAdmin 2 }
+        
+        rnsTwampLightResponderEntry OBJECT-TYPE
+            SYNTAX RnsTwampLightResponderEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Defines the configuration Table for TWAMP responder."
+            INDEX { rnsTwampResponderSessionId }
+            ::= { rnsTwampLightResponderTable 1}
+
+        RnsTwampLightResponderEntry ::=
+            SEQUENCE { 
+                rnsTwampResponderSessionId
+                    Integer32,
+                rnsTwampResponderLocalIP
+                    InetAddress,
+                rnsTwampResponderRemoteIP
+                    InetAddress,
+                rnsTwampResponderLocalPort
+                    Unsigned32,
+                rnsTwampResponderRemoterPort
+                    Unsigned32,
+                rnsTwampResponderVrfName
+                    DisplayString,
+                rnsTwampResponderInterfaceID
+                    InterfaceIndex,
+                rnsTwampResponderInterfaceName
+                    DisplayString,
+                rnsTwampResponderDescription 
+                    DisplayString,
+                rnsTwampResponderStatus
+                    RowStatus   
+             }
+        
+        rnsTwampResponderSessionId OBJECT-TYPE
+            SYNTAX Integer32 (1..2048)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Session Id of TWAMP responder instance."
+            ::= { rnsTwampLightResponderEntry 1 }
+
+        rnsTwampResponderLocalIP OBJECT-TYPE
+            SYNTAX InetAddress
+            MAX-ACCESS  read-create
+            STATUS current
+            DESCRIPTION
+                "Represents the IP address of TWAMP light responder."
+            ::= { rnsTwampLightResponderEntry 2 }
+
+        rnsTwampResponderRemoteIP OBJECT-TYPE
+            SYNTAX InetAddress
+            MAX-ACCESS  read-create
+            STATUS current
+            DESCRIPTION
+                "Represents the IP address of TWAMP light sender."
+            ::= { rnsTwampLightResponderEntry 3 }
+
+        rnsTwampResponderLocalPort OBJECT-TYPE
+            SYNTAX InetPortNumber
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The localUDP port of TWAMP light responder.the valid value is
+                {(862,863),(1025..65535)}."
+            ::= { rnsTwampLightResponderEntry 4 }
+
+        rnsTwampResponderRemoterPort OBJECT-TYPE
+            SYNTAX InetPortNumber
+            MAX-ACCESS  read-create
+            STATUS current
+            DESCRIPTION
+                "Represents the IP address of TWAMP light sender.the valid value is
+            {(862,863),(1025..65535)}."
+            ::= { rnsTwampLightResponderEntry 5 }
+
+        rnsTwampResponderVrfName OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS  read-create
+            STATUS current
+            DESCRIPTION
+                "Represents the VRF name of TWAMP light Session."
+            ::= { rnsTwampLightResponderEntry 6 }   
+
+        rnsTwampResponderInterfaceID OBJECT-TYPE
+            SYNTAX InterfaceIndex
+            MAX-ACCESS  read-create
+            STATUS current
+            DESCRIPTION
+                "Respresent twamp light responder source interface ID,
+                this feature don't support now."
+            ::= { rnsTwampLightResponderEntry 7 }
+
+        rnsTwampResponderInterfaceName OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS  read-create
+            STATUS current
+            DESCRIPTION
+                "Respresent twamp light responder source interface name,
+                this feature don't support now."
+            ::= { rnsTwampLightResponderEntry 8 }   
+
+        rnsTwampResponderDescription OBJECT-TYPE
+            SYNTAX      DisplayString
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+               "The Description of TWAMP light Session."
+            ::= { rnsTwampLightResponderEntry 9 }
+
+        rnsTwampResponderStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "To set the value of this object can create or delete the 
+                specified detect instance and the records belonging to it."
+            REFERENCE
+              "See definition of RowStatus in RFC 2579, 'Textual
+              Conventions for SMIv2.'"
+            ::= { rnsTwampLightResponderEntry 10 }
+
+        -- Notification
+        rnsTwampLightAlarmTraps      OBJECT IDENTIFIER ::= { rnsTwampLight 3 } 
+
+        rnsTwampLightAlarmSessionTraps OBJECT-TYPE
+            SYNTAX Integer32(1..2048)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Session Id of TWAMP Controller instance"
+            ::= { rnsTwampLightAlarmTraps 1 }
+        rnsTwampLightAlarmTypeTraps OBJECT-TYPE
+            SYNTAX INTEGER{
+            delay(1),      --rtt alarm  
+            jitter(2),     --jitter alarm  
+            lossratio(3)   --- loss ratio alarm
+            }
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+            "which Network performance test parameters prodeuced/recovered the alarm"
+            ::= { rnsTwampLightAlarmTraps 2 }
+
+        rnsTwampLightAlarmStatusTraps OBJECT-TYPE
+            SYNTAX INTEGER{
+            exceed(1),      --alarm produce 
+            recoverd(2)     --recover to normal state
+            }
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+            "The twamp light alarm status.
+            exceed: report alarm;
+            recovered: recovery alarm"
+            ::= { rnsTwampLightAlarmTraps 3 }
+
+    rnsTwampLightAlarmNotifications      OBJECT IDENTIFIER ::= { rnsTwampLight 4 } 
+        rnsTwampLightControlAlarm NOTIFICATION-TYPE
+            OBJECTS {
+                  rnsTwampLightAlarmSessionTraps,
+                  rnsTwampLightAlarmTypeTraps,
+                  rnsTwampLightAlarmStatusTraps
+                }
+            STATUS  current
+            DESCRIPTION
+                "Session Id of TWAMP Controller alarm trap"
+            ::= { rnsTwampLightAlarmNotifications 1 }
+
+    END
+    

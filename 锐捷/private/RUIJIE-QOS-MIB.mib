@@ -16,7 +16,8 @@ IMPORTS
         OBJECT-TYPE,
         Integer32,
         Counter64,
-        Unsigned32
+        Unsigned32,
+        Counter32
                 FROM SNMPv2-SMI
         DisplayString
                 FROM SNMPv2-TC
@@ -217,7 +218,10 @@ ruijiePriorityBandWidth OBJECT-TYPE
             "The global weight setting for every queue  
              Each octet indicate a traffic class queue in the range(1..255)
               ,first octet indicate first queue. 
-              The string length equal to ruijiePriorityTrafficClassNum."  
+              The string length equal to ruijiePriorityTrafficClassNum.
+              
+             The other way setting for every queue bandwidth like '12 5 14 3 4 5 6 7'.
+             (Support only on some products)."  
         ::= { ruijieQoSPriorityMIBObjects 8 }
         
         
@@ -453,7 +457,20 @@ RuijieIfQueueSupportEntry ::=
             ruijieIfQueueSupportTransmitPacket Counter64,
             ruijieIfQueueSupportTransmitBytes Counter64,
             ruijieIfQueueSupportDropPacket Counter64,
-            ruijieIfQueueSupportDropBytes Counter64
+            ruijieIfQueueSupportDropBytes Counter64,
+            ruijieIfQueueSupportTransmitPacketsRate Counter64,
+            ruijieIfQueueSupportTransmitBitsRate Counter64,
+            ruijieIfQueueSupportPacketsLossRate Integer32,
+            ruijieIfQueueSupportBytesLossRate Integer32,
+            ruijieIfQueueSupportDropPacketsRate Counter64,
+            ruijieIfQueueSupportDropBitsRate Counter64,
+            ruijieIfQueueSupportQueueName DisplayString,
+            ruijieIfQueueSupportInQueuePackets Counter64,
+            ruijieIfQueueSupportInQueueBytes Counter64,
+            ruijieIfQueueSupportTailDropPackets Counter64,
+            ruijieIfQueueSupportTailDropBytes Counter64,
+            ruijieIfQueueSupportWredDropPackets Counter64,
+            ruijieIfQueueSupportWredDropBytes Counter64
         }
 
 ruijieIfIndex OBJECT-TYPE
@@ -504,6 +521,110 @@ ruijieIfQueueSupportDropBytes OBJECT-TYPE
             "Drop packets of queues."
         ::= { ruijieIfQueueSupportEntry 6 }
 		
+ruijieIfQueueSupportTransmitPacketsRate OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Packet transmit rate. Unit: pps"
+        ::= { ruijieIfQueueSupportEntry 7 }
+
+ruijieIfQueueSupportTransmitBitsRate OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Bit transmit rate. Unit: bps"
+        ::= { ruijieIfQueueSupportEntry 8 }
+
+ruijieIfQueueSupportPacketsLossRate OBJECT-TYPE
+        SYNTAX Integer32 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Packet loss rate. Unit: percent"
+        ::= { ruijieIfQueueSupportEntry 9 }
+
+ruijieIfQueueSupportBytesLossRate OBJECT-TYPE
+        SYNTAX Integer32 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Byte loss rate. Unit: percent"
+        ::= { ruijieIfQueueSupportEntry 10 }
+
+ruijieIfQueueSupportDropPacketsRate OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Drop packets rate. Unit: pps"
+        ::= { ruijieIfQueueSupportEntry 11 }
+        
+ruijieIfQueueSupportDropBitsRate OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Drop bits rate. Unit: bps"
+        ::= { ruijieIfQueueSupportEntry 12 }
+
+ruijieIfQueueSupportQueueName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Queue Name."
+        ::= { ruijieIfQueueSupportEntry 13 }
+
+ruijieIfQueueSupportInQueuePackets OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "In Queue Packets."
+        ::= { ruijieIfQueueSupportEntry 14 }
+
+ruijieIfQueueSupportInQueueBytes OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "In Queue Bytes."
+        ::= { ruijieIfQueueSupportEntry 15 }
+
+ruijieIfQueueSupportTailDropPackets OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Tail drop packets of queues."
+        ::= { ruijieIfQueueSupportEntry 16 }
+
+ruijieIfQueueSupportTailDropBytes OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Tail drop bytes of queues."
+        ::= { ruijieIfQueueSupportEntry 17 }
+        
+ruijieIfQueueSupportWredDropPackets OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "WRED drop packets of queues."
+        ::= { ruijieIfQueueSupportEntry 18 }
+
+ruijieIfQueueSupportWredDropBytes OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "WRED drop bytes of queues."
+        ::= { ruijieIfQueueSupportEntry 19 }
+
 -- multicast queue support
 ruijieIfMulticastQueueSupportTable OBJECT-TYPE
         SYNTAX SEQUENCE OF RuijieIfMulticastQueueSupportEntry
@@ -579,7 +700,343 @@ ruijieIfMulticastQueueSupportDropBytes OBJECT-TYPE
         DESCRIPTION
             "Drop packets of multicast queues."
         ::= { ruijieIfMulticastQueueSupportEntry 6 }
-		
+
+ruijieWredEcnStatsTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF RuijieWredEcnStatsEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+               "A table of WredEcn statistics entries."
+        ::= { ruijieQoSPriorityMIBObjects 14 }
+
+ruijieWredEcnStatsEntry OBJECT-TYPE
+        SYNTAX     RuijieWredEcnStatsEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+                "Entry contains WredEcn statistics."  
+        INDEX { ruijieWredEcnStatsIfIndex }
+        ::= { ruijieWredEcnStatsTable 1 }
+
+       RuijieWredEcnStatsEntry ::=
+       SEQUENCE {
+           ruijieWredEcnStatsIfIndex      Unsigned32,
+           ruijieWredDropped              Counter64,
+           ruijieEcnSended                Counter64
+       }
+
+       ruijieWredEcnStatsIfIndex OBJECT-TYPE
+       SYNTAX        Unsigned32 
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+           "The interface index of WredEcn statistics ."
+       ::= { ruijieWredEcnStatsEntry 1 }
+
+       ruijieWredDropped OBJECT-TYPE
+       SYNTAX        Counter64 
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+           "The discard packet number of QoS Wred." 
+       DEFVAL { 0 }
+       ::= { ruijieWredEcnStatsEntry 2 }
+
+       ruijieEcnSended OBJECT-TYPE
+       SYNTAX        Counter64 
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+           "The marked packet number by QoS Ecn." 
+       DEFVAL { 0 }
+       ::= { ruijieWredEcnStatsEntry 3 }
+
+ruijieQoSDsProTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF RuijieQoSDsProEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "A table of diff-serv profiles."
+        ::= { ruijieQoSPriorityMIBObjects 15 }
+
+ruijieQoSDsProEntry OBJECT-TYPE
+        SYNTAX     RuijieQoSDsProEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "Entry contains diff-serv profiles."
+        INDEX { ruijieQoSDsProIndex}
+        ::= { ruijieQoSDsProTable 1 }
+
+        RuijieQoSDsProEntry ::=
+        SEQUENCE {
+            ruijieQoSDsProIndex                 Unsigned32,
+            ruijieQoSDsProName                  DisplayString
+        }
+
+ruijieQoSDsProIndex OBJECT-TYPE
+        SYNTAX        Unsigned32
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+            "The index of diff-serv profile."
+        ::= { ruijieQoSDsProEntry 1 }
+        
+ruijieQoSDsProName OBJECT-TYPE
+        SYNTAX        DisplayString(SIZE (1..31))
+        MAX-ACCESS    read-create
+        STATUS        current
+        DESCRIPTION
+            "The name of diff-serv profile."
+        ::= { ruijieQoSDsProEntry 2 }
+
+ruijieQoSDsProInMapTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF RuijieQoSDsProInMapEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "A table of diff-serv profile input map."
+        ::= { ruijieQoSPriorityMIBObjects 16 }
+
+ruijieQoSDsProInMapEntry OBJECT-TYPE
+        SYNTAX     RuijieQoSDsProInMapEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "Entry contains diff-serv profile input map."
+        INDEX { ruijieQoSDsProInMapName, ruijieQoSDsProInMapType, ruijieQoSDsProInMapPri}
+        ::= { ruijieQoSDsProInMapTable 1 }
+
+        RuijieQoSDsProInMapEntry ::=
+        SEQUENCE {
+            ruijieQoSDsProInMapName                DisplayString,
+            ruijieQoSDsProInMapType                INTEGER,
+            ruijieQoSDsProInMapPri                 Unsigned32,
+            ruijieQoSDsProInMapCos                 Unsigned32,
+            ruijieQoSDsProInMapColor               INTEGER
+        }
+
+ruijieQoSDsProInMapName OBJECT-TYPE
+        SYNTAX        DisplayString(SIZE (1..31))
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+            "The name of diff-serv profile."
+        ::= { ruijieQoSDsProInMapEntry 1 }
+        
+ruijieQoSDsProInMapType OBJECT-TYPE
+        SYNTAX      INTEGER {
+            ip-dscp-input(1),
+            dot1p-input(3),
+            mpls-exp-input(5)
+        } 
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+            "The map type of diff-serv profile."
+        ::= { ruijieQoSDsProInMapEntry 2 }
+
+ruijieQoSDsProInMapPri OBJECT-TYPE
+        SYNTAX        Unsigned32
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+            "The value of priority."
+        ::= { ruijieQoSDsProInMapEntry 3 }
+
+ruijieQoSDsProInMapCos OBJECT-TYPE
+        SYNTAX        Unsigned32
+        MAX-ACCESS    read-write
+        STATUS        current
+        DESCRIPTION
+            "The value of cos."
+        ::= { ruijieQoSDsProInMapEntry 4 }
+
+ruijieQoSDsProInMapColor OBJECT-TYPE
+        SYNTAX      INTEGER {
+            green(0), 
+            yellow(1),
+            red(2)
+        }
+        MAX-ACCESS    read-write
+        STATUS        current
+        DESCRIPTION
+            "The color of packets."
+        ::= { ruijieQoSDsProInMapEntry 5 }
+
+ruijieQoSDsProOutMapTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF RuijieQoSDsProOutMapEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "A table of diff-serv profile output map."
+        ::= { ruijieQoSPriorityMIBObjects 17 }
+
+ruijieQoSDsProOutMapEntry OBJECT-TYPE
+        SYNTAX     RuijieQoSDsProOutMapEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "Entry contains diff-serv profile output map."  
+        INDEX { ruijieQoSDsProOutMapName, ruijieQoSDsProOutMapType, ruijieQoSDsProOutMapCos, ruijieQoSDsProOutMapColor}
+        ::= { ruijieQoSDsProOutMapTable 1 }
+
+       RuijieQoSDsProOutMapEntry ::=
+        SEQUENCE {
+            ruijieQoSDsProOutMapName                DisplayString,
+            ruijieQoSDsProOutMapType                INTEGER,
+            ruijieQoSDsProOutMapCos                 Unsigned32,
+            ruijieQoSDsProOutMapColor               INTEGER,
+            ruijieQoSDsProOutMapPri                 Unsigned32
+        }
+
+ruijieQoSDsProOutMapName OBJECT-TYPE
+        SYNTAX        DisplayString(SIZE (1..31))
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+            "The name of diff-serv profile."
+        ::= { ruijieQoSDsProOutMapEntry 1 }
+        
+ruijieQoSDsProOutMapType OBJECT-TYPE
+        SYNTAX  INTEGER {
+            ip-dscp-output(2), 
+            dot1p-output(4),
+            mpls-exp-output(6)
+        } 
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+            "The map type of diff-serv profile."
+        ::= { ruijieQoSDsProOutMapEntry 2 }
+
+ruijieQoSDsProOutMapCos OBJECT-TYPE
+        SYNTAX        Unsigned32
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+            "The value of cos."
+        ::= { ruijieQoSDsProOutMapEntry 3 }
+
+ruijieQoSDsProOutMapColor OBJECT-TYPE
+        SYNTAX  INTEGER {
+            green(0), 
+            yellow(1),
+            red(2)
+        }
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+            "The color of packets."
+        ::= { ruijieQoSDsProOutMapEntry 4 }
+
+ruijieQoSDsProOutMapPri OBJECT-TYPE
+        SYNTAX        Unsigned32
+        MAX-ACCESS    read-write
+        STATUS        current
+        DESCRIPTION
+            "The value of priority."
+        ::= { ruijieQoSDsProOutMapEntry 5 }
+
+ruijieQoSIfDirTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF RuijieQoSIfDirEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "A table of interface with dir."
+        ::= { ruijieQoSPriorityMIBObjects 18 }
+
+ruijieQoSIfDirEntry OBJECT-TYPE
+        SYNTAX     RuijieQoSIfDirEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "Entry contains interface configuration."
+        INDEX { ruijieQoSIfIndex, ruijieQoSIfDirIndex}
+        ::= { ruijieQoSIfDirTable 1 }
+
+       RuijieQoSIfDirEntry ::=
+        SEQUENCE {
+            ruijieQoSIfIndex                    IfIndex,
+            ruijieQoSIfDirIndex                 INTEGER,
+            ruijieQoSIfDirDsProName             DisplayString
+        }
+
+ruijieQoSIfIndex OBJECT-TYPE
+        SYNTAX        IfIndex
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+            "The index of interface."
+        ::= { ruijieQoSIfDirEntry 1 }
+
+ruijieQoSIfDirIndex OBJECT-TYPE
+        SYNTAX        INTEGER {
+            input(0),
+            output(1)
+        }
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+            "The direction of interface."
+        ::= { ruijieQoSIfDirEntry 2 }
+
+ruijieQoSIfDirDsProName OBJECT-TYPE
+        SYNTAX        DisplayString(SIZE (1..31))
+        MAX-ACCESS    read-write
+        STATUS        current
+        DESCRIPTION
+            "The name of diff-serv profile."
+        ::= { ruijieQoSIfDirEntry 3 }
+
+ruijieQoSIfStatisTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF RuijieQoSIfStatisEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "A table of interface statistics."
+        ::= { ruijieQoSPriorityMIBObjects 19 }
+
+ruijieQoSIfStatisEntry OBJECT-TYPE
+        SYNTAX     RuijieQoSIfStatisEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+            "Entry contains interface statistics."
+        INDEX { ruijieQoSIfStatisIndex}
+        ::= { ruijieQoSIfStatisTable 1 }
+
+       RuijieQoSIfStatisEntry ::=
+        SEQUENCE {
+            ruijieQoSIfStatisIndex      IfIndex,
+            ruijieQoSIfInBytes              Counter64,
+            ruijieQoSIfInPkts               Counter64
+        }
+
+ruijieQoSIfStatisIndex OBJECT-TYPE
+        SYNTAX        IfIndex
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+            "The index of interface."
+        ::= { ruijieQoSIfStatisEntry 1 }
+
+ruijieQoSIfInBytes OBJECT-TYPE
+        SYNTAX        Counter64
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+            "The input bytes of interface after QoS limit."
+        ::= { ruijieQoSIfStatisEntry 2 }
+        
+ruijieQoSIfInPkts OBJECT-TYPE
+        SYNTAX        Counter64
+        MAX-ACCESS    read-only
+        STATUS        current
+        DESCRIPTION
+            "The input packets of interface after QoS limit."
+        ::= { ruijieQoSIfStatisEntry 3 }
+
 --------------------------------------------------------------
 -- QoS traffic classification
 ---------------------------------------------------------------
@@ -906,6 +1363,146 @@ ruijieIfOutPoliceMapName OBJECT-TYPE
             this interface doesn't match any ACL which this string is null"
         ::= { ruijieQosPoliceIfExtEntry  3 }        
 
+ruijieQosPoliceStatisTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF RuijieQosPoliceStatisEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+               "A table of QoS Police Map statistics objects."
+        ::= { ruijieQoSTrafficClassMIBObjects 6 }
+
+ruijieQosPoliceStatisEntry OBJECT-TYPE
+        SYNTAX     RuijieQosPoliceStatisEntry
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION
+                "Entry QoS Police Map statistics."
+        INDEX { ruijieQosPoliceStatisIfIndex, ruijieQosPoliceStatisDir, ruijieQosPoliceStatisPmap, ruijieQosPoliceStatisCmap }
+        ::= { ruijieQosPoliceStatisTable 1 }
+
+RuijieQosPoliceStatisEntry ::=
+       SEQUENCE {
+           ruijieQosPoliceStatisIfIndex         Unsigned32,
+           ruijieQosPoliceStatisDir             INTEGER,
+           ruijieQosPoliceStatisPmap            DisplayString,
+           ruijieQosPoliceStatisCmap            DisplayString,
+           ruijieQosPoliceStatisMatchPackets    Counter64,
+           ruijieQosPoliceStatisMatchBytes      Counter64,
+           ruijieQosPoliceStatisMissPackets     Counter64,
+           ruijieQosPoliceStatisMissBytes       Counter64,
+           ruijieQosPoliceStatisPassPackets     Counter64,
+           ruijieQosPoliceStatisPassBytes       Counter64,
+           ruijieQosPoliceStatisDropPackets     Counter64,
+           ruijieQosPoliceStatisDropBytes       Counter64
+       }
+
+ruijieQosPoliceStatisIfIndex OBJECT-TYPE
+       SYNTAX        Unsigned32 
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+           "The interface index of Police statistics."
+       ::= { ruijieQosPoliceStatisEntry 1 }
+       
+ruijieQosPoliceStatisDir OBJECT-TYPE
+       SYNTAX        INTEGER {
+            input(1), 
+            output(2)    
+       } 
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+           "The direction index of Police statistics."
+       ::= { ruijieQosPoliceStatisEntry 2 }
+       
+ruijieQosPoliceStatisPmap OBJECT-TYPE
+       SYNTAX        DisplayString(SIZE (1..32)) 
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+           "The pmap index of Police statistics."
+       ::= { ruijieQosPoliceStatisEntry 3 }
+  
+ruijieQosPoliceStatisCmap OBJECT-TYPE
+       SYNTAX        DisplayString(SIZE (1..32)) 
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+           "The cmap index of Police statistics."
+       ::= { ruijieQosPoliceStatisEntry 4 }
+
+ruijieQosPoliceStatisMatchPackets OBJECT-TYPE
+       SYNTAX        Counter64 
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+           "The matched packet number of Police." 
+       DEFVAL { 0 }
+       ::= { ruijieQosPoliceStatisEntry 5 }
+
+ruijieQosPoliceStatisMatchBytes OBJECT-TYPE
+       SYNTAX        Counter64 
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+           "The matched Bytes number of Police." 
+       DEFVAL { 0 }
+       ::= { ruijieQosPoliceStatisEntry 6 }
+
+ruijieQosPoliceStatisMissPackets OBJECT-TYPE
+       SYNTAX        Counter64 
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+           "The missed packet number of Police." 
+       DEFVAL { 0 }
+       ::= { ruijieQosPoliceStatisEntry 7 }
+
+ruijieQosPoliceStatisMissBytes OBJECT-TYPE
+       SYNTAX        Counter64 
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+           "The missed Bytes number of Police." 
+       DEFVAL { 0 }
+       ::= { ruijieQosPoliceStatisEntry 8 }
+
+ruijieQosPoliceStatisPassPackets OBJECT-TYPE
+       SYNTAX        Counter64 
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+           "The passed packet number of Police matched packet." 
+       DEFVAL { 0 }
+       ::= { ruijieQosPoliceStatisEntry 9 }
+
+ruijieQosPoliceStatisPassBytes OBJECT-TYPE
+       SYNTAX        Counter64 
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+           "The passed Bytes number of Police matched Bytes." 
+       DEFVAL { 0 }
+       ::= { ruijieQosPoliceStatisEntry 10 }
+
+ruijieQosPoliceStatisDropPackets OBJECT-TYPE
+       SYNTAX        Counter64 
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+           "The dropped packet number of Police matched packet." 
+       DEFVAL { 0 }
+       ::= { ruijieQosPoliceStatisEntry 11 }
+
+ruijieQosPoliceStatisDropBytes OBJECT-TYPE
+       SYNTAX        Counter64 
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+           "The dropped Bytes number of Police matched Bytes." 
+       DEFVAL { 0 }
+       ::= { ruijieQosPoliceStatisEntry 12 }
+       
 -- conformance information
 
 ruijieQoSMIBConformance OBJECT IDENTIFIER ::= { ruijieQoSMIB 3 }
@@ -989,7 +1586,6 @@ ruijieQoSTrafficClassMIBGroup OBJECT-GROUP
                 "A collection of objects providing qos traffic classification ability to a
                 Ruijie agent."
         ::= { ruijieQoSMIBGroups 2 }                
-        
 END
 
 
@@ -1133,5 +1729,5 @@ END
 --        STATUS current
 --        DESCRIPTION
 --            "Output dscp value."
---       ::= { ruijieDscpMutationMapEntry 3 }    
+--       ::= { ruijieDscpMutationMapEntry 3 } 
 

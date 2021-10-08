@@ -1,0 +1,605 @@
+-- ====================================================================
+-- Copyright (c) 2011 by Raisecom Networks Co.,Ltd. All rights reserved.
+--
+-- Description: The MIB is designed to get 3G wireless safenet solution statistic information.
+-- Reference: rujie Enterprise MIB
+-- =====================================================================
+
+RAISECOM-4G-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        DisplayString,TEXTUAL-CONVENTION,TimeStamp
+            FROM SNMPv2-TC
+        IpAddress, Integer32, Counter32, Counter64, OBJECT-TYPE,
+        MODULE-IDENTITY, Gauge32, NOTIFICATION-TYPE, Unsigned32
+            FROM SNMPv2-SMI
+        MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+            FROM SNMPv2-CONF
+        ruijieMgmt
+            FROM RAISECOM-SMI;
+
+    ruijie4GMonitor MODULE-IDENTITY
+        LAST-UPDATED "201403110000Z"            
+        ORGANIZATION
+            "Raisecom Networks Co.,Ltd."
+        CONTACT-INFO
+            "Tel: 4008-111-000 
+             E-mail: service@raisecom.com.cn"  
+        DESCRIPTION
+            "The MIB is designed to get statistic information of
+             4G wireless safenet. With this MIB, we can get information of a certain
+             4G user or all users."
+        REVISION      "201403110000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 127 }       
+                               
+                       
+-- ========================================================================
+-- Node definitions
+-- ========================================================================
+--Begin the node of ruijie4gObjects.
+
+    ruijie4GObjects OBJECT IDENTIFIER ::= { ruijie4GMonitor 1 }
+
+-- ===============================================
+-- Begin the table of ruijie4GTable.
+-- ===============================================
+
+    ruijie4GTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF Ruijie4GEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The 4G connection infomation fot every user. There is one
+             entry in this table for each active 4G connection."
+        ::= { ruijie4GObjects 1 }
+
+    ruijie4GEntry OBJECT-TYPE
+        SYNTAX Ruijie4GEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Information about ruijie4GTunnelTable."
+        INDEX { ruijie4GRouterSlotNumber }
+        ::= { ruijie4GTable 1 }
+    
+    Ruijie4GEntry ::=
+        SEQUENCE {
+            ruijie4GUsername
+                DisplayString,
+            ruijie4GApn
+                DisplayString,
+            ruijie4GOnlineStatus
+                INTEGER, 
+            ruijie4GIMEI
+                DisplayString,
+            ruijie4GIPAddrType
+                INTEGER,
+            ruijie4GIPAddr
+                IpAddress,
+            ruijie4GUplineTime
+                TimeStamp,
+            ruijie4GActiveTime
+                Integer32,
+            ruijie4GRSRP
+                Integer32,
+            ruijie4GSignalStrengthPercent
+                Integer32,
+            ruijie4GISP
+                INTEGER,
+            ruijie4GSysMode
+                INTEGER,
+            ruijie4GServiceStatus                
+                INTEGER,
+            ruijie4GRoamingStatus
+                INTEGER,
+            ruijie4GDomain        
+                INTEGER,
+            ruijie4GSIMStatus
+                INTEGER,
+            ruijie4GCellID
+                Integer32,
+            ruijie4GLAC
+                Integer32,
+            ruijie4GIMSI
+                DisplayString,
+            ruijie4GPhoneNumber
+                DisplayString,
+            ruijie4GifIndex
+                INTEGER,
+            ruijie4GInOctets
+                Counter64,
+            ruijie4GOutOctets
+                Counter64,
+            ruijie4GInSpeed
+                Counter64,
+            ruijie4GOutSpeed
+                Counter64,
+            ruijie4GBSLONG
+                Integer32,
+            ruijie4GBSLAT
+                Integer32,
+            ruijie4GRouterType
+                DisplayString,
+            ruijie4GRouterSN
+                DisplayString,
+            ruijie4GRouterSlotNumber
+                DisplayString,
+            ruijie4GLineCardType
+                DisplayString,
+            ruijie4GDialdMode
+		INTEGER,
+            ruijie4GDialOnDemandIfIndex
+                INTEGER,
+            ruijie4GTrafficPreventMode
+                INTEGER,
+            ruijie4GTrafficPreventIfIndex
+                INTEGER,
+            ruijie4GTrafficPreventListID
+                INTEGER,
+            ruijie4GTrafficPreventListName
+                DisplayString
+        }
+        
+    ruijie4GUsername OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Username of 4G User."
+        ::= { ruijie4GEntry 1 }
+    
+    ruijie4GApn OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The access-point of 4G User."
+        ::= { ruijie4GEntry 2 }
+   
+    ruijie4GOnlineStatus OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                minimum-function(0),
+                fully-function(1),
+                offline-mode(2),
+                sim-activate(3),
+                sim-deactivate(4)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "the status of 4G user. online or offline"
+        ::= { ruijie4GEntry 3 }
+    
+    ruijie4GIMEI OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "the IMEI number of 4G user."
+        ::= { ruijie4GEntry 4 }
+    
+    ruijie4GIPAddrType OBJECT-TYPE
+         SYNTAX INTEGER {
+            ipv4Addr(1),
+            ipv6Addr(2)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The IP Address type of remote user."
+        ::= { ruijie4GEntry 5 }
+    
+    ruijie4GIPAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The 4G remote users's IP address."
+        ::= { ruijie4GEntry 6 }
+    
+    ruijie4GUplineTime OBJECT-TYPE
+        SYNTAX TimeStamp
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The value of up line time for this 4G user."
+        ::= { ruijie4GEntry 7 } 
+
+    ruijie4GActiveTime OBJECT-TYPE
+        SYNTAX Integer32 (0..2147483647)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The duration of the 4G connection has been active for one user. 
+            2147483647 is defined as invalid value."
+        ::= { ruijie4GEntry 8 }
+    
+    ruijie4GRSRP OBJECT-TYPE
+        SYNTAX Integer32 (-150..0)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The RSRP of the 4G connection for this user."
+        ::= { ruijie4GEntry 9 } 
+    
+    ruijie4GSignalStrengthPercent OBJECT-TYPE
+        SYNTAX Integer32 (0..100)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The percent of signal strength of the 4G connection for this user."
+        ::= { ruijie4GEntry 10 }
+    
+    ruijie4GISP OBJECT-TYPE
+        SYNTAX INTEGER
+            {   
+                unknow(0),
+                chinaUnicom(1),
+                chinaTelecom(2),
+                chinaMobile(3)            
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "the ISP of 4G networsk."
+        ::= { ruijie4GEntry 11 }
+    
+    ruijie4GSysMode OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                no-service(0),
+                gsm-gprs(3),
+                wcdma(5),
+                td-scdma(15),
+                lte(17)          
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "the system mode of 4G networsk."
+        ::= { ruijie4GEntry 12 }
+    
+    ruijie4GServiceStatus OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                noService(0),
+                restricted(1),
+                valid(2),
+                restrictedRegional(3),
+                powerSavingAndDeepSleepState(4)       
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "the sevice status of 4G user."
+        ::= { ruijie4GEntry 13 }
+    
+    ruijie4GRoamingStatus OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                noRoaming(0),
+                roaming(1)       
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "the roaming status of 4G  user."
+        ::= { ruijie4GEntry 14 }
+    
+    ruijie4GDomain OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                noService(0),
+                onlyCS(1),
+                onlyPS(2),
+                pSCS(3),
+                ePS(4)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "the Domain status of 4G user ."
+        ::= { ruijie4GEntry 15 } 
+    
+    ruijie4GSIMStatus OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                invalidUsimCard(0),
+                validUsimCard(1),
+                noUsimCard(255)         
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "the SIM card status of 4G user."
+        ::= { ruijie4GEntry 16 }
+        
+    ruijie4GCellID OBJECT-TYPE
+        SYNTAX Integer32 (0..100)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The access Cell id  of 4G User."
+        ::= { ruijie4GEntry 17 }
+        
+      ruijie4GLAC OBJECT-TYPE
+        SYNTAX Integer32 (0..100)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Location Area Code  of 4G User."
+        ::= { ruijie4GEntry 18 }
+    
+    ruijie4GIMSI OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The IMSI  of 4G User."
+        ::= { ruijie4GEntry 19 } 
+         
+    ruijie4GPhoneNumber OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Phone Number of 4G User."
+        ::= { ruijie4GEntry 20 } 
+        
+    ruijie4GifIndex OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The Index of 4G Interface."
+        ::= { ruijie4GEntry 21 } 
+        
+    ruijie4GInOctets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of octets received by this 4G user."
+        ::= { ruijie4GEntry 22 }
+
+    ruijie4GOutOctets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of octets sent by this 4G user."
+        ::= { ruijie4GEntry 23 } 
+ 
+    ruijie4GInSpeed OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Speed(bps) of packets received by this 4G user."
+        ::= { ruijie4GEntry 24 }
+
+    ruijie4GOutSpeed OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Speed(bps) of packets snet by this 4G user."
+        ::= { ruijie4GEntry 25 }
+    
+    ruijie4GBSLONG OBJECT-TYPE
+        SYNTAX Integer32 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The longitude of 4G User."
+        ::= { ruijie4GEntry 26 } 
+
+    ruijie4GBSLAT OBJECT-TYPE
+        SYNTAX Integer32 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The latitude of 4G User."
+        ::= { ruijie4GEntry 27 }
+        
+    ruijie4GRouterType OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Equipment tpye of 4G router."
+        ::= { ruijie4GEntry 28 }
+
+    ruijie4GRouterSN OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The serial number of 4G router."
+        ::= { ruijie4GEntry 29 } 
+ 
+    ruijie4GRouterSlotNumber OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of the activity slot in 4G router."
+        ::= { ruijie4GEntry 30 }
+
+    ruijie4GLineCardType OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The tpye of 4G router line card."
+        ::= { ruijie4GEntry 31 }
+
+    ruijie4GDialdMode OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                auto-dial(0),
+                dial-on-demand(1)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The dial mode of 4G user "
+        ::= { ruijie4GEntry 32 }
+
+    ruijie4GDialOnDemandIfIndex OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The Index of trigger dial-up interface."
+        ::= { ruijie4GEntry 33 }
+		
+    ruijie4GTrafficPreventMode OBJECT-TYPE
+        SYNTAX INTEGER
+            {
+                disable(0),
+                enable(1)
+            }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The status of the traffic prevent function appliled currently "
+        ::= { ruijie4GEntry 34 }
+		
+    ruijie4GTrafficPreventIfIndex OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The Index of traffic-prevent interface."
+        ::= { ruijie4GEntry 35 }	
+
+    ruijie4GTrafficPreventListID OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The Index of traffic-prevent Acl list id."
+        ::= { ruijie4GEntry 36 }
+
+    ruijie4GTrafficPreventListName OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The Index of traffic-prevent Acl list name."
+        ::= { ruijie4GEntry 37 }	
+	     
+
+--Begin the node of ruijie4GTrap.
+
+    ruijie4GTrap OBJECT IDENTIFIER ::= { ruijie4GMonitor 2 }
+
+-- ===============================================
+-- Begin the ruijie4GTrapObject.
+-- ===============================================    
+    ruijie4GNotifications OBJECT IDENTIFIER ::= { ruijie4GTrap 1 }
+    
+    ruijie4GUpLine NOTIFICATION-TYPE
+        OBJECTS { ruijie4GRouterSlotNumber,	
+                  ruijie4GIMSI,
+                  ruijie4GUsername,
+                  ruijie4GRouterSN,
+                  ruijie4GPhoneNumber,
+                  ruijie4GDialdMode,
+                  ruijie4GDialOnDemandIfIndex,
+                  ruijie4GTrafficPreventMode,
+                  ruijie4GTrafficPreventIfIndex,
+                  ruijie4GIPAddr,
+                  ruijie4GTrafficPreventListID,
+                  ruijie4GTrafficPreventListName
+                }
+        STATUS current
+        DESCRIPTION
+            "This notification is generated when 4G user up line."
+        ::= { ruijie4GNotifications 1 }
+    
+    ruijie4GDownLine NOTIFICATION-TYPE
+        OBJECTS { ruijie4GRouterSlotNumber,	
+                  ruijie4GIMSI,
+                  ruijie4GUsername,
+                  ruijie4GRouterSN,
+                  ruijie4GPhoneNumber,
+                  ruijie4GDialdMode,
+                  ruijie4GDialOnDemandIfIndex,
+                  ruijie4GTrafficPreventMode,
+                  ruijie4GTrafficPreventIfIndex,
+                  ruijie4GIPAddr,
+                  ruijie4GTrafficPreventListID,
+                  ruijie4GTrafficPreventListName
+                }
+        STATUS current
+        DESCRIPTION
+            "This notification is generated when 4G user down line."
+        ::= { ruijie4GNotifications 2 }
+		
+    ruijie4GSignalThreshold NOTIFICATION-TYPE
+        OBJECTS {   ruijie4GRouterSlotNumber, 
+                    ruijie4GIMSI, 
+                    ruijie4GRSRP,
+                    ruijie4GSignalStrengthPercent 
+                }
+        STATUS current
+        DESCRIPTION
+            "This notification is generated when 4G signal is lower 
+            than the specific Threshold value."
+        ::= { ruijie4GNotifications 3 }
+                
+    ruijie4GTrafficInformation NOTIFICATION-TYPE
+        OBJECTS {   ruijie4GRouterSlotNumber,
+                    ruijie4GIMSI,
+                    ruijie4GInOctets,
+                    ruijie4GOutOctets
+                }
+        STATUS current
+        DESCRIPTION
+            "This notification is used for reporting the traffic information of 4G user regularly. "
+        ::= { ruijie4GNotifications 4 }
+		
+    ruijie4GBackupMaster NOTIFICATION-TYPE
+        OBJECTS { ruijie4GRouterSlotNumber,	
+                  ruijie4GIMSI,
+                  ruijie4GUsername,
+                  ruijie4GRouterSN,
+                  ruijie4GPhoneNumber,
+                  ruijie4GDialdMode,
+                  ruijie4GDialOnDemandIfIndex,
+                  ruijie4GTrafficPreventMode,
+                  ruijie4GTrafficPreventIfIndex,
+                  ruijie4GIPAddr,
+                  ruijie4GTrafficPreventListID,
+                  ruijie4GTrafficPreventListName
+                }
+        STATUS current
+        DESCRIPTION
+            "This notification is generated when 4G is switching to master line."
+        ::= { ruijie4GNotifications 5 }
+    
+    ruijie4GBackupSlave NOTIFICATION-TYPE
+        OBJECTS { ruijie4GRouterSlotNumber,	
+                  ruijie4GIMSI,
+                  ruijie4GUsername,
+                  ruijie4GRouterSN,
+                  ruijie4GPhoneNumber,
+                  ruijie4GDialdMode,
+                  ruijie4GDialOnDemandIfIndex,
+                  ruijie4GTrafficPreventMode,
+                  ruijie4GTrafficPreventIfIndex,
+                  ruijie4GIPAddr,
+                  ruijie4GTrafficPreventListID,
+                  ruijie4GTrafficPreventListName
+                }
+        STATUS current
+        DESCRIPTION
+            "This notification is generated when 4G is switching to slave line."
+        ::= { ruijie4GNotifications 6 }
+    
+END

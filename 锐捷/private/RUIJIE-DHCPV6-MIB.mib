@@ -17,9 +17,11 @@ IMPORTS
     Counter32,
     Unsigned32,	
     Counter64, 
+    TimeTicks,
     Integer32
         FROM SNMPv2-SMI
     TimeInterval, 
+    RowStatus,
     DisplayString
         FROM SNMPv2-TC
     MODULE-COMPLIANCE, 
@@ -28,6 +30,8 @@ IMPORTS
     Ipv6Address, 
     Ipv6AddressPrefix
         FROM IPV6-TC
+    InetAddressIPv6
+        FROM INET-ADDRESS-MIB
     InterfaceIndex
         FROM IF-MIB
     ruijieMgmt
@@ -370,14 +374,14 @@ ruijieDhcpv6ServerBindingsIfIndex OBJECT-TYPE
     ::= { ruijieDhcpv6ServerBindingsEntry 9 }
 
 --
--- DHCPv6 Server Pool Table
+-- DHCPv6 Server Pool Usage Table
 --
-ruijieDhcpv6ServerPoolTable OBJECT-TYPE
+ruijieDhcpv6ServerPoolUsageTable OBJECT-TYPE
     SYNTAX      SEQUENCE OF RuijieDhcpv6ServerPoolEntry
     MAX-ACCESS  not-accessible
     STATUS      current
     DESCRIPTION
-        "A table of configure pool maintained by this DHCPv6 Server."
+        "A table of pool usage maintained by this DHCPv6 Server."
     ::= { ruijieDhcpv6ServerConfiguration 3 }
 
 ruijieDhcpv6ServerPoolEntry OBJECT-TYPE
@@ -387,30 +391,140 @@ ruijieDhcpv6ServerPoolEntry OBJECT-TYPE
     DESCRIPTION
         "An entry (conceptual row) representing an pool maintained by
         this DHCPv6 Server."
-    INDEX     { ruijieDhcpv6ServerIPPoolName}
-    ::= { ruijieDhcpv6ServerPoolTable 1 }
+    INDEX     { ruijieIPv6PoolUsageIndex}
+    ::= { ruijieDhcpv6ServerPoolUsageTable 1 }
     
 RuijieDhcpv6ServerPoolEntry ::= SEQUENCE {
-        ruijieDhcpv6ServerIPPoolName             DisplayString,
-        ruijieDhcpv6ServerDHCPIPPoolUsage        Unsigned32  
+    ruijieIPv6PoolUsageIndex     Unsigned32,
+    ruijieIPv6PoolUsageName      DisplayString,
+    ruijieIPv6DHCPIPPoolUsage    Unsigned32,
+    ruijieIPv6PoolUsageRawStatus RowStatus
     }
 
-ruijieDhcpv6ServerIPPoolName OBJECT-TYPE
-    SYNTAX      DisplayString (SIZE(1..32))
+ruijieIPv6PoolUsageIndex  OBJECT-TYPE
+    SYNTAX      Unsigned32
     MAX-ACCESS  read-only
     STATUS      current
     DESCRIPTION
-        "The pool name associated with this entry in the bindings table."
+        "The pool index in the usage table."
     ::= { ruijieDhcpv6ServerPoolEntry 1 }
+ruijieIPv6PoolUsageName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(1..32))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The pool name associated with this entry in the bindings table."
+    ::= { ruijieDhcpv6ServerPoolEntry 2 }
 
-ruijieDhcpv6ServerDHCPIPPoolUsage OBJECT-TYPE
+ruijieIPv6DHCPIPPoolUsage OBJECT-TYPE
     SYNTAX      Unsigned32
     MAX-ACCESS  read-only
     STATUS      current
     DESCRIPTION
         "This is the usage of the pool resource"
-    ::= { ruijieDhcpv6ServerPoolEntry 2 }
+    ::= { ruijieDhcpv6ServerPoolEntry 3 }
 
+ruijieIPv6PoolUsageRawStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "entry status of this entry. and the means in this enviraments can
+            reffer to the text-convention definition of the RowStatus."
+    ::= { ruijieDhcpv6ServerPoolEntry 4 }
+--
+-- DHCPv6 Server Pool Configure Table
+--
+ruijieDhcpv6ServerPoolConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieDhcpv6ServerPoolCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table of configure pool maintained by this DHCPv6 Server."
+    ::= { ruijieDhcpv6ServerConfiguration 4 }
+ruijieDhcpv6ServerPoolCfgEntry OBJECT-TYPE
+    SYNTAX      RuijieDhcpv6ServerPoolCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry (conceptual row) representing an pool maintained by
+        this DHCPv6 Server."
+    INDEX     { ruijieIPv6PoolCfgIndex}
+    ::= { ruijieDhcpv6ServerPoolConfigTable 1 }
+RuijieDhcpv6ServerPoolCfgEntry ::= SEQUENCE {
+    ruijieIPv6PoolCfgIndex          Unsigned32,
+    ruijieIPv6PoolName              DisplayString,
+    ruijieIPv6PoolStartAddr         InetAddressIPv6,
+    ruijieIPv6PoolStopAddr          InetAddressIPv6,
+    ruijieIPv6NetPrefixLen          Unsigned32,
+    ruijiePrimDNSServerIPv6Address  InetAddressIPv6,
+    ruijieSeconDNSServerIPv6Address InetAddressIPv6,
+    ruijieIPv6AddrLease             TimeTicks,
+    ruijieIPv6RawStatus             RowStatus}
+ruijieIPv6PoolCfgIndex  OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The pool index associated with this entry in the bindings table."
+    ::= { ruijieDhcpv6ServerPoolCfgEntry 1 }
+ruijieIPv6PoolName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(1..32))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The pool name associated with this entry in the bindings table."
+    ::= { ruijieDhcpv6ServerPoolCfgEntry 2 }
+ruijieIPv6PoolStartAddr OBJECT-TYPE
+    SYNTAX      InetAddressIPv6
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This is the start address of the pool resource"
+    ::= { ruijieDhcpv6ServerPoolCfgEntry 3 }
+ruijieIPv6PoolStopAddr OBJECT-TYPE
+    SYNTAX      InetAddressIPv6
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This is the stop address of the pool resource"
+    ::= { ruijieDhcpv6ServerPoolCfgEntry 4 }
+ruijieIPv6NetPrefixLen OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This is the length of the prefix address resource"
+    ::= { ruijieDhcpv6ServerPoolCfgEntry 5 }
+ruijiePrimDNSServerIPv6Address OBJECT-TYPE
+    SYNTAX      InetAddressIPv6
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This is the primary DNS address of the pool resource"
+    ::= { ruijieDhcpv6ServerPoolCfgEntry 6 }
+ruijieSeconDNSServerIPv6Address OBJECT-TYPE
+    SYNTAX      InetAddressIPv6
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This is the second DNS address of the pool resource"
+    ::= { ruijieDhcpv6ServerPoolCfgEntry 7 }
+ruijieIPv6AddrLease OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "This is the lease time of the pool resource"
+    ::= { ruijieDhcpv6ServerPoolCfgEntry 8 }
+ruijieIPv6RawStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "entry status of this entry. and the means in this enviraments can
+        reffer to the text-convention definition of the RowStatus."
+    ::= { ruijieDhcpv6ServerPoolCfgEntry 9 }
 --
 -- Conformance
 --
@@ -487,10 +601,12 @@ ruijieDhcpv6ServerConfigurationObjects  OBJECT-GROUP
         Server functionality."
     ::= { ruijieDhcpv6MIBGroups 2 }
 
-ruijieDhcpv6ServerPoolTableObjects  OBJECT-GROUP
+ruijieDhcpv6ServerPoolUsageTableObjects  OBJECT-GROUP
     OBJECTS {
-        ruijieDhcpv6ServerIPPoolName,
-        ruijieDhcpv6ServerDHCPIPPoolUsage
+        ruijieIPv6PoolUsageIndex,
+        ruijieIPv6PoolName,
+        ruijieIPv6DHCPIPPoolUsage,
+        ruijieIPv6PoolUsageRawStatus
     }
     STATUS      current
     DESCRIPTION
@@ -498,4 +614,20 @@ ruijieDhcpv6ServerPoolTableObjects  OBJECT-GROUP
         Server functionality."
     ::= { ruijieDhcpv6MIBGroups 3 }
 
+ruijieDhcpv6ServerPoolConfigGroup  OBJECT-GROUP
+    OBJECTS {
+    ruijieIPv6PoolCfgIndex,
+    ruijieIPv6PoolName,
+    ruijieIPv6PoolStartAddr,
+    ruijieIPv6PoolStopAddr ,
+    ruijieIPv6NetPrefixLen ,
+    ruijiePrimDNSServerIPv6Address ,
+    ruijieSeconDNSServerIPv6Address,
+    ruijieIPv6AddrLease,
+    ruijieIPv6RawStatus}
+    STATUS      current
+    DESCRIPTION
+        "The basic collection of objects providing management of DHCPv6
+        Server functionality."
+    ::= { ruijieDhcpv6MIBGroups 4 }    
 END

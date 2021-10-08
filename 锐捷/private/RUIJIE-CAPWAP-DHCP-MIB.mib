@@ -204,6 +204,22 @@ ruijieLDhcpStartTIService OBJECT-TYPE
 	 terminal identify service."
 	::= { ruijieCapwapDhcpGlobalConfig  4 }
 
+ruijieDhcpServerTlvNum OBJECT-TYPE
+        SYNTAX    INTEGER
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+                  "Dhcp Server info TLV number"
+        ::= { ruijieCapwapDhcpGlobalConfig 5 }
+
+ruijieDhcpServerTlv OBJECT-TYPE
+        SYNTAX    DisplayString
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+              "Dhcp Server info TLV strings"
+        ::= { ruijieCapwapDhcpGlobalConfig 6 }
+
 --********************************************************
 --DHCP stats group
 --********************************************************
@@ -362,7 +378,11 @@ ruijieLDhcpReqSucTimes           OBJECT-TYPE
              ruijieDhcpReqtimes                          Unsigned32,
              ruijieDhcpReqSuctimes                       Unsigned32,
              ruijieDhcpTotalIPNum                        Integer32,		
-             ruijieDhcpCurrentUsedIPNum			 Integer32							
+             ruijieDhcpCurrentUsedIPNum                  Integer32,
+             ruijieDhcpOffertimes                        Unsigned32,
+             ruijieDhcpAcktimes                          Unsigned32,
+             ruijieDhcpCurrentFreeIPNum                  Unsigned32,
+             ruijieDhcpScopeType                         Unsigned32
              }
 
     ruijieDhcpScopeIndex OBJECT-TYPE
@@ -583,6 +603,83 @@ ruijieLDhcpReqSucTimes           OBJECT-TYPE
 				"current used IP amount of DHCP pool."	
     		 ::= { ruijieDhcpScopeEntry 26 } 
 
+    ruijieDhcpOffertimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "DHCP pool offer times."
+         ::= { ruijieDhcpScopeEntry 27 }   
+
+    ruijieDhcpAcktimes OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "DHCP pool ack times."
+         ::= { ruijieDhcpScopeEntry 28 }
+
+    ruijieDhcpCurrentFreeIPNum OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "current free IP amount of DHCP pool."
+         ::= { ruijieDhcpScopeEntry 29 }   
+
+    ruijieDhcpScopeType OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-write
+         STATUS      current
+         DESCRIPTION
+                     "User types that DHCP pool belong to:
+                         0: not set
+                         1: normal user
+                         2: manager"
+         ::= { ruijieDhcpScopeEntry 30 } 
+
+--*******************************************************************
+--DHCP Server Config :  external DHCP Server IP Address on VLAN
+--*******************************************************************
+    ruijieDhcpServerIpVlanTable OBJECT-TYPE
+         SYNTAX      SEQUENCE OF RuijieDhcpServerIpVlanEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "A table of DHCP server IP Allocation situation."
+         ::= { ruijieCapwapDhcpServerConfig 2 }
+               
+    ruijieDhcpServerIpVlanEntry OBJECT-TYPE
+         SYNTAX      RuijieDhcpServerIpVlanEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "DHCP server ip address table entry."
+         INDEX       { ruijieDhcpServerIpVlanIndex }
+         ::= { ruijieDhcpServerIpVlanTable 1 }
+         
+    RuijieDhcpServerIpVlanEntry ::= SEQUENCE {
+             ruijieDhcpServerIpVlanIndex              Unsigned32,
+             ruijieDhcpServerIpVlanOnlineUserNum      Unsigned32
+             }
+
+    ruijieDhcpServerIpVlanIndex OBJECT-TYPE
+         SYNTAX      Unsigned32(1..4094)
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Global DHCP server Vlan index."
+         ::= { ruijieDhcpServerIpVlanEntry 1 }
+
+    ruijieDhcpServerIpVlanOnlineUserNum OBJECT-TYPE
+         SYNTAX      Unsigned32
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "The Number of Online User"
+         ::= { ruijieDhcpServerIpVlanEntry 2 }
+
+
 --*******************************************************************
 --DHCP Relay Config :  external DHCP Server Address 
 --*******************************************************************
@@ -724,7 +821,17 @@ ruijieLDhcpReqSucTimes           OBJECT-TYPE
             "This trap is sent when the dhcp client failed to request address"
         ::= { ruijieCapwapDhcpMIBTrap 3 }
 
-		
+    ruijieDhcpServerInfoTrap NOTIFICATION-TYPE
+        OBJECTS    {
+            ruijieDhcpServerTlvNum,
+            ruijieDhcpServerTlv
+        }
+        STATUS     current
+        DESCRIPTION
+            "DHCP Server Offline info Trap."
+        ::= { ruijieCapwapDhcpMIBTrap 4 }
+
+
 ruijieCapwapDhcpMIBConformance OBJECT IDENTIFIER ::= { ruijieCapwapDhcpMIB 2 }
 ruijieCapwapDhcpMIBCompliances OBJECT IDENTIFIER ::= { ruijieCapwapDhcpMIBConformance 1 }
 ruijieCapwapDhcpMIBGroups      OBJECT IDENTIFIER ::= { ruijieCapwapDhcpMIBConformance 2 }

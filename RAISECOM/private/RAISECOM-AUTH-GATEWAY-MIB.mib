@@ -1,0 +1,1671 @@
+-- *****************************************************************
+-- RAISECOM-AUTH-GATEWAY-MIB.mib:  Raisecom Auth-Gateway MIB file
+--
+-- April 2009, Chenfg
+--
+-- Copyright (c) 2009 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RAISECOM-AUTH-GATEWAY-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    NOTIFICATION-TYPE,
+    IpAddress,
+    Unsigned32,
+    TimeTicks,
+    Integer32,
+    Gauge32
+            FROM SNMPv2-SMI
+    RowStatus,
+    MacAddress,
+    DisplayString
+            FROM SNMPv2-TC
+    IfIndex
+            FROM RAISECOM-TC
+    InetAddressType,
+    InetAddress
+            FROM INET-ADDRESS-MIB
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP,
+    NOTIFICATION-GROUP
+            FROM SNMPv2-CONF
+    ruijieMgmt
+            FROM RAISECOM-SMI;
+
+ruijieWebAuthMIB MODULE-IDENTITY
+    LAST-UPDATED "201003080000Z"
+    ORGANIZATION "Raisecom Networks Co.,Ltd."
+    CONTACT-INFO
+            " 
+            Tel: 4008-111-000 
+
+            E-mail: service@raisecom.com.cn"
+    DESCRIPTION
+            "This module defines raisecom authGateway mibs."
+    REVISION      "201003080000Z"
+    DESCRIPTION
+            "Added ruijieWebAuthUserExtTable."
+    REVISION      "201002220000Z"
+    DESCRIPTION
+            "Add some objects for Application Security Zone Solutions 
+             by Wujj."
+    REVISION      "200904160000Z"
+    DESCRIPTION
+            "Initial version of this MIB module."
+    ::= { ruijieMgmt 40}
+
+ruijieWebAuthMIBObjects OBJECT IDENTIFIER ::= { ruijieWebAuthMIB 1 }
+
+
+-- Web authentication gateway user table
+  
+ruijieWebAuthUserTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieWebAuthUserEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A table that contains generic information about every user 
+            that is authenticated by web authentication gateway."
+    ::= { ruijieWebAuthMIBObjects 1 }
+
+ruijieWebAuthUserEntry OBJECT-TYPE
+    SYNTAX  RuijieWebAuthUserEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The entry of web authentication gateway table."
+    INDEX   { authUserIpAddr }
+    ::= { ruijieWebAuthUserTable 1 }
+
+RuijieWebAuthUserEntry ::=
+    SEQUENCE {
+        authUserIpAddr                   IpAddress,
+        authUserOnlineFlag               Gauge32,
+        authUserTimeLimit                Gauge32,
+        authUserTimeUsed                 Gauge32,
+        authUserStatus                   RowStatus,
+        authUserRoleName                 OCTET STRING,
+        authUserSecZoneName              OCTET STRING,
+        authUserSecZonePermissionType    Gauge32,
+        authUserSecZonePermissionList    OCTET STRING,
+        authUserOtherPermissionType      Gauge32,
+        authUserTerminateCause	         Gauge32
+    }
+
+authUserIpAddr OBJECT-TYPE
+    SYNTAX  IpAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The IP address of the user."
+    ::= { ruijieWebAuthUserEntry 1 }
+
+authUserOnlineFlag OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The online(1)/offline(2) flag of the user."
+    ::= { ruijieWebAuthUserEntry 2 }
+
+
+authUserTimeLimit OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+            "The value, in seconds, is time limit of the online user.
+            If the time is unlimited, then this object has the value 0."
+    ::= { ruijieWebAuthUserEntry 3 }
+
+authUserTimeUsed OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value, in seconds, is time used by the online user."
+    ::= { ruijieWebAuthUserEntry 4 }
+
+-- up-link bandwidth Limit
+-- ::= { ruijieWebAuthUserEntry 5 }     this OID is obsolete
+
+-- down-link bandwidth Limit
+-- ::= { ruijieWebAuthUserEntry 6 }     this OID is obsolete
+
+-- intramural up-link flow limit
+-- ::= { ruijieWebAuthUserEntry 7 }     this OID is obsolete
+
+-- intramural down-link flow limit
+-- ::= { ruijieWebAuthUserEntry 8 }     this OID is obsolete
+
+-- inland up-link flow limit
+-- ::= { ruijieWebAuthUserEntry 9 }     this OID is obsolete
+
+-- inland down-link flow limit
+-- ::= { ruijieWebAuthUserEntry 10 }    this OID is obsolete
+
+-- overseas up-link flow limit
+-- ::= { ruijieWebAuthUserEntry 11 }    this OID is obsolete
+
+-- overseas down-link flow limit
+-- ::= { ruijieWebAuthUserEntry 12 }    this OID is obsolete
+
+-- intramural up-link flow counter
+-- ::= { ruijieWebAuthUserEntry 13 }    this OID is obsolete
+
+-- intramural down-link flow counter
+-- ::= { ruijieWebAuthUserEntry 14 }    this OID is obsolete
+
+-- inland up-link flow counter
+-- ::= { ruijieWebAuthUserEntry 15 }    this OID is obsolete
+
+-- inland down-link flow counter
+-- ::= { ruijieWebAuthUserEntry 16 }    this OID is obsolete
+
+-- overseas up-link flow counter
+-- ::= { ruijieWebAuthUserEntry 17 }    this OID is obsolete
+
+-- overseas down-link flow counter
+-- ::= { ruijieWebAuthUserEntry 18 }    this OID is obsolete
+       
+authUserStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The status of this row, by which new entries may be
+            created, or old entries deleted from this table."
+   ::= { ruijieWebAuthUserEntry 19 }        
+
+authUserRoleName OBJECT-TYPE
+    SYNTAX  OCTET STRING(SIZE (32))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The roleName of the user, defined in Application Security Zone Solutions. 
+            Apply to all support the Application Security Zone Solutions RSR Series products."
+    ::= { ruijieWebAuthUserEntry 20 }
+
+authUserSecZoneName OBJECT-TYPE
+    SYNTAX  OCTET STRING(SIZE (32))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "User login secZoneName, defined in Application Security Zone Solutions. 
+            Apply to all support the Application Security Zone Solutions Firewall Series products."
+    ::= { ruijieWebAuthUserEntry 21}
+
+authUserSecZonePermissionType OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "Login user's permission type, defined in Application Security Zone Solutions. 
+            Apply to all support the Application Security Zone Solutions Firewall Series products.
+            permit(1),deny(2)"
+    ::= { ruijieWebAuthUserEntry 22}
+
+authUserSecZonePermissionList OBJECT-TYPE
+    SYNTAX  OCTET STRING(SIZE (512))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "Login user's permission list, defined in Application Security Zone Solutions. 
+            Apply to all support the Application Security Zone Solutions Firewall Series products.
+            for example,the permission list 192.168.20.21-255.255.255.255、192.168.21.21-255.255.255.0、192.168.22.22-255.255.255.128
+            values C0A81414FFFFFFFFFFC0A81515FFFFFF00C0A81616FFFFFF80"
+    ::= { ruijieWebAuthUserEntry 23}
+
+authUserOtherPermissionType  OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "Login user's other permission type, defined in Application Security Zone Solutions. 
+            Apply to all support the Application Security Zone Solutions Firewall Series products.
+            permit(1),deny(2)"
+    ::= { ruijieWebAuthUserEntry 24}
+
+authUserTerminateCause OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value, used by the offline user."
+    ::= { ruijieWebAuthUserEntry 25 }
+
+-- Web authentication gateway user extension table
+
+ruijieWebAuthUserExtTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieWebAuthUserExtEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A table that contains generic information about every user 
+            that is authenticated by web authentication gateway."
+    ::= { ruijieWebAuthMIBObjects 2 }
+
+ruijieWebAuthUserExtEntry OBJECT-TYPE
+    SYNTAX  RuijieWebAuthUserExtEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The entry of web authentication gateway table."
+    INDEX   { authUserExtAddrType, authUserExtAddr }
+    ::= { ruijieWebAuthUserExtTable 1 }
+
+RuijieWebAuthUserExtEntry ::=
+    SEQUENCE {
+        authUserExtAddrType                 InetAddressType,
+        authUserExtAddr                     InetAddress,
+        authUserExtMac                      MacAddress,
+        authUserExtIfIndex                  IfIndex,
+        authUserExtVlanId                   Unsigned32,
+        authUserExtOnlineFlag               Gauge32,
+        authUserExtTimeLimit                Gauge32,
+        authUserExtTimeUsed                 Gauge32,
+        authUserExtErrCause                 DisplayString,
+        authUserExtStatus                   RowStatus
+    }
+
+authUserExtAddrType OBJECT-TYPE
+    SYNTAX  InetAddressType
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The type of Internet address of the the user."
+    ::= { ruijieWebAuthUserExtEntry 1 }
+
+authUserExtAddr OBJECT-TYPE
+    SYNTAX  InetAddress (SIZE(0..64))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The Internet address of the the user. The type of this address is 
+            determined by the value of the authUserExtAddrType object."
+    ::= { ruijieWebAuthUserExtEntry 2 }
+
+authUserExtMac OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The MAC address of the the user."
+    ::= { ruijieWebAuthUserExtEntry 3 }
+
+authUserExtIfIndex OBJECT-TYPE
+    SYNTAX  IfIndex
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The interface index associated with the user."
+    ::= { ruijieWebAuthUserExtEntry 4 }
+
+authUserExtVlanId OBJECT-TYPE
+    SYNTAX  Unsigned32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The VLAN-ID associated with the user."
+    ::= { ruijieWebAuthUserExtEntry 5 }
+
+authUserExtOnlineFlag OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The online(1)/offline(2) flag of the user."
+    ::= { ruijieWebAuthUserExtEntry 6 }
+
+authUserExtTimeLimit OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+            "The value, in seconds, is time limit of the online user.
+            If the time is unlimited, then this object has the value 0."
+    ::= { ruijieWebAuthUserExtEntry 7 }
+
+authUserExtTimeUsed OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value, in seconds, is time used by the online user."
+    ::= { ruijieWebAuthUserExtEntry 8 }
+
+authUserExtErrCause OBJECT-TYPE
+    SYNTAX DisplayString (SIZE  (0..64))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "The error cause information of the offline user. 
+            The default value is the null string, which indicates no error."
+    DEFVAL { "" } 
+    ::= { ruijieWebAuthUserExtEntry 9 }        
+       
+authUserExtStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The status of this row, by which new entries may be
+            created, or old entries deleted from this table."
+    ::= { ruijieWebAuthUserExtEntry 10 }        
+
+
+-- webauth user white list 
+-- add 2010-06 
+ruijieWebAuthWhiteListTable OBJECT-TYPE
+    SYNTAX   SEQUENCE OF RuijieWebAuthWhiteListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "A table that contains Whitelist of user authenticated 
+          by web authenticaton gateway."
+    ::= { ruijieWebAuthMIBObjects 3 }
+
+ruijieWebAuthWhiteListEntry OBJECT-TYPE
+    SYNTAX  RuijieWebAuthWhiteListEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The entry of web authentication user Whitelist 
+          table."
+    INDEX   { 
+            ruijieWebAuthWhiteListAddress,
+            ruijieWebAuthWhiteListNetMask 
+        }
+    ::= { ruijieWebAuthWhiteListTable 1 }
+
+RuijieWebAuthWhiteListEntry ::=
+    SEQUENCE {  
+        ruijieWebAuthWhiteListAddress     IpAddress,
+        ruijieWebAuthWhiteListNetMask     IpAddress,  
+        ruijieWebAuthWhiteListPort1       Unsigned32,
+        ruijieWebAuthWhiteListPort2       Unsigned32,
+        ruijieWebAuthWhiteListPort3       Unsigned32,
+        ruijieWebAuthWhiteListPort4       Unsigned32,
+        ruijieWebAuthWhiteListPort5       Unsigned32,
+        ruijieWebAuthWhiteListPort6       Unsigned32,
+        ruijieWebAuthWhiteListPort7       Unsigned32,
+        ruijieWebAuthWhiteListPort8       Unsigned32,
+        ruijieWebAuthWhiteListBindArpFlag INTEGER, 
+        ruijieWebAuthWhiteListStatus      RowStatus
+    }
+
+ruijieWebAuthWhiteListAddress OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "The ip address of user white list."
+    ::= { ruijieWebAuthWhiteListEntry 1 } 
+
+ruijieWebAuthWhiteListNetMask OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "The NetMask of user white list."
+    ::= { ruijieWebAuthWhiteListEntry 2 }     
+
+ruijieWebAuthWhiteListPort1 OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The access port1 of user white list."
+    ::= { ruijieWebAuthWhiteListEntry 3 } 
+
+ruijieWebAuthWhiteListPort2 OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The access port2 of user white list."
+    ::= { ruijieWebAuthWhiteListEntry 4 }     
+
+ruijieWebAuthWhiteListPort3 OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The access port3 of user white list."
+    ::= { ruijieWebAuthWhiteListEntry 5 } 
+
+ruijieWebAuthWhiteListPort4 OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The access port4 of user white list."
+    ::= { ruijieWebAuthWhiteListEntry 6 }     
+  
+ruijieWebAuthWhiteListPort5 OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The access port5 of user white list."
+    ::= { ruijieWebAuthWhiteListEntry 7 } 
+
+ruijieWebAuthWhiteListPort6 OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The access port6 of user white list."
+    ::= { ruijieWebAuthWhiteListEntry 8 }  
+ 
+ruijieWebAuthWhiteListPort7 OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The access port7 of user white list."
+    ::= { ruijieWebAuthWhiteListEntry 9 } 
+
+ruijieWebAuthWhiteListPort8 OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The access port8 of user white list."
+    ::= { ruijieWebAuthWhiteListEntry 10 } 
+           
+ruijieWebAuthWhiteListBindArpFlag OBJECT-TYPE
+    SYNTAX INTEGER {
+              no(0),
+              yes(1)
+           }
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The flag represent whether bind the arp or not.
+             0 - not binding arp,
+             1 - need to binding arp"
+    ::= { ruijieWebAuthWhiteListEntry 11 } 
+
+ruijieWebAuthWhiteListStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The status of this row, by which new entries may be
+            created, or old entries deleted from this table."
+    ::= { ruijieWebAuthWhiteListEntry 12 }   
+
+
+-- webauth SDG user list 
+-- add 2010-12 
+ruijieWebAuthSDGUserTable OBJECT-TYPE
+    SYNTAX   SEQUENCE OF RuijieWebAuthSDGUserEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "A table that contains webauth SDG user."
+    ::= { ruijieWebAuthMIBObjects 4 }
+
+ruijieWebAuthSDGUserEntry OBJECT-TYPE
+    SYNTAX  RuijieWebAuthSDGUserEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The SDG user entry of web authentication gateway table."
+    INDEX   { authSDGUserVrfg, authSDGUserIpAddr }
+    ::= { ruijieWebAuthSDGUserTable 1 }
+
+RuijieWebAuthSDGUserEntry ::=
+    SEQUENCE {
+        authSDGUserVrfg                   DisplayString,
+        authSDGUserIpAddr                   IpAddress,
+        authSDGUserOnlineFlag               Gauge32,
+        authSDGUserTimeLimit                Gauge32,
+        authSDGUserTimeUsed                 Gauge32,
+        authSDGUserVrf                    DisplayString,
+        authSDGUserRoleName                 OCTET STRING,
+        authSDGUserSecZoneName              OCTET STRING,
+        authSDGUserSecZonePermissionType    Gauge32,
+        authSDGUserSecZonePermissionList    OCTET STRING,
+        authSDGUserOtherPermissionType      Gauge32,
+        authSDGUserTerminateCause	         Gauge32,
+        authSDGUserStatus                   RowStatus
+    }
+
+authSDGUserVrfg OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..32))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The vrf group name of the SDG user."
+    ::= { ruijieWebAuthSDGUserEntry 1 }
+
+authSDGUserIpAddr OBJECT-TYPE
+    SYNTAX  IpAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The IP address of the SDG user."
+    ::= { ruijieWebAuthSDGUserEntry 2 }
+
+authSDGUserOnlineFlag OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The online(1)/offline(2) flag of the SDG user."
+    ::= { ruijieWebAuthSDGUserEntry 3 }
+
+
+authSDGUserTimeLimit OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+            "The value, in seconds, is time limit of the online SDG user.
+            If the time is unlimited, then this object has the value 0."
+    ::= { ruijieWebAuthSDGUserEntry 4 }
+
+authSDGUserTimeUsed OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value, in seconds, is time used by the online SDG user."
+    ::= { ruijieWebAuthSDGUserEntry 5 }
+
+authSDGUserVrf OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The (dest) vrf name for the user."
+    ::= { ruijieWebAuthSDGUserEntry 6 }
+    
+-- up-link bandwidth Limit
+-- ::= { ruijieWebAuthSDGUserEntry 7 }     this OID is obsolete
+
+-- down-link bandwidth Limit
+-- ::= { ruijieWebAuthSDGUserEntry 8 }     this OID is obsolete
+
+-- intramural up-link flow limit
+-- ::= { ruijieWebAuthSDGUserEntry 9 }     this OID is obsolete
+
+-- intramural down-link flow limit
+-- ::= { ruijieWebAuthSDGUserEntry 10 }     this OID is obsolete
+
+-- inland up-link flow limit
+-- ::= { ruijieWebAuthSDGUserEntry 11 }     this OID is obsolete
+
+-- inland down-link flow limit
+-- ::= { ruijieWebAuthSDGUserEntry 12 }    this OID is obsolete
+
+-- overseas up-link flow limit
+-- ::= { ruijieWebAuthSDGUserEntry 13 }    this OID is obsolete
+
+-- overseas down-link flow limit
+-- ::= { ruijieWebAuthSDGUserEntry 14 }    this OID is obsolete
+
+-- intramural up-link flow counter
+-- ::= { ruijieWebAuthSDGUserEntry 15 }    this OID is obsolete
+
+-- intramural down-link flow counter
+-- ::= { ruijieWebAuthSDGUserEntry 16 }    this OID is obsolete
+
+-- inland up-link flow counter
+-- ::= { ruijieWebAuthSDGUserEntry 17 }    this OID is obsolete
+
+-- inland down-link flow counter
+-- ::= { ruijieWebAuthSDGUserEntry 18 }    this OID is obsolete
+
+-- overseas up-link flow counter
+-- ::= { ruijieWebAuthSDGUserEntry 19 }    this OID is obsolete
+
+-- overseas down-link flow counter
+-- ::= { ruijieWebAuthSDGUserEntry 20 }    this OID is obsolete
+
+authSDGUserRoleName OBJECT-TYPE
+    SYNTAX  OCTET STRING(SIZE (32))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The roleName of the user, defined in Application Security Zone Solutions. 
+            Apply to all support the Application Security Zone Solutions RSR Series products."
+    ::= { ruijieWebAuthSDGUserEntry 21 }
+
+authSDGUserSecZoneName OBJECT-TYPE
+    SYNTAX  OCTET STRING(SIZE (32))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "User login secZoneName, defined in Application Security Zone Solutions. 
+            Apply to all support the Application Security Zone Solutions Firewall Series products."
+    ::= { ruijieWebAuthSDGUserEntry 22}
+
+authSDGUserSecZonePermissionType OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "Login user's permission type, defined in Application Security Zone Solutions. 
+            Apply to all support the Application Security Zone Solutions Firewall Series products.
+            permit(1),deny(2)"
+    ::= { ruijieWebAuthSDGUserEntry 23}
+
+authSDGUserSecZonePermissionList OBJECT-TYPE
+    SYNTAX  OCTET STRING(SIZE (512))
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "Login user's permission list, defined in Application Security Zone Solutions. 
+            Apply to all support the Application Security Zone Solutions Firewall Series products.
+            for example,the permission list 192.168.20.21-255.255.255.255、192.168.21.21-255.255.255.0、192.168.22.22-255.255.255.128
+            values C0A81414FFFFFFFFFFC0A81515FFFFFF00C0A81616FFFFFF80"
+    ::= { ruijieWebAuthSDGUserEntry 24}
+
+authSDGUserOtherPermissionType  OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "Login user's other permission type, defined in Application Security Zone Solutions. 
+            Apply to all support the Application Security Zone Solutions Firewall Series products.
+            permit(1),deny(2)"
+    ::= { ruijieWebAuthSDGUserEntry 25}
+
+authSDGUserTerminateCause OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value, used by the offline user."
+    ::= { ruijieWebAuthSDGUserEntry 26 }
+       
+authSDGUserStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The status of this row, by which new entries may be
+            created, or old entries deleted from this table."
+   ::= { ruijieWebAuthSDGUserEntry 27 }        
+   
+
+-- Web authentication user table indexed with mac address.
+-- added 2013-03
+
+ruijieWebAuthMacUserTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieWebAuthMacUserEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A table that contains information, indexed with mac address,
+            for each user that is authenticated by web authentication gateway."
+    ::= { ruijieWebAuthMIBObjects 5 }
+
+ruijieWebAuthMacUserEntry OBJECT-TYPE
+    SYNTAX  RuijieWebAuthMacUserEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The entry of web authentication mac table."
+    INDEX   { ruijieAuthMacUserMacAddr }
+    ::= { ruijieWebAuthMacUserTable 1 }
+
+RuijieWebAuthMacUserEntry ::=
+    SEQUENCE {
+        ruijieAuthMacUserMacAddr               MacAddress,
+        ruijieAuthMacUserName                  OCTET STRING,
+        ruijieAuthMacUserTerminalId            OCTET STRING
+    }
+
+ruijieAuthMacUserMacAddr OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The MAC address of the the user."
+    ::= { ruijieWebAuthMacUserEntry 1 }
+
+ruijieAuthMacUserName OBJECT-TYPE
+    SYNTAX  OCTET STRING(SIZE (253))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "Name of the user, specified with ruijieAuthMacUserMacAddr. "
+    ::= { ruijieWebAuthMacUserEntry 2 }
+
+ruijieAuthMacUserTerminalId OBJECT-TYPE
+    SYNTAX  OCTET STRING(SIZE (253))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "Terminal Identification of the user, specified with ruijieAuthMacUserMacAddr. "
+    ::= { ruijieWebAuthMacUserEntry 3 }
+
+ruijieWebAuthUserMIB OBJECT IDENTIFIER ::= { ruijieWebAuthMIBObjects 6 }	
+	
+ruijieWebAuthUserMIBTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieWebAuthUserMIBEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A table that contains information, indexed with ip address,
+			for each user that is authenticated by web authentication gateway."
+	::= { ruijieWebAuthUserMIB 1 }
+
+ruijieWebAuthUserMIBEntry OBJECT-TYPE
+    SYNTAX  RuijieWebAuthUserMIBEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The entry of web authentication ip table."
+    INDEX   { ruijieAuthUserMIBIpAddress }
+    ::= { ruijieWebAuthUserMIBTable 1 }	
+
+RuijieWebAuthUserMIBEntry ::=
+    SEQUENCE {
+        ruijieAuthUserMIBIpAddress                IpAddress,
+        ruijieAuthUserMIBName                     OCTET STRING,
+        ruijieAuthUserMIBAuthType                 Gauge32,
+        ruijieAuthUserMIBMacAddress               MacAddress,
+        ruijieAuthUserMIBVlanId                   Gauge32,
+        ruijieAuthUserMIBPortIndex                Gauge32,
+        ruijieAuthUserMIBTimeUsed                 Gauge32
+    }
+
+ruijieAuthUserMIBIpAddress OBJECT-TYPE 
+    SYNTAX    IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "Webauth user ip address. "
+    ::= { ruijieWebAuthUserMIBEntry 1 }	
+
+ruijieAuthUserMIBName OBJECT-TYPE 
+    SYNTAX    OCTET STRING
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "Webauth username. "
+    ::= { ruijieWebAuthUserMIBEntry 2 }
+
+ruijieAuthUserMIBAuthType OBJECT-TYPE 
+    SYNTAX    Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "Webauth user authentication type, 1-v2portal, 2-iportal. "
+    ::= { ruijieWebAuthUserMIBEntry 3 }
+
+ruijieAuthUserMIBMacAddress OBJECT-TYPE 
+    SYNTAX    MacAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "Webauth user mac address. "
+    ::= { ruijieWebAuthUserMIBEntry 4 }
+	
+ruijieAuthUserMIBVlanId OBJECT-TYPE 
+    SYNTAX    Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "Webauth user vlanid. "
+    ::= { ruijieWebAuthUserMIBEntry 5 }	
+	
+ruijieAuthUserMIBPortIndex OBJECT-TYPE 
+    SYNTAX    Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "Webauth user authentication port index. "
+    ::= { ruijieWebAuthUserMIBEntry 6 }	
+	
+ruijieAuthUserMIBTimeUsed OBJECT-TYPE 
+    SYNTAX    Gauge32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "Webauth user time used. "
+    ::= { ruijieWebAuthUserMIBEntry 7 }
+	
+
+-- Web authentication direct site user table
+
+ruijieWebAuthDirectSiteTable OBJECT-TYPE
+    SYNTAX   SEQUENCE OF RuijieWebAuthDirectSiteEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "A table that contains DirectSite user 
+          by web authenticaton gateway."
+    ::= { ruijieWebAuthMIBObjects 7 }
+
+ruijieWebAuthDirectSiteEntry OBJECT-TYPE
+    SYNTAX  RuijieWebAuthDirectSiteEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The entry of web authentication DirectSite user 
+          table."
+    INDEX   { 
+            ruijieWebAuthDirectSiteAddress,
+            ruijieWebAuthDirectSiteNetMask 
+        }
+    ::= { ruijieWebAuthDirectSiteTable 1 }
+
+RuijieWebAuthDirectSiteEntry ::=
+    SEQUENCE {  
+        ruijieWebAuthDirectSiteAddress     IpAddress,
+        ruijieWebAuthDirectSiteNetMask     IpAddress,       		
+        ruijieWebAuthDirectSiteStatus      RowStatus,
+        ruijieWebAuthDirectSiteBindArpFlag INTEGER
+    }
+
+ruijieWebAuthDirectSiteAddress OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "The ip address of direct site user."
+    ::= { ruijieWebAuthDirectSiteEntry 1 } 
+
+ruijieWebAuthDirectSiteNetMask OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "The NetMask of direct site user."
+    ::= { ruijieWebAuthDirectSiteEntry 2 }   
+
+ruijieWebAuthDirectSiteStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The status of this row, by which new entries may be
+            created, or old entries deleted from this table."
+    ::= { ruijieWebAuthDirectSiteEntry 3 }
+
+ruijieWebAuthDirectSiteBindArpFlag OBJECT-TYPE
+    SYNTAX INTEGER {
+              no(0),
+              yes(1)
+           }
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The flag represent whether bind the arp or not.
+             0 - not binding arp,
+             1 - need to binding arp"
+    ::= { ruijieWebAuthDirectSiteEntry 4 } 	
+	
+-- webauth direct host user table
+ 
+ruijieWebAuthDirectHostTable OBJECT-TYPE
+    SYNTAX   SEQUENCE OF RuijieWebAuthDirectHostEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "A table that contains DirectHost of user authenticated 
+          by web authenticaton gateway."
+    ::= { ruijieWebAuthMIBObjects 8 }
+
+ruijieWebAuthDirectHostEntry OBJECT-TYPE
+    SYNTAX  RuijieWebAuthDirectHostEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The entry of web authentication user DirectHost 
+          table."
+    INDEX   { 
+            ruijieWebAuthDirectHostAddress,
+            ruijieWebAuthDirectHostNetMask 
+        }
+    ::= { ruijieWebAuthDirectHostTable 1 }
+
+RuijieWebAuthDirectHostEntry ::=
+    SEQUENCE {  
+        ruijieWebAuthDirectHostAddress     IpAddress,
+        ruijieWebAuthDirectHostNetMask     IpAddress,  
+        ruijieWebAuthDirectHostPort1       Unsigned32,
+        ruijieWebAuthDirectHostPort2       Unsigned32,
+        ruijieWebAuthDirectHostPort3       Unsigned32,
+        ruijieWebAuthDirectHostPort4       Unsigned32,
+        ruijieWebAuthDirectHostPort5       Unsigned32,
+        ruijieWebAuthDirectHostPort6       Unsigned32,
+        ruijieWebAuthDirectHostPort7       Unsigned32,
+        ruijieWebAuthDirectHostPort8       Unsigned32,
+        ruijieWebAuthDirectHostBindArpFlag INTEGER, 
+        ruijieWebAuthDirectHostStatus      RowStatus,
+        ruijieWebAuthDirectHostPortIfx     Gauge32
+    }
+
+ruijieWebAuthDirectHostAddress OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "The ip address of user DirectHost."
+    ::= { ruijieWebAuthDirectHostEntry 1 } 
+
+ruijieWebAuthDirectHostNetMask OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "The NetMask of user DirectHost."
+    ::= { ruijieWebAuthDirectHostEntry 2 }     
+
+ruijieWebAuthDirectHostPort1 OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The access port1 of user DirectHost."
+    ::= { ruijieWebAuthDirectHostEntry 3 } 
+
+ruijieWebAuthDirectHostPort2 OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The access port2 of user DirectHost."
+    ::= { ruijieWebAuthDirectHostEntry 4 }     
+
+ruijieWebAuthDirectHostPort3 OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The access port3 of user DirectHost."
+    ::= { ruijieWebAuthDirectHostEntry 5 } 
+
+ruijieWebAuthDirectHostPort4 OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The access port4 of user DirectHost."
+    ::= { ruijieWebAuthDirectHostEntry 6 }     
+  
+ruijieWebAuthDirectHostPort5 OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The access port5 of user DirectHost."
+    ::= { ruijieWebAuthDirectHostEntry 7 } 
+
+ruijieWebAuthDirectHostPort6 OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The access port6 of user DirectHost."
+    ::= { ruijieWebAuthDirectHostEntry 8 }  
+ 
+ruijieWebAuthDirectHostPort7 OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The access port7 of user DirectHost."
+    ::= { ruijieWebAuthDirectHostEntry 9 } 
+
+ruijieWebAuthDirectHostPort8 OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The access port8 of user DirectHost."
+    ::= { ruijieWebAuthDirectHostEntry 10 } 
+           
+ruijieWebAuthDirectHostBindArpFlag OBJECT-TYPE
+    SYNTAX INTEGER {
+              no(0),
+              yes(1)
+           }
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The flag represent whether bind the arp or not.
+             0 - not binding arp,
+             1 - need to binding arp"
+    ::= { ruijieWebAuthDirectHostEntry 11 } 
+
+ruijieWebAuthDirectHostStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The status of this row, by which new entries may be
+            created, or old entries deleted from this table."
+    ::= { ruijieWebAuthDirectHostEntry 12 } 
+
+ruijieWebAuthDirectHostPortIfx OBJECT-TYPE
+    SYNTAX Gauge32
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The access portifx of user DirectHost."
+    ::= { ruijieWebAuthDirectHostEntry 13 } 
+	
+--- web-auth free acct ip table
+
+ruijieWebAuthFreeAcctIpTable OBJECT-TYPE
+    SYNTAX   SEQUENCE OF RuijieWebAuthFreeAcctIpEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "A table that contains FreeAcctIp of user authenticated 
+          by web authenticaton gateway."
+    ::= { ruijieWebAuthMIBObjects 9 }
+
+ruijieWebAuthFreeAcctIpEntry OBJECT-TYPE
+    SYNTAX  RuijieWebAuthFreeAcctIpEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The entry of web authentication user FreeAcctIp 
+          table."
+    INDEX   { 
+            ruijieWebAuthFreeAcctIpAddress,
+            ruijieWebAuthFreeAcctIpNetMask 
+        }
+    ::= { ruijieWebAuthFreeAcctIpTable 1 }
+
+RuijieWebAuthFreeAcctIpEntry ::=
+    SEQUENCE {  
+        ruijieWebAuthFreeAcctIpAddress     IpAddress,
+        ruijieWebAuthFreeAcctIpNetMask     IpAddress,  
+        ruijieWebAuthFreeAcctIpStatus      RowStatus
+    }
+
+ruijieWebAuthFreeAcctIpAddress OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "The ip address of user FreeAcctIp."
+    ::= { ruijieWebAuthFreeAcctIpEntry 1 } 
+
+ruijieWebAuthFreeAcctIpNetMask OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "The NetMask of user FreeAcctIp."
+    ::= { ruijieWebAuthFreeAcctIpEntry 2 } 
+	
+ruijieWebAuthFreeAcctIpStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The status of this row, by which new entries may be
+            created, or old entries deleted from this table."
+    ::= { ruijieWebAuthFreeAcctIpEntry 3 } 
+	
+--- web-auth free acct url table
+
+ruijieWebAuthFreeAcctUrlTable OBJECT-TYPE
+    SYNTAX   SEQUENCE OF RuijieWebAuthFreeAcctUrlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "A table that contains FreeAcctUrl
+          by web authenticaton gateway."
+    ::= { ruijieWebAuthMIBObjects 10 }
+
+ruijieWebAuthFreeAcctUrlEntry OBJECT-TYPE
+    SYNTAX  RuijieWebAuthFreeAcctUrlEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The entry of web authentication user FreeAcctUrl 
+          table."
+    INDEX   { 
+            ruijieWebAuthFreeAcctUrl
+        }
+    ::= { ruijieWebAuthFreeAcctUrlTable 1 }
+
+RuijieWebAuthFreeAcctUrlEntry ::=
+    SEQUENCE {  
+        ruijieWebAuthFreeAcctUrl     		OCTET STRING,
+        ruijieWebAuthFreeAcctUrlStatus      RowStatus
+    }
+	
+ruijieWebAuthFreeAcctUrl OBJECT-TYPE 
+    SYNTAX    OCTET STRING
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "web-auth free acct url "
+    ::= { ruijieWebAuthFreeAcctUrlEntry 1 }	 
+	
+ruijieWebAuthFreeAcctUrlStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The status of this row, by which new entries may be
+            created, or old entries deleted from this table."
+    ::= { ruijieWebAuthFreeAcctUrlEntry 2 } 
+	
+--- web-auth no offline Detect table
+
+ruijieWebAuthOfflineDetectTable OBJECT-TYPE
+    SYNTAX   SEQUENCE OF RuijieWebAuthOfflineDetectEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+         "A table that contains OfflineDetect
+          by web authenticaton gateway."
+    ::= { ruijieWebAuthMIBObjects 11 }
+
+ruijieWebAuthOfflineDetectEntry OBJECT-TYPE
+    SYNTAX  RuijieWebAuthOfflineDetectEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The entry of web authentication user OfflineDetect
+          table."
+    INDEX   { 
+            ruijieWebAuthOfflineDetectime
+        }
+    ::= { ruijieWebAuthOfflineDetectTable 1 }
+
+RuijieWebAuthOfflineDetectEntry ::=
+    SEQUENCE {  
+        ruijieWebAuthOfflineDetectime    	  Unsigned32,
+        ruijieWebAuthOfflineDetectStatus      RowStatus
+    }
+	
+ruijieWebAuthOfflineDetectime  OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "The webauth no flow offline interval time."
+    ::= { ruijieWebAuthOfflineDetectEntry 1 } 
+
+ruijieWebAuthOfflineDetectStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The status of this row, by which new entries may be
+            created, or old entries deleted from this table."
+    ::= { ruijieWebAuthOfflineDetectEntry 2 } 
+
+--- web-auth current online user
+
+ruijieWebAuthCurrentOnlineUser OBJECT-TYPE
+        SYNTAX   Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The maximum number of current online user."
+    ::= { ruijieWebAuthMIBObjects 12 }
+
+--- web-auth current user
+
+ruijieWebAuthCurrentUser OBJECT-TYPE
+        SYNTAX   Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The maximum number of current user."
+    ::= { ruijieWebAuthMIBObjects 13 }
+
+--- web-auth maximum online user
+
+ruijieWebAuthMaximumOnlineUser OBJECT-TYPE
+        SYNTAX   Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The maximum number of maximum online user."
+    ::= { ruijieWebAuthMIBObjects 14 }
+	
+-- web-auth trap
+                
+ruijieWebAuthMIBTraps        OBJECT IDENTIFIER ::= { ruijieWebAuthMIB 2 }      
+ruijieWebAuthMIBTrapsObjects OBJECT IDENTIFIER ::= { ruijieWebAuthMIB 4 } 
+ 
+-- Trap Objects       
+ruijieWebAuthApMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the unique identifier of a AP."
+    ::= { ruijieWebAuthMIBTrapsObjects 1 }
+
+ruijieWebAuthApIp OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the Ip address of a AP."
+    ::= { ruijieWebAuthMIBTrapsObjects 2 }
+	
+ruijieWebAuthStaMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the unique identifier of a STA."
+    ::= { ruijieWebAuthMIBTrapsObjects 3 }
+
+ruijieWebAuthStaIp OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the Ip of a STA."
+    ::= { ruijieWebAuthMIBTrapsObjects 4 }
+
+ruijieWebAuthStaIpv6 OBJECT-TYPE
+    SYNTAX      InetAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+              "Sta ipv6 address."
+    ::= { ruijieWebAuthMIBTrapsObjects 5 }
+    
+ruijieWebAuthStaOperType OBJECT-TYPE
+    SYNTAX      INTEGER (1..3)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the sta's web-auth operation, 1-webon,2-weboff, 3-webauthfail"
+    ::= { ruijieWebAuthMIBTrapsObjects 6 }
+    
+ruijieWebAuthStaApRadioId OBJECT-TYPE
+    SYNTAX      INTEGER(1..2)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Represents the radio id which STA attach."
+    ::= { ruijieWebAuthMIBTrapsObjects 7 }
+    
+ruijieWebAuthStaApRadioType OBJECT-TYPE
+    SYNTAX      INTEGER (1..2)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+              "1--802.11b
+               2--802.11a"
+    ::= { ruijieWebAuthMIBTrapsObjects 8 }    
+    
+ruijieWebAuthStaVlanId OBJECT-TYPE
+    SYNTAX      INTEGER (1..4094)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+              "Vlan Id the sta belongs to"
+    ::= { ruijieWebAuthMIBTrapsObjects 9 }
+    
+ruijieWebAuthStaWlanId OBJECT-TYPE
+    SYNTAX      INTEGER (1..4095)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+              "Wlan Id the sta belongs to"
+    ::= { ruijieWebAuthMIBTrapsObjects 10 }
+
+ruijieWebAuthOperTime OBJECT-TYPE
+    SYNTAX	TimeTicks
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+              "Sta auth oper time"
+    ::= { ruijieWebAuthMIBTrapsObjects 11 }
+	
+ruijieWebAuthStaAssoAuthMode OBJECT-TYPE
+    SYNTAX  INTEGER {
+        open(0),
+        wep(1),
+        dot1x-wep(2),
+        dot1x-wpa(3),
+        dot1x-wpa2(4),
+        mab(5),
+        psk-wpa(6),
+        psk-wpa2(7),
+        wapi(8)
+    }
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "The Sta associate authentication mode."
+    ::= { ruijieWebAuthMIBTrapsObjects 12 }
+	
+ruijieWebAuthStaNetAuthMode OBJECT-TYPE
+    SYNTAX  INTEGER {
+        open(0),
+        web(1)
+    }
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "The Sta's authentication mode after associated."
+    ::= { ruijieWebAuthMIBTrapsObjects 13 }
+	
+ruijieWebAuthStaRssi OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current	
+    DESCRIPTION
+            "The Sta's Received Signal Strength Indicator."
+    ::= { ruijieWebAuthMIBTrapsObjects 14 }	
+
+ruijieWebAuthStaSsid OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "Sta associate ssid."
+    ::= { ruijieWebAuthMIBTrapsObjects 15 }
+
+ruijieWebAuthStaLinkRate OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "Sta link rate."
+    ::= { ruijieWebAuthMIBTrapsObjects 16 }	
+
+ruijieWebAuthStaCurChannel OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "Sta current channel."
+    ::= { ruijieWebAuthMIBTrapsObjects 17 }		
+
+ruijieWebAuthStaUsername OBJECT-TYPE
+    SYNTAX	DisplayString (SIZE(1..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+              "Sta auth username"
+    ::= { ruijieWebAuthMIBTrapsObjects 18 }	
+	
+ruijieWebAuthStaTerminalType OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+              "Sta terminal type"
+    ::= { ruijieWebAuthMIBTrapsObjects 19 }
+	
+ruijieWebAuthStaTerminateCause OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "Sta terminate cause."
+    ::= { ruijieWebAuthMIBTrapsObjects 20 }	
+
+ruijieWebAuthStaReplyMessage OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  accessible-for-notify
+    STATUS  current
+    DESCRIPTION
+            "Sta auth fail reason ."
+    ::= { ruijieWebAuthMIBTrapsObjects 21 }
+
+ruijieWebAuthStaTerminalId OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+              "Sta terminal Identification"
+    ::= { ruijieWebAuthMIBTrapsObjects 22 }
+
+ruijieWebAuthType OBJECT-TYPE
+    SYNTAX    INTEGER (1..2)     	
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+              "Webauth user type(1-v2portal, 2-iportal)"
+    ::= { ruijieWebAuthMIBTrapsObjects 23 }
+
+ruijieWebAuthPortIndex OBJECT-TYPE
+    SYNTAX    INTEGER     	
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+              "Webauth user authentication port index"
+    ::= { ruijieWebAuthMIBTrapsObjects 24 }
+
+ruijieWebAuthTlvNum OBJECT-TYPE
+    SYNTAX    INTEGER     	
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+              "Webauth redirect info TLV number"
+    ::= { ruijieWebAuthMIBTrapsObjects 25 }
+
+ruijieWebAuthTlv OBJECT-TYPE
+    SYNTAX    DisplayString     	
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+              "Webauth redirect info TLV strings"
+    ::= { ruijieWebAuthMIBTrapsObjects 26 }
+
+-- Trap Node
+ruijieWebAuthUserLeave NOTIFICATION-TYPE
+    OBJECTS   { authUserIpAddr, authUserTimeUsed, authUserTerminateCause }
+    STATUS     current
+    DESCRIPTION
+            "The user offline trap."
+    ::= { ruijieWebAuthMIBTraps 1 }                    
+
+ruijieWebAuthUserExtLeave NOTIFICATION-TYPE
+    OBJECTS  { 
+                authUserExtAddrType,
+                authUserExtAddr,
+                authUserExtMac,
+                authUserExtIfIndex,
+                authUserExtVlanId,
+                authUserExtTimeUsed,
+                authUserExtErrCause 
+    }
+    STATUS     current
+    DESCRIPTION
+            "The user extension offline trap."
+    ::= { ruijieWebAuthMIBTraps 2 }                    
+
+ruijieWebAuthSDGUserLeave NOTIFICATION-TYPE
+    OBJECTS   { 
+		    authSDGUserVrfg,
+		    authSDGUserIpAddr, 
+		    authSDGUserTimeUsed, 
+		    authSDGUserTerminateCause
+    }
+    STATUS     current
+    DESCRIPTION
+            "The user offline trap."
+    ::= { ruijieWebAuthMIBTraps 3 }                    
+	
+ruijieWebAuthWlanMgmt NOTIFICATION-TYPE
+    OBJECTS   { 
+          ruijieWebAuthApMac,
+          ruijieWebAuthApIp,
+          ruijieWebAuthStaMac,
+          ruijieWebAuthStaIp,
+          ruijieWebAuthStaIpv6,
+          ruijieWebAuthStaOperType,
+          ruijieWebAuthStaApRadioId,
+          ruijieWebAuthStaApRadioType,
+          ruijieWebAuthStaVlanId,
+          ruijieWebAuthStaWlanId,
+          ruijieWebAuthOperTime,
+          ruijieWebAuthStaAssoAuthMode,
+          ruijieWebAuthStaNetAuthMode,
+          ruijieWebAuthStaRssi,
+          ruijieWebAuthStaSsid,
+          ruijieWebAuthStaLinkRate,
+          ruijieWebAuthStaCurChannel,
+          ruijieWebAuthStaUsername,
+          ruijieWebAuthStaTerminalType,
+          ruijieWebAuthStaTerminateCause,
+          ruijieWebAuthStaReplyMessage,
+          ruijieWebAuthStaTerminalId
+    }
+    STATUS     current
+    DESCRIPTION
+            "Wlan Web-auth user mgmt trap sent when sta login or logout."
+    ::= { ruijieWebAuthMIBTraps 4 }  
+    
+ruijieWebAuthUserOper NOTIFICATION-TYPE
+    OBJECTS    {
+                ruijieWebAuthStaOperType,
+                ruijieWebAuthType,				
+                ruijieWebAuthStaUsername,
+                ruijieWebAuthStaIp,
+                ruijieWebAuthStaMac,
+                ruijieWebAuthStaVlanId,
+                ruijieWebAuthPortIndex,
+                ruijieWebAuthStaTerminateCause             				
+	}
+    STATUS     current
+    DESCRIPTION
+            "Web-auth user mgmt trap sent when user login, logout or authentication failed."
+    ::= { ruijieWebAuthMIBTraps 5 } 
+
+ruijieWebAuthRedirectInfo NOTIFICATION-TYPE
+    OBJECTS    {
+                ruijieWebAuthTlvNum,
+                ruijieWebAuthTlv
+    }
+    STATUS     current
+    DESCRIPTION
+              "Web-auth user first redirect info."
+    ::= { ruijieWebAuthMIBTraps 6 }
+    
+-- compliance statements
+         
+ruijieWebAuthMIBConformance OBJECT IDENTIFIER ::= { ruijieWebAuthMIB 3 }
+ruijieWebAuthMIBCompliances OBJECT IDENTIFIER ::= { ruijieWebAuthMIBConformance 1 }
+ruijieWebAuthMIBGroups      OBJECT IDENTIFIER ::= { ruijieWebAuthMIBConformance 2 }
+
+ruijieWebAuthMIBCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for entities which implement
+            the My WebAuth MIB"
+    MODULE  -- this module
+            MANDATORY-GROUPS { ruijieWebAuthMIBGroup, ruijieWebAuthTrapGroup
+             }
+                   
+    ::= { ruijieWebAuthMIBCompliances 1 }
+            
+-- units of conformance
+
+ruijieWebAuthMIBGroup OBJECT-GROUP
+    OBJECTS {
+         authUserIpAddr,
+         authUserOnlineFlag,
+         authUserTimeLimit,
+         authUserTimeUsed,
+         authUserStatus,
+         authUserRoleName,
+         authUserSecZoneName, 
+         authUserSecZonePermissionType,
+         authUserSecZonePermissionList,
+         authUserOtherPermissionType,
+         authUserTerminateCause,
+         authUserExtAddrType,
+         authUserExtAddr,
+         authUserExtMac,
+         authUserExtIfIndex,
+         authUserExtVlanId,
+         authUserExtOnlineFlag,
+         authUserExtTimeLimit,
+         authUserExtTimeUsed,
+         authUserExtErrCause,
+         authUserExtStatus, 
+         ruijieWebAuthWhiteListAddress,
+         ruijieWebAuthWhiteListNetMask,
+         ruijieWebAuthWhiteListPort1,
+         ruijieWebAuthWhiteListPort2,
+         ruijieWebAuthWhiteListPort3,
+         ruijieWebAuthWhiteListPort4,
+         ruijieWebAuthWhiteListPort5,
+         ruijieWebAuthWhiteListPort6,
+         ruijieWebAuthWhiteListPort7,
+         ruijieWebAuthWhiteListPort8,
+         ruijieWebAuthWhiteListBindArpFlag, 
+         ruijieWebAuthWhiteListStatus,
+         authSDGUserVrfg,
+         authSDGUserIpAddr,
+         authSDGUserOnlineFlag,
+         authSDGUserTimeLimit,
+         authSDGUserTimeUsed,
+         authSDGUserVrf,
+         authSDGUserRoleName,
+         authSDGUserSecZoneName,
+         authSDGUserSecZonePermissionType,
+         authSDGUserSecZonePermissionList,
+         authSDGUserOtherPermissionType,
+         authSDGUserTerminateCause,
+         authSDGUserStatus,
+         ruijieWebAuthDirectSiteAddress,
+         ruijieWebAuthDirectSiteNetMask,
+         ruijieWebAuthDirectSiteStatus,
+         ruijieWebAuthDirectSiteBindArpFlag,
+         ruijieWebAuthDirectHostAddress,
+         ruijieWebAuthDirectHostNetMask,  
+         ruijieWebAuthDirectHostPort1,
+         ruijieWebAuthDirectHostPort2,
+         ruijieWebAuthDirectHostPort3,
+         ruijieWebAuthDirectHostPort4,
+         ruijieWebAuthDirectHostPort5,
+         ruijieWebAuthDirectHostPort6,
+         ruijieWebAuthDirectHostPort7,
+         ruijieWebAuthDirectHostPort8,
+         ruijieWebAuthDirectHostBindArpFlag, 
+         ruijieWebAuthDirectHostStatus,
+         ruijieWebAuthDirectHostPortIfx,
+		 ruijieWebAuthFreeAcctIpAddress,
+         ruijieWebAuthFreeAcctIpNetMask,  
+         ruijieWebAuthFreeAcctIpStatus,
+		 ruijieWebAuthFreeAcctUrl,
+         ruijieWebAuthFreeAcctUrlStatus,
+		 ruijieWebAuthOfflineDetectime,
+         ruijieWebAuthOfflineDetectStatus,
+         ruijieWebAuthCurrentOnlineUser,
+         ruijieWebAuthCurrentUser,
+         ruijieWebAuthMaximumOnlineUser
+         }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing authGateway management and
+            opertion to a Raisecom agent."
+    ::= { ruijieWebAuthMIBGroups 1 } 
+    
+ruijieWebAuthTrapGroup NOTIFICATION-GROUP
+    NOTIFICATIONS {
+        ruijieWebAuthUserLeave,
+        ruijieWebAuthUserExtLeave,
+        ruijieWebAuthSDGUserLeave
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of traps providing authGateway management and
+            opertion to a Raisecom agent."
+    ::= { ruijieWebAuthMIBGroups 2 }  
+    
+END

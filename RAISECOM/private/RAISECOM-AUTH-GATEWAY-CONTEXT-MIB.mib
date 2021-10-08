@@ -1,0 +1,167 @@
+-- *****************************************************************
+-- RAISECOM-AUTH-GATEWAY-CONTEXT-MIB.mib:  Raisecom Auth-Gateway MIB file for multiple context
+--
+--
+-- December 2009, rendh
+--
+-- Copyright (c) 2009 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RAISECOM-AUTH-GATEWAY-CONTEXT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    IpAddress, 
+    Gauge32
+            FROM SNMPv2-SMI
+    DisplayString,
+    RowStatus
+            FROM SNMPv2-TC
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP
+            FROM SNMPv2-CONF
+    ruijieMgmt
+            FROM RAISECOM-SMI;
+
+ruijieWebAuthVCMIB MODULE-IDENTITY
+    LAST-UPDATED "200912060000Z"
+    ORGANIZATION "Raisecom Networks Co.,Ltd."
+    CONTACT-INFO
+            " 
+            Tel: 4008-111-000 
+
+            E-mail: service@raisecom.com.cn"
+    DESCRIPTION
+            "This module defines my authGateway mibs for multiple context."
+    REVISION      "200912060000Z"
+    DESCRIPTION
+            "Initial version of this MIB module."
+    ::= { ruijieMgmt 67 }
+
+ruijieWebAuthVCMIBObjects OBJECT IDENTIFIER ::= { ruijieWebAuthVCMIB 1 }
+
+
+-- Web authentication gateway user table
+  
+ruijieWebAuthUserVCTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieWebAuthUserVCEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A table that contains generic information about every user 
+            that is authenticated by web authentication gateway."
+    ::= { ruijieWebAuthVCMIBObjects 1 }
+
+ruijieWebAuthUserVCEntry OBJECT-TYPE
+    SYNTAX  RuijieWebAuthUserVCEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The entry of web authentication gateway table."
+    INDEX   { authUserContextNameVC,authUserIpAddrVC }
+    ::= { ruijieWebAuthUserVCTable 1 }
+
+RuijieWebAuthUserVCEntry ::=
+    SEQUENCE {
+        authUserContextNameVC     DisplayString, 
+        authUserIpAddrVC          IpAddress,
+        authUserOnlineFlagVC      Gauge32,
+        authUserTimeLimitVC       Gauge32,
+        authUserTimeUsedVC        Gauge32,
+        authUserStatusVC          RowStatus
+    }
+    
+authUserContextNameVC OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..31))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "context name of this entry."
+        ::= { ruijieWebAuthUserVCEntry  1 }        
+
+authUserIpAddrVC OBJECT-TYPE
+    SYNTAX  IpAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The IP address of the user."
+    ::= { ruijieWebAuthUserVCEntry 2 }
+
+authUserOnlineFlagVC OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The online(1)/offline(2) flag of the user."
+    ::= { ruijieWebAuthUserVCEntry 3 }
+
+
+authUserTimeLimitVC OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+            "The value, in seconds, is time limit of the online user.
+            If the time is unlimited, then this object has the value 0."
+    ::= { ruijieWebAuthUserVCEntry 4 }
+
+authUserTimeUsedVC OBJECT-TYPE
+    SYNTAX  Gauge32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The value, in seconds, is time used by the online user."
+    ::= { ruijieWebAuthUserVCEntry 5 }
+       
+authUserStatusVC OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+            "The status of this row, by which new entries may be
+            created, or old entries deleted from this table."
+   ::= { ruijieWebAuthUserVCEntry 6 }        
+
+
+
+-- compliance statements
+         
+ruijieWebAuthVCMIBConformance OBJECT IDENTIFIER ::= { ruijieWebAuthVCMIB 3 }
+ruijieWebAuthVCMIBCompliances OBJECT IDENTIFIER ::= { ruijieWebAuthVCMIBConformance 1 }
+ruijieWebAuthVCMIBGroups      OBJECT IDENTIFIER ::= { ruijieWebAuthVCMIBConformance 2 }
+
+ruijieWebAuthVCMIBCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for entities which implement
+            the My WebAuth MIB for multiple context"
+    MODULE  -- this module
+            MANDATORY-GROUPS { ruijieWebAuthVCMIBGroup
+             }
+                   
+    ::= { ruijieWebAuthVCMIBCompliances 1 }
+            
+-- units of conformance
+
+ruijieWebAuthVCMIBGroup OBJECT-GROUP
+    OBJECTS {
+         authUserContextNameVC,
+         authUserIpAddrVC,
+         authUserOnlineFlagVC,
+         authUserTimeLimitVC,
+         authUserTimeUsedVC,
+         authUserStatusVC   
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing authGateway management and
+            opertion to a My agent."
+    ::= { ruijieWebAuthVCMIBGroups 1 } 
+
+-- 
+
+END

@@ -1,0 +1,131 @@
+-- *****************************************************************
+-- RAISECOM-LICENSE-MIB.mib:  Raisecom License MIB
+--
+-- Oct 2009, jiangxh
+--
+-- Copyright (c) 2009 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- *****************************************************************
+--
+
+RAISECOM-LICENSE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32
+                FROM SNMPv2-SMI
+        DisplayString
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ruijieMgmt
+                FROM RAISECOM-SMI;
+
+ruijieLicenseMIB MODULE-IDENTITY
+        LAST-UPDATED "200909180000Z"
+        ORGANIZATION "Raisecom Networks Co.,Ltd."
+        CONTACT-INFO
+            " 
+        Tel: 4008-111-000
+
+        E-mail: service@raisecom.com.cn"
+        DESCRIPTION
+                "This module defines raisecom license mibs."
+        REVISION      "200909180000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 57}
+
+ruijieLicenseMIBObjects OBJECT IDENTIFIER ::= { ruijieLicenseMIB 1 }
+
+ruijieShowLicense OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This object represents the support of AP nums."
+    ::= { ruijieLicenseMIBObjects 1 }    
+    
+ruijieLicenseTable OBJECT-TYPE
+  SYNTAX      SEQUENCE OF RuijieLicenseEntry
+  MAX-ACCESS  not-accessible
+  STATUS      current
+  DESCRIPTION
+    "A table of license entries. Each of the
+     objects indicate the license configured."
+  ::= { ruijieLicenseMIBObjects 2 }
+
+ruijieLicenseEntry OBJECT-TYPE
+  SYNTAX      RuijieLicenseEntry
+  MAX-ACCESS  not-accessible
+  STATUS      current
+  DESCRIPTION
+    "An entry in the license table."
+  INDEX { ruijieLicenseIndex }
+  ::= { ruijieLicenseTable 1 }
+
+RuijieLicenseEntry ::=
+  SEQUENCE {
+    ruijieLicenseIndex  	Integer32,
+    ruijieLicenseString   DisplayString,
+    ruijieLicenseValue   	Integer32
+  }
+    
+ruijieLicenseIndex OBJECT-TYPE
+    SYNTAX        Integer32
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "An index that uniquely represents a license."
+    ::= { ruijieLicenseEntry 1 }
+    
+ruijieLicenseString OBJECT-TYPE
+    SYNTAX        DisplayString
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION
+        "The license configured."
+    ::= { ruijieLicenseEntry 2 } 
+   
+ruijieLicenseValue OBJECT-TYPE
+    SYNTAX        Integer32
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "This is the support numbers of APs for the license."
+    ::= { ruijieLicenseEntry 3 }
+
+ruijieLicenseMIBConformance OBJECT IDENTIFIER ::= { ruijieLicenseMIB 2 }
+ruijieLicenseMIBCompliances OBJECT IDENTIFIER ::= { ruijieLicenseMIBConformance 1 }
+ruijieLicenseMIBGroups      OBJECT IDENTIFIER ::= { ruijieLicenseMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieLicenseMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Raisecom License MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieLicenseMIBGroup
+                }
+        ::= { ruijieLicenseMIBCompliances 1 }
+                
+-- units of conformance
+
+ruijieLicenseMIBGroup OBJECT-GROUP
+        OBJECTS {
+               ruijieShowLicense, 
+               ruijieLicenseString,
+               ruijieLicenseValue 
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing license information and
+                opertion to a Raisecom agent."
+        ::= { ruijieLicenseMIBGroups 1 } 
+
+END

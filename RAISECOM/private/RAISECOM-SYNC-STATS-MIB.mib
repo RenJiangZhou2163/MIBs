@@ -1,0 +1,358 @@
+-- *------------------------------------------------------------------
+-- * RAISECOM-SYNC-STATS-MIB.mib
+-- *   Raisecom Sync Statistics MIB.
+-- * 
+-- * May 2009, yingde tan
+-- *
+-- * Copyright (c) 2009 by Raisecom Networks Co.,Ltd.
+-- * All rights reserved.
+-- *
+-- *------------------------------------------------------------------
+
+RAISECOM-SYNC-STATS-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+      MODULE-IDENTITY, 
+      OBJECT-TYPE, 
+      Integer32, 
+      Counter32
+         FROM SNMPv2-SMI
+      RowStatus
+         FROM SNMPv2-TC
+      OBJECT-GROUP, 
+      MODULE-COMPLIANCE
+         FROM SNMPv2-CONF
+      ruijieMgmt
+         FROM RAISECOM-SMI
+      InterfaceIndex
+         FROM IF-MIB;
+
+   ruijieSyncStatsMIB MODULE-IDENTITY
+      LAST-UPDATED   "200905201456Z"
+      ORGANIZATION   "Raisecom Networks Co.,Ltd."
+      CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@raisecom.com.cn"
+
+      DESCRIPTION
+         "Raisecom Sync Statistics MIB.
+         
+          Acronyms
+          The following acronyms are used in this document:
+
+            CRC:        Cyclic Redundancy Check
+
+            HDLC:       High-level Data Link Control
+
+            MIB:        Management Information Base
+
+            MTU:        Maximum Transmission Unit
+
+         "
+
+        REVISION "200905201456Z"
+        DESCRIPTION
+                "Added module compliance."
+
+      ::= { ruijieMgmt 51 }
+
+-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-- MIB Objects
+-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+ruijieSyncStatsMibObjects OBJECT IDENTIFIER ::= { ruijieSyncStatsMIB 1 }
+
+ruijieStatsSyncGlobal OBJECT IDENTIFIER ::= { ruijieSyncStatsMibObjects 1 }
+
+ruijieSyncStatsTable     OBJECT-TYPE
+   SYNTAX         SEQUENCE OF RuijieSyncStatsEntry
+   MAX-ACCESS     not-accessible
+   STATUS         current
+   DESCRIPTION
+      "The SYNC interface statistics MIB."
+   ::= { ruijieSyncStatsMibObjects 2 }
+
+ruijieSyncStatsEntry     OBJECT-TYPE
+   SYNTAX         RuijieSyncStatsEntry
+   MAX-ACCESS     not-accessible
+   STATUS         current
+   DESCRIPTION
+      "An entry the ruijieSyncStatsTable."
+   INDEX    { ruijieSyncStatsSlot, ruijieSyncStatsConn, ruijieSyncStatsChannel }
+   ::= { ruijieSyncStatsTable 1 }
+
+RuijieSyncStatsEntry ::= SEQUENCE {
+   ruijieSyncStatsRowStatus                RowStatus,
+   ruijieSyncStatsSlot                     Integer32,
+   ruijieSyncStatsConn                     Integer32,
+   ruijieSyncStatsChannel                  Integer32,
+   ruijieSyncStatsIfIndex                  InterfaceIndex, 
+   ruijieSyncStatsPortState                INTEGER,
+   ruijieSyncStatsRxFrames                 Counter32,
+   ruijieSyncStatsRxOctets                 Counter32,
+   ruijieSyncStatsRxReplenFails            Counter32,
+   ruijieSyncStatsRxClockErrors            Counter32,
+   ruijieSyncStatsRxDpllErrors             Counter32,
+   ruijieSyncStatsRxFrameTooLongErrors     Counter32,
+   ruijieSyncStatsRxFrameOctetAlignErrors  Counter32,
+   ruijieSyncStatsRxAbortErrors            Counter32,
+   ruijieSyncStatsRxCrcErrors              Counter32,          
+   ruijieSyncStatsRxRcvrOverrunErrors      Counter32,
+   ruijieSyncStatsTxFrames                 Counter32,
+   ruijieSyncStatsTxOctets                 Counter32,
+   ruijieSyncStatsTxRingFullDropsErrors    Counter32,
+   ruijieSyncStatsTxClockErrors            Counter32,
+   ruijieSyncStatsTxFrameTooLongErrors     Counter32,
+   ruijieSyncStatsTxUnderrunErrors         Counter32
+}
+
+ruijieSyncStatsRowStatus    OBJECT-TYPE
+   SYNTAX         RowStatus
+   MAX-ACCESS     read-create
+   STATUS         current
+   DESCRIPTION
+      "The status of this row."
+   ::= { ruijieSyncStatsEntry 1 }
+
+ruijieSyncStatsSlot         OBJECT-TYPE
+   SYNTAX         Integer32 (0..2147483647)
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The physical slot for this Sync port. Part of the index."
+   ::= { ruijieSyncStatsEntry 2 }
+   
+ruijieSyncStatsConn         OBJECT-TYPE
+   SYNTAX         Integer32 (0..2147483647)
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The physical connector for this Sync port. Part of the index."
+   ::= { ruijieSyncStatsEntry 3 }
+   
+ruijieSyncStatsChannel      OBJECT-TYPE
+   SYNTAX         Integer32 (0..2147483647)
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The virtual channel for this Sync port. Part of the index."
+   ::= { ruijieSyncStatsEntry 4 }
+   
+ruijieSyncStatsIfIndex      OBJECT-TYPE
+   SYNTAX         InterfaceIndex
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The IfIndex of this SYNC slot/conn/channel. This is
+       configured, but configuration is not available via
+       SNMP."
+   ::= { ruijieSyncStatsEntry 5 }
+
+ruijieSyncStatsPortState OBJECT-TYPE
+   SYNTAX         INTEGER {
+                     init(1),      -- port is coming up
+                     running(2),   -- port has finished initialization
+                                   -- and is waiting to transition to
+                                   -- data state
+                     up(3),        -- ready to pass packets
+                     down(4)       -- port is down, unable to pass
+                                   -- packets
+                  }
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The current operational state of the interface.  
+       The init(1) state indicates the port is in the state 
+       of trying to come up. It will transition to running(2)
+       once initialization is complete. up(3) indicates the 
+       interface is capable of passing packets. down(4) indicates
+       the interface is no longer capable of passing packets." 
+   ::= { ruijieSyncStatsEntry 6 }
+
+ruijieSyncStatsRxFrames     OBJECT-TYPE
+   SYNTAX         Counter32
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The number of frames received on this HDLC interface." 
+   ::= { ruijieSyncStatsEntry 7 }
+   
+ruijieSyncStatsRxOctets     OBJECT-TYPE
+   SYNTAX         Counter32
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The number of octets received on this HDLC interface." 
+   ::= { ruijieSyncStatsEntry 8 }
+   
+ruijieSyncStatsRxReplenFails   OBJECT-TYPE
+   SYNTAX         Counter32
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The number of times receive buffers could not be allocated 
+      on this HDLC interface." 
+   ::= { ruijieSyncStatsEntry 9 }
+   
+ruijieSyncStatsRxClockErrors   OBJECT-TYPE
+   SYNTAX         Counter32
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The number of clock errors on this HDLC interface." 
+   ::= { ruijieSyncStatsEntry 10 }
+   
+ruijieSyncStatsRxDpllErrors OBJECT-TYPE
+   SYNTAX         Counter32
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The number of DPLL errors received on this HDLC interface." 
+   ::= { ruijieSyncStatsEntry 11 }
+   
+ruijieSyncStatsRxFrameTooLongErrors     OBJECT-TYPE
+   SYNTAX         Counter32
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The number of received long frame errors received on this 
+       HDLC interface." 
+   ::= { ruijieSyncStatsEntry 12 }
+   
+ruijieSyncStatsRxFrameOctetAlignErrors     OBJECT-TYPE
+   SYNTAX         Counter32
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The number of received long frame errors received on 
+       this HDLC interface." 
+   ::= { ruijieSyncStatsEntry 13 }
+   
+ruijieSyncStatsRxAbortErrors      OBJECT-TYPE
+   SYNTAX         Counter32
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The number of received abort errors received on 
+       this HDLC interface." 
+   ::= { ruijieSyncStatsEntry 14 }
+   
+ruijieSyncStatsRxCrcErrors     OBJECT-TYPE
+   SYNTAX         Counter32
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The number of received CRC errors received on 
+       this HDLC interface." 
+   ::= { ruijieSyncStatsEntry 15 }
+   
+ruijieSyncStatsRxRcvrOverrunErrors      OBJECT-TYPE
+   SYNTAX         Counter32
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The number of received CRC errors received on 
+       this HDLC interface." 
+   ::= { ruijieSyncStatsEntry 16 }
+   
+ruijieSyncStatsTxFrames     OBJECT-TYPE
+   SYNTAX         Counter32
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The number of transmitted frames on this HDLC interface." 
+   ::= { ruijieSyncStatsEntry 17 }
+   
+ruijieSyncStatsTxOctets     OBJECT-TYPE
+   SYNTAX         Counter32
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The number of transmitted frames on this HDLC interface." 
+   ::= { ruijieSyncStatsEntry 18 }
+   
+ruijieSyncStatsTxRingFullDropsErrors    OBJECT-TYPE
+   SYNTAX         Counter32
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The number of frames dropped on this HDLC interface because
+       the transmit ring was full." 
+   ::= { ruijieSyncStatsEntry 19 }
+   
+ruijieSyncStatsTxClockErrors      OBJECT-TYPE
+   SYNTAX         Counter32
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The number of transmit clock errors on this HDLC interface." 
+   ::= { ruijieSyncStatsEntry 20 }
+   
+ruijieSyncStatsTxFrameTooLongErrors     OBJECT-TYPE
+   SYNTAX         Counter32
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The number of frames dropped this HDLC interface because they
+       were long than the interface's MTU." 
+   ::= { ruijieSyncStatsEntry 21 }
+   
+ruijieSyncStatsTxUnderrunErrors      OBJECT-TYPE
+   SYNTAX         Counter32
+   MAX-ACCESS     read-only
+   STATUS         current
+   DESCRIPTION
+      "The number of transmitter underruns on this HDLC interface." 
+   ::= { ruijieSyncStatsEntry 22 }
+   
+ruijieSyncStatsMibConformance OBJECT IDENTIFIER ::= { ruijieSyncStatsMIB 2 }
+
+ruijieSyncStatsMibCompliances OBJECT IDENTIFIER ::= { ruijieSyncStatsMibConformance 1 }
+ruijieSyncStatsMibGroups OBJECT IDENTIFIER ::= { ruijieSyncStatsMibConformance 2 }
+
+ruijieSyncStatsMibCompliance MODULE-COMPLIANCE
+   STATUS         current
+   DESCRIPTION
+      "The compliance statement for agents which 
+       implement the Raisecom Sync Statistics MIB."
+   MODULE
+   MANDATORY-GROUPS { 
+      ruijieSyncStatsGroup
+   }
+   ::= { ruijieSyncStatsMibCompliances 1 }
+
+ruijieSyncStatsGroup OBJECT-GROUP
+   OBJECTS
+   {
+      ruijieSyncStatsRowStatus,
+      ruijieSyncStatsSlot,
+      ruijieSyncStatsConn,
+      ruijieSyncStatsChannel,
+      ruijieSyncStatsIfIndex,
+      ruijieSyncStatsPortState,
+      ruijieSyncStatsRxFrames,
+      ruijieSyncStatsRxOctets,
+      ruijieSyncStatsRxReplenFails,
+      ruijieSyncStatsRxClockErrors,
+      ruijieSyncStatsRxDpllErrors,
+      ruijieSyncStatsRxFrameTooLongErrors,
+      ruijieSyncStatsRxFrameOctetAlignErrors,
+      ruijieSyncStatsRxAbortErrors,
+      ruijieSyncStatsRxCrcErrors,          
+      ruijieSyncStatsRxRcvrOverrunErrors,
+      ruijieSyncStatsTxFrames,
+      ruijieSyncStatsTxOctets,
+      ruijieSyncStatsTxRingFullDropsErrors,
+      ruijieSyncStatsTxClockErrors,
+      ruijieSyncStatsTxFrameTooLongErrors,
+      ruijieSyncStatsTxUnderrunErrors
+   }
+   STATUS   current
+   DESCRIPTION
+          "The objects for SYNC configuration."
+   ::= { ruijieSyncStatsMibGroups 1 }
+
+END
+

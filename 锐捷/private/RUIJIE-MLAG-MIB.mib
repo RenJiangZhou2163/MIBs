@@ -1,0 +1,201 @@
+-- *****************************************************************
+-- RUIJIE-MLAG-MIB.mib:  Ruijie MLAG MIB file
+--
+-- February 2020, Xiaoruiwu
+--
+-- Copyright (c) 2020 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-MLAG-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        NOTIFICATION-TYPE,
+        Integer32,
+        OBJECT-TYPE,
+        Counter32,
+        Counter64,
+        Unsigned32,
+        IpAddress
+                FROM SNMPv2-SMI
+		Ipv6Address
+		        FROM IPV6-TC
+        RowStatus, 
+        DisplayString,
+        PhysAddress,
+        DateAndTime,
+        MacAddress
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ConfigStatus,
+        IfIndex
+                FROM RUIJIE-TC
+        Gauge,
+        TimeTicks
+                FROM RFC1155-SMI
+        ruijieMgmt
+                FROM RUIJIE-SMI
+       SnmpAdminString
+                FROM SNMP-FRAMEWORK-MIB          -- RFC3411
+       InetAddressType, InetAddress
+                FROM INET-ADDRESS-MIB;           -- RFC4001
+
+                
+ruijieMlagMIB MODULE-IDENTITY
+        LAST-UPDATED "202002250000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie mlag mibs."
+        REVISION      "202002250000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 164}
+
+-- Notification
+ruijieMlagTraps      OBJECT IDENTIFIER ::= { ruijieMlagMIB 1 }          
+
+ruijieMlagLocalIpv4 OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+             "The local ipv4 data of mlag system"
+    ::= { ruijieMlagTraps 1 }
+
+ruijieMlagPeerIpv4 OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+             "The peer ipv4 data of mlag system"
+    ::= { ruijieMlagTraps 2 }
+	
+ruijieMlagLocalIpv6 OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+             "The local ipv6 data of mlag system"
+    ::= { ruijieMlagTraps 3 }
+
+ruijieMlagPeerIpv6 OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+             "The peer ipv6 data of mlag system"
+    ::= { ruijieMlagTraps 4 }
+
+ruijieMlagDualActiveDetectTraps NOTIFICATION-TYPE
+    OBJECTS { ruijieMlagLocalIpv4, ruijieMlagPeerIpv4, ruijieMlagLocalIpv6, ruijieMlagPeerIpv6, ruijieMlagLocalMac, ruijieMlagPeerMac }
+    STATUS  current
+    DESCRIPTION
+            "When detect dual-active status of mlag system, then this trap will be sent."
+    ::= { ruijieMlagTraps 5 }
+
+ruijieMlagDualActiveRecoverTraps NOTIFICATION-TYPE
+    OBJECTS { ruijieMlagLocalIpv4, ruijieMlagPeerIpv4, ruijieMlagLocalIpv6, ruijieMlagPeerIpv6, ruijieMlagLocalMac, ruijieMlagPeerMac }
+    STATUS  current
+    DESCRIPTION
+            "When detect dual-active recovery status of mlag system, then this trap will be sent."
+    ::= { ruijieMlagTraps 6 }
+
+ruijieMlagDataSyncDisconnectTraps NOTIFICATION-TYPE
+    OBJECTS { ruijieMlagLocalIpv4, ruijieMlagPeerIpv4, ruijieMlagLocalIpv6, ruijieMlagPeerIpv6, ruijieMlagLocalMac, ruijieMlagPeerMac }
+    STATUS  current
+    DESCRIPTION
+            "When detect disconnection of peer of mlag system, then this trap will be sent."
+    ::= { ruijieMlagTraps 7 }
+
+ruijieMlagDataSyncConnectTraps NOTIFICATION-TYPE
+    OBJECTS { ruijieMlagLocalIpv4, ruijieMlagPeerIpv4, ruijieMlagLocalIpv6, ruijieMlagPeerIpv6, ruijieMlagLocalMac, ruijieMlagPeerMac }
+    STATUS  current
+    DESCRIPTION
+            "When detect connection of peer of mlag system, then this trap will be sent."
+    ::= { ruijieMlagTraps 8 }
+
+ruijieMlagLocalMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+             "The local mac data of mlag system"
+    ::= { ruijieMlagTraps 9 }
+
+ruijieMlagPeerMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+             "The peer mac data of mlag system"
+    ::= { ruijieMlagTraps 10 }
+
+ruijieMlagConsistencyType1 OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+             "The type-1 of mlag consistency configuration"
+    ::= { ruijieMlagTraps 11 }
+
+ruijieMlagConsistencyType2 OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+             "The type-2 of mlag consistency configuration"
+    ::= { ruijieMlagTraps 12 }
+
+ruijieMlagKeepaliveDisconnectTraps NOTIFICATION-TYPE
+    OBJECTS { ruijieMlagLocalIpv4, ruijieMlagPeerIpv4, ruijieMlagLocalIpv6, ruijieMlagPeerIpv6, ruijieMlagLocalMac, ruijieMlagPeerMac }
+    STATUS  current
+    DESCRIPTION
+            "When detect disconnection of keepalive of mlag system, then this trap will be sent."
+    ::= { ruijieMlagTraps 13 }
+
+ruijieMlagKeepaliveConnectTraps NOTIFICATION-TYPE
+    OBJECTS { ruijieMlagLocalIpv4, ruijieMlagPeerIpv4, ruijieMlagLocalIpv6, ruijieMlagPeerIpv6, ruijieMlagLocalMac, ruijieMlagPeerMac }
+    STATUS  current
+    DESCRIPTION
+            "When detect connection of keepalive of mlag system, then this trap will be sent."
+    ::= { ruijieMlagTraps 14 }
+
+ruijieMlagConsistencyCheckType1Traps NOTIFICATION-TYPE
+    OBJECTS { ruijieMlagConsistencyType1 }
+    STATUS  current
+    DESCRIPTION
+            "When detect the different of type-1 configuration between mlag system, then this trap will be sent."
+    ::= { ruijieMlagTraps 15 }
+
+ruijieMlagConsistencyCheckType1ResumeTraps NOTIFICATION-TYPE
+    OBJECTS { ruijieMlagConsistencyType1  }
+    STATUS  current
+    DESCRIPTION
+            "When detect the same of type-1 configuration between mlag system, then this trap will be sent."
+    ::= { ruijieMlagTraps 16 }
+
+ruijieMlagConsistencyCheckType2Traps NOTIFICATION-TYPE
+    OBJECTS { ruijieMlagConsistencyType2  }
+    STATUS  current
+    DESCRIPTION
+            "When detect the different of type-2 configuration between mlag system, then this trap will be sent."
+    ::= { ruijieMlagTraps 17 }
+
+ruijieMlagConsistencyCheckType2ResumeTraps NOTIFICATION-TYPE
+    OBJECTS { ruijieMlagConsistencyType2  }
+    STATUS  current
+    DESCRIPTION
+            "When detect the same of type-2 configuration between mlag system, then this trap will be sent."
+    ::= { ruijieMlagTraps 18 }
+END

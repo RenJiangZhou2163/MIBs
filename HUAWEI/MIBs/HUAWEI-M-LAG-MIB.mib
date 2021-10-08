@@ -1,9 +1,9 @@
 -- =================================================================
--- Copyright (C) 2018 by HUAWEI TECHNOLOGIES. All rights reserved
+-- Copyright (C) 2020 by HUAWEI TECHNOLOGIES. All rights reserved
 -- 
 -- Description: M-LAG huawei mib define
 -- Reference: M-LAG 
--- Version: V2.03
+-- Version: V2.04
 -- History:
 --    <liuquan 00231012>,<2016.11.22>,<create>
 -- =================================================================
@@ -27,7 +27,7 @@ HUAWEI-M-LAG-MIB DEFINITIONS ::= BEGIN
       	    FROM ENTITY-MIB;
  
     hwMLagMIB MODULE-IDENTITY 
-            LAST-UPDATED "201811071109Z"
+            LAST-UPDATED "202001200900Z"
             ORGANIZATION 
                   "Huawei Technologies Co.,Ltd."
             CONTACT-INFO 
@@ -38,8 +38,13 @@ HUAWEI-M-LAG-MIB DEFINITIONS ::= BEGIN
 				   Website: http://www.huawei.com
 				   Email: support@huawei.com
 				  "
+
             DESCRIPTION 
                 "Please provide the descritpion."
+
+                                          REVISION  "202001200900Z"
+            DESCRIPTION "V2.04, Updated to include m-lag link-local address conflict alarm for M-LAG"
+
  		    REVISION    "201811071109Z"   
             DESCRIPTION "V2.03, Updated to include mlag interface down for M-LAG."
 
@@ -768,6 +773,38 @@ hwMLagConformance    OBJECT IDENTIFIER ::= { hwMLagMIB 3 }
             "Remote system MAC address."
         ::= { hwmlagPortDownEntry 4 }
 
+   hwmlagLinkLocalConflictTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF HwmlagLinkLocalConflictEntry
+		MAX-ACCESS  not-accessible
+        STATUS current
+        DESCRIPTION 
+            "The link-local address in local layer-3 interface is conflict with the m-lag ipv6 address configured in peer device."
+        ::= { hwMLagObjects 7 }
+
+	
+	hwmlagLinkLocalConflictEntry OBJECT-TYPE
+		SYNTAX HwmlagLinkLocalConflictEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+				"The link-local address in local layer-3 interface is conflict with the m-lag ipv6 address configured in peer device."
+		INDEX { hwMlagLinkLocalAddress}
+                ::= { hwmlagLinkLocalConflictTable 1 }
+				
+	HwmlagLinkLocalConflictEntry ::=
+	SEQUENCE {
+		hwMlagLinkLocalAddress
+		Ipv6Address
+                 }
+				 
+    hwMlagLinkLocalAddress OBJECT-TYPE
+        SYNTAX Ipv6Address
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "link-local address."
+        ::= { hwmlagLinkLocalConflictEntry 1 }
+
 -- Notifications
 
     hwMLagConsistencyCheckType1 NOTIFICATION-TYPE
@@ -843,6 +880,19 @@ hwMLagConformance    OBJECT IDENTIFIER ::= { hwMLagMIB 3 }
             "The expected state of local and remote m-lag interfaces are all down resumed."
         ::= { hwMLagNotifications 10 }
 
+    hwMlagLinkLocalConflict NOTIFICATION-TYPE
+		OBJECTS {hwMlagLinkLocalAddress}
+        STATUS current
+        DESCRIPTION 
+            "The link-local address in local layer-3 interface is conflict with the m-lag ipv6 address configured in peer device."
+        ::= { hwMLagNotifications 11 }
+    
+    hwMlagLinkLocalConflictResume NOTIFICATION-TYPE
+		OBJECTS {hwMlagLinkLocalAddress}
+        STATUS current
+        DESCRIPTION 
+            "The link-local address in local layer-3 interface is conflict with the m-lag ipv6 address configured in peer device resume."
+        ::= { hwMLagNotifications 12 }	
 	
 -- Conformance
 
@@ -856,7 +906,7 @@ hwMLagConformance    OBJECT IDENTIFIER ::= { hwMLagMIB 3 }
         ::= { hwMlagGroups 1 }
         
     hwMLagNotificationGroup NOTIFICATION-GROUP
-        NOTIFICATIONS { hwMLagConsistencyCheckType1, hwMLagConsistencyCheckType1Resume, hwMLagConsistencyCheckType2, hwMLagConsistencyCheckType2Resume , hwMLagHeartLost, hwMLagHeartLostResume, hwMlagDfsPeerDown, hwMlagDfsPeerDownResume, hwMlagPortDown, hwMlagPortDownResume}
+        NOTIFICATIONS { hwMLagConsistencyCheckType1, hwMLagConsistencyCheckType1Resume, hwMLagConsistencyCheckType2, hwMLagConsistencyCheckType2Resume , hwMLagHeartLost, hwMLagHeartLostResume, hwMlagDfsPeerDown, hwMlagDfsPeerDownResume, hwMlagPortDown, hwMlagPortDownResume, hwMlagLinkLocalConflict, hwMlagLinkLocalConflictResume}
         STATUS current
         DESCRIPTION 
             "The notification group."

@@ -17,6 +17,7 @@ IMPORTS
         IpAddress,
         Integer32
                 FROM SNMPv2-SMI
+        DisplayString,
         RowStatus
                 FROM  SNMPv2-TC
         MODULE-COMPLIANCE,
@@ -46,6 +47,7 @@ ruijieNtpMIB MODULE-IDENTITY
 ruijieNtpMIBObjects OBJECT IDENTIFIER ::= { ruijieNtpMIB 1 }
 ruijieNtpMIBConformance OBJECT IDENTIFIER ::= { ruijieNtpMIB 2 }
 ruijientpSystem      OBJECT IDENTIFIER ::= { ruijieNtpMIBObjects 1 }
+ruijieNtpMIBTrap    OBJECT IDENTIFIER  ::= { ruijieNtpMIBObjects 2 }
 ruijieNtpMIBCompliances OBJECT IDENTIFIER ::= { ruijieNtpMIBConformance 1 }
 ruijieNtpMIBGroups OBJECT IDENTIFIER ::= { ruijieNtpMIBConformance 2 }
 
@@ -354,6 +356,73 @@ ruijieNtpServerStatus OBJECT-TYPE
         "RowStatus of NTP server."
     ::= { ruijieNtpServerEntry 4 } 
 
+ruijientpSysState OBJECT-TYPE
+    SYNTAX      INTEGER
+        {
+            unsynchronized(0),
+            synchronized(1)
+        }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "This is a integer indicating the state of local clock."
+    ::= { ruijientpSystem 12 }
+
+-- ntp trap
+ruijieNtpStatussyncTrap       NOTIFICATION-TYPE
+    OBJECTS {
+        ruijientpSysState,
+		ruijientpSysServerIPAdd,
+		ruijientpSourceVpnName
+    }
+    STATUS  current
+    DESCRIPTION
+        "This trap is sent when the ntp state is changed"
+    ::= { ruijieNtpMIBTrap 1 }
+
+ruijientpSysServerIPAdd OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..46))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Ntp System Server Ip Address."
+    ::= { ruijieNtpMIBTrap 2 }  
+
+ruijientpSourceVpnName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..32))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Ntp Source Vpn Name."
+    ::= { ruijieNtpMIBTrap 3 }  
+
+ruijientpOldSysServerIPAdd OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..46))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Ntp Old System Server Ip Address."
+    ::= { ruijieNtpMIBTrap 4 } 
+	
+ruijientpOldSourceVpnName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..32))
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "Ntp Old Source Vpn Name."
+    ::= { ruijieNtpMIBTrap 5 } 
+
+ruijieNtpSysPeerChangeTrap       NOTIFICATION-TYPE
+    OBJECTS {
+		ruijientpSysServerIPAdd,
+		ruijientpSourceVpnName,
+		ruijientpOldSysServerIPAdd,
+		ruijientpOldSourceVpnName
+    }
+    STATUS  current
+    DESCRIPTION
+        "This trap is sent when the ntp state is changed"
+    ::= { ruijieNtpMIBTrap 6 } 
 
 -- compliance statements
 ruijieNtpSysGroup OBJECT-GROUP
@@ -371,7 +440,8 @@ ruijieNtpSysGroup OBJECT-GROUP
           ruijieNtpServerNetType,
           ruijieNtpServerNetAddr,
           ruijieNtpServerVersion,
-          ruijieNtpServerStatus
+          ruijieNtpServerStatus,
+          ruijientpSysState
         }
         STATUS  current
         DESCRIPTION

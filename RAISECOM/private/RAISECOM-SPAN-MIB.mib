@@ -1,0 +1,151 @@
+-- *****************************************************************
+-- RAISECOM-SPAN-MIB.mib:  Raisecom SPAN MIB file
+--
+-- March 2002, Wuzg
+--
+-- Copyright (c) 2002 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RAISECOM-SPAN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32
+                FROM SNMPv2-SMI
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ConfigStatus,
+        IfIndex
+                FROM RAISECOM-TC
+        ruijieMgmt
+                FROM RAISECOM-SMI;
+
+ruijieSPANMIB MODULE-IDENTITY
+        LAST-UPDATED "200203200000Z"
+        ORGANIZATION "Raisecom Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@raisecom.com.cn"
+        DESCRIPTION
+                "This module defines raisecom SPAN(Statistical Processing and Analysis)mibs."
+        REVISION      "200203200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 23}
+
+ruijieSPANMIBObjects OBJECT IDENTIFIER ::= { ruijieSPANMIB 1 }
+
+
+ruijieSPANSessionNum OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Max num of SPAN session which the system support."
+        ::= { ruijieSPANMIBObjects 1 }
+
+ruijieSPANTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieSPANEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of  SPAN configuration objects."
+        ::= { ruijieSPANMIBObjects 2 }
+    
+ruijieSPANEntry OBJECT-TYPE
+        SYNTAX RuijieSPANEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains SPAN configuration objects."
+        INDEX { ruijieSPANSession,ruijieSPANIfIndex}
+        ::= { ruijieSPANTable 1 }
+
+RuijieSPANEntry ::=
+        SEQUENCE {
+            ruijieSPANSession Integer32,
+            ruijieSPANIfIndex IfIndex,            
+            ruijieSPANIfRole INTEGER,
+            ruijieSPANEntryStatus ConfigStatus
+        }
+ruijieSPANSession OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Index of an association of a destination port with source ports or source."
+        ::= { ruijieSPANEntry 1 }
+
+ruijieSPANIfIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " "
+        ::= { ruijieSPANEntry 2 }
+                                           
+ruijieSPANIfRole OBJECT-TYPE
+        SYNTAX INTEGER{
+            span-desc(1),    -- a destination port (also called a monitoring port) that 
+                             -- receives a copy of traffic from the source port.
+            span-src-rx(2),  -- A source port (also called a monitored port) which 
+                             -- the received packets is monitored.
+            span-src-tx(3),  -- A source port (also called a monitored port) which 
+                             -- the transmitted packets  is monitored.
+            span-src-all(4)  -- A source port (also called a monitored port) which 
+                             -- the received and transmitted packets  is all monitored.
+        }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            " Role of the interface in the SPAN session"
+        ::= { ruijieSPANEntry 3 }
+                            
+ruijieSPANEntryStatus OBJECT-TYPE
+        SYNTAX ConfigStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Status of this entry, set its value to invalid will delete the interface of 
+             this entry and set this object to valid will have no any effect"
+        ::= { ruijieSPANEntry 4 }        
+
+ruijieSPANMIBConformance OBJECT IDENTIFIER ::= { ruijieSPANMIB 3 }
+ruijieSPANMIBCompliances OBJECT IDENTIFIER ::= { ruijieSPANMIBConformance 1 }
+ruijieSPANMIBGroups      OBJECT IDENTIFIER ::= { ruijieSPANMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieSPANMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Raisecom IfConfig MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieSPANMIBGroup
+                 }
+        ::= { ruijieSPANMIBCompliances 1 }
+                
+-- units of conformance
+
+ruijieSPANMIBGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieSPANSession,
+            ruijieSPANIfIndex,            
+            ruijieSPANIfRole,
+            ruijieSPANEntryStatus
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing port SPAN configure."
+        ::= { ruijieSPANMIBGroups 1 }         
+                
+END

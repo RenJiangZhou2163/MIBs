@@ -1,0 +1,1137 @@
+-- *****************************************************************
+-- RAISECOM-QOS-MIB.mib:  Raisecom QoS MIB file
+--
+-- March 2002, Wuzg
+--
+-- Copyright (c) 2002 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RAISECOM-QOS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32,
+        Counter64,
+        Unsigned32
+                FROM SNMPv2-SMI
+        DisplayString
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ConfigStatus,
+        IfIndex
+                FROM RAISECOM-TC    
+        EnabledStatus 
+                FROM P-BRIDGE-MIB                            
+        ruijieMgmt
+                FROM RAISECOM-SMI;
+
+ruijieQoSMIB MODULE-IDENTITY
+        LAST-UPDATED "200203200000Z"
+        ORGANIZATION "Raisecom Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@raisecom.com.cn"
+        DESCRIPTION
+                "This module defines raisecom QoS(Policy-Based Quality of Service) mibs."
+        REVISION      "200203200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 18}
+
+-- Priority configure
+
+ruijieQoSPriorityMIBObjects OBJECT IDENTIFIER ::= { ruijieQoSMIB 1 }
+
+ruijieQoSGlobalStatus OBJECT-TYPE
+    SYNTAX  EnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+           "QoS function status"
+         ::={ ruijieQoSPriorityMIBObjects 1 }
+                  
+ruijiePriorityTrafficClassNum OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of the traffic class the priority can mapping to.
+            Traffic class is a  number in the range (1..ruijiePriorityTrafficClassNum)"
+        ::= { ruijieQoSPriorityMIBObjects 2 }
+
+ruijiePriorityClassNum OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of the priority class.
+             The range of Priority class is (0..(ruijiePriorityClassNum-1))"
+        ::= { ruijieQoSPriorityMIBObjects 3 }
+
+ruijiePriorityDscpMaxValue OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "max value of the dscp in system."
+        ::= { ruijieQoSPriorityMIBObjects 4 }
+    
+ruijieTrafficClassTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieTrafficClassEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A table mapping evaluated User Priority to Traffic
+            Class, for forwarding by the bridge.  Traffic class is a
+            number in the range (1..ruijiePriorityTrafficClassNum)."
+    ::= { ruijieQoSPriorityMIBObjects 5 }
+    
+ruijieTrafficClassEntry OBJECT-TYPE
+        SYNTAX RuijieTrafficClassEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "User Priority to Traffic Class mapping."
+        INDEX { ruijieTrafficClassPriority }
+    ::= { ruijieTrafficClassTable 1 }
+
+    
+RuijieTrafficClassEntry ::=
+        SEQUENCE {
+        ruijieTrafficClassPriority
+                INTEGER,
+        ruijieTrafficClass
+                INTEGER,
+        ruijiePriorityToDscp
+                Integer32
+        }
+    
+ruijieTrafficClassPriority OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Priority value determined for the received frame.
+            This value is equivalent to the priority indicated in
+            the tagged frame received, or one of the evaluated
+            priorities, determined according to the media-type.
+    
+            For untagged frames received from Ethernet media, this
+            value is equal to the ruijiePortDefaultUserPriority value
+            for the ingress port.
+    
+            For untagged frames received from non-Ethernet media,
+            this value is equal to the ruijieRegenUserPriority value
+            for the ingress port and media-specific user priority.
+            
+            This value is in the range(0..(ruijiePriorityClassNum-1))"
+    ::= { ruijieTrafficClassEntry 1 }
+    
+ruijieTrafficClass OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The Traffic Class the received frame is mapped to, Its value
+            ranges between 0 and the value of the object ruijiePriorityTrafficClass - 1.
+            The priority is higher if this value is bigger."
+    ::= { ruijieTrafficClassEntry 2 }
+    
+ruijiePriorityToDscp OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Dscp value of priority mapping to."
+    ::= { ruijieTrafficClassEntry 3 }
+
+-- mapping of dscp to priority
+ruijieDscpClassTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieDscpClassEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A table mapping evaluated dscp to priority."
+    ::= { ruijieQoSPriorityMIBObjects 6 }
+    
+ruijieDscpClassEntry OBJECT-TYPE
+        SYNTAX RuijieDscpClassEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A entry mapping evaluated dscp to priority."
+        INDEX { ruijieDscpClass }
+    ::= { ruijieDscpClassTable 1 }
+    
+RuijieDscpClassEntry ::=
+        SEQUENCE {
+        ruijieDscpClass
+                INTEGER,
+        ruijieDscpTrafficClassPriority
+                INTEGER                
+        }
+
+ruijieDscpClass OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Dscp value.This value is even number in 0 between62"
+    ::= { ruijieDscpClassEntry 1 }
+        
+ruijieDscpTrafficClassPriority OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The priority which dscp value mapped to.            
+            This value is in the range(0..(ruijiePriorityClassNum-1))"
+    ::= { ruijieDscpClassEntry 2 }
+             
+
+ruijiePriorityTrafficClassOperMode OBJECT-TYPE
+        SYNTAX INTEGER{
+                   qos-sp(1),  -- SP arithmetic
+                   qos-wrr(2),  -- WRR arithmetic
+                   qos-drr(3)
+               }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The global arithmetic type which the priority traffic class use."  
+        ::= { ruijieQoSPriorityMIBObjects 7 }
+        
+ruijiePriorityBandWidth OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The global weight setting for every queue  
+             Each octet indicate a traffic class queue in the range(1..255)
+              ,first octet indicate first queue. 
+              The string length equal to ruijiePriorityTrafficClassNum."  
+        ::= { ruijieQoSPriorityMIBObjects 8 }
+        
+        
+ruijieIfPriorityTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIfPriorityEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A table that contains information about every interface"
+    ::= { ruijieQoSPriorityMIBObjects 9 }
+
+ruijieIfPriorityEntry OBJECT-TYPE
+        SYNTAX RuijieIfPriorityEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A list of Default User Priorities for each interface."
+        INDEX { ruijieIfPriorityIfIndex }
+    ::= { ruijieIfPriorityTable 1 }
+    
+RuijieIfPriorityEntry ::=
+        SEQUENCE {
+            ruijieIfPriorityIfIndex
+                IfIndex,
+            ruijieIfPriority
+                Integer32,
+            ruijieIfPriTrafficClassOperMode
+                INTEGER,
+            ruijieIfPriorityBandwidth
+                OCTET STRING,
+            ruijieIfPriorityQosTrustMode
+                INTEGER
+        }
+ruijieIfPriorityIfIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            ""
+     ::= { ruijieIfPriorityEntry 1 }
+                
+ruijieIfPriority OBJECT-TYPE
+        SYNTAX Integer32 
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The default ingress User Priority for this interface.
+            This value is in the range (0..(ruijiePriorityClassNum-1))"
+    ::= { ruijieIfPriorityEntry 2 }
+      
+--ruijieIfPriorityDscpMutation OBJECT-TYPE
+--        SYNTAX DisplayString(SIZE (1..32))
+--        MAX-ACCESS read-write
+--        STATUS current
+--        DESCRIPTION
+--            "Dscp Mutation name of this interface match. It indicate that 
+--            this interface doesn't match any dscp mutation which this string is null"
+--        ::= { ruijieIfPriorityEntry  3 }  
+
+ruijieIfPriTrafficClassOperMode OBJECT-TYPE
+        SYNTAX INTEGER{
+                   qos-sp(1),  -- SP arithmetic
+                   qos-wrr(2),  -- WRR arithmetic
+                   qos-drr(3)
+               }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The arithmetic type which the priority traffic class use in this interface."  
+        ::= { ruijieIfPriorityEntry 3 }
+            
+ruijieIfPriorityBandwidth OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The weight of every queue on a interface. 
+             Each octet indicate a traffic class queue in the range(1..255)
+              ,first octet indicate first queue. 
+              The string length equal to ruijiePriorityTrafficClassNum."  
+        ::= { ruijieIfPriorityEntry 4 }
+
+ruijieIfPriorityQosTrustMode OBJECT-TYPE
+        SYNTAX INTEGER{
+               not-trust(1),       
+               trust-cos(2),
+               trust-dscp(3),
+               trust-ip-precedence(4)  
+           } 
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "QoS trust mode  for this interface."
+    ::= { ruijieIfPriorityEntry 5 }
+
+-- ippre to dscp table
+ruijieIpPreClassTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIpPreClassEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A table mapping ip precedence to dscp value." 
+    ::= { ruijieQoSPriorityMIBObjects 10 }
+    
+ruijieIpPreClassEntry OBJECT-TYPE
+        SYNTAX RuijieIpPreClassEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Ip precedence to dscp mapping."
+        INDEX { ruijieIpPreClassPriority }
+    ::= { ruijieIpPreClassTable 1 }
+
+    
+RuijieIpPreClassEntry ::=
+        SEQUENCE {
+        ruijieIpPreClassPriority
+                INTEGER,
+        ruijieIpPreToDscp
+                Integer32
+        }
+    
+ruijieIpPreClassPriority OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Ip precedence value determined for the received frame."
+    ::= { ruijieIpPreClassEntry 1 }
+    
+    
+ruijieIpPreToDscp OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Dscp value of priority mapping to."
+    ::= { ruijieIpPreClassEntry 2 }
+
+-- Rate limit support
+ruijieIfRateLimitTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIfRateLimitEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of rate limit interface objects."
+        ::= { ruijieQoSPriorityMIBObjects 11 }
+    
+ruijieIfRateLimitEntry OBJECT-TYPE
+        SYNTAX RuijieIfRateLimitEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry ACL interface information."
+        INDEX { ruijieIfRateLimitIndex }
+        ::= { ruijieIfRateLimitTable 1 }
+
+RuijieIfRateLimitEntry ::=
+        SEQUENCE {
+            ruijieIfRateLimitIndex IfIndex,
+            ruijieIfRateLimitInMaxBandWidth Unsigned32,
+            ruijieIfRateLimitInBurstFlowLimit Integer32,
+            ruijieIfRateLimitOutMaxBandWidth Unsigned32,
+            ruijieIfRateLimitOutBurstFlowLimit Integer32
+        }
+
+ruijieIfRateLimitIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " "
+        ::= { ruijieIfRateLimitEntry 1 }
+
+ruijieIfRateLimitInMaxBandWidth OBJECT-TYPE
+        SYNTAX Unsigned32 
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Input maximum bandwidth of in units of kbps.
+             0 indicate that bandwidth will be not limitted."
+        ::= { ruijieIfRateLimitEntry 2 }
+        
+ruijieIfRateLimitInBurstFlowLimit OBJECT-TYPE
+        SYNTAX Integer32 
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Input limit of burst traffic in units of byte.
+             0 indicate that burst traffic will be not limitted."
+        ::= { ruijieIfRateLimitEntry 3 }
+
+ruijieIfRateLimitOutMaxBandWidth OBJECT-TYPE
+        SYNTAX Unsigned32 
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Ouput maximum bandwidth of in units of kbps.
+             0 indicate that bandwidth will be not limitted."
+        ::= { ruijieIfRateLimitEntry 4 }
+        
+ruijieIfRateLimitOutBurstFlowLimit OBJECT-TYPE
+        SYNTAX Integer32 
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Ouput limit of burst traffic in units of byte.
+             0 indicate that burst traffic will be not limitted."
+        ::= { ruijieIfRateLimitEntry 5 }
+
+-- queue support
+ruijieIfQueueSupportTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIfQueueSupportEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "List queues of interfaces."
+        ::= { ruijieQoSPriorityMIBObjects 12 }
+    
+ruijieIfQueueSupportEntry OBJECT-TYPE
+        SYNTAX RuijieIfQueueSupportEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Queue Entry."
+        INDEX { ruijieIfIndex, ruijieIfQueueIndex}
+        ::= { ruijieIfQueueSupportTable 1 }
+
+RuijieIfQueueSupportEntry ::=
+        SEQUENCE {
+            ruijieIfIndex IfIndex,
+            ruijieIfQueueIndex Integer32,
+            ruijieIfQueueSupportTransmitPacket Counter64,
+            ruijieIfQueueSupportTransmitBytes Counter64,
+            ruijieIfQueueSupportDropPacket Counter64,
+            ruijieIfQueueSupportDropBytes Counter64
+        }
+
+ruijieIfIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Interface index."
+        ::= { ruijieIfQueueSupportEntry 1 }
+		
+ruijieIfQueueIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Queue index."
+        ::= { ruijieIfQueueSupportEntry 2 }
+
+ruijieIfQueueSupportTransmitPacket OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Transmit packets of queues."
+        ::= { ruijieIfQueueSupportEntry 3 }
+        
+ruijieIfQueueSupportTransmitBytes OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Transmit bytes of queues."
+        ::= { ruijieIfQueueSupportEntry 4 }
+
+ruijieIfQueueSupportDropPacket OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Drop packets of queues."
+        ::= { ruijieIfQueueSupportEntry 5 }
+        
+ruijieIfQueueSupportDropBytes OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Drop packets of queues."
+        ::= { ruijieIfQueueSupportEntry 6 }
+		
+-- multicast queue support
+ruijieIfMulticastQueueSupportTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIfMulticastQueueSupportEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "List multicast queues of interfaces."
+        ::= { ruijieQoSPriorityMIBObjects 13 }
+    
+ruijieIfMulticastQueueSupportEntry OBJECT-TYPE
+        SYNTAX RuijieIfMulticastQueueSupportEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Multicast Queue Entry."
+        INDEX { ruijieIfIndexMulticast, ruijieIfMulticastQueueIndex}
+        ::= { ruijieIfMulticastQueueSupportTable 1 }
+
+RuijieIfMulticastQueueSupportEntry ::=
+        SEQUENCE {
+            ruijieIfIndexMulticast IfIndex,
+            ruijieIfMulticastQueueIndex Integer32,
+            ruijieIfMulticastQueueSupportTransmitPacket Counter64,
+            ruijieIfMulticastQueueSupportTransmitBytes Counter64,
+            ruijieIfMulticastQueueSupportDropPacket Counter64,
+            ruijieIfMulticastQueueSupportDropBytes Counter64
+        }
+
+ruijieIfIndexMulticast OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Interface index."
+        ::= { ruijieIfMulticastQueueSupportEntry 1 }
+		
+ruijieIfMulticastQueueIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Multicast Queue index."
+        ::= { ruijieIfMulticastQueueSupportEntry 2 }
+
+ruijieIfMulticastQueueSupportTransmitPacket OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Transmit packets of multicast queues."
+        ::= { ruijieIfMulticastQueueSupportEntry 3 }
+        
+ruijieIfMulticastQueueSupportTransmitBytes OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Transmit bytes of multicast queues."
+        ::= { ruijieIfMulticastQueueSupportEntry 4 }
+
+ruijieIfMulticastQueueSupportDropPacket OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Drop packets of multicast queues."
+        ::= { ruijieIfMulticastQueueSupportEntry 5 }
+        
+ruijieIfMulticastQueueSupportDropBytes OBJECT-TYPE
+        SYNTAX Counter64 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Drop packets of multicast queues."
+        ::= { ruijieIfMulticastQueueSupportEntry 6 }
+		
+--------------------------------------------------------------
+-- QoS traffic classification
+---------------------------------------------------------------
+ruijieQoSTrafficClassMIBObjects OBJECT IDENTIFIER ::= { ruijieQoSMIB 2 }
+
+ruijieQoSTrafficClassTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieQoSTrafficClassEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+               "A table of Qos traffic classification entries."
+        ::= { ruijieQoSTrafficClassMIBObjects 1 }
+    
+ruijieQoSTrafficClassEntry OBJECT-TYPE
+        SYNTAX RuijieQoSTrafficClassEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "QoS traffic classification entry.Every valid QoS traffic 
+                 classification entry need make use of a RuijieAclEntry which
+                 ruijieAclFlowAction is 'permit'."  
+        INDEX { ruijieQosClassMapName }
+        ::= { ruijieQoSTrafficClassTable 1 }
+        
+RuijieQoSTrafficClassEntry ::= 
+        SEQUENCE {
+                ruijieQosClassMapName DisplayString,
+                ruijieQosClassAclName DisplayString,
+                ruijieQosClassMapEntryStatus ConfigStatus
+        }
+ruijieQosClassMapName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Name of this QoS class map.This value is unique for every entry.
+            When this string be used as an index,Value of a sub-identifier equal 
+            ASCII value of corresponding character(first sub-identifier corresponds
+            first character of string). The number of sub-identifiers of this string
+            must be 32,If length of string is less than 32 the sub-identifier(0x0) 
+            will be filled in tail."
+        ::= { ruijieQoSTrafficClassEntry  1 }
+         
+ruijieQosClassAclName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (0..32))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Access list name of this class map match.Null indicate that this class 
+            map doesn't match any acl"
+        ::= { ruijieQoSTrafficClassEntry  2 } 
+        
+ruijieQosClassMapEntryStatus OBJECT-TYPE
+        SYNTAX ConfigStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Status of this entry, set this object to valid will creat a class map entry,
+             and set its value to invalid will delete this entry."
+        ::= { ruijieQoSTrafficClassEntry 3 }
+        
+
+ruijieQoSPoliceMapTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieQoSPoliceMapEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+               "A table of Qos police map entries."
+        ::= { ruijieQoSTrafficClassMIBObjects 2 }
+    
+ruijieQoSPoliceMapEntry OBJECT-TYPE
+        SYNTAX RuijieQoSPoliceMapEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "QoS police map entry."  
+        INDEX { ruijieQosPoliceMapName}
+        ::= { ruijieQoSPoliceMapTable 1 }
+        
+RuijieQoSPoliceMapEntry ::= 
+        SEQUENCE {
+                ruijieQosPoliceMapName DisplayString,
+                ruijieQosPoliceMapEntryStatus ConfigStatus
+        }
+ruijieQosPoliceMapName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Name of this QoS police map.
+             When this string be used as an index,Value of a sub-identifier equal 
+            ASCII value of corresponding character(first sub-identifier corresponds
+            first character of string). The number of sub-identifiers of this string
+            must be 32,If length of string is less than 32 the sub-identifier(0x0) 
+            will be filled in tail."
+        ::= { ruijieQoSPoliceMapEntry  1 }
+                
+ruijieQosPoliceMapEntryStatus OBJECT-TYPE
+        SYNTAX ConfigStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Status of this entry, set this object to valid will creat a entry,
+             and set its value to invalid will delete this entry."
+        ::= { ruijieQoSPoliceMapEntry 2 }
+
+ruijieQoSPoliceMapConfTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieQoSPoliceMapConfEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+               "A table of Qos police map config entries."
+        ::= { ruijieQoSTrafficClassMIBObjects 3 }
+    
+ruijieQoSPoliceMapConfEntry OBJECT-TYPE
+        SYNTAX RuijieQoSPoliceMapConfEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "QoS police map config entry."  
+        INDEX { ruijieQoSPoliceCfgPoliceMapName,ruijieQoSPoliceCfgClassMapName}
+        ::= { ruijieQoSPoliceMapConfTable 1 }
+        
+RuijieQoSPoliceMapConfEntry ::= 
+        SEQUENCE {
+                ruijieQoSPoliceCfgPoliceMapName DisplayString,
+                ruijieQoSPoliceCfgClassMapName DisplayString,
+                ruijieQoSPoliceMapConfMaxBandWidth Unsigned32,
+                ruijieQoSPoliceMapConfBurstFlowLimit Integer32,
+                ruijieQoSPoliceMapConfExceedAction INTEGER,
+                ruijieQoSPoliceMapConfExceedDscp Integer32,
+                ruijieQoSPoliceMapConfNewDscp Integer32,
+                ruijieQoSPoliceMapCfgEntryStatus ConfigStatus,
+                ruijieQoSPoliceMapConfMaxHighBandWidth Unsigned32
+        }
+ruijieQoSPoliceCfgPoliceMapName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Name of this QoS police map.
+             When this string be used as an index,Value of a sub-identifier equal 
+            ASCII value of corresponding character(first sub-identifier corresponds
+            first character of string). The number of sub-identifiers of this string
+            must be 32,If length of string is less than 32 the sub-identifier(0x0) 
+            will be filled in tail."
+        ::= { ruijieQoSPoliceMapConfEntry  1 }
+         
+ruijieQoSPoliceCfgClassMapName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "A QoS class map name of this police map match.
+            When this string be used as an index,Value of a sub-identifier equal 
+            ASCII value of corresponding character(first sub-identifier corresponds
+            first character of string). The number of sub-identifiers of this string
+            must be 32,If length of string is less than 32 the sub-identifier(0x0) 
+            will be filled in tail."
+        ::= { ruijieQoSPoliceMapConfEntry  2 } 
+    
+ruijieQoSPoliceMapConfMaxBandWidth OBJECT-TYPE
+        SYNTAX Unsigned32 
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Maximum bandwidth of this traffic classification in units of bps.
+            If the Maximum bandwidth is greater than the maximum value
+            reportable by this object then this object should report its
+            maximum value (4,294,967,295) and ruijieQoSPoliceMapConfMaxBandWidth
+             must be used to set or report the Maximum bandwidth. 
+             0 indicate that bandwidth will be not limitted."
+        ::= { ruijieQoSPoliceMapConfEntry 3 }
+        
+ruijieQoSPoliceMapConfBurstFlowLimit OBJECT-TYPE
+        SYNTAX Integer32 
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Limit of burst traffic of this traffic classification in units of byte.
+             0 indicate that burst traffic will be not limitted."
+        ::= { ruijieQoSPoliceMapConfEntry 4 }
+                
+        
+ruijieQoSPoliceMapConfExceedAction OBJECT-TYPE
+        SYNTAX INTEGER{
+               discard(1),     --discard part exceeded bandwidth of traffic
+               modify-dscp(2)  --modify dscp value of packet exceeded bandwidth
+        }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The action deal with the traffic exceeded bandwidth."
+        ::= { ruijieQoSPoliceMapConfEntry 5 }        
+        
+ruijieQoSPoliceMapConfExceedDscp OBJECT-TYPE
+        SYNTAX Integer32 
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The new dscp value will replaces the old dscp value of packet when 
+             traffic of packet has exceeded bandwidth. This value has meaning only
+             when value of ruijieQoSPoliceMapConfExceedAction is 'modify-dscp' ."
+        ::= { ruijieQoSPoliceMapConfEntry 6 }
+        
+ruijieQoSPoliceMapConfNewDscp OBJECT-TYPE
+        SYNTAX Integer32 
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The new dscp value will replaces the old dscp value of packet regardless
+             whether the traffic has exceeded bandwidth. Setting this value to -1 indicate
+             that the dscp value of packet will not be modifed"            
+        ::= { ruijieQoSPoliceMapConfEntry 7 }        
+        
+ruijieQoSPoliceMapCfgEntryStatus OBJECT-TYPE
+        SYNTAX ConfigStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Status of this entry, set this object to valid will creat a entry,
+             and set its value to invalid will delete this entry."
+        ::= { ruijieQoSPoliceMapConfEntry 8 }
+
+    
+ruijieQoSPoliceMapConfMaxHighBandWidth OBJECT-TYPE
+        SYNTAX Unsigned32 
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Maximum bandwidth of this traffic classification in units of kbps.
+            0 indicate that bandwidth will be not limitted.
+            when ruijieQoSPoliceMapConfMaxBandWidth is equal to ,this object display
+            the real  Maximum bandwidth of this traffic classification"
+        ::= { ruijieQoSPoliceMapConfEntry 9 }
+        
+--ruijieQosPoliceIfTable OBJECT-TYPE
+--        SYNTAX SEQUENCE OF RuijieQosPoliceIfEntry
+--        MAX-ACCESS not-accessible
+--        STATUS current
+--        DESCRIPTION
+--            "list of QoS Police Map interface objects."
+--        ::= { ruijieQoSTrafficClassMIBObjects 4 } this oid is obsolete
+--    
+--ruijieQosPoliceIfEntry OBJECT-TYPE
+--        SYNTAX RuijieQosPoliceIfEntry
+--        MAX-ACCESS not-accessible
+--        STATUS current
+--        DESCRIPTION
+--            "Entry ACL interface information."
+--        INDEX { ruijieQosPoliceIfIndex }
+--        ::= { ruijieQosPoliceIfTable 1 }
+--
+--RuijieQosPoliceIfEntry ::=
+--        SEQUENCE {
+--            ruijieQosPoliceIfIndex IfIndex,
+--            ruijieIfPoliceMapName  DisplayString
+--        }
+--
+--ruijieQosPoliceIfIndex OBJECT-TYPE
+--        SYNTAX IfIndex
+--        MAX-ACCESS read-only
+--        STATUS current
+--        DESCRIPTION
+--            " "
+--        ::= { ruijieQosPoliceIfEntry 1 }
+--
+--ruijieIfPoliceMapName OBJECT-TYPE
+--        SYNTAX DisplayString(SIZE (1..32))
+--        MAX-ACCESS read-write
+--        STATUS current
+--        DESCRIPTION
+--            "Police map name of this interface match. It indicate that 
+--            this interface doesn't match any ACL which this string is null"
+--        ::= { ruijieQosPoliceIfEntry  2 }        
+
+ruijieQosPoliceIfExtTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieQosPoliceIfExtEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of QoS Police Map interface objects."
+        ::= { ruijieQoSTrafficClassMIBObjects 5 }
+    
+ruijieQosPoliceIfExtEntry OBJECT-TYPE
+        SYNTAX RuijieQosPoliceIfExtEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry ACL interface information."
+        INDEX { ruijieQosPoliceIfIndex }
+        ::= { ruijieQosPoliceIfExtTable 1 }
+
+RuijieQosPoliceIfExtEntry ::=
+        SEQUENCE {
+            ruijieQosPoliceIfIndex IfIndex,
+            ruijieIfInPoliceMapName  DisplayString,
+            ruijieIfOutPoliceMapName  DisplayString
+        }
+
+ruijieQosPoliceIfIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " "
+        ::= { ruijieQosPoliceIfExtEntry 1 }
+
+ruijieIfInPoliceMapName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Police map name of this interface ingress match. It indicate that 
+            this interface doesn't match any ACL which this string is null"
+        ::= { ruijieQosPoliceIfExtEntry  2 }        
+
+ruijieIfOutPoliceMapName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Police map name of this interface egress match. It indicate that 
+            this interface doesn't match any ACL which this string is null"
+        ::= { ruijieQosPoliceIfExtEntry  3 }        
+
+-- conformance information
+
+ruijieQoSMIBConformance OBJECT IDENTIFIER ::= { ruijieQoSMIB 3 }
+ruijieQoSMIBCompliances OBJECT IDENTIFIER ::= { ruijieQoSMIBConformance 1 }
+ruijieQoSMIBGroups      OBJECT IDENTIFIER ::= { ruijieQoSMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieQoSMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Raisecom QoS MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { 
+                          ruijieQoSPriorityMIBGroup,
+                          ruijieQoSTrafficClassMIBGroup 
+                          }
+        ::= { ruijieQoSMIBCompliances 1 }
+
+-- units of conformance
+
+ruijieQoSPriorityMIBGroup OBJECT-GROUP
+        OBJECTS {
+                ruijieQoSGlobalStatus, 
+                ruijiePriorityTrafficClassNum,
+                ruijiePriorityClassNum,
+                ruijiePriorityDscpMaxValue,
+                
+                ruijieTrafficClassPriority,
+                ruijieTrafficClass,
+                ruijiePriorityToDscp,
+                
+                ruijieDscpClass,
+                ruijieDscpTrafficClassPriority,
+                                                 
+                ruijiePriorityTrafficClassOperMode,
+                ruijiePriorityBandWidth,
+                
+                ruijieIfPriorityIfIndex,
+                ruijieIfPriority,
+                ruijieIfPriTrafficClassOperMode,
+                ruijieIfPriorityBandwidth,
+                ruijieIfPriorityQosTrustMode,
+
+                ruijieIpPreClassPriority,
+                ruijieIpPreToDscp
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing qos priority ability to a
+                Raisecom agent."
+        ::= { ruijieQoSMIBGroups 1 }        
+        
+ruijieQoSTrafficClassMIBGroup OBJECT-GROUP
+        OBJECTS {
+                ruijieQosClassMapName,
+                ruijieQosClassAclName,
+                ruijieQosClassMapEntryStatus,
+                
+                ruijieQosPoliceMapName,
+--                ruijieQosPoliceClassMapName,
+                ruijieQosPoliceMapEntryStatus,
+                
+                ruijieQoSPoliceCfgPoliceMapName,
+                ruijieQoSPoliceCfgClassMapName,
+                ruijieQoSPoliceMapConfMaxBandWidth,
+                ruijieQoSPoliceMapConfExceedAction,
+                ruijieQoSPoliceMapConfExceedDscp,
+                ruijieQoSPoliceMapConfNewDscp,
+                ruijieQoSPoliceMapCfgEntryStatus, 
+                ruijieQoSPoliceMapConfMaxHighBandWidth,               
+                
+                ruijieQosPoliceIfIndex,
+                ruijieIfInPoliceMapName,
+                ruijieIfOutPoliceMapName
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing qos traffic classification ability to a
+                Raisecom agent."
+        ::= { ruijieQoSMIBGroups 2 }                
+        
+END
+
+
+-- mapping of ip precedence to dscp
+--ruijieIpPrecToDscpTable OBJECT-TYPE
+--        SYNTAX SEQUENCE OF RuijieIpPrecToDscpEntry
+--        MAX-ACCESS not-accessible
+--        STATUS current
+--        DESCRIPTION
+--            "A table mapping evaluated ip precedence to dscp."
+--    ::= { ruijieQoSPriorityMIBObjects 6 }
+--    
+--ruijieIpPrecToDscpEntry OBJECT-TYPE
+--        SYNTAX RuijieIpPrecToDscpEntry
+--        MAX-ACCESS not-accessible
+--        STATUS current
+--        DESCRIPTION
+--            "A entry mapping evaluated ip precedence to dscp."
+--        INDEX { ruijieDscpIpPrecToDscpIpPrec }
+--    ::= { ruijieIpPrecToDscpTable 1 }
+--    
+--RuijieIpPrecToDscpEntry ::=
+--        SEQUENCE {
+--        ruijieDscpIpPrecToDscpIpPrec
+--                Integer32,
+--        ruijieIpPrecToDscpDscp
+--                Integer32                
+--        }
+--ruijieDscpIpPrecToDscpIpPrec OBJECT-TYPE
+--        SYNTAX Integer32
+--        MAX-ACCESS read-only
+--        STATUS current
+--        DESCRIPTION
+--            "The ip precedence which dscp value mapped to."
+--    ::= { ruijieIpPrecToDscpEntry 1 }
+--
+--ruijieIpPrecToDscpDscp OBJECT-TYPE
+--        SYNTAX Integer32
+--        MAX-ACCESS read-write
+--        STATUS current
+--        DESCRIPTION
+--            "Dscp value."
+--    ::= { ruijieIpPrecToDscpEntry 2 }
+--           
+--
+--ruijieDscpMutationTable OBJECT-TYPE
+--        SYNTAX SEQUENCE OF RuijieDscpMutationEntry
+--        MAX-ACCESS not-accessible
+--        STATUS current
+--        DESCRIPTION
+--               "A table of Dscp Mutation request entries."
+--        ::= { ruijieQoSPriorityMIBObjects 7 }
+--    
+--ruijieDscpMutationEntry OBJECT-TYPE
+--        SYNTAX RuijieDscpMutationEntry
+--        MAX-ACCESS not-accessible
+--        STATUS current
+--        DESCRIPTION
+--                "Entry contains Dscp Mutation name"  
+--        INDEX { ruijieDscpMutationName }
+--        ::= { ruijieDscpMutationTable 1 }
+--        
+--RuijieDscpMutationEntry ::= 
+--        SEQUENCE {
+--                ruijieDscpMutationName DisplayString,
+--                ruijieDscpMutationStatus ConfigStatus
+--        } 
+--           
+--ruijieDscpMutationName OBJECT-TYPE
+--        SYNTAX DisplayString(SIZE (1..32))
+--        MAX-ACCESS read-only
+--        STATUS current
+--        DESCRIPTION
+--            "Dscp mutation name of this entry.This value is unique for every entry
+--            When this string be used as an index,Value of a sub-identifier equal 
+--            ASCII value of corresponding character(first sub-identifier corresponds
+--            first character of string). The number of sub-identifiers of this string
+--            must be 32,If length of string is less than 32 the sub-identifier(0x0) 
+--            will be filled in tail."
+--        ::= { ruijieDscpMutationEntry  1 }
+--                
+--ruijieDscpMutationStatus OBJECT-TYPE
+--        SYNTAX ConfigStatus
+--        MAX-ACCESS read-create
+--        STATUS current
+--        DESCRIPTION
+--            "Status of this entry, set this object to valid will creat a entry,
+--             and set its value to invalid will delete this entry."
+--        ::= { ruijieDscpMutationEntry 2 }    
+--
+--ruijieDscpMutationMapTable OBJECT-TYPE
+--        SYNTAX SEQUENCE OF RuijieDscpMutationMapEntry
+--        MAX-ACCESS not-accessible
+--        STATUS current
+--        DESCRIPTION
+--               "A table of Dscp Mutation mapping input dscp to output dscp entries .
+--                Default mapping is that output dscp value equals input
+--                dscp value.The table doesn't include default mapping."
+--        ::= { ruijieQoSPriorityMIBObjects 8 }
+--    
+--ruijieDscpMutationMapEntry OBJECT-TYPE
+--        SYNTAX RuijieDscpMutationMapEntry
+--        MAX-ACCESS not-accessible
+--        STATUS current
+--        DESCRIPTION
+--                "Entry of Dscp Mutation mapping."  
+--        INDEX { ruijieDscpMutationMapName }
+--        ::= { ruijieDscpMutationMapTable 1 }
+--        
+--RuijieDscpMutationMapEntry ::= 
+--        SEQUENCE {
+--                ruijieDscpMutationMapName DisplayString,
+--                ruijieDscpMutationInputDscp Integer32,
+--                ruijieDscpMutationOutputDscp Integer32
+--        } 
+--           
+--ruijieDscpMutationMapName OBJECT-TYPE
+--        SYNTAX DisplayString(SIZE (1..32))
+--        MAX-ACCESS read-only
+--        STATUS current
+--        DESCRIPTION
+--            "Dscp mutation name of this entry.This value is unique for every entry
+--            When this string be used as an index,Value of a sub-identifier equal 
+--            ASCII value of corresponding character(first sub-identifier corresponds
+--            first character of string). The number of sub-identifiers of this string
+--            must be 32,If length of string is less than 32 the sub-identifier(0x0) 
+--            will be filled in tail."
+--        ::= { ruijieDscpMutationMapEntry  1 }
+--
+--ruijieDscpMutationInputDscp OBJECT-TYPE
+--        SYNTAX Integer32
+--        MAX-ACCESS read-write
+--        STATUS current
+--        DESCRIPTION
+--            "Input dscp value."
+--        ::= { ruijieDscpMutationMapEntry 2 }
+--
+--ruijieDscpMutationOutputDscp OBJECT-TYPE
+--        SYNTAX Integer32
+--        MAX-ACCESS read-write
+--        STATUS current
+--        DESCRIPTION
+--            "Output dscp value."
+--       ::= { ruijieDscpMutationMapEntry 3 }    
+

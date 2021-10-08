@@ -1,0 +1,2956 @@
+-- *****************************************************************
+-- RAISECOM-OSPF-MIB.mib:  Raisecom Ospf MIB file
+--
+-- November 2002, ChenXingBin
+--
+-- Copyright (c) 2002 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RAISECOM-OSPF-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        TimeTicks,
+        IpAddress,
+        Unsigned32,
+        Gauge32,
+        Counter32
+                FROM SNMPv2-SMI
+        TruthValue,
+        RowStatus
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ConfigStatus
+                FROM RAISECOM-TC    
+        EnabledStatus 
+                FROM P-BRIDGE-MIB                
+        AreaID,
+        Status,
+        PositiveInteger,
+        DesignatedRouterPriority,
+        RouterID,
+        HelloRange 
+                FROM OSPF-MIB
+        ruijieMgmt
+                FROM RAISECOM-SMI;
+
+ruijieOspfMIB MODULE-IDENTITY
+        LAST-UPDATED "200211200000Z"
+        ORGANIZATION "Raisecom Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@raisecom.com.cn"
+        DESCRIPTION
+                "This module defines raisecom Ospf mibs."
+        REVISION      "200211200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 30}
+
+ruijieOspfMIBObjects OBJECT IDENTIFIER ::= { ruijieOspfMIB 1 }
+
+-- general mib
+ruijieOspfGeneralMibsGroup OBJECT IDENTIFIER ::= { ruijieOspfMIBObjects 1 }
+
+--Minimum LSA interval
+ruijieOspfMiniLsaInterval  OBJECT-TYPE
+    SYNTAX  Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "Minimum LSA interval that the two LSA generate."
+     ::={ ruijieOspfGeneralMibsGroup 1 }
+ 
+--Minimum LSA arrival
+ruijieOspfMiniLsaArrival  OBJECT-TYPE
+    SYNTAX  Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "Minimum LSA Interval of the two LSA arrival."
+     ::={ ruijieOspfGeneralMibsGroup 2 }
+     
+--Number of areas in this router
+ruijieOspfAreasNum OBJECT-TYPE   
+    SYNTAX  Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "Number of areas in this router"    
+         ::={ ruijieOspfGeneralMibsGroup 3 }
+         
+ruijieOspfNormalAreasNum OBJECT-TYPE   
+    SYNTAX  Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "Number of normal areas in this router"    
+         ::={ ruijieOspfGeneralMibsGroup 4}   
+
+ruijieOspfStubAreasNum OBJECT-TYPE   
+    SYNTAX  Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "Number of stub areas in this router"    
+         ::={ ruijieOspfGeneralMibsGroup 5 }
+                     
+ruijieOspfNssaAreasNum OBJECT-TYPE   
+    SYNTAX  Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "Number of nssa areas in this router"    
+         ::={ ruijieOspfGeneralMibsGroup 6 }
+                       
+ruijieOspfSpfDelay OBJECT-TYPE   
+    SYNTAX  Unsigned32(0..2147483647)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+           "Ospf Spf shedule time, an integer from 0 to 65535. The default is 5
+           seconds,0 means no delay."
+    DEFVAL {5}
+         ::={ ruijieOspfGeneralMibsGroup 7 }  
+         
+ruijieOspfSpfHoldTime OBJECT-TYPE   
+    SYNTAX  Unsigned32(0..2147483647)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+           "hold time between two Spfs.an integer from 0 to 65535. The default is
+            10 seconds; 0 means no delay."
+    DEFVAL {10}
+         ::={ ruijieOspfGeneralMibsGroup 8 }
+         
+ruijieOspfAutoCostRefBandWidthRef OBJECT-TYPE
+    SYNTAX  Unsigned32(0..2147483647)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+           "Set AutoCost bandwidth referenc value in unit of Mbits.
+            Setting this value to 0 indicate that disable the feature of 
+            autocost bandwidth referenc."
+    DEFVAL {100}
+         ::={ ruijieOspfGeneralMibsGroup 9 }   
+         
+ruijieOspfLsaGroupPacing OBJECT-TYPE
+    SYNTAX  Unsigned32(10..1800)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+           "set  the group pacing of LSAs."
+    DEFVAL {240}
+         ::={ ruijieOspfGeneralMibsGroup 10}
+    
+ruijieOspfInterDistance OBJECT-TYPE
+     SYNTAX   Unsigned32(1..255)
+     MAX-ACCESS   read-write
+     STATUS   current
+     DESCRIPTION
+        "Set  inter-area distance."
+     DEFVAL {110}
+    ::= { ruijieOspfGeneralMibsGroup 11 }     
+     
+ruijieOspfIntraDistance OBJECT-TYPE
+     SYNTAX   Unsigned32(1..255)
+     MAX-ACCESS   read-write
+     STATUS   current
+     DESCRIPTION
+        "Set  intra-area distance."
+     DEFVAL {110}
+    ::= { ruijieOspfGeneralMibsGroup 12 }
+    
+ruijieOspfExternDistance OBJECT-TYPE
+     SYNTAX   Unsigned32(1..255)
+     MAX-ACCESS   read-write
+     STATUS   current
+     DESCRIPTION
+        "Set  extern distance."
+     DEFVAL {110}
+    ::= { ruijieOspfGeneralMibsGroup 13 }       
+
+--LogAdjChangeNotify
+ruijieOspfLogAdjChangeNotify OBJECT-TYPE
+     SYNTAX   EnabledStatus
+     MAX-ACCESS   read-write
+     STATUS   current
+     DESCRIPTION
+        "if enabled status is setted,
+        Send syslog message when a neighbor state changes."
+     DEFVAL {enabled}
+     ::= { ruijieOspfGeneralMibsGroup 14 } 
+    
+ruijieOspfPassiveStatus  OBJECT-TYPE
+    SYNTAX EnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+          "The ruijieOspfIfPassiveStatus of a interface equal to this object value
+           when this interface is created. If you change this object value to 'enabled'
+           or 'disabled'all interfaces which have exist will also change their 
+           ruijieOspfIfPassiveStatus to 'enabled' or 'disabled'."
+    DEFVAL { disabled }
+    ::={ ruijieOspfGeneralMibsGroup 15 }
+
+ruijieOspfRFC1583Compatibility  OBJECT-TYPE
+    SYNTAX EnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+         "Controls the preference rules used in calculating AS external routes
+         (RFC2328 Section 16.4) when choosing among multiple AS-external-LSAs 
+         advertising the same destination. When set to 'enabled', the preference
+         rules remain those specified by RFC 1583 ([Ref9]). When set
+         to 'disabled', the preference rules are those stated in
+         'RFC2328 Section 16.4.1' which prevent routing loops when AS-
+         external-LSAs for the same destination have been originated
+         from different areas. Set to 'enabled' by default."
+    REFERENCE
+       "OSPF Version 2(RFC2328), C.1 Global parameters"                   
+    DEFVAL { enabled }
+    ::={ ruijieOspfGeneralMibsGroup 16 } 
+ 
+ruijieOspfRouteRedisDefMetricVal OBJECT-TYPE
+     SYNTAX   Unsigned32(1..16777214)
+     MAX-ACCESS   read-write
+     STATUS   current
+     DESCRIPTION
+        "When this value is setted,Cause the current routing protocol(ospf) 
+         to use the same metricvalue for all redistributed routes (BGP, RIP, and OSPF)." 
+     DEFVAL {20}       
+    ::= { ruijieOspfGeneralMibsGroup 17} 
+    
+ruijieOspfAdminiDistance OBJECT-TYPE
+     SYNTAX   Unsigned32(1..255)
+     MAX-ACCESS   read-write
+     STATUS   current
+     DESCRIPTION
+        "ospf Administrative distance." 
+     DEFVAL {110}       
+    ::= { ruijieOspfGeneralMibsGroup 18}     
+ 
+ 
+--table mib
+              
+--ruijieOspfAreaTable 
+ruijieOspfAreaTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieOspfAreaEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Information describing the configured  parame-
+             ters  and cumulative statistics of the router's
+             attached areas.This table is superset of ospfAreaTable"
+    ::= { ruijieOspfMIBObjects 2}
+    
+ruijieOspfAreaEntry OBJECT-TYPE
+        SYNTAX RuijieOspfAreaEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The entry of ruijieOspfAreaTable."
+        INDEX { ruijieOspfAreaId}
+    ::= { ruijieOspfAreaTable 1 }
+   
+RuijieOspfAreaEntry ::=
+        SEQUENCE {
+         ruijieOspfAreaId
+                AreaID,
+         ruijieOspfAuthType
+                INTEGER,
+         ruijieOspfImportAsExtern
+                INTEGER,
+         ruijieOspfSpfRuns
+                Counter32,
+         ruijieOspfAreaBdrRtrCount
+                Gauge32,
+         ruijieOspfAsBdrRtrCount
+                Gauge32,
+         ruijieOspfAreaLsaCount
+                Gauge32,
+         ruijieOspfAreaLsaCksumSum
+                Unsigned32,
+         ruijieOspfAreaSummary
+                INTEGER,
+         ruijieOspfAreaStatus
+                RowStatus,        
+-- extend parts                
+         ruijieOspfAreaInterfaceNum
+                Unsigned32,
+         ruijieOspfAreaNssaIsRedistribution
+                TruthValue,
+         ruijieOspfAreaNssaIsDefInfoOriginate
+                TruthValue
+         }
+    ruijieOspfAreaId OBJECT-TYPE
+        SYNTAX   AreaID
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "A 32-bit integer uniquely identifying an area.
+           Area ID 0.0.0.0 is used for the OSPF backbone."
+       REFERENCE
+          "OSPF Version 2, Appendix C.2 Area parameters"
+      ::= { ruijieOspfAreaEntry 1 }
+
+
+    ruijieOspfAuthType OBJECT-TYPE
+        SYNTAX   INTEGER{
+                    none(0),
+                    simplePassword(1),
+                    md5 (2)
+                    -- reserved for specification by IANA (> 2)
+                    }
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           "The authentication type specified for an area.
+           Additional authentication types may be assigned
+           locally on a per Area basis."
+       REFERENCE
+          "OSPF Version 2, Appendix E Authentication"
+      DEFVAL { 0 }        -- no authentication, by default
+      ::= { ruijieOspfAreaEntry 2 }
+
+    ruijieOspfImportAsExtern OBJECT-TYPE
+        SYNTAX   INTEGER    {
+                    importExternal (1), --normal area
+                    importNoExternal (2), -- stub area
+                    importNssa (3)        -- NSSA area
+                  }
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           "The area's support for importing  AS  external
+           link- state advertisements."
+       REFERENCE
+          "OSPF Version 2, Appendix C.2 Area parameters"
+      DEFVAL { importExternal }
+      ::= { ruijieOspfAreaEntry 3 }
+
+
+    ruijieOspfSpfRuns OBJECT-TYPE
+        SYNTAX   Counter32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The number of times that the intra-area  route
+           table  has  been  calculated  using this area's
+           link-state database.  This  is  typically  done
+           using Dijkstra's algorithm."
+       ::= { ruijieOspfAreaEntry 4 } 
+           
+    ruijieOspfAreaBdrRtrCount OBJECT-TYPE
+        SYNTAX   Gauge32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The total number of area border routers reach-
+           able within this area.  This is initially zero,
+           and is calculated in each SPF Pass."
+       ::= { ruijieOspfAreaEntry 5 }
+
+    ruijieOspfAsBdrRtrCount OBJECT-TYPE
+        SYNTAX   Gauge32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The total number of Autonomous  System  border
+           routers  reachable  within  this area.  This is
+           initially zero, and is calculated in  each  SPF
+           Pass."
+       ::= { ruijieOspfAreaEntry 6 }
+
+
+    ruijieOspfAreaLsaCount OBJECT-TYPE
+        SYNTAX   Gauge32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The total number of link-state  advertisements
+           in  this  area's link-state database, excluding
+           AS External LSA's."
+       ::= { ruijieOspfAreaEntry 7 }
+
+
+    ruijieOspfAreaLsaCksumSum OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The 32-bit unsigned sum of the link-state  ad-
+           vertisements'  LS  checksums  contained in this
+           area's link-state database.  This sum  excludes
+           external (LS type 5) link-state advertisements.
+           The sum can be used to determine if  there  has
+           been  a  change  in a router's link state data-
+           base, and to compare the link-state database of
+           two routers."
+       DEFVAL   { 0 }
+       ::= { ruijieOspfAreaEntry 8 }
+
+    ruijieOspfAreaSummary OBJECT-TYPE
+        SYNTAX   INTEGER    {
+                    noAreaSummary (1),
+                    sendAreaSummary (2)
+                  }
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           "The variable ospfAreaSummary controls the  im-
+           port  of  summary LSAs into stub areas.  It has
+           no effect on other areas.
+
+           If it is noAreaSummary, the router will neither
+           originate  nor  propagate summary LSAs into the
+           stub area.  It will rely entirely  on  its  de-
+           fault route.
+
+           If it is sendAreaSummary, the router will  both
+           summarize and propagate summary LSAs."
+       DEFVAL   { sendAreaSummary }
+       ::= { ruijieOspfAreaEntry 9 }
+
+
+    ruijieOspfAreaStatus OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           "This variable displays the status of  the  en-
+           try.  Setting it to 'invalid' has the effect of
+           rendering it inoperative.  The internal  effect
+           (row removal) is implementation dependent."
+       ::= { ruijieOspfAreaEntry 10 }
+              
+   ruijieOspfAreaInterfaceNum OBJECT-TYPE   --for command "show 
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " the interface number of this area" 
+    ::= { ruijieOspfAreaEntry 11 }
+    
+   ruijieOspfAreaNssaIsRedistribution OBJECT-TYPE  
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            " if it's disabled , when the router is an NSSA ABR and
+            you want the redistribute command to import routes into normal
+            areas, but not into the NSSA,
+            this field is vaild for nssa area"
+        DEFVAL {true}
+    ::= { ruijieOspfAreaEntry 12}
+    
+   ruijieOspfAreaNssaIsDefInfoOriginate OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "if it's enabled it meaning that on an ABR to allow
+            importing type 7 LSAs into the NSSA,
+            this field is valid for nssa area"
+        DEFVAL {false}
+    ::= { ruijieOspfAreaEntry 13}
+   
+    
+--network address scope table   
+ruijieOspfAddressScopeTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieOspfAddressScopeEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Define an interface on which OSPF runs and the area ID for that
+            interface. You can use the wildcard-mask to use a single
+            command to define one or more multiple interfaces to be
+            associated with a specific OSPF area. "
+    ::= { ruijieOspfMIBObjects 3 }
+    
+ruijieOspfAddressScopeEntry OBJECT-TYPE
+        SYNTAX RuijieOspfAddressScopeEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "the entry define an scope of address for ospf routing."
+        INDEX { ruijieOspfNetWorkAreaID,ruijieOspfNetWorkAddress, ruijieOspfNetWorkMask}
+    ::= { ruijieOspfAddressScopeTable 1 }
+
+    
+RuijieOspfAddressScopeEntry ::=
+        SEQUENCE {
+        ruijieOspfNetWorkAreaID
+                IpAddress,
+        ruijieOspfNetWorkAddress
+                IpAddress,
+        ruijieOspfNetWorkMask
+                IpAddress,
+        ruijieOspfNetWorkStatus
+                 RowStatus
+
+        }
+    
+ruijieOspfNetWorkAreaID OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "area ID"
+    ::= { ruijieOspfAddressScopeEntry 1 }
+    
+ruijieOspfNetWorkAddress OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " Routing for Networks Ipaddress"
+    ::= { ruijieOspfAddressScopeEntry 2 }
+    
+ruijieOspfNetWorkMask OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " Routing for Networks mask"
+    ::= { ruijieOspfAddressScopeEntry 3 }
+    
+ruijieOspfNetWorkStatus    OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            " when this value is destroy,the 
+            entry will be deleted"
+    ::= { ruijieOspfAddressScopeEntry 4 }     
+
+
+-- The Ospf Interface Configuration Table
+
+ruijieOspfIfTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF RuijieOspfIfEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+           "The OSPF Interface Table describes the  interfaces 
+           from the viewpoint of OSPF."
+       REFERENCE
+          "ospfIfTable in rfc1850"    
+       ::= { ruijieOspfMIBObjects  4 }
+
+ruijieOspfIfEntry OBJECT-TYPE
+       SYNTAX   RuijieOspfIfEntry
+       MAX-ACCESS   not-accessible
+       STATUS   current
+       DESCRIPTION
+          "The OSPF Interface Entry describes one  inter-
+           face configuration of OSPF."
+      INDEX { ruijieOspfIfIpAddress, ruijieOspfAddressLessIf  }
+      ::= { ruijieOspfIfTable 1 }
+    
+RuijieOspfIfEntry ::=
+        SEQUENCE {
+         ruijieOspfIfIpAddress
+            IpAddress,
+         ruijieOspfAddressLessIf
+            Unsigned32,
+         ruijieOspfIfAreaId
+            AreaID,
+         ruijieOspfIfType
+            INTEGER,
+         ruijieOspfIfAdminStat
+            Status,
+         ruijieOspfIfRtrPriority
+            DesignatedRouterPriority,
+         ruijieOspfIfTransitDelay
+            Unsigned32,
+         ruijieOspfIfRetransInterval
+            Unsigned32,
+         ruijieOspfIfHelloInterval
+            HelloRange,
+         ruijieOspfIfRtrDeadInterval
+            PositiveInteger,
+         ruijieOspfIfPollInterval
+            PositiveInteger,
+         ruijieOspfIfState
+            INTEGER,
+         ruijieOspfIfDesignatedRouter
+            IpAddress,
+         ruijieOspfIfBackupDesignatedRouter
+            IpAddress,
+         ruijieOspfIfEvents
+            Counter32,
+         ruijieOspfIfAuthType
+            INTEGER,
+         ruijieOspfIfAuthKey
+            OCTET STRING,
+         ruijieOspfIfStatus
+            RowStatus,
+         ruijieOspfIfMulticastForwarding
+            INTEGER,
+         ruijieOspfIfDemand
+            TruthValue,        
+         ruijieOspfIfDatabaseFilterAllOut
+                EnabledStatus,
+         ruijieOspfIfDesignateRouterId     
+                IpAddress,
+         ruijieOspfIfBackupDesignateRouterId 
+                IpAddress,
+         ruijieOspfIfWaitInternal
+                TimeTicks,
+         ruijieOspfIfPassiveStatus
+                EnabledStatus,
+         ruijieOspfIfCurrentUsedMd5AuthKeyId
+                Unsigned32
+                 }
+ruijieOspfIfIpAddress OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The IP address of this OSPF interface."
+       ::= { ruijieOspfIfEntry 1 }
+
+ruijieOspfAddressLessIf OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "For the purpose of easing  the  instancing  of
+           addressed   and  addressless  interfaces;  This
+           variable takes the value 0 on  interfaces  with
+           IP  Addresses,  and  the corresponding value of
+           ifIndex for interfaces having no IP Address."
+       ::= { ruijieOspfIfEntry 2 }
+
+
+ruijieOspfIfAreaId OBJECT-TYPE
+        SYNTAX   AreaID
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "A 32-bit integer uniquely identifying the area
+           to  which  the  interface  connects.   Area  ID
+           0.0.0.0 is used for the OSPF backbone."
+       DEFVAL   { '00000000'H }    -- 0.0.0.0
+       ::= { ruijieOspfIfEntry 3 }
+
+ruijieOspfIfType OBJECT-TYPE
+        SYNTAX   INTEGER    {
+                    broadcast (1),
+                    nbma (2),
+                    pointToPoint (3),
+                    pointToMultipoint (5),
+                    loopback(6)
+                  }
+        MAX-ACCESS   read-write
+        STATUS   current
+        DESCRIPTION
+           "The OSPF interface type.
+
+           By way of a default, this field may be intuited
+           from the corresponding value of ifType.  Broad-
+           cast LANs, such as  Ethernet  and  IEEE  802.5,
+           take  the  value  'broadcast', X.25 and similar
+           technologies take the value 'nbma',  and  links
+           that  are  definitively point to point take the
+           value 'pointToPoint'."
+       ::= { ruijieOspfIfEntry 4 }
+
+
+ruijieOspfIfAdminStat OBJECT-TYPE
+        SYNTAX   Status
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The OSPF  interface's  administrative  status.
+           The  value formed on the interface, and the in-
+           terface will be advertised as an internal route
+           to  some  area.   The  value 'disabled' denotes
+           that the interface is external to OSPF."
+       ::= { ruijieOspfIfEntry 5 }
+
+ruijieOspfIfRtrPriority OBJECT-TYPE
+        SYNTAX   DesignatedRouterPriority
+        MAX-ACCESS   read-write
+        STATUS   current
+        DESCRIPTION
+           "The  priority  of  this  interface.   Used  in
+           multi-access  networks,  this  field is used in
+           the designated router election algorithm.   The
+           value 0 signifies that the router is not eligi-
+           ble to become the  designated  router  on  this
+           particular  network.   In the event of a tie in
+           this value, routers will use their Router ID as
+           a tie breaker."
+       DEFVAL { 1 }
+       ::= { ruijieOspfIfEntry 6 }
+
+
+ruijieOspfIfTransitDelay OBJECT-TYPE
+        SYNTAX   Unsigned32 (1..65535)
+        MAX-ACCESS   read-write
+        STATUS   current
+        DESCRIPTION
+           "The estimated number of seconds  it  takes  to
+           transmit  a  link state update packet over this
+           interface."
+       DEFVAL { 1 }
+       ::= { ruijieOspfIfEntry 7 }
+
+
+ruijieOspfIfRetransInterval OBJECT-TYPE
+        SYNTAX   Unsigned32 (1..65535)
+        MAX-ACCESS   read-write
+        STATUS   current
+        DESCRIPTION
+           "The number of seconds between  link-state  ad-
+           vertisement  retransmissions,  for  adjacencies
+           belonging to this  interface.   This  value  is
+           also used when retransmitting database descrip-
+           tion and link-state request packets."
+       DEFVAL { 5 }
+       ::= { ruijieOspfIfEntry 8 }
+
+
+ruijieOspfIfHelloInterval OBJECT-TYPE
+        SYNTAX   HelloRange
+        MAX-ACCESS   read-write
+        STATUS   current
+        DESCRIPTION
+           "The length of time, in  seconds,  between  the
+           Hello  packets that the router sends on the in-
+           terface.  This value must be the same  for  all
+           routers attached to a common network."
+       DEFVAL { 10 }
+       ::= { ruijieOspfIfEntry 9 }
+
+
+ruijieOspfIfRtrDeadInterval OBJECT-TYPE
+        SYNTAX   PositiveInteger
+        MAX-ACCESS   read-write
+        STATUS   current
+        DESCRIPTION
+           "The number of seconds that  a  router's  Hello
+           packets  have  not been seen before it's neigh-
+           bors declare the router down.  This  should  be
+           some  multiple  of  the  Hello  interval.  This
+           value must be the same for all routers attached
+           to a common network."
+       DEFVAL { 40 }
+       ::= { ruijieOspfIfEntry 10 }
+
+
+ruijieOspfIfPollInterval OBJECT-TYPE
+        SYNTAX   PositiveInteger
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The larger time interval, in seconds,  between
+           the  Hello  packets  sent  to  an inactive non-
+           broadcast multi- access neighbor."
+       ::= { ruijieOspfIfEntry 11 }
+
+
+ruijieOspfIfState OBJECT-TYPE
+        SYNTAX   INTEGER    {
+                    down (1),
+                    loopback (2),
+                    waiting (3),
+                    pointToPoint (4),
+                    designatedRouter (5),
+                    backupDesignatedRouter (6),
+                    otherDesignatedRouter (7)
+                  }
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The OSPF Interface State."
+       DEFVAL { down }
+       ::= { ruijieOspfIfEntry 12 }
+
+
+ruijieOspfIfDesignatedRouter OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The IP Address of the interface which connected the local router in 
+            the Designated Router."
+       DEFVAL   { '00000000'H }    -- 0.0.0.0
+       ::= { ruijieOspfIfEntry 13 }
+
+
+ruijieOspfIfBackupDesignatedRouter OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The IP Address of the interface which connected the local router in 
+            the Backup Designated Router."
+       DEFVAL   { '00000000'H }    -- 0.0.0.0
+       ::= { ruijieOspfIfEntry 14 }
+
+ruijieOspfIfEvents OBJECT-TYPE
+        SYNTAX   Counter32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The number of times this  OSPF  interface  has
+           changed its state, or an error has occurred."
+       ::= { ruijieOspfIfEntry 15 }
+
+
+ruijieOspfIfAuthKey OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE (0..256))
+        MAX-ACCESS   read-write
+        STATUS   current
+        DESCRIPTION
+           "The Authentication Key.  If the Area's Author-
+           ization  Type  is  simplePassword,  and the key
+           length is shorter than 8 octets, the agent will
+           left adjust and zero fill to 8 octets.
+
+           Note that unauthenticated  interfaces  need  no
+           authentication key, and simple password authen-
+           tication cannot use a key of more  than  8  oc-
+           tets.  Larger keys are useful only with authen-
+           tication mechanisms not specified in this docu-
+           ment.
+
+           When read, ruijieOspfIfAuthKey always returns an  Oc-
+           tet String of length zero."
+       REFERENCE
+          "OSPF Version 2, Section 9  The  Interface  Data
+          Structure"
+      DEFVAL   { '0000000000000000'H }    -- 0.0.0.0.0.0.0.0
+      ::= { ruijieOspfIfEntry 16 }
+
+ruijieOspfIfStatus OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "This value will be  active(1) always."
+       ::= { ruijieOspfIfEntry 17 }
+
+
+ruijieOspfIfMulticastForwarding OBJECT-TYPE
+        SYNTAX   INTEGER    {
+                            blocked (1),        -- no multicast forwarding
+                            multicast (2),        -- using multicast address
+                            unicast (3)        -- to each OSPF neighbor
+                  }
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The way multicasts should  forwarded  on  this
+           interface;  not  forwarded,  forwarded  as data
+           link multicasts, or forwarded as data link uni-
+           casts.   Data link multicasting is not meaning-
+           ful on point to point and NBMA interfaces,  and
+           setting ospfMulticastForwarding to 0 effective-
+           ly disables all multicast forwarding."
+       DEFVAL { blocked }
+       ::= { ruijieOspfIfEntry 18 }
+
+
+ruijieOspfIfDemand OBJECT-TYPE
+        SYNTAX   TruthValue
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "Indicates whether Demand OSPF procedures (hel-
+           lo supression to FULL neighbors and setting the
+           DoNotAge flag on proogated LSAs) should be per-
+           formed on this interface."
+       DEFVAL { false }
+       ::= { ruijieOspfIfEntry 19 }
+
+
+ruijieOspfIfAuthType OBJECT-TYPE
+        SYNTAX   INTEGER (0..255)
+                    -- none (0),
+                    -- simplePassword (1)
+                    -- md5 (2)
+                    -- default (3)
+                    -- reserved for specification by IANA (> 2)
+        MAX-ACCESS   read-write
+        STATUS   current
+        DESCRIPTION
+           "The authentication type specified for  an  interface. Setting this value to 
+            'default' means using default authentication type referenced to Area Authentication, 
+            this value only for set,not be read. Additional  authentication types may
+            be assigned locally."
+       REFERENCE
+          "OSPF Version 2, Appendix E Authentication"
+      DEFVAL { 0 }        -- no authentication, by default
+      ::= { ruijieOspfIfEntry 20 }
+                              
+ruijieOspfIfDatabaseFilterAllOut OBJECT-TYPE
+        SYNTAX   EnabledStatus                    
+        MAX-ACCESS   read-write
+        STATUS   current
+        DESCRIPTION
+           "Block flooding of OSPF LSA packets to the interface. By
+           default, OSPF floods new LSAs over all interfaces in the same area,
+           except the interface on which the LSA arrives."
+        DEFVAL {disabled}
+       ::= { ruijieOspfIfEntry 21 } 
+       
+ruijieOspfIfDesignateRouterId OBJECT-TYPE  
+        SYNTAX   IpAddress                    
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "DR RouterID of this interface,
+           when DR does not selected,DR Id is 0.0.0.0"
+        DEFVAL {'00000000'H}
+       ::= { ruijieOspfIfEntry 22 } 
+       
+ruijieOspfIfBackupDesignateRouterId OBJECT-TYPE  
+        SYNTAX   IpAddress                    
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "Backup DR RouterId of this interface ,
+           when Backup DR does not selected,BDR Id is 0.0.0.0"
+        DEFVAL {'00000000'H}
+       ::= { ruijieOspfIfEntry 23 }  
+
+ruijieOspfIfWaitInternal OBJECT-TYPE  
+        SYNTAX  TimeTicks                   
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The wait time of hello generate"
+       ::= { ruijieOspfIfEntry 24 }
+
+ruijieOspfIfPassiveStatus OBJECT-TYPE
+        SYNTAX   EnabledStatus
+        MAX-ACCESS   read-write
+        STATUS   current
+        DESCRIPTION
+               "Setting this object value to 'enabled' ,the interface will 
+               become a passive interface."
+        DEFVAL { disabled }               
+        ::= { ruijieOspfIfEntry 25 } 
+ruijieOspfIfCurrentUsedMd5AuthKeyId     OBJECT-TYPE  
+       SYNTAX   Unsigned32 (0..255)                    
+        MAX-ACCESS   read-write
+        STATUS   current
+        DESCRIPTION
+           "key-id which current used for md5 authentication,this value is 
+            valid from 1 to 255, the value 0 is default value.."
+        DEFVAL {0}
+       ::= { ruijieOspfIfEntry 26 }   
+
+
+-- The Ospf Interface MD5 authentication key configuration table
+
+ruijieOspfIfMd5AuthKeyTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF RuijieOspfIfMd5AuthKeyEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+           "Configuration table of the key-id for md5 authentication for OSPF protocol."
+       ::= { ruijieOspfMIBObjects  5 }
+
+ruijieOspfIfMd5AuthKeyEntry OBJECT-TYPE
+       SYNTAX   RuijieOspfIfMd5AuthKeyEntry
+       MAX-ACCESS   not-accessible
+       STATUS   current
+       DESCRIPTION
+          "Configuration entry of the key-id for md5 authentication for OSPF protocol"
+      INDEX {ruijieOspfIfMd5AuthKeyIf, ruijieOspfIfMd5AuthKeyId }
+      ::= { ruijieOspfIfMd5AuthKeyTable 1 }
+    
+RuijieOspfIfMd5AuthKeyEntry ::=
+        SEQUENCE { 
+         ruijieOspfIfMd5AuthKeyIf
+            Unsigned32,
+         ruijieOspfIfMd5AuthKeyId
+            Unsigned32,
+         ruijieOspfIfMd5AuthKey
+            OCTET STRING,
+         ruijieOspfIfMd5AuthKeySt   
+            ConfigStatus
+                 }
+                 
+ruijieOspfIfMd5AuthKeyIf OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "Corresponding value of ifIndex for interfaces."
+       ::= { ruijieOspfIfMd5AuthKeyEntry 1 }
+
+ruijieOspfIfMd5AuthKeyId     OBJECT-TYPE  
+        SYNTAX   Unsigned32 (1..255)                    
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "the key-id for md5 authentication."
+       ::= { ruijieOspfIfMd5AuthKeyEntry 2 } 
+
+ruijieOspfIfMd5AuthKey OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE (0..256))
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           "The Authentication Key for MD5.
+           
+           When read, ruijieOspfIfMd5AuthKey always returns an  Oc-
+           tet String of length zero."
+       REFERENCE
+          "OSPF Version 2, Section 9  The  Interface  Data
+          Structure"
+      ::= { ruijieOspfIfMd5AuthKeyEntry 3 }
+
+ruijieOspfIfMd5AuthKeySt OBJECT-TYPE
+        SYNTAX   ConfigStatus
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           "Setting this value to 'invalid' will delete this entry.
+            Setting this value to 'valid' will have no effect."
+      ::= { ruijieOspfIfMd5AuthKeyEntry 4 }
+
+
+
+-- The Raisecom Ospf Virtual Link Table
+
+ruijieOspfVirtTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF RuijieOspfVirtEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+           "Information about this router's virtual inter-
+            faces.Include ospfVirtIfTable in rfc1850"
+        REFERENCE
+          "ospfVirtIfTable in rfc1850"    
+       ::= { ruijieOspfMIBObjects  6 }
+
+ruijieOspfVirtEntry OBJECT-TYPE
+       SYNTAX   RuijieOspfVirtEntry
+       MAX-ACCESS   not-accessible
+       STATUS   current
+       DESCRIPTION
+          "Information about a single Virtual Interface"
+      INDEX {ruijieOspfVirtIfAreaId, ruijieOspfVirtIfNeighbor}
+      ::= { ruijieOspfVirtTable 1 }
+    
+RuijieOspfVirtEntry ::=
+        SEQUENCE {
+      ruijieOspfVirtIfAreaId
+         AreaID,
+      ruijieOspfVirtIfNeighbor
+         RouterID,
+      ruijieOspfVirtIfTransitDelay
+         Unsigned32,
+      ruijieOspfVirtIfRetransInterval
+         Unsigned32,
+      ruijieOspfVirtIfHelloInterval
+         HelloRange,
+      ruijieOspfVirtIfRtrDeadInterval
+         PositiveInteger,
+      ruijieOspfVirtIfState
+         INTEGER,
+      ruijieOspfVirtIfEvents
+         Counter32,
+      ruijieOspfVirtIfAuthType
+         INTEGER,
+      ruijieOspfVirtIfAuthKey
+         OCTET STRING,
+      ruijieOspfVirtIfStatus
+         RowStatus,        
+      ruijieOspfVirtCost
+            Unsigned32,
+      ruijieOspfVirtNativeIfIndex   
+            INTEGER,
+      ruijieOspfVirtLinkState 
+            INTEGER,     
+      ruijieOspfVirtHelloDueIn  
+            TimeTicks,
+     ruijieOspfVirtCurrentUsedMd5AuthKeyId
+            Unsigned32
+                 }
+
+    ruijieOspfVirtIfAreaId OBJECT-TYPE
+        SYNTAX   AreaID
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The  Transit  Area  that  the   Virtual   Link
+           traverses.  By definition, this is not 0.0.0.0"
+       ::= { ruijieOspfVirtEntry 1 }
+
+
+    ruijieOspfVirtIfNeighbor OBJECT-TYPE
+        SYNTAX   RouterID
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The Router ID of the Virtual Neighbor."
+       ::= { ruijieOspfVirtEntry 2 }
+
+
+    ruijieOspfVirtIfTransitDelay OBJECT-TYPE
+        SYNTAX   Unsigned32 (1..65535)
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           "The estimated number of seconds  it  takes  to
+           transmit  a link- state update packet over this
+           interface."
+       DEFVAL { 1 }
+       ::= { ruijieOspfVirtEntry 3 }
+
+
+    ruijieOspfVirtIfRetransInterval OBJECT-TYPE
+        SYNTAX   Unsigned32 (1..65535)
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           "The number of seconds between  link-state  ad-
+           vertisement  retransmissions,  for  adjacencies
+           belonging to this  interface.   This  value  is
+           also used when retransmitting database descrip-
+           tion  and  link-state  request  packets.   This
+           value  should  be well over the expected round-
+           trip time."
+       DEFVAL { 5 }
+       ::= { ruijieOspfVirtEntry 4 }
+
+
+    ruijieOspfVirtIfHelloInterval OBJECT-TYPE
+        SYNTAX   HelloRange
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           "The length of time, in  seconds,  between  the
+           Hello  packets that the router sends on the in-
+           terface.  This value must be the same  for  the
+           virtual neighbor."
+       DEFVAL { 10 }
+       ::= { ruijieOspfVirtEntry 5 }
+
+
+    ruijieOspfVirtIfRtrDeadInterval OBJECT-TYPE
+        SYNTAX   PositiveInteger
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           "The number of seconds that  a  router's  Hello
+           packets  have  not been seen before it's neigh-
+           bors declare the router down.  This  should  be
+           some  multiple  of  the  Hello  interval.  This
+           value must be the same for the  virtual  neigh-
+           bor."
+       DEFVAL { 40 }
+       ::= { ruijieOspfVirtEntry 6 }
+
+
+    ruijieOspfVirtIfState OBJECT-TYPE
+        SYNTAX   INTEGER    {
+                    down (1),            -- these use the same encoding
+                    pointToPoint (4)     -- as the ospfIfTable
+                  }
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "OSPF virtual interface states."
+       DEFVAL   { down }
+       ::= { ruijieOspfVirtEntry 7 }
+
+
+    ruijieOspfVirtIfEvents OBJECT-TYPE
+        SYNTAX   Counter32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The number of state changes or error events on
+           this Virtual Link"
+       ::= { ruijieOspfVirtEntry 8 }
+
+
+    ruijieOspfVirtIfAuthKey OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(0..256))
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           "If Authentication Type is simplePassword,  the
+           device  will left adjust and zero fill to 8 oc-
+           tets.
+
+           Note that unauthenticated  interfaces  need  no
+           authentication key, and simple password authen-
+           tication cannot use a key of more  than  8  oc-
+           tets.  Larger keys are useful only with authen-
+           tication mechanisms not specified in this docu-
+           ment.
+
+           When  read,  ospfVifAuthKey  always  returns  a
+           string of length zero."
+       REFERENCE
+          "OSPF Version 2, Section 9  The  Interface  Data
+          Structure"
+      DEFVAL   { '0000000000000000'H }    -- 0.0.0.0.0.0.0.0
+      ::= { ruijieOspfVirtEntry 9 }
+
+
+    ruijieOspfVirtIfStatus OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           "This variable displays the status of  the  en-
+           try.  Setting it to 'invalid' has the effect of
+           rendering it inoperative.  The internal  effect
+           (row removal) is implementation dependent."
+       ::= { ruijieOspfVirtEntry 10 }
+
+
+    ruijieOspfVirtIfAuthType OBJECT-TYPE
+        SYNTAX   INTEGER (0..255)
+                    -- none (0),
+                    -- simplePassword (1),
+                    -- md5 (2),
+                    -- default (3)
+                    -- reserved for specification by IANA (> 2)
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           "The authentication type specified for a virtual  interface. Setting this value 
+           'default' means using default authentication type referenced to Area Authentication,
+            this value only for set,not be read. Additional authentication types
+            may be assigned locally."
+       REFERENCE
+          "OSPF Version 2, Appendix E Authentication"
+      DEFVAL { 0 }        -- no authentication, by default
+      ::= { ruijieOspfVirtEntry 11 }
+
+                 
+   ruijieOspfVirtCost OBJECT-TYPE
+        SYNTAX   Unsigned32 
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+               "Explicitly specify the cost of sending a packet on the
+                interface."
+        ::= { ruijieOspfVirtEntry 12 }   
+        
+    ruijieOspfVirtNativeIfIndex OBJECT-TYPE 
+        SYNTAX   INTEGER 
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+               " the Interface's Index that The Virtual Link
+                 via this interface."
+        ::= { ruijieOspfVirtEntry 13 } 
+        
+    ruijieOspfVirtLinkState OBJECT-TYPE
+        SYNTAX  INTEGER{
+          		         up(1),
+                        down(2)
+                       }
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The  Virtual Link State is up or down."
+       ::= { ruijieOspfVirtEntry 14 }
+
+    ruijieOspfVirtHelloDueIn OBJECT-TYPE
+        SYNTAX   TimeTicks 
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+               " the time when hello due in." 
+        ::= { ruijieOspfVirtEntry 15 } 
+        
+    ruijieOspfVirtCurrentUsedMd5AuthKeyId     OBJECT-TYPE  
+       SYNTAX   Unsigned32 (0..255)                    
+       MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           "the key-id which current used for md5 authentication,this value is 
+            valid from 1 to 255, the value 0 is default value."
+        DEFVAL {0}
+       ::= { ruijieOspfVirtEntry 16 }
+
+
+-- The Ospf Virtual Interface MD5 authentication key configuration table
+
+ruijieOspfVirtIfMd5AuthKeyTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF RuijieOspfVirtIfMd5AuthKeyEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+           "Configuration table of the key-id for md5 authentication in VirtIf 
+            for OSPF protocol."
+       ::= { ruijieOspfMIBObjects  7 }
+
+ruijieOspfVirtIfMd5AuthKeyEntry OBJECT-TYPE
+       SYNTAX   RuijieOspfVirtIfMd5AuthKeyEntry
+       MAX-ACCESS   not-accessible
+       STATUS   current
+       DESCRIPTION
+          "Configuration entry of the key-id for md5 authentication in VirtIf
+           for OSPF protocol"
+      INDEX {ruijieOspfVirtIfMd5AuthKeyAreaId, ruijieOspfVirtIfMd5AuthKeyNeighbor,
+             ruijieOspfVirtIfMd5AuthKeyId }
+      ::= { ruijieOspfVirtIfMd5AuthKeyTable 1 }
+    
+RuijieOspfVirtIfMd5AuthKeyEntry ::=
+        SEQUENCE { 
+         ruijieOspfVirtIfMd5AuthKeyAreaId
+            AreaID,
+         ruijieOspfVirtIfMd5AuthKeyNeighbor
+            RouterID,
+         ruijieOspfVirtIfMd5AuthKeyId
+            Unsigned32,
+         ruijieOspfVirtIfMd5AuthKey
+            OCTET STRING,
+         ruijieOspfVirtIfMd5AuthKeySt   
+            ConfigStatus
+                 }
+                 
+ruijieOspfVirtIfMd5AuthKeyAreaId OBJECT-TYPE
+        SYNTAX   AreaID
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The  Transit  Area  that  the   Virtual   Link
+           traverses.  By definition, this is not 0.0.0.0"
+       ::= { ruijieOspfVirtIfMd5AuthKeyEntry 1 }
+
+ruijieOspfVirtIfMd5AuthKeyNeighbor OBJECT-TYPE
+        SYNTAX   RouterID
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The Router ID of the Virtual Neighbor."
+       ::= { ruijieOspfVirtIfMd5AuthKeyEntry 2 }
+
+ruijieOspfVirtIfMd5AuthKeyId     OBJECT-TYPE  
+        SYNTAX   Unsigned32 (1..255)                    
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "the key-id for md5 authentication."
+       ::= { ruijieOspfVirtIfMd5AuthKeyEntry 3 } 
+
+ruijieOspfVirtIfMd5AuthKey OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE (0..256))
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           "The Authentication Key for MD5.
+           
+           When read, ruijieOspfVirtIfMd5AuthKey always returns an  Oc-
+           tet String of length zero."
+       REFERENCE
+          "OSPF Version 2, Section 9  The  Interface  Data
+          Structure"
+      ::= { ruijieOspfVirtIfMd5AuthKeyEntry 4 }
+
+ruijieOspfVirtIfMd5AuthKeySt OBJECT-TYPE
+        SYNTAX   ConfigStatus
+        MAX-ACCESS   read-create
+        STATUS   current
+        DESCRIPTION
+           "Setting this value to 'invalid' will delete this entry.
+            Setting this value to 'valid' will have no effect."
+      ::= { ruijieOspfVirtIfMd5AuthKeyEntry 5 }
+                             
+     
+ruijieOspfLsaDetailInfoMibsGroup OBJECT IDENTIFIER ::= { ruijieOspfMIBObjects 8 }       
+
+
+--  OSPF Link State Database
+
+--      The Link State Database contains the Link State
+--      Advertisements from throughout the areas that the
+--      device is attached to.
+
+
+ruijieOspfLsdbTable OBJECT-TYPE
+     SYNTAX   SEQUENCE OF RuijieOspfLsdbEntry
+     MAX-ACCESS   not-accessible
+     STATUS   current
+     DESCRIPTION
+        "The OSPF Process's Link State Database."
+    REFERENCE
+       "OSPF Version 2, Section 12  Link  State  Adver-
+       tisements"
+   ::= { ruijieOspfLsaDetailInfoMibsGroup 1 }
+
+
+ruijieOspfLsdbEntry OBJECT-TYPE
+     SYNTAX   RuijieOspfLsdbEntry
+     MAX-ACCESS   not-accessible
+     STATUS   current
+     DESCRIPTION
+        "A single Link State Advertisement."
+    INDEX { ruijieOspfLsdbAreaId, ruijieOspfLsdbType,
+            ruijieOspfLsdbLsid, ruijieOspfLsdbRouterId }
+    ::= { ruijieOspfLsdbTable 1 }
+
+RuijieOspfLsdbEntry ::=
+    SEQUENCE {
+        ruijieOspfLsdbAreaId
+            AreaID,
+        ruijieOspfLsdbType
+            INTEGER,
+        ruijieOspfLsdbLsid
+            IpAddress,
+        ruijieOspfLsdbRouterId
+            RouterID,
+        ruijieOspfLsdbSequence
+            Unsigned32,
+        ruijieOspfLsdbAge
+            Unsigned32,
+        ruijieOspfLsdbChecksum
+            Unsigned32,
+        ruijieOspfLsdbAdvertisement
+            OCTET STRING,
+        ruijieOspfLsdbLinkNum  --equal LinkCount 
+            Unsigned32,
+        ruijieOspfLsdbPacketLength
+            Unsigned32,
+        ruijieOspfSummaryLsaNetworkMask
+            IpAddress,
+        ruijieOspfSummaryLsaTos0Metric
+            Unsigned32,
+        ruijieOspfNssaLsaDetailMetricType
+            INTEGER,
+        ruijieOspfNssaLsaDetailForwardAddr 
+            IpAddress,
+        ruijieOspfNssaLsaDetailRouteTag
+            Unsigned32,
+        ruijieOspfLsdbOption
+            Unsigned32  
+              }
+ruijieOspfLsdbAreaId OBJECT-TYPE
+        SYNTAX   AreaID
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The 32 bit identifier of the Area  from  which
+           the LSA was received."
+       REFERENCE
+          "OSPF Version 2, Appendix C.2 Area parameters"
+      ::= { ruijieOspfLsdbEntry 1 }
+
+-- External Link State Advertisements are permitted
+-- for backward compatibility, but should be displayed in
+-- the ospfExtLsdbTable rather than here.
+
+ruijieOspfLsdbType OBJECT-TYPE
+        SYNTAX   INTEGER    {
+                    routerLink (1),
+                    networkLink (2),
+                    summaryLink (3),
+                    asSummaryLink (4),
+                    asExternalLink (5), -- but see ruijieOspfExtLsdbTable
+                    multicastLink (6),
+                    nssaExternalLink (7)
+                  }
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The type  of  the  link  state  advertisement.
+           Each  link state type has a separate advertise-
+           ment format."
+       REFERENCE
+          "OSPF Version 2, Appendix A.4.1 The  Link  State
+          Advertisement header"
+      ::= { ruijieOspfLsdbEntry 2 }
+
+ruijieOspfLsdbLsid OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The Link State ID is an LS Type Specific field
+           containing either a Router ID or an IP Address;
+           it identifies the piece of the  routing  domain
+           that is being described by the advertisement."
+       REFERENCE
+          "OSPF Version 2, Section 12.1.4 Link State ID"
+      ::= { ruijieOspfLsdbEntry 3 }
+
+ruijieOspfLsdbRouterId OBJECT-TYPE
+        SYNTAX   RouterID
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The 32 bit number that uniquely identifies the
+           originating router in the Autonomous System."
+       REFERENCE
+          "OSPF Version 2, Appendix C.1 Global parameters"
+      ::= { ruijieOspfLsdbEntry 4 }
+
+--  Note that the OSPF Sequence Number is a 32 bit signed
+--  integer.  It ruijies with the value '80000001'h,
+--  or -'7FFFFFFF'h, and increments until '7FFFFFFF'h
+--  Thus, a typical sequence number will be very negative.
+
+ruijieOspfLsdbSequence OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The sequence number field is a  signed  32-bit
+           integer.   It  is used to detect old and dupli-
+           cate link state advertisements.  The  space  of
+           sequence  numbers  is  linearly  ordered.   The
+           larger the sequence number the more recent  the
+           advertisement."
+       REFERENCE
+          "OSPF Version  2,  Section  12.1.6  LS  sequence
+          number"
+      ::= { ruijieOspfLsdbEntry 5 }
+
+ruijieOspfLsdbAge OBJECT-TYPE
+        SYNTAX   Unsigned32    -- Should be 0..MaxAge
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "This field is the age of the link state adver-
+           tisement in seconds."
+       REFERENCE
+          "OSPF Version 2, Section 12.1.1 LS age"
+      ::= { ruijieOspfLsdbEntry 6 }
+
+ruijieOspfLsdbChecksum OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "This field is the  checksum  of  the  complete
+           contents  of  the  advertisement, excepting the
+           age field.  The age field is excepted  so  that
+           an   advertisement's  age  can  be  incremented
+           without updating the  checksum.   The  checksum
+           used  is  the same that is used for ISO connec-
+           tionless datagrams; it is commonly referred  to
+           as the Fletcher checksum."
+       REFERENCE
+          "OSPF Version 2, Section 12.1.7 LS checksum"
+      ::= { ruijieOspfLsdbEntry 7 }
+
+ruijieOspfLsdbAdvertisement OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE (1..512))
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The entire Link State Advertisement, including
+           its header."
+       REFERENCE
+          "OSPF Version 2, Section 12  Link  State  Adver-
+          tisements"
+      ::= { ruijieOspfLsdbEntry 8 }
+      
+ ruijieOspfLsdbLinkNum   OBJECT-TYPE                                            
+        SYNTAX   Unsigned32(0..4294967295)
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "  the link count of this Router Link Lsa ,
+              this field is only valid for Router Link Lsa£¨type 1 LSA)"
+       ::= { ruijieOspfLsdbEntry 9 }         
+
+ruijieOspfLsdbPacketLength   OBJECT-TYPE
+        SYNTAX   Unsigned32(0..65535)
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "the  lsa packet  length   ."
+       ::= { ruijieOspfLsdbEntry 10 }  
+      
+ruijieOspfSummaryLsaNetworkMask  OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "this field is only useful when  ospfLsdbType is type-3 or 
+           type-4 or type-7,it's the Lsa's network mask  ."
+       ::= { ruijieOspfLsdbEntry 11 } 
+
+ruijieOspfSummaryLsaTos0Metric OBJECT-TYPE
+        SYNTAX   Unsigned32(0..65535)
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "this field is only useful when  ospfLsdbType is type-3 or 
+           type-4 or type-7,it's the  Lsa's tos0 metric  ."
+       ::= { ruijieOspfLsdbEntry 12 } 
+       
+ruijieOspfNssaLsaDetailMetricType   OBJECT-TYPE
+        SYNTAX   INTEGER
+                       { type1(1),
+                         type2(2)
+                        }
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "    this field is valid when Lsa is a type-7 LSA.
+	        The type of Nssa ernal metric.  If bit E is set, the metric
+	        specified is a Type 2 external metric.  This means the metric is
+	        considered larger than any link state path.  If bit E is zero,
+	        the specified metric is a Type 1 external metric.  This means
+	        that it is expressed in the same units as the link state metric
+	        (i.e., the same units as interface cost).  "
+       ::= { ruijieOspfLsdbEntry 13 }  
+       
+ ruijieOspfNssaLsaDetailForwardAddr   OBJECT-TYPE  
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "this field is valid when Lsa is a type-7 LSA. 
+            Data traffic for the advertised destination will be forwarded to
+            this address.  If the Forwarding address is set to 0.0.0.0, data
+            traffic will be forwarded instead to the LSA's originator (i.e.,
+            the responsible AS boundary router)  ."            
+       ::= { ruijieOspfLsdbEntry 14 }         
+       
+ ruijieOspfNssaLsaDetailRouteTag   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           " this field is valid when Lsa is a type-7 LSA.
+             A 32-bit field attached to each external route.  This is not
+             used by the OSPF protocol itself.  It may be used to communicate
+             information between AS boundary routers; the precise nature of
+             such information is outside the scope of this specification."
+       ::= { ruijieOspfLsdbEntry 15 }          
+
+ ruijieOspfLsdbOption   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "the option field indicate which optional capabilities
+            area associated with the LSA. "
+        REFERENCE
+          "OSPF Version 2, Appendix A.2, the Options Field"
+       ::= { ruijieOspfLsdbEntry 16 }           
+
+--  OSPF Link State Database, External
+
+--      The Link State Database contains the Link State
+--      Advertisements from throughout the areas that the
+--      device is attached to.
+
+--             This table is identical to the OSPF LSDB Table in
+--      format, but contains only External Link State
+--             Advertisements.  The purpose is to allow external
+--      LSAs to be displayed once for the router rather
+--      than once in each non-stub area.
+
+ruijieOspfExtLsdbTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF RuijieOspfExtLsdbEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+           "The OSPF Process's Links State Database."
+        REFERENCE
+          "OSPF Version 2, Section 12  Link  State  Adver-
+          tisements"
+       ::= { ruijieOspfLsaDetailInfoMibsGroup  2 }
+
+ruijieOspfExtLsdbEntry OBJECT-TYPE
+       SYNTAX   RuijieOspfExtLsdbEntry
+       MAX-ACCESS   not-accessible
+       STATUS   current        
+       DESCRIPTION
+           "A single Link State Advertisement."
+       INDEX { ruijieOspfExtLsdbType, ruijieOspfExtLsdbLsid, ruijieOspfExtLsdbRouterId }    
+      ::= { ruijieOspfExtLsdbTable 1 }
+      
+RuijieOspfExtLsdbEntry ::=
+     SEQUENCE{
+        ruijieOspfExtLsdbType
+            INTEGER,
+        ruijieOspfExtLsdbLsid
+            IpAddress,
+        ruijieOspfExtLsdbRouterId
+            RouterID,
+        ruijieOspfExtLsdbSequence
+            Unsigned32,
+        ruijieOspfExtLsdbAge
+            Unsigned32,
+        ruijieOspfExtLsdbChecksum
+            Unsigned32,
+        ruijieOspfExtLsdbAdvertisement
+            OCTET STRING,     
+        ruijieOspfExtLsdbNetworkMask
+            IpAddress,
+        ruijieOspfExtLsdbMetricType   
+            INTEGER,
+        ruijieOspfExtLsdbForwardAddr
+            IpAddress,
+        ruijieOspfExtLsdbRouteTag
+            Unsigned32,
+        ruijieOspfExtLsdbMetric   
+            INTEGER,
+        ruijieOspfExtLsdbOption
+            Unsigned32,
+        ruijieOspfExtLsdbPacketLength 
+            Unsigned32   
+              }          
+
+ ruijieOspfExtLsdbType OBJECT-TYPE
+        SYNTAX   INTEGER    {
+                    asExternalLink (5)
+                  }
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The type  of  the  link  state  advertisement.
+           Each  link state type has a separate advertise-
+           ment format."
+       REFERENCE
+          "OSPF Version 2, Appendix A.4.1 The  Link  State
+          Advertisement header"
+      ::= { ruijieOspfExtLsdbEntry 1 }
+
+
+ ruijieOspfExtLsdbLsid OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The Link State ID is an LS Type Specific field
+           containing either a Router ID or an IP Address;
+           it identifies the piece of the  routing  domain
+           that is being described by the advertisement."
+       REFERENCE
+          "OSPF Version 2, Section 12.1.4 Link State ID"
+      ::= { ruijieOspfExtLsdbEntry 2 }
+
+
+ ruijieOspfExtLsdbRouterId OBJECT-TYPE
+        SYNTAX   RouterID
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The 32 bit number that uniquely identifies the
+           originating router in the Autonomous System."
+       REFERENCE
+          "OSPF Version 2, Appendix C.1 Global parameters"
+      ::= { ruijieOspfExtLsdbEntry 3 }
+
+--  Note that the OSPF Sequence Number is a 32 bit signed
+--  integer.  It ruijies with the value '80000001'h,
+--  or -'7FFFFFFF'h, and increments until '7FFFFFFF'h
+--  Thus, a typical sequence number will be very negative.
+
+ ruijieOspfExtLsdbSequence OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The sequence number field is a  signed  32-bit
+           integer.   It  is used to detect old and dupli-
+           cate link state advertisements.  The  space  of
+           sequence  numbers  is  linearly  ordered.   The
+           larger the sequence number the more recent  the
+           advertisement."
+       REFERENCE
+          "OSPF Version  2,  Section  12.1.6  LS  sequence
+          number"
+      ::= { ruijieOspfExtLsdbEntry 4 }
+
+
+ ruijieOspfExtLsdbAge OBJECT-TYPE
+        SYNTAX   Unsigned32    -- Should be 0..MaxAge
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "This field is the age of the link state adver-
+           tisement in seconds."
+       REFERENCE
+          "OSPF Version 2, Section 12.1.1 LS age"
+      ::= { ruijieOspfExtLsdbEntry 5 }
+
+
+ ruijieOspfExtLsdbChecksum OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "This field is the  checksum  of  the  complete
+           contents  of  the  advertisement, excepting the
+           age field.  The age field is excepted  so  that
+           an   advertisement's  age  can  be  incremented
+           without updating the  checksum.   The  checksum
+           used  is  the same that is used for ISO connec-
+           tionless datagrams; it is commonly referred  to
+           as the Fletcher checksum."
+       REFERENCE
+          "OSPF Version 2, Section 12.1.7 LS checksum"
+      ::= { ruijieOspfExtLsdbEntry 6 }
+
+
+ ruijieOspfExtLsdbAdvertisement OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(36))
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The entire Link State Advertisement, including
+           its header."
+       REFERENCE
+          "OSPF Version 2, Section 12  Link  State  Adver-
+          tisements"
+      ::= { ruijieOspfExtLsdbEntry 7 }
+                  
+ ruijieOspfExtLsdbNetworkMask   OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The IP address mask for the advertised destination.  For
+            example, when advertising a class A network the mask 0xff000000
+            would be used."
+       ::= { ruijieOspfExtLsdbEntry 8 }   
+
+ ruijieOspfExtLsdbMetric   OBJECT-TYPE
+        SYNTAX   INTEGER                       
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           " The cost of this route.  Interpretation depends on the external
+             type indication.  "
+       ::= { ruijieOspfExtLsdbEntry 9 } 
+               
+ ruijieOspfExtLsdbMetricType   OBJECT-TYPE
+        SYNTAX   INTEGER
+                       { type1(1),
+                         type2(2)
+                        }
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           " The type of external metric.  If bit E is set, the metric
+            specified is a Type 2 external metric.  This means the metric is
+            considered larger than any link state path.  If bit E is zero,
+            the specified metric is a Type 1 external metric.  This means
+            that it is expressed in the same units as the link state metric
+            (i.e., the same units as interface cost).  "
+       ::= { ruijieOspfExtLsdbEntry 10 }  
+       
+ ruijieOspfExtLsdbForwardAddr   OBJECT-TYPE  
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "  Data traffic for the advertised destination will be forwarded to
+              this address.  If the Forwarding address is set to 0.0.0.0, data
+              traffic will be forwarded instead to the LSA's originator (i.e.,
+              the responsible AS boundary router)  ."
+       ::= { ruijieOspfExtLsdbEntry 11 }      
+          
+ ruijieOspfExtLsdbRouteTag   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "A 32-bit field attached to each external route.  This is not
+           used by the OSPF protocol itself.  It may be used to communicate
+           information between AS boundary routers; the precise nature of
+           such information is outside the scope of this specification."
+       ::= { ruijieOspfExtLsdbEntry 12 }    
+       
+ 
+              
+ ruijieOspfExtLsdbOption   OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "the option field indicate which optional capabilities
+            area associated with the LSA. "
+        REFERENCE
+          "OSPF Version 2, Appendix A.2, the Options Field"
+       ::= { ruijieOspfExtLsdbEntry 13 } 
+       
+ruijieOspfExtLsdbPacketLength   OBJECT-TYPE
+        SYNTAX   Unsigned32(0..65535)
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "the  lsa packet  length   ."
+       ::= { ruijieOspfExtLsdbEntry 14 }       
+
+--Router Lsa's detail information table  
+
+ruijieOspfRouterLsaDetailTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF RuijieOspfRouterLsaDetailEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+           "the router Lsa's detail Infromtion."
+       ::= { ruijieOspfLsaDetailInfoMibsGroup  3 }
+
+ruijieOspfRouterLsaDetailEntry OBJECT-TYPE
+       SYNTAX   RuijieOspfRouterLsaDetailEntry
+       MAX-ACCESS   not-accessible
+       STATUS   current
+       DESCRIPTION
+          "the entry of this table."
+      INDEX {ruijieOspfLsdbAreaId, ruijieOspfLsdbType,
+             ruijieOspfLsdbLsid, ruijieOspfLsdbRouterId,
+             ruijieOspfRouterLsaDetailLinkID
+             }
+      ::= { ruijieOspfRouterLsaDetailTable 1 }
+      
+RuijieOspfRouterLsaDetailEntry ::=
+     SEQUENCE{
+        ruijieOspfRouterLsaDetailLinkID
+            IpAddress,
+        ruijieOspfRouterLsaDetailLinkType
+            INTEGER,
+        ruijieOspfRouterLsaDetailLinkData
+            IpAddress,
+        ruijieOspfRouterLsaDetailTos0Metric  
+            Unsigned32
+              }   
+
+ ruijieOspfRouterLsaDetailLinkID   OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "router lsa's link ID Identifies the object that this router
+            link connects to.  Value  depends on the link's Type.  
+            When connecting to an object that  also originates an 
+            LSA (i.e., another router or a transit  network) the 
+            Link ID is equal to the neighboring LSA's Link
+           State ID.  This provides the key for looking up the neighboring
+           LSA in the link state database during the routing table
+           calculation. See Section 12.2 for more details.
+                       Type   Link ID
+                       ________________________________________
+                       1      Neighboring router's Router ID
+                       2      IP address of Designated Router
+                       3      IP network/subnet number
+                       4      Neighboring router's Router ID
+           "
+       ::= { ruijieOspfRouterLsaDetailEntry 1 }  
+                     
+ ruijieOspfRouterLsaDetailLinkType   OBJECT-TYPE
+        SYNTAX   INTEGER{
+                         pointtopointConnectionToAnotherRouter(1),
+                         connectionToaTransitNetwork(2),
+                         connectionToaStubNetwork(3),
+                         virtualLink(4)
+                        }
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "router lsa's link type
+            A quick description of the router link.  One of the following.
+           Note that host routes are classified as links to stub networks
+           with network mask of 0xffffffff."
+       ::= { ruijieOspfRouterLsaDetailEntry 2 }    
+              
+ ruijieOspfRouterLsaDetailLinkData   OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           " Value again depends on the link's Type field. For connections to
+             stub networks, Link Data specifies the network's IP address
+             mask. For unnumbered point-to-point connections, it specifies
+             the interface's MIB-II  ifIndex value. For the other link
+             types it specifies the router interface's IP address. This
+            latter piece of information is needed during the routing table
+            build process, when calculating the IP address of the next hop.            "
+       ::= { ruijieOspfRouterLsaDetailEntry 3 } 
+              
+ruijieOspfRouterLsaDetailTos0Metric   OBJECT-TYPE  
+        SYNTAX   Unsigned32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "TOS0-specific metric information."
+       ::= { ruijieOspfRouterLsaDetailEntry 4 }    
+        
+        
+--NetWork Lsa's detail information table  
+
+ruijieOspfNetWorkLsaDetailTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF RuijieOspfNetWorkLsaDetailEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+           "the NetWork Lsa's detail Infromtion."
+       ::= { ruijieOspfLsaDetailInfoMibsGroup  4 }
+
+ruijieOspfNetWorkLsaDetailEntry OBJECT-TYPE
+       SYNTAX   RuijieOspfNetWorkLsaDetailEntry
+       MAX-ACCESS   not-accessible
+       STATUS   current
+       DESCRIPTION
+          "the entry of this table."
+      INDEX {ruijieOspfLsdbAreaId, ruijieOspfLsdbType,
+             ruijieOspfLsdbLsid, ruijieOspfLsdbRouterId,
+             ruijieOspfNetWorkLsaDetailAttachedRouter
+             }
+      ::= { ruijieOspfNetWorkLsaDetailTable 1 }
+      
+RuijieOspfNetWorkLsaDetailEntry ::=
+     SEQUENCE{
+        ruijieOspfNetWorkLsaDetailAttachedRouter   
+            IpAddress,     
+        ruijieOspfNetWorkLsaDetailNetworkMask 
+            IpAddress        
+              }                 
+ ruijieOspfNetWorkLsaDetailAttachedRouter   OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           " The Router IDs of each of the routers attached to the network.
+             Actually, only those routers that are fully adjacent to the
+             Designated Router are listed.  The Designated Router includes
+             itself in this list.  The number of routers included can be
+             deduced from the LSA header's length field.  "
+       ::= { ruijieOspfNetWorkLsaDetailEntry 1 }   
+                         
+ ruijieOspfNetWorkLsaDetailNetworkMask   OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The IP address mask for the network.  For example, a class A
+            network would have the mask 0xff000000."
+       ::= { ruijieOspfNetWorkLsaDetailEntry 2 }    
+       
+
+--raisecom Ospf Area Lsa Database Summary Table 
+
+ruijieOspfAreaLsaDBSumTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF RuijieOspfAreaLsaDBSumEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+           "The OSPF Area LSA database summary Infromtion."
+       ::= { ruijieOspfLsaDetailInfoMibsGroup  5 }
+
+ruijieOspfAreaLsaDBSumEntry OBJECT-TYPE
+       SYNTAX   RuijieOspfAreaLsaDBSumEntry
+       MAX-ACCESS   not-accessible
+       STATUS   current
+       DESCRIPTION
+          "the entry of this table."
+      INDEX {ruijieOspfAreaLsaDBSumAreaId, 
+             ruijieOspfAreaLsaDBSumLsaType
+             }
+      ::= { ruijieOspfAreaLsaDBSumTable 1 }
+      
+RuijieOspfAreaLsaDBSumEntry ::=
+     SEQUENCE{
+        ruijieOspfAreaLsaDBSumAreaId
+            IpAddress,
+        ruijieOspfAreaLsaDBSumLsaType
+            INTEGER,
+        ruijieOspfAreaLsaDBSumCounts   
+            Counter32,
+        ruijieOspfAreaLsaDBSumDeletes
+            Counter32,
+        ruijieOspfAreaLsaDBSumMaxage
+            Counter32 
+            }   
+ ruijieOspfAreaLsaDBSumAreaId   OBJECT-TYPE  
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The area Id."
+       ::= { ruijieOspfAreaLsaDBSumEntry 1 }  
+              
+ ruijieOspfAreaLsaDBSumLsaType   OBJECT-TYPE
+        SYNTAX   INTEGER 
+        	{ routerLink (1),
+           networkLink (2),
+           summaryLink (3),
+           asSummaryLink (4),
+           --asExternalLink (5), because in each area,type 5 lsa is no meaning
+                                 --it's only meaning in one router
+           -- multicastLink (6),  not implement
+           nssaExternalLink (7),
+           subtotal(8)
+           --subtotal is use for total counter for all type LSA in this area.
+           }
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "the entry's entry type."
+       ::= { ruijieOspfAreaLsaDBSumEntry 2 }    
+       
+ ruijieOspfAreaLsaDBSumCounts   OBJECT-TYPE
+        SYNTAX   Counter32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           " number os this type Lsa in this area ,
+             if this type Lsa does not exist,this field is 0."
+       ::= { ruijieOspfAreaLsaDBSumEntry 3 } 
+       
+ruijieOspfAreaLsaDBSumDeletes    OBJECT-TYPE
+        SYNTAX   Counter32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           " number os this type Lsa which has been delete in this area ,
+             if this type Lsa is not been deleted,this field is 0"
+       ::= { ruijieOspfAreaLsaDBSumEntry 4 }   
+       
+ ruijieOspfAreaLsaDBSumMaxage   OBJECT-TYPE
+        SYNTAX   Counter32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           " number of this type Lsa which has up to Maxage,
+             if this type Lsa which has up to Maxage does not exist,
+             this field is 0"
+       ::= { ruijieOspfAreaLsaDBSumEntry 5 }  
+ 
+
+--raisecom Ospf Lsa Database total summary table 
+
+ruijieOspfLsaDBSumTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF RuijieOspfLsaDBSumEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+           "LSA database total summary infromtion in the all areas ."
+       ::= { ruijieOspfLsaDetailInfoMibsGroup  6 }
+
+ruijieOspfLsaDBSumEntry OBJECT-TYPE
+       SYNTAX   RuijieOspfLsaDBSumEntry
+       MAX-ACCESS   not-accessible
+       STATUS   current
+       DESCRIPTION
+          "the entry of this table."
+      INDEX {   
+               ruijieOspfLsaDBSumLsaType
+            }
+      ::= { ruijieOspfLsaDBSumTable 1 }
+      
+RuijieOspfLsaDBSumEntry ::=
+     SEQUENCE{
+        ruijieOspfLsaDBSumLsaType
+            INTEGER,
+        ruijieOspfLsaDBSumCounts   
+            Counter32,
+        ruijieOspfLsaDBSumDeletes
+            Counter32,
+        ruijieOspfLsaDBSumMaxage
+            Counter32
+              }   
+     
+ ruijieOspfLsaDBSumLsaType   OBJECT-TYPE
+        SYNTAX   INTEGER 
+        	{ routerLink (1),
+           networkLink (2),
+           summaryTotalLink (3),
+           asSummaryTotalLink (4),
+           asExternalLink (5), 
+           -- multicastLink (6),  not implement
+           nssaExternalLink (7),
+           total(8)
+           --subtotal is use for total counter for all type LSA in this router. 
+                 }
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "the table's entry type."
+       ::= { ruijieOspfLsaDBSumEntry 1 }   
+        
+ ruijieOspfLsaDBSumCounts   OBJECT-TYPE
+        SYNTAX   Counter32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "total number of this type Lsa in all area ."
+       ::= { ruijieOspfLsaDBSumEntry 2 } 
+       
+ruijieOspfLsaDBSumDeletes    OBJECT-TYPE
+        SYNTAX   Counter32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           " total number of this type Lsa deleted in all area ."
+       ::= { ruijieOspfLsaDBSumEntry 3 }  
+        
+ruijieOspfLsaDBSumMaxage   OBJECT-TYPE
+        SYNTAX   Counter32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "total number of this type Lsa which has been up to max age in all area "
+       ::= { ruijieOspfLsaDBSumEntry 4 } 
+       
+
+--      The OSPF Neighbor Table describes all neighbors in
+--      the locality of the subject router.
+
+ruijieOspfNeighborTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF RuijieOspfNeighborEntry
+        MAX-ACCESS   not-accessible
+        STATUS   current
+        DESCRIPTION
+           "the neighbor detail infomation ."
+       REFERENCE
+          "ospfNbrTable in rfc1850"           
+       ::= { ruijieOspfMIBObjects  9 }
+
+ruijieOspfNeighborEntry OBJECT-TYPE
+       SYNTAX   RuijieOspfNeighborEntry
+       MAX-ACCESS   not-accessible
+       STATUS   current
+       DESCRIPTION
+          "the entry of this table."
+      INDEX {   ruijieOspfNbrIpAddr, 
+                ruijieOspfNbrAddressLessIndex
+             }
+      ::= { ruijieOspfNeighborTable 1 }
+      
+RuijieOspfNeighborEntry ::=
+     SEQUENCE{
+        ruijieOspfNbrIpAddr
+            IpAddress,
+        ruijieOspfNbrAddressLessIndex
+            Unsigned32,
+        ruijieOspfNbrRtrId
+            RouterID,
+        ruijieOspfNbrOptions
+            Unsigned32,
+        ruijieOspfNbrPriority
+            DesignatedRouterPriority,
+        ruijieOspfNbrState
+            INTEGER,
+        ruijieOspfNbrEvents
+            Counter32,
+        ruijieOspfNbrLsRetransQLen
+            Gauge32,
+        ruijieOspfNbmaNbrStatus
+            RowStatus,
+        ruijieOspfNbmaNbrPermanence
+            INTEGER,
+        ruijieOspfNbrHelloSuppressed
+            TruthValue,     
+        ruijieOspfNbrDeadTimeDueIn   
+            TimeTicks,
+        ruijieOspfNbrNeighborUpTime
+            TimeTicks,
+        ruijieOspfNbrDR
+            IpAddress,
+        ruijieOspfNbrBDR
+            IpAddress,
+        ruijieOspfNbrArea
+            IpAddress,
+        ruijieOspfNbrRetransmissionNum
+            Counter32,
+        ruijieOspfNbrIfState
+            INTEGER
+              }   
+ruijieOspfNbrIpAddr OBJECT-TYPE
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The IP address this neighbor(neighbor's interface IP address) 
+           is using  in  its IP  Source  Address.  Note that, on addressless
+           links, this will not be 0.0.0.0,  but  the  ad-
+           dress of another of the neighbor's interfaces."
+       ::= { ruijieOspfNeighborEntry 1 }
+
+
+ruijieOspfNbrAddressLessIndex OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "On an interface having an  IP  Address,  zero.
+           On  addressless  interfaces,  the corresponding
+           value of ifIndex in the Internet Standard  MIB.
+           On  row  creation, this can be derived from the
+           instance."
+       ::= { ruijieOspfNeighborEntry 2 }
+
+
+ruijieOspfNbrRtrId OBJECT-TYPE
+        SYNTAX   RouterID
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "A 32-bit integer (represented as a type  IpAd-
+           dress)  uniquely  identifying  the  neighboring
+           router in the Autonomous System."
+       ::= { ruijieOspfNeighborEntry 3 }
+
+
+ruijieOspfNbrOptions OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "A Bit Mask corresponding to the neighbor's op-
+           tions field.
+
+           Bit 0, if set, indicates that the  system  will
+           operate  on  Type of Service metrics other than
+           TOS 0.  If zero, the neighbor will  ignore  all
+           metrics except the TOS 0 metric.
+
+           Bit 1, if set, indicates  that  the  associated
+           area  accepts and operates on external informa-
+           tion; if zero, it is a stub area.
+
+           Bit 2, if set, indicates that the system is ca-
+           pable  of routing IP Multicast datagrams; i.e.,
+           that it implements the Multicast Extensions  to
+           OSPF.
+
+           Bit 3, if set, indicates  that  the  associated
+           area  is  an  NSSA.  These areas are capable of
+           carrying type 7 external advertisements,  which
+           are  translated into type 5 external advertise-
+           ments at NSSA borders."
+       REFERENCE
+          "OSPF Version 2, Section 12.1.2 Options"
+      ::= { ruijieOspfNeighborEntry 4 }
+
+
+ruijieOspfNbrPriority OBJECT-TYPE
+        SYNTAX   DesignatedRouterPriority
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The priority of this neighbor in the designat-
+           ed router election algorithm.  The value 0 sig-
+           nifies that the neighbor is not eligible to be-
+           come  the  designated router on this particular
+           network."
+       ::= { ruijieOspfNeighborEntry 5 }
+
+
+ruijieOspfNbrState OBJECT-TYPE
+        SYNTAX   INTEGER    {
+                    down (1),
+                    attempt (2),
+                    init (3),
+                    twoWay (4),
+                    exchangeRuijie (5),
+                    exchange (6),
+                    loading (7),
+                    full (8)
+                  }
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The State of the relationship with this Neigh-
+           bor."
+       REFERENCE
+          "OSPF Version 2, Section 10.1 Neighbor States"
+      ::= { ruijieOspfNeighborEntry 6 }
+
+
+ruijieOspfNbrEvents OBJECT-TYPE
+        SYNTAX   Counter32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The number of times this neighbor relationship
+           has changed state, or an error has occurred."
+       ::= { ruijieOspfNeighborEntry 7 }
+
+
+ruijieOspfNbrLsRetransQLen OBJECT-TYPE
+        SYNTAX   Gauge32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The  current  length  of  the   retransmission
+           queue."
+       ::= { ruijieOspfNeighborEntry 8 }
+
+
+ruijieOspfNbmaNbrStatus OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "This variable displays the status of  the  en-
+           try.  Setting it to 'invalid' has the effect of
+           rendering it inoperative.  The internal  effect
+           (row removal) is implementation dependent."
+       ::= { ruijieOspfNeighborEntry 9 }
+
+
+ruijieOspfNbmaNbrPermanence OBJECT-TYPE
+        SYNTAX   INTEGER    {
+                    dynamic (1),        -- learned through protocol
+                    permanent (2)       -- configured address
+                  }
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "This variable displays the status of  the  en-
+           try.   'dynamic'  and  'permanent' refer to how
+           the neighbor became known."
+       ::= { ruijieOspfNeighborEntry 10 }
+
+
+ruijieOspfNbrHelloSuppressed OBJECT-TYPE
+        SYNTAX   TruthValue
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "Indicates whether Hellos are being  suppressed
+           to the neighbor"
+       ::= { ruijieOspfNeighborEntry 11 }
+                     
+ruijieOspfNbrDeadTimeDueIn OBJECT-TYPE 
+        SYNTAX   TimeTicks
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "if in this interval ,hello packet is not been received ,
+            the neighbor is recognized dead.if received,it 
+            will recovery the dead time which has been setted."
+       ::= { ruijieOspfNeighborEntry 12 }
+       
+ruijieOspfNbrNeighborUpTime OBJECT-TYPE 
+        SYNTAX   TimeTicks
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "the time that the neighbor has been up."
+       ::= { ruijieOspfNeighborEntry 13 }
+       
+ruijieOspfNbrDR OBJECT-TYPE 
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "the Designated Router of this neighbor."
+       ::= { ruijieOspfNeighborEntry 14 }
+       
+ruijieOspfNbrBDR OBJECT-TYPE 
+        SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "the Backup Designated Router of this neighbor."
+       ::= { ruijieOspfNeighborEntry 15 }
+       
+ruijieOspfNbrArea  OBJECT-TYPE	
+	SYNTAX   IpAddress
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "the area where the neighbor is in."
+       ::= { ruijieOspfNeighborEntry 16 }
+       
+ruijieOspfNbrRetransmissionNum  OBJECT-TYPE 
+        SYNTAX   Counter32
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "the Retransmission times."
+       ::= { ruijieOspfNeighborEntry 17 }
+
+ruijieOspfNbrIfState OBJECT-TYPE
+        SYNTAX   INTEGER    {
+                    other(0),
+                    designatedRouter (1),
+                    backupDesignatedRouter (2),
+                    otherDesignatedRouter (3)
+                  }
+        MAX-ACCESS   read-only
+        STATUS   current
+        DESCRIPTION
+           "The neighbor's interface State which connected to local router."
+        ::= { ruijieOspfNeighborEntry 18 }
+
+--OSPF border routing information
+ruijieOspfRouteTable OBJECT-TYPE
+    SYNTAX   SEQUENCE OF RuijieOspfRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS   current
+    DESCRIPTION
+       "This entity's OSPF border routing table."
+    ::= { ruijieOspfMIBObjects  10 }
+
+ruijieOspfRouteEntry OBJECT-TYPE
+    SYNTAX   RuijieOspfRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS   current
+    DESCRIPTION
+       "A  route to  a  destination."
+    INDEX {
+        ruijieOspfRouteDest,
+        ruijieOspfRouteArea,        
+        ruijieOspfRouteNextHop        
+        }
+    ::= { ruijieOspfRouteTable 1 }
+
+RuijieOspfRouteEntry ::=
+    SEQUENCE {
+        ruijieOspfRouteDest
+            IpAddress,
+        ruijieOspfRouteArea
+            IpAddress,            
+        ruijieOspfRouteNextHop
+             IpAddress,
+        ruijieOspfRouteCost
+            Unsigned32,
+        ruijieOspfRouteType
+            INTEGER,            
+        ruijieOspfRouteDRType
+            INTEGER,
+        ruijieOspfRouteSpfNo
+            Counter32
+   }
+                 
+ruijieOspfRouteDest OBJECT-TYPE
+    SYNTAX   IpAddress
+    MAX-ACCESS read-only
+    STATUS   current
+    DESCRIPTION
+       "Router ID of the destination."
+    ::= { ruijieOspfRouteEntry 1 }
+
+ruijieOspfRouteArea OBJECT-TYPE
+    SYNTAX   IpAddress
+    MAX-ACCESS read-only
+    STATUS   current
+    DESCRIPTION
+       "The area ID of the area from which this route is learned."
+    ::= { ruijieOspfRouteEntry 2 }
+
+ruijieOspfRouteNextHop OBJECT-TYPE
+    SYNTAX   IpAddress
+    MAX-ACCESS read-only
+    STATUS   current
+    DESCRIPTION
+       "Next hop toward the destination."
+    ::= { ruijieOspfRouteEntry 3 }
+
+ruijieOspfRouteCost OBJECT-TYPE
+    SYNTAX   Unsigned32
+    MAX-ACCESS read-only
+    STATUS   current
+    DESCRIPTION
+       " Cost of using this route."
+
+    ::= { ruijieOspfRouteEntry 4 }
+    
+ruijieOspfRouteDRType OBJECT-TYPE
+    SYNTAX   INTEGER {
+                      abr(1),
+                      asbr(2),
+                      both(3) --abr and asbr
+                     }
+    MAX-ACCESS read-only
+    STATUS   current
+    DESCRIPTION
+       "The router type of the destination;
+        it is either an ABR or ASBR or both."
+    ::= { ruijieOspfRouteEntry 5 }
+
+ruijieOspfRouteType  OBJECT-TYPE
+    SYNTAX   INTEGER {
+                       intral-area-route(1),
+                       inter-area-route(2)
+                       } 
+    MAX-ACCESS read-only
+    STATUS   current
+    DESCRIPTION 
+              "this field indicate this route is an intral area route 
+               or inter area route."
+      ::= { ruijieOspfRouteEntry 6 } 
+          
+ruijieOspfRouteSpfNo OBJECT-TYPE
+    SYNTAX   Counter32
+    MAX-ACCESS read-only
+    STATUS   current
+    DESCRIPTION
+       " The internal number of the shortest path first (SPF) calculation that
+         installs this route."
+    ::= { ruijieOspfRouteEntry 7 }
+                             
+-- conformance information
+
+ruijieOspfMIBConformance OBJECT IDENTIFIER ::= { ruijieOspfMIB 2 }
+ruijieOspfMIBCompliances OBJECT IDENTIFIER ::= { ruijieOspfMIBConformance 1 }
+ruijieOspfMIBGroups      OBJECT IDENTIFIER ::= { ruijieOspfMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieOspfMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Raisecom OSPF MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS {
+                     ruijieOspfBaseMIBGroup,
+                     ruijieOspfAreaMIBGroup,
+                     ruijieOspfLsaMIBGroup,
+                     ruijieOspfIfMIBGroup,
+                     ruijieOspfVirtMIBGroup,
+                     ruijieOspfNeighborMIBGroup,
+                     ruijieOspfRouteInfoMIBGroup
+                 }
+        ::= { ruijieOspfMIBCompliances 1 }
+                
+-- units of conformance
+
+ruijieOspfBaseMIBGroup OBJECT-GROUP
+        OBJECTS {
+               ruijieOspfMiniLsaInterval         ,
+               ruijieOspfMiniLsaArrival          , 
+               ruijieOspfAreasNum                ,        
+               ruijieOspfNormalAreasNum          ,   
+               ruijieOspfStubAreasNum            ,   
+               ruijieOspfNssaAreasNum            ,   
+               ruijieOspfSpfDelay                ,            
+               ruijieOspfSpfHoldTime             ,   
+               ruijieOspfAutoCostRefBandWidthRef ,         
+               ruijieOspfLsaGroupPacing          ,           
+               ruijieOspfInterDistance           ,
+               ruijieOspfIntraDistance           ,      
+               ruijieOspfExternDistance          ,
+               ruijieOspfLogAdjChangeNotify      ,
+               ruijieOspfPassiveStatus           ,
+               ruijieOspfRFC1583Compatibility    ,
+               ruijieOspfRouteRedisDefMetricVal
+   
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of general objects providing OSPF managment."
+        ::= { ruijieOspfMIBGroups 1 }
+
+ruijieOspfAreaMIBGroup OBJECT-GROUP
+        OBJECTS {
+               ruijieOspfAreaId,
+               ruijieOspfAuthType,
+               ruijieOspfImportAsExtern,
+               ruijieOspfSpfRuns,
+               ruijieOspfAreaBdrRtrCount,
+               ruijieOspfAsBdrRtrCount,
+               ruijieOspfAreaLsaCount,
+               ruijieOspfAreaLsaCksumSum,
+               ruijieOspfAreaSummary,
+               ruijieOspfAreaStatus,        
+               ruijieOspfAreaInterfaceNum,
+               ruijieOspfAreaNssaIsRedistribution,
+               ruijieOspfAreaNssaIsDefInfoOriginate,
+               ruijieOspfNetWorkAreaID,
+               ruijieOspfNetWorkAddress,
+               ruijieOspfNetWorkMask,
+               ruijieOspfNetWorkStatus
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of area objects providing OSPF managment."
+        ::= { ruijieOspfMIBGroups 2 }
+                
+ruijieOspfLsaMIBGroup OBJECT-GROUP
+        OBJECTS {
+           ruijieOspfLsdbAreaId,
+           ruijieOspfLsdbType,
+           ruijieOspfLsdbLsid,
+           ruijieOspfLsdbRouterId,
+           ruijieOspfLsdbSequence,
+           ruijieOspfLsdbAge,
+           ruijieOspfLsdbChecksum,
+           ruijieOspfLsdbAdvertisement,
+           ruijieOspfLsdbLinkNum,
+           ruijieOspfLsdbPacketLength,
+           ruijieOspfSummaryLsaNetworkMask,
+           ruijieOspfSummaryLsaTos0Metric,
+           ruijieOspfNssaLsaDetailMetricType,
+           ruijieOspfNssaLsaDetailForwardAddr ,
+           ruijieOspfNssaLsaDetailRouteTag ,
+           ruijieOspfLsdbOption,
+           
+           ruijieOspfExtLsdbType,
+           ruijieOspfExtLsdbLsid,
+           ruijieOspfExtLsdbRouterId,
+           ruijieOspfExtLsdbSequence,
+           ruijieOspfExtLsdbAge,
+           ruijieOspfExtLsdbChecksum,
+           ruijieOspfExtLsdbAdvertisement,  
+           ruijieOspfExtLsdbNetworkMask,
+           ruijieOspfExtLsdbMetricType,
+           ruijieOspfExtLsdbForwardAddr,
+           ruijieOspfExtLsdbRouteTag,
+           ruijieOspfExtLsdbMetric,
+           ruijieOspfExtLsdbOption,
+           ruijieOspfExtLsdbPacketLength,
+                      
+           ruijieOspfRouterLsaDetailLinkID,
+           ruijieOspfRouterLsaDetailLinkType,
+           ruijieOspfRouterLsaDetailLinkData,
+           ruijieOspfRouterLsaDetailTos0Metric,
+           
+           ruijieOspfNetWorkLsaDetailAttachedRouter,     
+           ruijieOspfNetWorkLsaDetailNetworkMask,  
+           
+           ruijieOspfAreaLsaDBSumAreaId,
+           ruijieOspfAreaLsaDBSumLsaType,
+           ruijieOspfAreaLsaDBSumCounts   ,
+           ruijieOspfAreaLsaDBSumDeletes,
+           ruijieOspfAreaLsaDBSumMaxage,
+            
+           ruijieOspfLsaDBSumLsaType,
+           ruijieOspfLsaDBSumCounts,
+           ruijieOspfLsaDBSumDeletes,
+           ruijieOspfLsaDBSumMaxage
+           
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of OSPF Link State Database objects providing OSPF managment."
+        ::= { ruijieOspfMIBGroups 3 }
+
+ruijieOspfIfMIBGroup OBJECT-GROUP
+        OBJECTS {
+         ruijieOspfIfIpAddress,
+         ruijieOspfAddressLessIf,
+         ruijieOspfIfAreaId,
+         ruijieOspfIfType,
+         ruijieOspfIfAdminStat,
+         ruijieOspfIfRtrPriority,
+         ruijieOspfIfTransitDelay,
+         ruijieOspfIfRetransInterval,
+         ruijieOspfIfHelloInterval,
+         ruijieOspfIfRtrDeadInterval,
+         ruijieOspfIfPollInterval,
+         ruijieOspfIfState,
+         ruijieOspfIfDesignatedRouter,
+         ruijieOspfIfBackupDesignatedRouter,
+         ruijieOspfIfEvents,
+         ruijieOspfIfAuthType,
+         ruijieOspfIfAuthKey,
+         ruijieOspfIfStatus,
+         ruijieOspfIfMulticastForwarding,
+         ruijieOspfIfDemand,  
+         ruijieOspfIfDatabaseFilterAllOut,
+         ruijieOspfIfDesignateRouterId     ,
+         ruijieOspfIfBackupDesignateRouterId ,
+--         ruijieOspfIfMd5AuthKeyId,
+         ruijieOspfIfWaitInternal,
+         ruijieOspfIfPassiveStatus,
+         ruijieOspfIfCurrentUsedMd5AuthKeyId,
+         
+         ruijieOspfIfMd5AuthKeyIf,
+         ruijieOspfIfMd5AuthKeyId,
+         ruijieOspfIfMd5AuthKey,
+         ruijieOspfIfMd5AuthKeySt
+                
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of OSPF interface managment."
+        ::= { ruijieOspfMIBGroups 4 }
+
+
+ruijieOspfVirtMIBGroup OBJECT-GROUP
+        OBJECTS {
+        ruijieOspfVirtIfAreaId,
+        ruijieOspfVirtIfNeighbor,
+        ruijieOspfVirtIfTransitDelay,
+        ruijieOspfVirtIfRetransInterval,
+        ruijieOspfVirtIfHelloInterval,
+        ruijieOspfVirtIfRtrDeadInterval,
+        ruijieOspfVirtIfState,
+        ruijieOspfVirtIfEvents,
+        ruijieOspfVirtIfAuthType,
+        ruijieOspfVirtIfAuthKey,
+        ruijieOspfVirtIfStatus,
+        ruijieOspfVirtCost,
+        ruijieOspfVirtNativeIfIndex,
+        ruijieOspfVirtLinkState,     
+        ruijieOspfVirtHelloDueIn,
+        
+        ruijieOspfVirtIfMd5AuthKeyAreaId,
+        ruijieOspfVirtIfMd5AuthKeyNeighbor,
+        ruijieOspfVirtIfMd5AuthKeyId,
+        ruijieOspfVirtIfMd5AuthKey,
+        ruijieOspfVirtIfMd5AuthKeySt,
+        ruijieOspfVirtCurrentUsedMd5AuthKeyId
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of OSPF Virtual Link managment."
+        ::= { ruijieOspfMIBGroups 5 }
+
+ruijieOspfNeighborMIBGroup OBJECT-GROUP
+        OBJECTS {
+        ruijieOspfNbrIpAddr,
+        ruijieOspfNbrAddressLessIndex,
+        ruijieOspfNbrRtrId,
+        ruijieOspfNbrOptions,
+        ruijieOspfNbrPriority,
+        ruijieOspfNbrState,
+        ruijieOspfNbrEvents,
+        ruijieOspfNbrLsRetransQLen,
+        ruijieOspfNbmaNbrStatus,
+        ruijieOspfNbmaNbrPermanence,
+        ruijieOspfNbrHelloSuppressed,     
+        ruijieOspfNbrDeadTimeDueIn,
+        ruijieOspfNbrNeighborUpTime,
+        ruijieOspfNbrDR,
+        ruijieOspfNbrBDR,
+        ruijieOspfNbrArea,
+        ruijieOspfNbrRetransmissionNum
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of OSPF Neighbor information."
+        ::= { ruijieOspfMIBGroups 6 }
+
+ruijieOspfRouteInfoMIBGroup OBJECT-GROUP
+        OBJECTS {
+        ruijieOspfRouteType,
+        ruijieOspfRouteDest,
+        ruijieOspfRouteNextHop,
+        ruijieOspfRouteCost,
+        ruijieOspfRouteDRType,
+        ruijieOspfRouteArea,
+        ruijieOspfRouteSpfNo
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of OSPF route information."
+        ::= { ruijieOspfMIBGroups 7 }
+                
+-- -------------------------------------------------------------
+-- Compliance statements
+-- -------------------------------------------------------------
+ospfMIBConformance OBJECT IDENTIFIER ::= { ruijieOspfMIB 3 }
+ospfMIBCompliances OBJECT IDENTIFIER ::= { ospfMIBConformance 1 }
+
+ospfExternCompliance MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for device support of OSPF
+         services."
+         
+    MODULE
+--        OBJECT           ospfASBdrRtrStatus
+--        MIN-ACCESS       read-only
+--        DESCRIPTION     "Write access is not required."
+--            
+--        OBJECT           ospfTOSSupport
+--        MIN-ACCESS       read-only
+--        DESCRIPTION     "Write access is not required."
+--                    
+--        OBJECT           ospfExtLsdbLimit
+--        MIN-ACCESS       read-only
+--        DESCRIPTION     "Write access is not required."
+--                            
+--        OBJECT           ospfMulticastExtensions
+--        MIN-ACCESS       read-only
+--        DESCRIPTION     "Write access is not required."
+--                                    
+--        OBJECT           ospfExitOverflowInterval
+--        MIN-ACCESS       read-only
+--        DESCRIPTION     "Write access is not required."
+--        
+--        OBJECT           ospfDemandExtensions
+--        MIN-ACCESS       read-only
+--        DESCRIPTION     "Write access is not required."
+--
+--        OBJECT           ospfIfAreaId
+--        MIN-ACCESS       read-only
+--        DESCRIPTION     "Write access is not required."
+--
+--        OBJECT           ospfIfStatus
+--        MIN-ACCESS       read-only
+--        DESCRIPTION     "Create access is not required."
+--
+--                
+--        OBJECT           ospfStubMetric
+--        MIN-ACCESS       read-write
+--        DESCRIPTION     "Create access is not required."                
+--                                                    
+--        OBJECT           ospfStubStatus
+--        MIN-ACCESS       read-only
+--        DESCRIPTION     "Write access is not required."
+--         
+--        OBJECT           ospfStubMetricType
+--        MIN-ACCESS       read-write
+--        DESCRIPTION     "Create access is not required."         
+--        
+--        OBJECT           ospfIfAdminStat
+--        MIN-ACCESS       read-only
+--        DESCRIPTION     "Write access is not required."                 
+--         
+--        OBJECT           ospfNbmaNbrStatus
+--        MIN-ACCESS       read-only
+--        DESCRIPTION     "Read-create access is not required."                 
+--        
+--        OBJECT           ospfNbrPriority
+--        MIN-ACCESS       read-only
+--        DESCRIPTION     "Read-create access is not required."  
+--
+--        OBJECT           ospfIfPollInterval
+--        MIN-ACCESS       read-only
+--        DESCRIPTION     "Read-create access is not required."                  
+--        
+--        OBJECT           ospfIfTransitDelay
+--        SYNTAX           Unsigned32 (1..65535)
+--        DESCRIPTION     "Range of value is changed."  
+--        
+--        OBJECT           ospfIfRetransInterval
+--        SYNTAX           Unsigned32 (1..65535)
+--        DESCRIPTION     "Range of value is changed."          
+--        
+--        OBJECT           ospfVirtIfTransitDelay
+--        SYNTAX           Unsigned32 (1..65535)
+--        DESCRIPTION     "Range of value is changed."          
+--
+--        OBJECT           ospfIfType
+--        SYNTAX           INTEGER    {
+--                             broadcast (1),
+--                             nbma (2),
+--                             pointToPoint (3),
+--                             pointToMultipoint (5),
+--                             loopback(6)
+--                         }
+--        DESCRIPTION     "add type 'loopback'."          
+--                
+--        OBJECT           ospfVirtIfRetransInterval
+--        SYNTAX           Unsigned32 (1..65535)
+--        DESCRIPTION     "Range of value is changed."       
+        
+        OBJECT           ruijieOspfVirtIfRtrDeadInterval
+        SYNTAX           PositiveInteger
+        DESCRIPTION     "default value change from 60 to 40."                           
+                                   
+    ::= { ospfMIBCompliances 1 }
+
+        
+END

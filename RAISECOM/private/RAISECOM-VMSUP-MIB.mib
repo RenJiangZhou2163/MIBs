@@ -1,0 +1,783 @@
+-- *****************************************************************
+-- RAISECOM-VMSUP-MIB.mib:  Raisecom VirtualMachine MIB file
+--
+-- January 2011, Liupu
+--
+-- Copyright (c) 2012 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RAISECOM-VM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32,
+        Unsigned32,
+        IpAddress
+                FROM SNMPv2-SMI
+        TruthValue,
+        DisplayString,
+        RowStatus,
+        DateAndTime,
+        MacAddress
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        IfIndex,
+        ConfigStatus
+                FROM RAISECOM-TC
+        VlanId
+                FROM Q-BRIDGE-MIB
+        ruijieMgmt
+                FROM RAISECOM-SMI;
+
+ruijieVMMIB MODULE-IDENTITY
+        LAST-UPDATED "201208220000Z"
+        ORGANIZATION "Raisecom Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@raisecom.com.cn"
+        DESCRIPTION
+                "This module defines raisecom VM support mibs."
+        REVISION      "201208220000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 96}
+
+
+-- VirtualMachine Information
+
+ruijieVMMIBObjects OBJECT IDENTIFIER ::= { ruijieVMMIB 1 }
+
+-- -----------------------------------------------------------------------
+-- Scalar of configuring VM support.
+-- -----------------------------------------------------------------------
+ruijieVMFuncVMSupport OBJECT-TYPE
+        SYNTAX ConfigStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "Indicates whether the VM support is currently running 
+                in the specified switch.
+                
+                Set this object to valid(1) and the VM support will be disabled.
+                Set this object to invalid(2) and the VM support will be enabled." 
+        ::= { ruijieVMMIBObjects 1 }
+
+ruijieVMTrapCfgNotifyStatus OBJECT-TYPE
+        SYNTAX ConfigStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "Status of the VM notification, 
+                set its value to invalid(2) and VM notification will be turned off.
+                set its value to valid(1) and VM notification will be turned on."
+        ::= { ruijieVMMIBObjects 2 }
+        
+ruijieVMTrapCfgHistorySize OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "Value of VM notification history, and this value ranges from 1 to 200."
+        ::= { ruijieVMMIBObjects 3 }
+        
+ruijieVMRateMin OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "Minimum Kbps (KBits per second) for rate limit."
+        ::= { ruijieVMMIBObjects 12 }
+        
+ruijieVMRateMax OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "Maximum Kbps (KBits per second) for rate limit."
+        ::= { ruijieVMMIBObjects 13 }
+        
+ruijieVMBurstMin OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "Minimum Kbyte for rate burst. 
+                Burst Size: The maximum number of byte to allow in a burst."
+        ::= { ruijieVMMIBObjects 14 }
+
+ruijieVMBurstMax OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "Maximum Kbyte for rate burst. 
+                Burst Size: The maximum number of byte to allow in a burst."
+        ::= { ruijieVMMIBObjects 15 }
+        
+-- -----------------------------------------------------------------------
+-- A table for configuring VM information.
+-- -----------------------------------------------------------------------
+ruijieVMInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVMInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+               "A table of VM information request entries."
+        ::= { ruijieVMMIBObjects 4 }
+    
+ruijieVMInfoEntry OBJECT-TYPE
+        SYNTAX RuijieVMInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "Entry contains VM information in switch."  
+        INDEX { ruijieVMInfoVMMac, ruijieVMInfoVMGroup }
+        ::= { ruijieVMInfoTable 1 }
+        
+RuijieVMInfoEntry ::=
+        SEQUENCE {
+                ruijieVMInfoVMMac       MacAddress,
+                ruijieVMInfoVMGroup     Integer32,
+                ruijieVMInfoRowStatus   RowStatus
+        } 
+
+ruijieVMInfoVMMac OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "Mac address of VM is registered."
+        ::= { ruijieVMInfoEntry 1 }
+
+ruijieVMInfoVMGroup OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+               "VM Group number to which the VM is associated."
+        ::= { ruijieVMInfoEntry 2 }
+
+ruijieVMInfoRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+                "Status of the Virtual Machine information table.
+                
+                Set this object to ROW_DESTORY, delete VM from VM Group.
+                Set this object to ROW_ACTIVE, add VM to VM Group."
+        ::= { ruijieVMInfoEntry 3 }
+
+-- -----------------------------------------------------------------------
+-- A table for configuring VM Group.
+-- -----------------------------------------------------------------------
+ruijieVMGroupInfoTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVMGroupInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "A table of VM Group information request entries."
+        ::= { ruijieVMMIBObjects 5 }
+    
+ruijieVMGroupInfoEntry OBJECT-TYPE
+        SYNTAX RuijieVMGroupInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "Entry VM group information in switch."
+        INDEX { ruijieVMGroupInfoGroupName }
+        ::= { ruijieVMGroupInfoTable 1 }
+
+RuijieVMGroupInfoEntry ::=
+        SEQUENCE {
+                ruijieVMGroupInfoGroupName      Integer32,
+                ruijieVMGroupInfoProfileCfg     ConfigStatus,
+                ruijieVMGroupInfoProfileName    DisplayString,
+                ruijieVMGroupInfoRowStatus      RowStatus
+        }
+
+ruijieVMGroupInfoGroupName OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "Group number to which the VM Group is associated."
+        ::= { ruijieVMGroupInfoEntry 1 }
+
+ruijieVMGroupInfoProfileCfg OBJECT-TYPE
+        SYNTAX ConfigStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "Configuration of the VM Group Profile.
+                
+                Set this object to unrelated(2) remove the profile from VM Group, 
+                Set this object to related(1) relate the profile to VM Group"
+        ::= { ruijieVMGroupInfoEntry  2 }
+
+ruijieVMGroupInfoProfileName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (0..32))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "Name of the network config file on the VM . 
+                If the profile file is not created and the VM dose not need any ACL, QOS config, 
+                this field is null."
+        ::= { ruijieVMGroupInfoEntry  3 }
+
+ruijieVMGroupInfoRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+                "Status of the Virtual Machine Group information table.
+                
+                Set this object to ROW_DESTORY, delete the VM Group.
+                Set this object to ROW_ACTIVE, create the VM Group and 
+                associate with this profile"
+        ::= { ruijieVMGroupInfoEntry 4 }
+
+-- -----------------------------------------------------------------------
+-- A table for configuring VM Profile.
+-- -----------------------------------------------------------------------
+ruijieVMProfileTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVMProfileEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A table of VM network profile information."
+        ::= { ruijieVMMIBObjects 6 }
+
+ruijieVMProfileEntry OBJECT-TYPE
+        SYNTAX RuijieVMProfileEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry the VM network profile information in switch."  
+        INDEX { ruijieVMProfileName }
+        ::= { ruijieVMProfileTable 1 }
+        
+RuijieVMProfileEntry ::= 
+        SEQUENCE {
+                ruijieVMProfileName           DisplayString,
+                ruijieVMProfileAclIn          DisplayString,
+                ruijieVMProfileAclOut         DisplayString,
+                ruijieVMProfileTxRate         Unsigned32,
+                ruijieVMProfileTxBurst        Integer32,
+                ruijieVMProfileRxRate         Unsigned32,
+                ruijieVMProfileRxBurst        Integer32,
+                ruijieVMProfileRowStatus      RowStatus,
+                ruijieVMProfileQosTrustMode   INTEGER,
+                ruijieVMProfileQosDefCos      INTEGER,
+                ruijieVMProfileQosRxPolicyMap DisplayString
+        }
+
+ruijieVMProfileName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (0..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+               "the name of the VM profile contains a set of properties 
+                that will be configured on the Switch and VirtualSwitch."
+        ::= { ruijieVMProfileEntry  1 }
+
+ruijieVMProfileAclIn OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..100))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "Access list name of this entry , and the direction is in.This value 
+                is unique for every entry. When this string is used as an index, Value 
+                of a sub-identifier equals ASCII value of corresponding character(first 
+                sub-identifier corresponds first character of string). The number of 
+                sub-identifiers of this string must be 100, If length of string is less 
+                than 100, the sub-identifier(0x0) will be filled in tail."
+        ::= { ruijieVMProfileEntry  2 }
+
+ruijieVMProfileAclOut OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..100))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "Access list name of this entry , and the direction is out.This value 
+                is unique for every entry. When this string is used as an index, Value 
+                of a sub-identifier equals ASCII value of corresponding character(first 
+                sub-identifier corresponds first character of string). The number of 
+                sub-identifiers of this string must be 100, If length of string is less 
+                than 100, the sub-identifier(0x0) will be filled in tail."
+        ::= { ruijieVMProfileEntry  3 }
+
+ruijieVMProfileTxRate OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "Tx Rate value of VM flow output from port."
+        ::= { ruijieVMProfileEntry 4 }
+
+ruijieVMProfileTxBurst OBJECT-TYPE
+        SYNTAX Integer32 
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "Output limit of burst traffic in units of byte.
+                 0 indicates that burst traffic will be not limited."
+        ::= { ruijieVMProfileEntry 5 }
+
+ruijieVMProfileRxRate OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "Rx Rate value of VM flow input limit from port."
+        ::= { ruijieVMProfileEntry 6 }
+
+ruijieVMProfileRxBurst OBJECT-TYPE
+        SYNTAX Integer32 
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "Input limit of burst traffic in units of byte.
+                 0 indicates that burst traffic will be not limited."
+        ::= { ruijieVMProfileEntry 7 }
+
+ruijieVMProfileRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+                "Status of the Virtual Machine Profile information table.
+                
+                Set this object to ROW_DESTORY, delete the profile. 
+                Set this object to ROW_ACTIVE, create the profile."
+        ::= { ruijieVMProfileEntry 8 }
+
+ruijieVMProfileQosTrustMode OBJECT-TYPE
+        SYNTAX INTEGER {
+               not-trust(0),
+               trust-cos(1),
+               trust-dscp(2),
+               trust-ip-precedence(3)
+        } 
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "QoS trust mode  for VMs."
+        ::= { ruijieVMProfileEntry 9 }
+
+ruijieVMProfileQosDefCos OBJECT-TYPE
+        SYNTAX INTEGER {
+                invalid(8)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "The default ingress User Priority for VMs.
+		        This cos value is in the range (0..7) ,
+                Set this value with invalid(8), defualt cos will delete."
+        ::= { ruijieVMProfileEntry 10 }
+
+ruijieVMProfileQosRxPolicyMap OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+               "Police map name of ServerPort ingress match about VM."
+        ::= { ruijieVMProfileEntry  11 }
+
+-- -----------------------------------------------------------------------
+-- A table for configuring VM location.
+-- -----------------------------------------------------------------------
+ruijieVMLocInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVMLocInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+               "A table of VM location information."
+        ::= { ruijieVMMIBObjects 7 }
+ruijieVMLocInfoEntry OBJECT-TYPE
+        SYNTAX RuijieVMLocInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "Entry the VM location informations in switch."  
+        INDEX { ruijieVMLocInfoVMMac, ruijieVMLocInfoPort }
+        ::= { ruijieVMLocInfoTable 1 }
+        
+RuijieVMLocInfoEntry ::= 
+        SEQUENCE {
+                ruijieVMLocInfoVMMac        MacAddress,
+                ruijieVMLocInfoPort         IfIndex,
+                ruijieVMLocInfoType         Unsigned32,
+                ruijieVMLocInfoRowStatus    RowStatus
+        } 
+
+ruijieVMLocInfoVMMac OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "Mac address of VM which is discovered in server port."
+        ::= { ruijieVMLocInfoEntry 1 }
+        
+ruijieVMLocInfoPort OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "The port index where the VM is discovered in switch."
+        ::= { ruijieVMLocInfoEntry 2 }
+
+ruijieVMLocInfoType OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "The type of VM location. This object is read-only.
+                 get its value is VM_LOC_CONF(0) and the VM is configurated.
+                 get its value is VM_LOC_DIS(1) and the VM is discovered."
+        ::= { ruijieVMLocInfoEntry 3 }
+        
+ruijieVMLocInfoRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+                "Status of the Virtual Machine location information table.
+                 Set this object to ROW_DESTORY, delete the location of VM.
+                 Set this object to ROW_ACTIVE, add the location of VM."
+        ::= { ruijieVMLocInfoEntry 4 }
+
+-- -----------------------------------------------------------------------
+-- A table for configuring VM support ServerPort and ReflectPort.
+-- -----------------------------------------------------------------------
+ruijieVMPortInfoTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVMPortInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+               "A table of server port information."
+        ::= { ruijieVMMIBObjects 8 }
+
+ruijieVMPortInfoEntry OBJECT-TYPE
+        SYNTAX RuijieVMPortInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "Entry the server port informations in switch."  
+        INDEX { ruijieVMPortInfoPort }
+        ::= { ruijieVMPortInfoTable 1 }
+        
+RuijieVMPortInfoEntry ::= 
+        SEQUENCE {
+                ruijieVMPortInfoPort            IfIndex,
+                ruijieVMPortInfoStatus          ConfigStatus,
+                ruijieVMPortInfoReflectStatus   ConfigStatus
+        }
+
+ruijieVMPortInfoPort OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "Server port index on which VM is discovered."
+        ::= { ruijieVMPortInfoEntry 1 }
+
+ruijieVMPortInfoStatus OBJECT-TYPE
+        SYNTAX ConfigStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "Status of this port to ServerPort function, 
+                set its value to invalid(2) and this port VM support will be disabled. 
+                set its value to valid(1) and this port VM support will be enabled."
+        ::= { ruijieVMPortInfoEntry 2 }
+
+ruijieVMPortInfoReflectStatus OBJECT-TYPE
+        SYNTAX ConfigStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "Status of this port reflectrelay function, 
+                set its value to invalid(2) and this port without reflectrelay function.
+                set its value to valid(1) and this port reflectrelay function enable."
+        ::= { ruijieVMPortInfoEntry 3 }
+
+-- -----------------------------------------------------------------------
+-- A table for VM support SNMP trap interface configuration.
+-- -----------------------------------------------------------------------
+ruijieVMPortTrapCfgTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVMPortTrapCfgEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+               "Configuration the port of VM notification."
+        ::= { ruijieVMMIBObjects 9 }
+
+ruijieVMPortTrapCfgEntry OBJECT-TYPE
+        SYNTAX RuijieVMPortTrapCfgEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "Entry the Configuration of VM notification of interface."  
+        INDEX { ruijieVMPortTrapCfgPort }
+        ::= { ruijieVMPortTrapCfgTable 1 }
+        
+RuijieVMPortTrapCfgEntry ::= 
+        SEQUENCE {
+                ruijieVMPortTrapCfgPort         IfIndex,
+                ruijieVMPortTrapCfgNotifyStatus ConfigStatus
+        }
+
+ruijieVMPortTrapCfgPort OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The port index which VM notification will be sent in switch."
+        ::= { ruijieVMPortTrapCfgEntry 1 }
+
+ruijieVMPortTrapCfgNotifyStatus OBJECT-TYPE
+        SYNTAX ConfigStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Status of this port VM notification, 
+            set its value to invalid(2) and VM notification will be disabled on this port.
+            set its value to valid(1) and VM notification will be enabled on this port."
+        ::= { ruijieVMPortTrapCfgEntry 2 }
+
+-- -----------------------------------------------------------------------
+-- A table for VM support trap information.
+-- -----------------------------------------------------------------------
+ruijieVMInfoChgTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVMInfoChgEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+               "A table of VM notification."
+        ::= { ruijieVMMIBObjects 10 }
+    
+ruijieVMInfoChgEntry OBJECT-TYPE
+        SYNTAX RuijieVMInfoChgEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "Entry the VM notification information in switch."  
+        INDEX { ruijieVMInfoChgVMMac, ruijieVMInfoChgVlan }
+        ::= { ruijieVMInfoChgTable 1 }
+        
+RuijieVMInfoChgEntry ::= 
+        SEQUENCE {
+                ruijieVMInfoChgVMMac    MacAddress,
+                ruijieVMInfoChgVlan     VlanId,
+                ruijieVMInfoChgPort     IfIndex,
+                ruijieVMInfoChgAction   DisplayString,
+                ruijieVMInfoChgDate     DateAndTime
+        } 
+        
+ruijieVMInfoChgVMMac OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+                "The VM mac address is discovered in switch."
+        ::= { ruijieVMInfoChgEntry 1 }
+        
+ruijieVMInfoChgVlan OBJECT-TYPE
+        SYNTAX VlanId
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+                "Vlan ID where the VM is discovered in switch."
+        ::= { ruijieVMInfoChgEntry 2 }
+        
+ruijieVMInfoChgPort OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+                "The port index where the VM is discovered in switch."
+        ::= { ruijieVMInfoChgEntry 3 }
+        
+ruijieVMInfoChgAction OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (0..32))
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+                "The action of VM discover or delete, 
+                set its value to invalid and indicates the VM is deleted.
+                set its value to valid and indicates the VM is discovered."
+        ::= { ruijieVMInfoChgEntry 4 }
+        
+ruijieVMInfoChgDate OBJECT-TYPE
+        SYNTAX DateAndTime
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+                "The date and time when this VM is discovered or deleted."
+        ::= { ruijieVMInfoChgEntry 5 }
+
+-- -----------------------------------------------------------------------
+-- A table for configuring VM OUI.
+-- -----------------------------------------------------------------------
+ruijieVMOuiInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVMOuiInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+               "A table of VM OUI information."
+        ::= { ruijieVMMIBObjects 11 }
+
+ruijieVMOuiInfoEntry OBJECT-TYPE
+        SYNTAX RuijieVMOuiInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+                "Entry the VM OUI information in switch."  
+        INDEX { ruijieVMOuiInfoOui }
+        ::= { ruijieVMOuiInfoTable 1 }
+        
+RuijieVMOuiInfoEntry ::= 
+        SEQUENCE {
+                ruijieVMOuiInfoOui          MacAddress,
+                ruijieVMOuiInfoRowStatus    RowStatus
+        } 
+
+ruijieVMOuiInfoOui OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "OUI of VM which is VM will be discovered in server port,
+                Only three bytes available in front and the last three bytes 
+                should be set to 0x00, such as 0x00 0x50 0x56 0x00 0x00 0x00."
+        ::= { ruijieVMOuiInfoEntry 1 }
+
+ruijieVMOuiInfoRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+                "Status of the VM OUI information table.
+                 Set this object to ROW_DESTORY, delete the VM OUI.
+                 Set this object to ROW_ACTIVE, add the VM OUI"
+        ::= { ruijieVMOuiInfoEntry 2 }
+-- -----------------------------------------------------------------------
+-- Notification of VM support.
+-- -----------------------------------------------------------------------
+ruijieVMMIBTraps OBJECT IDENTIFIER ::= { ruijieVMMIB 2 }
+
+ruijieVMsupMIBTrap NOTIFICATION-TYPE
+    OBJECTS { 
+            ruijieVMInfoChgVMMac,
+            ruijieVMInfoChgVlan,
+            ruijieVMInfoChgPort, 
+            ruijieVMInfoChgAction,
+            ruijieVMInfoChgDate
+    } 
+    STATUS  current
+    DESCRIPTION
+            "This notification is generated when a VM is discovered or deleted. 
+            If this VM is discovered and without VM location information this 
+            notification will be sent. If this VM is deleted and activated by MAC 
+            notification, this notification will be sent." 
+    ::= { ruijieVMMIBTraps 1 } 
+
+-- conformance information
+
+ruijieVMMIBConformance OBJECT IDENTIFIER ::= { ruijieVMMIB 3 }
+ruijieVMMIBCompliances OBJECT IDENTIFIER ::= { ruijieVMMIBConformance 1 }
+ruijieVMMIBGroups      OBJECT IDENTIFIER ::= { ruijieVMMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieVMMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Raisecom VM MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieVMMIBGroup }
+        ::= { ruijieVMMIBCompliances 1 }
+
+
+-- units of conformance
+
+ruijieVMMIBGroup OBJECT-GROUP
+        OBJECTS {
+                -- Scalar
+                ruijieVMFuncVMSupport,
+                ruijieVMTrapCfgNotifyStatus,
+                ruijieVMTrapCfgHistorySize,
+                ruijieVMRateMin,
+                ruijieVMRateMax,
+                ruijieVMBurstMin,
+                ruijieVMBurstMax,
+                
+                -- VM information table
+                ruijieVMInfoVMMac,
+                ruijieVMInfoVMGroup,
+                ruijieVMInfoRowStatus,
+                
+                -- VM group information table
+                ruijieVMGroupInfoGroupName,
+                ruijieVMGroupInfoProfileCfg,
+                ruijieVMGroupInfoProfileName,
+                ruijieVMGroupInfoRowStatus,
+                
+                -- VM profile information table
+                ruijieVMProfileName,
+                ruijieVMProfileAclIn,
+                ruijieVMProfileAclOut,
+                ruijieVMProfileTxRate,
+                ruijieVMProfileTxBurst,
+                ruijieVMProfileRxRate,
+                ruijieVMProfileRxBurst,
+                ruijieVMProfileRowStatus,
+                ruijieVMProfileQosTrustMode,
+                ruijieVMProfileQosDefCos,
+                ruijieVMProfileQosRxPolicyMap,
+                
+                -- VM location information table
+                ruijieVMLocInfoVMMac,
+                ruijieVMLocInfoPort,
+                ruijieVMLocInfoType,
+                ruijieVMLocInfoRowStatus,
+                
+                -- VM ServerPort and ReflectPort configuration
+                ruijieVMPortInfoPort,
+                ruijieVMPortInfoStatus,
+                ruijieVMPortInfoReflectStatus,
+                
+                -- VM trap port configuration
+                ruijieVMPortTrapCfgPort,
+                ruijieVMPortTrapCfgNotifyStatus,
+                
+                -- VM support trap information
+                ruijieVMInfoChgVMMac,
+                ruijieVMInfoChgVlan,
+                ruijieVMInfoChgPort,
+                ruijieVMInfoChgAction,
+                ruijieVMInfoChgDate,
+                
+                -- VM OUI information table
+                ruijieVMOuiInfoOui,
+                ruijieVMOuiInfoRowStatus
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing VM (echo) ability to a
+                Raisecom agent."
+        ::= { ruijieVMMIBGroups 1 }     
+        
+END

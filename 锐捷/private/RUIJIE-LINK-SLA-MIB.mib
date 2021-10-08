@@ -1,0 +1,187 @@
+-- ====================================================================
+-- Copyright (c) 2019 by Ruijie Networks Co.,Ltd. All rights reserved.
+--
+-- Description: The MIB is designed to get link sla detection information.
+-- Reference: rujie Enterprise MIB
+-- =====================================================================
+
+RUIJIE-LINK-SLA-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        DisplayString,TEXTUAL-CONVENTION,TimeStamp
+            FROM SNMPv2-TC
+        IpAddress, Integer32, Counter32, Counter64, OBJECT-TYPE,
+        MODULE-IDENTITY, Gauge32, NOTIFICATION-TYPE, Unsigned32
+            FROM SNMPv2-SMI
+        MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+            FROM SNMPv2-CONF
+        ruijieMgmt
+            FROM RUIJIE-SMI;
+
+    ruijieSLAMonitor MODULE-IDENTITY
+        LAST-UPDATED "201906210000Z"            
+        ORGANIZATION
+            "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+            "Tel: 4008-111-000 
+             E-mail: service@ruijie.com.cn"  
+        DESCRIPTION
+            "The MIB is designed to get statistic information of
+             link sla."
+        REVISION      "201906210000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 163 }       
+                               
+                       
+-- ========================================================================
+-- Node definitions
+-- ========================================================================
+--Begin the node of ruijieSLAObjects.
+
+    ruijieSLAObjects OBJECT IDENTIFIER ::= { ruijieSLAMonitor 1 }
+
+-- ===============================================
+-- Begin the table of ruijieSLATable.
+-- ===============================================
+
+    ruijieSLATable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieSLAEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The SLA detect infomation fot every link connection. There is one
+             entry in this table for each active SLA connection."
+        ::= { ruijieSLAObjects 1 }
+
+    ruijieSLAEntry OBJECT-TYPE
+        SYNTAX RuijieSLAEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Information about ruijieSLAconnectTable."
+        INDEX { ruijieSLARnsId }
+        ::= { ruijieSLATable 1 }
+				
+    RuijieSLAEntry ::=
+        SEQUENCE {
+		    ruijieSLARnsId
+                Integer32,
+            ruijieSLAIntfName
+                DisplayString,
+            ruijieSLAIPAddr
+            	IpAddress,
+           	ruijieSLALinkState
+           		INTEGER,
+           	ruijieSLALinkDelay
+           		Integer32,
+           	ruijieSLALinkDropRate
+           		Integer32,
+			ruijieSLAIntfTxByteCount
+           		Counter64,
+			ruijieSLAIntfRxByteCount
+           		Counter64,
+			ruijieSLALinkByteUsedRate
+           		Integer32
+        }
+
+    ruijieSLARnsId OBJECT-TYPE
+        SYNTAX Integer32 (0..500)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The id of rns detect."
+        ::= { ruijieSLAEntry 1 }  
+   
+    ruijieSLAIntfName OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The name of SLA interface."
+        ::= { ruijieSLAEntry 2 }
+    
+    ruijieSLAIPAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The SLA detection IP address."
+        ::= { ruijieSLAEntry 3 }
+    
+    ruijieSLALinkState OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+            down(0),
+            up(1)         
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The state of connnetion, 0 - down, 1 - up."
+        ::= { ruijieSLAEntry 4 } 
+          
+    ruijieSLALinkDelay OBJECT-TYPE
+        SYNTAX Integer32 (0..10000)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The delay of the SLA connection."
+        ::= { ruijieSLAEntry 5 }       
+    
+	ruijieSLALinkDropRate OBJECT-TYPE
+	    SYNTAX Integer32 (0..1000)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The drop rate of the SLA connection."
+        ::= { ruijieSLAEntry 6 }
+		
+	ruijieSLAIntfTxByteCount OBJECT-TYPE
+	    SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Tx BYTE count of the SLA interface."
+        ::= { ruijieSLAEntry 7 }
+
+	ruijieSLAIntfRxByteCount OBJECT-TYPE
+	    SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The Rx BYTE count of the SLA interface."
+        ::= { ruijieSLAEntry 8 }
+
+    ruijieSLALinkByteUsedRate OBJECT-TYPE	
+	    SYNTAX Integer32 (0..100)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The band used rate of the SLA connection."
+        ::= { ruijieSLAEntry 9 }	
+
+-- ===============================================
+-- Begin the ruijieSLATrapObject.
+-- ===============================================
+
+    ruijieSLATrap OBJECT IDENTIFIER ::= { ruijieSLAObjects 2 }
+    
+    ruijieSLANotifications OBJECT IDENTIFIER ::= { ruijieSLATrap 1 }
+    
+    ruijieSLASignalThreshold NOTIFICATION-TYPE
+        OBJECTS { ruijieSLAIntfName,
+		          ruijieSLAIPAddr, 
+        		  ruijieSLALinkState,
+                  ruijieSLALinkDelay,
+                  ruijieSLALinkDropRate,
+                  ruijieSLAIntfTxByteCount,
+                  ruijieSLAIntfRxByteCount,
+                  ruijieSLALinkByteUsedRate				  
+        		}
+        STATUS current
+        DESCRIPTION
+            "This notification is generated when SLA send infomation to server."
+        ::= { ruijieSLANotifications 1 }
+           
+END

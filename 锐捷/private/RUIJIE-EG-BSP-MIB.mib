@@ -1,0 +1,143 @@
+-- *****************************************************************
+-- RUIJIE-EG-BSP-MIB.mib:  Ruijie EG Bsp MIB file
+--
+-- March 2016, xiahongliang
+--
+-- Copyright (c) 2016 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-EG-BSP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        NOTIFICATION-TYPE,
+        Integer32
+                FROM SNMPv2-SMI
+        DisplayString,
+        MacAddress
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP,
+        NOTIFICATION-GROUP
+                FROM SNMPv2-CONF
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+				
+ruijieEgBspMIB MODULE-IDENTITY
+	LAST-UPDATED "201602190000Z"
+	ORGANIZATION "Ruijie Networks Co.,Ltd."
+	CONTACT-INFO
+        " 
+		    Tel: 4008-111-000 
+
+		    E-mail: service@ruijie.com.cn"
+	DESCRIPTION
+		"This module defines ruijie eg bsp mibs."
+	REVISION      "201602190000Z"
+	DESCRIPTION
+		"Initial version of this MIB module."
+	::= { ruijieMgmt 147}
+
+ruijieEgBspMIBObjects OBJECT IDENTIFIER ::= { ruijieEgBspMIB 1 }
+
+ruijieEgBspMaxNumber OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Max number of the mac info of the eg bsp permitting."
+        ::= { ruijieEgBspMIBObjects 1 }
+
+ruijieEgBspInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieEgBspInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Mac Info List of devices."
+        ::= { ruijieEgBspMIBObjects 2 }
+
+ruijieEgBspInfoEntry OBJECT-TYPE
+        SYNTAX RuijieEgBspInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry of a device mac information."
+        INDEX { ruijieEgBspInfoMacAddress, ruijieEgBspInfoVlanID, ruijieEgBspInfoPort }
+        ::= { ruijieEgBspInfoTable 1 }
+
+RuijieEgBspInfoEntry ::=
+        SEQUENCE {
+                ruijieEgBspInfoMacAddress MacAddress,
+                ruijieEgBspInfoVlanID Integer32,
+				ruijieEgBspInfoPort Integer32,
+				ruijieEgBspInfoAge Integer32
+        }
+
+ruijieEgBspInfoMacAddress OBJECT-TYPE
+          SYNTAX  MacAddress
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+            "The physical address of device."
+          ::= { ruijieEgBspInfoEntry 1 }
+
+ruijieEgBspInfoVlanID OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The vlan ID."
+        ::= { ruijieEgBspInfoEntry 2 }
+
+ruijieEgBspInfoPort OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The port number."
+        ::= { ruijieEgBspInfoEntry 3 }
+
+ruijieEgBspInfoAge OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "relearning or not."
+        ::= { ruijieEgBspInfoEntry 4 }
+
+ruijieEgBspMIBConformance OBJECT IDENTIFIER ::= { ruijieEgBspMIB 2 }
+ruijieEgBspMIBCompliances OBJECT IDENTIFIER ::= { ruijieEgBspMIBConformance 1 }
+ruijieEgBspMIBGroups      OBJECT IDENTIFIER ::= { ruijieEgBspMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieEgBspMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement the Ruijie Eg Bsp MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieEgBspMIBGroup
+                 }
+        ::= { ruijieEgBspMIBCompliances 1 }
+                
+-- units of conformance
+
+ruijieEgBspMIBGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieEgBspMaxNumber,
+            ruijieEgBspInfoMacAddress,
+            ruijieEgBspInfoVlanID,
+            ruijieEgBspInfoPort,
+            ruijieEgBspInfoAge
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects accessing device information of the eg learning ."
+        ::= { ruijieEgBspMIBGroups 1 }    
+
+END

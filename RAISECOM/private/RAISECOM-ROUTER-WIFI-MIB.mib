@@ -1,0 +1,1233 @@
+-- ****************************************************************
+-- Raisecom WIFI Configuration and Statistics MIB
+--   
+-- DEC 2014, Xiongyang
+--   
+-- Copyright (c) 2014 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+--   
+-- ****************************************************************
+
+
+-- Start module
+RAISECOM-ROUTER-WIFI-MIB DEFINITIONS ::= BEGIN
+
+-- Start external defined node
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Integer32,
+    Counter32,
+    Gauge32,
+    Unsigned32,
+    Counter64,
+    IpAddress
+        FROM SNMPv2-SMI
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP
+        FROM SNMPv2-CONF
+    TEXTUAL-CONVENTION,
+    DisplayString,
+    MacAddress,
+    RowStatus,
+    TruthValue
+        FROM SNMPv2-TC
+    InterfaceIndex
+        FROM IF-MIB
+    ruijieMgmt
+        FROM RAISECOM-SMI;
+-- End external defined node
+
+
+-- Start root node
+ruijieWifiMIB MODULE-IDENTITY
+        LAST-UPDATED "201412290000Z"
+        ORGANIZATION "Raisecom Networks Co.,Ltd."
+        CONTACT-INFO
+                "E-mail: service@raisecom.com.cn"
+        DESCRIPTION
+                "This module defines raisecom wifi mibs."
+
+        REVISION    "201412290000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 133}
+        
+        RuijieEableType ::= TEXTUAL-CONVENTION
+          STATUS  current
+          DESCRIPTION
+             "enable or disable."
+          SYNTAX INTEGER {
+                     enable(1),
+                     disable(2)
+                         }
+
+       RuijieWlanType ::= TEXTUAL-CONVENTION
+          STATUS  current
+          DESCRIPTION
+             "wlan type."
+          SYNTAX INTEGER {
+                     ap(1),
+                     station(2)
+                         }
+       
+       RuijieIsolateType ::= TEXTUAL-CONVENTION
+          STATUS  current
+          DESCRIPTION
+             "wlan ap Isolate type."
+          SYNTAX INTEGER {
+                     isolate(1),
+                     noisolate(2)
+                         } 
+                         
+       RuijieAuthenticationType ::= TEXTUAL-CONVENTION
+          STATUS  current
+          DESCRIPTION
+             "authentication type."
+          SYNTAX INTEGER {
+                     open(1),
+                     share-key(2)
+                         } 
+         
+       RuijieWapPskCiphersType ::= TEXTUAL-CONVENTION
+          STATUS  current
+          DESCRIPTION
+             "authentication type."
+          SYNTAX INTEGER {
+                     aes(1),
+                     tkip(2),
+                     auto(3)
+                         }   
+                         
+       RuijieWifiChanWidthType ::= TEXTUAL-CONVENTION
+          STATUS  current
+          DESCRIPTION
+             "Chanle Width type."
+          SYNTAX INTEGER {
+                     twenty(1),
+                     forty(2)
+                         }   
+       RuijieWifiSlotType ::= TEXTUAL-CONVENTION
+          STATUS  current
+          DESCRIPTION
+             "Slot type."
+          SYNTAX INTEGER {
+                     short(1),
+                     long(2)
+                         } 
+       
+       RuijieWifiFreChanelType ::= TEXTUAL-CONVENTION
+          STATUS  current
+          DESCRIPTION
+             "Chanle Width type."
+          SYNTAX INTEGER {
+                     two-point-four(1),
+                     five(2)
+                         }              
+                            
+-- End root node
+  
+        ruijieWifiMIBObjects OBJECT IDENTIFIER ::= { ruijieWifiMIB 1 } 
+     -- WIFI MIB    
+
+
+-- Node definitions
+        ruijieWifiDot11radioSupportObjects OBJECT IDENTIFIER ::= { ruijieWifiMIBObjects  1 } 
+        ruijieWifiWlanObjects OBJECT IDENTIFIER ::= { ruijieWifiMIBObjects  2 }
+        ruijieWifiDot11radioIfConfigObjects OBJECT IDENTIFIER ::= { ruijieWifiMIBObjects 3 }
+--      ruijieWifiDot11radioIfApplyObjects OBJECT IDENTIFIER ::= { ruijieWifiMIBObjects 4 }
+        ruijieWifiWlanAssociateObjects OBJECT IDENTIFIER ::= { ruijieWifiMIBObjects 4 }        
+ 
+-- Start wifiwlan objects       
+        ruijieWifiDot11radioSupportTable OBJECT-TYPE  
+            SYNTAX SEQUENCE OF RuijieWifiDot11radioSupportEntry
+            MAX-ACCESS            not-accessible
+            STATUS                current
+            DESCRIPTION
+                "the router support the wifi ability ,
+                 include radio index,ap number,station number"
+            ::= { ruijieWifiDot11radioSupportObjects 1 }
+                
+        ruijieWifiDot11radioSupportEntry OBJECT-TYPE
+            SYNTAX RuijieWifiDot11radioSupportEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "the router support the wifi ability entry."
+            INDEX { ruijieWifiDot11radioIndex }
+            ::= { ruijieWifiDot11radioSupportTable 1 } 
+        
+        RuijieWifiDot11radioSupportEntry::=
+            SEQUENCE { 
+            	ruijieWifiDot11radioIndex
+            		Integer32,
+                ruijieWifiDot11radioApMaxCnt
+            		Integer32, 
+                ruijieWifiDot11radioStationMaxCnt
+            		Integer32   
+             }                
+        
+        ruijieWifiDot11radioIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the wifi radio interface index."
+            ::= { ruijieWifiDot11radioSupportEntry 1 }
+
+        ruijieWifiDot11radioApMaxCnt OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the wifi radio interface support max ap count."
+            ::= { ruijieWifiDot11radioSupportEntry 2 } 
+        
+        ruijieWifiDot11radioStationMaxCnt OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the wifi radio interface support max station count."
+            ::= { ruijieWifiDot11radioSupportEntry 3 }
+
+        ruijieWifiWlanIndexNext OBJECT-TYPE
+            SYNTAX                INTEGER
+            MAX-ACCESS            read-only
+            STATUS                current
+            DESCRIPTION   "This object contains an appropriate value to be used
+                          for ruijieWifiWlanIndexNext when creating entries in the
+                          ruijieWifiWlanTable. The value 0 indicates that no
+                          unassigned entries are available."
+            ::= { ruijieWifiWlanObjects 1 }
+        
+        ruijieWifiVlanIndexNext OBJECT-TYPE
+            SYNTAX                INTEGER
+            MAX-ACCESS            read-only
+            STATUS                current
+            DESCRIPTION   "This object contains an appropriate value to be used
+                          for ruijieWifiVlanIndexNext when creating entries in the
+                          ruijieWifiWlanTable. The value 0 indicates that no
+                          unassigned entries are available."
+            ::= { ruijieWifiWlanObjects 2 }  
+               
+        ruijieWifiWlanTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RuijieWifiWlanEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of wifi wlan templet."
+            ::= { ruijieWifiWlanObjects 3 }
+        
+        ruijieWifiWlanEntry OBJECT-TYPE
+            SYNTAX RuijieWifiWlanEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Wifi wlan temple entry."
+            INDEX { ruijieWifiWlanIndex }
+            ::= { ruijieWifiWlanTable 1 }
+   
+        RuijieWifiWlanEntry ::=
+            SEQUENCE { 
+            	ruijieWifiWlanIndex
+            		Integer32,
+                ruijieWifiWlanType
+                    RuijieWlanType,   
+                ruijieWifiWlanSsidName
+                    DisplayString,
+                ruijieWifiWlanVlanId
+                    Integer32, 
+                ruijieWifiWlanRowStatus           
+                    RowStatus,
+                ruijieWifiWlanBroadcastSsid
+                    RuijieEableType,
+                ruijieWifiWlanIsolate
+                    RuijieIsolateType,
+                ruijieWifiWlanBssStaLimit
+                    Integer32,  
+                rujieWifiWlanSecurityType 
+                    BITS, 
+                ruijieWifiWlanAuthenticationSetKey
+                    DisplayString,
+                ruijieWifiWlanWepAuthenticationType  
+                    RuijieAuthenticationType, 
+                ruijieWifiWlanWpaPskCiphersType    
+                    RuijieWapPskCiphersType, 
+                ruijieWifiWlanPassphrase 
+                    DisplayString,
+                ruijieWifiWlanDot11RadioIfindex
+                    Integer32,
+                ruijieWifiWlanDot11RadioSubIfindex
+                    Integer32
+                             }
+             
+        ruijieWifiWlanIndex OBJECT-TYPE
+            SYNTAX Integer32(1..15)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The wlan index"
+            ::= { ruijieWifiWlanEntry 1 }
+                    
+        ruijieWifiWlanType OBJECT-TYPE
+            SYNTAX RuijieWlanType
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Wlan type ap or station."
+            ::= { ruijieWifiWlanEntry 2 }
+
+        ruijieWifiWlanSsidName OBJECT-TYPE
+            SYNTAX DisplayString(SIZE (1..32))
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Wlan ssid name"
+            ::= { ruijieWifiWlanEntry 3 }
+        
+        ruijieWifiWlanVlanId OBJECT-TYPE
+            SYNTAX Integer32(1..4095)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Wlan vlan id"
+            ::= { ruijieWifiWlanEntry 4 }   
+            
+        ruijieWifiWlanRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "create/modify/delete wlan"
+            ::= { ruijieWifiWlanEntry 5 }
+
+        
+        ruijieWifiWlanBroadcastSsid OBJECT-TYPE
+            SYNTAX RuijieEableType
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "BroadcastSsid enable or disable"
+            ::= { ruijieWifiWlanEntry 6}
+        
+        ruijieWifiWlanIsolate OBJECT-TYPE
+            SYNTAX RuijieIsolateType
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Isolate ap"
+            ::= { ruijieWifiWlanEntry 7 }
+        
+        ruijieWifiWlanBssStaLimit OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "the number of user count of bss"
+            ::= { ruijieWifiWlanEntry 8 }
+        
+        rujieWifiWlanSecurityType OBJECT-TYPE
+            SYNTAX BITS {
+               null(0),
+               wep(1),
+               wpa-psk(2),
+               wpa2-psk(3)
+            }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "wlan security type"
+            ::= { ruijieWifiWlanEntry 9 }
+                        
+        ruijieWifiWlanAuthenticationSetKey OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "wlan security authentication type"
+            ::= { ruijieWifiWlanEntry 10 }
+        
+            
+        ruijieWifiWlanWepAuthenticationType OBJECT-TYPE
+            SYNTAX RuijieAuthenticationType
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "the wep authentication type"
+            ::= { ruijieWifiWlanEntry 11 }
+ 
+ 		ruijieWifiWlanWpaPskCiphersType OBJECT-TYPE
+            SYNTAX RuijieWapPskCiphersType
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "Wpa-psk ciphers type."
+            ::= { ruijieWifiWlanEntry 12 }   
+
+        ruijieWifiWlanPassphrase OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The station connect ap setkey ."
+            ::= { ruijieWifiWlanEntry 13 }   
+             
+        ruijieWifiWlanDot11RadioIfindex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the ifindex of interface dot11radio"
+            ::= { ruijieWifiWlanEntry 14 }  
+            
+        ruijieWifiWlanDot11RadioSubIfindex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the ifindex of subinterface dot11radio"
+            ::= { ruijieWifiWlanEntry 15 } 
+                   
+-- End wifi wlan objects         
+
+-- Start Dot11radio interface config objects       
+        ruijieWifiDot11radioIfConfigTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RuijieWifiDot11radioIfConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of wifi Dot11radio interface config."
+            ::= { ruijieWifiDot11radioIfConfigObjects 1 } 
+            
+         ruijieWifiDot11radioIfConfigEntry OBJECT-TYPE
+            SYNTAX RuijieWifiDot11radioIfConfigEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "wifi Dot11radio interface config entry."
+            INDEX { ruijieWifiDot11radioIfConfigIfIndex }
+            ::= { ruijieWifiDot11radioIfConfigTable 1 }    
+            
+         
+         RuijieWifiDot11radioIfConfigEntry ::=
+            SEQUENCE { 
+            	ruijieWifiDot11radioIfConfigIfIndex
+            	    Integer32, 
+                ruijieWifiDot11radioIfConfigRowStatus           
+                    RowStatus, 
+                ruijieWifiDot11radioIfConfigFreBand
+                    RuijieWifiFreChanelType,
+                ruijieWifiDot11radioIfConfigChannel
+                    Integer32,
+                ruijieWifiDot11radioIfConfigChanWidth
+                    RuijieWifiChanWidthType,
+                ruijieWifiDot11radioIfConfigCountryCode
+                    DisplayString,
+                ruijieWifiDot11radioIfConfigPowerLocal
+                    Integer32,
+                ruijieWifiDot11radioIfConfigWirelessProSupport 
+                    BITS,
+                ruijieWifiDot11radioIfConfigStaLimit
+                    Integer32,
+                ruijieWifiDot11radioIfConfig20ShortGiEnable
+                    RuijieEableType, 
+                ruijieWifiDot11radioIfConfig40ShortGiEnable
+                    RuijieEableType,
+                ruijieWifiDot11radioIfConfigShortPreambleEnable
+                    RuijieEableType,
+                ruijieWifiDot11radioIfConfigSlottime 
+                    RuijieWifiSlotType,
+                ruijieWifiDot11radioIfConfigRtsThreshold
+                    Integer32, 
+                ruijieWifiDot11radioIfConfigFragmentThreshold  
+                    Integer32, 
+                ruijieWifiDot11radioIfConfigResponseRssi 
+                    Integer32,  
+                ruijieWifiDot11radioIfConfigEnableQos
+                    RuijieEableType,
+                ruijieWifiDot11radioIfConfigEdcaClientBgAifsn
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaClientBgCwmin 
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaClientBgCwmax
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaClientBgTxop
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaClientBeAifsn
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaClientBeCwmin 
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaClientBeCwmax
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaClientBeTxop
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaClientViAifsn
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaClientViCwmin 
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaClientViCwmax
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaClientViTxop
+                    Integer32, 
+                ruijieWifiDot11radioIfConfigEdcaClientVoAifsn
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaClientVoCwmin 
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaClientVoCwmax
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaClientVoTxop
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaRadioBgAifsn
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaRadioBgCwmin 
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaRadioBgCwmax
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaRadioBgTxop
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaRadioBeAifsn
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaRadioBeCwmin 
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaRadioBeCwmax
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaRadioBeTxop
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaRadioViAifsn
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaRadioViCwmin 
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaRadioViCwmax
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaRadioViTxop
+                    Integer32, 
+                ruijieWifiDot11radioIfConfigEdcaRadioVoAifsn
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaRadioVoCwmin 
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaRadioVoCwmax
+                    Integer32,
+                ruijieWifiDot11radioIfConfigEdcaRadioVoTxop
+                    Integer32,
+                ruijieWifiDot11radioIfConfigAntennaTransChainmask
+                    Integer32,
+                ruijieWifiDot11radioIfConfigAntennaReceiveChainmask
+                    Integer32,   
+                ruijieWifiDot11radioIfConfigBeaconDtimPeriod
+                    Integer32,
+                ruijieWifiDot11radioIfConfigBeaconPeriod
+                    Integer32, 
+                ruijieWifiDot11radioIfConfigRetrieShortTime
+                    Integer32, 
+                ruijieWifiDot11radioIfConfigRetrieLongTime
+                    Integer32, 
+                ruijieWifiDot11radioIfConfigStaIdleTimeout
+                    Integer32,
+                ruijieWifiDot11radioIfConfigWlanIdList
+                    BITS
+                }                             
+                             
+       ruijieWifiDot11radioIfConfigIfIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio interface index ."
+            ::= { ruijieWifiDot11radioIfConfigEntry 1 }
+            
+       ruijieWifiDot11radioIfConfigRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "create/modify/delete ."
+            ::= { ruijieWifiDot11radioIfConfigEntry 2 }           
+                         
+       ruijieWifiDot11radioIfConfigFreBand OBJECT-TYPE
+            SYNTAX RuijieWifiFreChanelType
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio frequency band  ."
+            ::= { ruijieWifiDot11radioIfConfigEntry 3 }   
+        
+        ruijieWifiDot11radioIfConfigChannel OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio work Chanel num."
+            ::= { ruijieWifiDot11radioIfConfigEntry 4 } 
+            
+        ruijieWifiDot11radioIfConfigChanWidth OBJECT-TYPE
+            SYNTAX RuijieWifiChanWidthType
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio Chanel width ."
+            ::= { ruijieWifiDot11radioIfConfigEntry 5 }   
+            
+        ruijieWifiDot11radioIfConfigCountryCode OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio country code."
+            ::= { ruijieWifiDot11radioIfConfigEntry 6 } 
+        
+         ruijieWifiDot11radioIfConfigPowerLocal OBJECT-TYPE
+            SYNTAX Integer32(1..100)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio power local percent."
+            ::= { ruijieWifiDot11radioIfConfigEntry 7 }
+                            
+        ruijieWifiDot11radioIfConfigWirelessProSupport OBJECT-TYPE
+             SYNTAX BITS {
+               null(0),
+               b(1),
+               g(2),
+               n(3)
+            }
+
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio Support wireless protocol ."
+            ::= { ruijieWifiDot11radioIfConfigEntry 8 } 
+                           
+        ruijieWifiDot11radioIfConfigStaLimit OBJECT-TYPE
+            SYNTAX Integer32(1..60)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio Sta Limit ."
+            ::= { ruijieWifiDot11radioIfConfigEntry 9 }
+                    
+        ruijieWifiDot11radioIfConfig20ShortGiEnable OBJECT-TYPE
+            SYNTAX RuijieEableType
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio 20ShortGi enable."
+            ::= { ruijieWifiDot11radioIfConfigEntry 10 }
+        
+        ruijieWifiDot11radioIfConfig40ShortGiEnable OBJECT-TYPE
+            SYNTAX RuijieEableType
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio 40ShortGi enable ."
+            ::= { ruijieWifiDot11radioIfConfigEntry 11 }
+
+                    
+        ruijieWifiDot11radioIfConfigShortPreambleEnable OBJECT-TYPE
+            SYNTAX RuijieEableType
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio ShortPreamble enable ."
+            ::= { ruijieWifiDot11radioIfConfigEntry 12 } 
+        
+        ruijieWifiDot11radioIfConfigSlottime OBJECT-TYPE
+            SYNTAX RuijieWifiSlotType
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio slot time ."
+            ::= { ruijieWifiDot11radioIfConfigEntry 13 } 
+    
+        ruijieWifiDot11radioIfConfigRtsThreshold OBJECT-TYPE
+            SYNTAX Integer32(257..2347)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio rts thresholx ."
+            ::= { ruijieWifiDot11radioIfConfigEntry 14 }
+        
+        ruijieWifiDot11radioIfConfigFragmentThreshold OBJECT-TYPE
+            SYNTAX Integer32(256..2346)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio fragment threshold ."
+            ::= { ruijieWifiDot11radioIfConfigEntry 15 }
+        
+        ruijieWifiDot11radioIfConfigResponseRssi OBJECT-TYPE
+            SYNTAX Integer32(0..100)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio response rss ."
+            ::= { ruijieWifiDot11radioIfConfigEntry 16 }
+            
+        ruijieWifiDot11radioIfConfigEnableQos OBJECT-TYPE
+            SYNTAX RuijieEableType
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio qos enable or disable ."
+            ::= { ruijieWifiDot11radioIfConfigEntry 17 }
+            
+        ruijieWifiDot11radioIfConfigEdcaClientBgAifsn OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca client back-groud aifsn value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 18 } 
+        
+        ruijieWifiDot11radioIfConfigEdcaClientBgCwmin OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca client back-groud cwmin value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 19 }
+        
+        ruijieWifiDot11radioIfConfigEdcaClientBgCwmax OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca client back-groud cwmax value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 20 }
+        
+        ruijieWifiDot11radioIfConfigEdcaClientBgTxop OBJECT-TYPE
+            SYNTAX Integer32(0..255) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca client back-groud txop value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 21 } 
+            
+        ruijieWifiDot11radioIfConfigEdcaClientBeAifsn OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca client best-effort aifsn value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 22 } 
+        
+        ruijieWifiDot11radioIfConfigEdcaClientBeCwmin OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca client best-effort cwmin value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 23 }
+        
+        ruijieWifiDot11radioIfConfigEdcaClientBeCwmax OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca client best-effort cwmax value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 24 }
+        
+        ruijieWifiDot11radioIfConfigEdcaClientBeTxop OBJECT-TYPE
+            SYNTAX Integer32(0..255) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca client best-effort txop value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 25 }   
+        
+        ruijieWifiDot11radioIfConfigEdcaClientViAifsn OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca client video aifsn value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 26 } 
+        
+        ruijieWifiDot11radioIfConfigEdcaClientViCwmin OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca client video cwmin value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 27 }
+        
+        ruijieWifiDot11radioIfConfigEdcaClientViCwmax OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca client video cwmax value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 28 }
+        
+        ruijieWifiDot11radioIfConfigEdcaClientViTxop OBJECT-TYPE
+            SYNTAX Integer32(0..255) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca client video txop value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 29 }
+
+        ruijieWifiDot11radioIfConfigEdcaClientVoAifsn OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca client voice aifsn value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 30 } 
+        
+        ruijieWifiDot11radioIfConfigEdcaClientVoCwmin OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca client voice cwmin value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 31 }
+        
+        ruijieWifiDot11radioIfConfigEdcaClientVoCwmax OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca client voice cwmax value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 32 }
+        
+        ruijieWifiDot11radioIfConfigEdcaClientVoTxop OBJECT-TYPE
+            SYNTAX Integer32(0..255) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca client voice txop value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 33 }
+        
+        ruijieWifiDot11radioIfConfigEdcaRadioBgAifsn OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca Radio back-groud aifsn value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 34 } 
+        
+        ruijieWifiDot11radioIfConfigEdcaRadioBgCwmin OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca Radio back-groud cwmin value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 35 }
+        
+        ruijieWifiDot11radioIfConfigEdcaRadioBgCwmax OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca Radio back-groud cwmax value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 36 }
+        
+        ruijieWifiDot11radioIfConfigEdcaRadioBgTxop OBJECT-TYPE
+            SYNTAX Integer32(0..255) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca Radio back-groud txop value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 37 } 
+            
+        ruijieWifiDot11radioIfConfigEdcaRadioBeAifsn OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca Radio best-effort aifsn value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 38 } 
+        
+        ruijieWifiDot11radioIfConfigEdcaRadioBeCwmin OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca Radio best-effort cwmin value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 39 }
+        
+        ruijieWifiDot11radioIfConfigEdcaRadioBeCwmax OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca Radio best-effort cwmax value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 40 }
+        
+        ruijieWifiDot11radioIfConfigEdcaRadioBeTxop OBJECT-TYPE
+            SYNTAX Integer32(0..255) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca Radio best-effort txop value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 41 }   
+        
+        ruijieWifiDot11radioIfConfigEdcaRadioViAifsn OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca Radio video aifsn value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 42 } 
+        
+        ruijieWifiDot11radioIfConfigEdcaRadioViCwmin OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca Radio video cwmin value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 43 }
+        
+        ruijieWifiDot11radioIfConfigEdcaRadioViCwmax OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca Radio video cwmax value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 44 }
+        
+        ruijieWifiDot11radioIfConfigEdcaRadioViTxop OBJECT-TYPE
+            SYNTAX Integer32(0..255) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca Radio video txop value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 45 }
+
+        ruijieWifiDot11radioIfConfigEdcaRadioVoAifsn OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca Radio voice aifsn value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 46 } 
+        
+        ruijieWifiDot11radioIfConfigEdcaRadioVoCwmin OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca Radio voice cwmin value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 47 }
+        
+        ruijieWifiDot11radioIfConfigEdcaRadioVoCwmax OBJECT-TYPE
+            SYNTAX Integer32(1..15) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca Radio voice cwmax value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 48 }
+        
+        ruijieWifiDot11radioIfConfigEdcaRadioVoTxop OBJECT-TYPE
+            SYNTAX Integer32(0..255) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio edca Radio voice txop value."
+            ::= { ruijieWifiDot11radioIfConfigEntry 49 }
+       
+        ruijieWifiDot11radioIfConfigAntennaTransChainmask  OBJECT-TYPE
+            SYNTAX Integer32(1..3) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio antenna transmit chainmask."
+            ::= { ruijieWifiDot11radioIfConfigEntry 50 }
+            
+        ruijieWifiDot11radioIfConfigAntennaReceiveChainmask  OBJECT-TYPE
+            SYNTAX Integer32(1..3) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio antenna receive chainmask."
+            ::= { ruijieWifiDot11radioIfConfigEntry 51 }
+                       
+        ruijieWifiDot11radioIfConfigBeaconDtimPeriod  OBJECT-TYPE
+            SYNTAX Integer32(1..255) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio beacon dtim period ."
+            ::= { ruijieWifiDot11radioIfConfigEntry 52 }
+                  
+        ruijieWifiDot11radioIfConfigBeaconPeriod  OBJECT-TYPE
+            SYNTAX Integer32(200..1000) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio beacon period."
+            ::= { ruijieWifiDot11radioIfConfigEntry 53 }
+                    
+         ruijieWifiDot11radioIfConfigRetrieShortTime  OBJECT-TYPE
+            SYNTAX Integer32(1..7) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio short frame retrie times."
+            ::= { ruijieWifiDot11radioIfConfigEntry 54 }
+                     
+         ruijieWifiDot11radioIfConfigRetrieLongTime  OBJECT-TYPE
+            SYNTAX Integer32(1..4) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio long frame retrie times."
+            ::= { ruijieWifiDot11radioIfConfigEntry 55 }
+                    
+          ruijieWifiDot11radioIfConfigStaIdleTimeout  OBJECT-TYPE
+            SYNTAX Integer32(60..86400) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio Station idle timeout"
+            ::= { ruijieWifiDot11radioIfConfigEntry 56 }
+                   
+          ruijieWifiDot11radioIfConfigWlanIdList  OBJECT-TYPE
+            SYNTAX BITS {
+               w0(0), 
+               w1(1),
+               w2(2),
+               w3(3),
+               w4(4),
+               w5(5),
+               w6(6),
+               w7(7),
+               w8(8),
+               w9(9),
+               w10(10),
+               w11(11),
+               w12(12), 
+               w13(13),
+               w14(14),
+               w15(15)
+            }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio Station idle timeout"
+            ::= { ruijieWifiDot11radioIfConfigEntry 57 }
+
+             
+-- End Dot11radio interface config objects                                                                
+ 
+-- Start Dot11radio interface apply objects        
+--        ruijieWifiDot11radioIfApplyTable OBJECT-TYPE
+--            SYNTAX SEQUENCE OF RuijieWifiDot11radioIfApplyEntry
+--            MAX-ACCESS not-accessible
+--            STATUS current
+--            DESCRIPTION
+--                "A table of wifi Dot11radio interface wlan Apply."
+--            ::= { ruijieWifiDot11radioIfApplyObjects 1 } 
+--            
+--         ruijieWifiDot11radioIfApplyEntry OBJECT-TYPE
+--            SYNTAX RuijieWifiDot11radioIfApplyEntry
+--            MAX-ACCESS not-accessible
+--            STATUS current
+--            DESCRIPTION
+--                "wifi Dot11radio interface Apply entry."
+--            INDEX { ruijieWifiDot11radioIfApplyIfIndex }
+--            ::= { ruijieWifiDot11radioIfApplyTable 1 }    
+--            
+--         
+--        RuijieWifiDot11radioIfApplyEntry ::=
+--            SEQUENCE { 
+--            	ruijieWifiDot11radioIfApplyIfIndex
+--            		Integer32,  
+--                ruijieWifiDot11radioIfApplyRowStatus           
+--                    RowStatus,  
+--                ruijieWifiDot11radioIfApplyVlanId
+--                    Integer32,  
+--                ruijieWifiDot11radioIfApplyIpAddress
+--                    IpAddress,
+--                ruijieWifiDot11radioIfApplyMaskAddress
+--                    IpAddress, 
+--                ruijieWifiDot11radioIfApplyStaDhcpEnable
+--                    RuijieEableType,
+--                ruijieWifiDot11radioIfApplyStaNatEnable
+--                    RuijieEableType
+--                }                                              
+--                   
+--         ruijieWifiDot11radioIfApplyIfIndex OBJECT-TYPE
+--            SYNTAX Integer32
+--            MAX-ACCESS not-accessible
+--            STATUS current
+--            DESCRIPTION
+--                "The Dot11radio interface Apply index ."
+--            ::= { ruijieWifiDot11radioIfApplyEntry 1 } 
+--            
+--         ruijieWifiDot11radioIfApplyRowStatus OBJECT-TYPE
+--            SYNTAX RowStatus
+--            MAX-ACCESS read-write
+--            STATUS current
+--            DESCRIPTION
+--                "The Dot11radio interface Apply/delete."
+--            ::= { ruijieWifiDot11radioIfApplyEntry 2 }
+--               
+--         ruijieWifiDot11radioIfApplyVlanId OBJECT-TYPE
+--            SYNTAX Integer32
+--            MAX-ACCESS read-write
+--            STATUS current
+--            DESCRIPTION
+--                "The Dot11radio interface Apply vlan id."
+--            ::= { ruijieWifiDot11radioIfApplyEntry 3 }  
+--                   
+--         ruijieWifiDot11radioIfApplyIpAddress OBJECT-TYPE
+--            SYNTAX IpAddress
+--            MAX-ACCESS read-write
+--            STATUS current
+--            DESCRIPTION
+--                "The Dot11radio interface Apply station ip address ."
+--            ::= { ruijieWifiDot11radioIfApplyEntry 4 } 
+--                                
+--         ruijieWifiDot11radioIfApplyMaskAddress OBJECT-TYPE
+--            SYNTAX IpAddress
+--            MAX-ACCESS read-write
+--            STATUS current
+--            DESCRIPTION
+--                "The Dot11radio interface Apply station ip address mask ."
+--            ::= { ruijieWifiDot11radioIfApplyEntry 5 }
+--            
+--         ruijieWifiDot11radioIfApplyStaDhcpEnable OBJECT-TYPE
+--            SYNTAX RuijieEableType
+--            MAX-ACCESS read-write
+--            STATUS current
+--            DESCRIPTION
+--                "The Dot11radio interface Apply station dhcp enable ."
+--            ::= { ruijieWifiDot11radioIfApplyEntry 6 }
+--         
+--         ruijieWifiDot11radioIfApplyStaNatEnable OBJECT-TYPE
+--            SYNTAX RuijieEableType
+--            MAX-ACCESS read-write
+--            STATUS current
+--            DESCRIPTION
+--                "The Dot11radio interface Apply station nat enable ."
+--            ::= { ruijieWifiDot11radioIfApplyEntry 7 }    
+-- End Dot11radio interface apply objects 
+
+-- Start Wlan associate objects            
+         ruijieWifiWlanAssociateTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF RuijieWifiWlanAssociateEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A table of wifi wlan associate infromation."
+            ::= { ruijieWifiWlanAssociateObjects 1 }    
+            
+          ruijieWifiWlanAssociateEntry OBJECT-TYPE
+            SYNTAX RuijieWifiWlanAssociateEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "wifi wlan associate infromation entry."
+            INDEX {ruijieWifiWlanAssociateWlanId ,ruijieWifiWlanAssociateStaMacAdress}
+            ::= { ruijieWifiWlanAssociateTable 1 } 
+                      
+          RuijieWifiWlanAssociateEntry ::=
+            SEQUENCE { 
+            	ruijieWifiWlanAssociateWlanId
+            	    Integer32, 
+                ruijieWifiWlanAssociateStaMacAdress
+                    DisplayString, 
+                ruijieWifiWlanAssociateSsidName
+                    DisplayString,      
+                ruijieWifiWlanAssociateStaIpAdress
+                    IpAddress,
+                ruijieWifiWlanAssociateStaMaskAdress
+                    IpAddress,
+                ruijieWifiWlanAssociateStaSigalStrength
+                    Integer32,
+                ruijieWifiWlanAssociateStaConnectTime
+                    DisplayString,
+                ruijieWifiWlanAssociateStaConnectTimeLength
+                    DisplayString,
+                ruijieWifiWlanAssociateStaGate
+                    IpAddress,  
+                ruijieWifiWlanAssociateStaDns
+                    IpAddress
+                }   
+        
+        ruijieWifiWlanAssociateWlanId OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio wlan id ."
+            ::= { ruijieWifiWlanAssociateEntry 1 }  
+            
+        ruijieWifiWlanAssociateStaMacAdress OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio mac address ."
+            ::= { ruijieWifiWlanAssociateEntry 2 } 
+            
+        ruijieWifiWlanAssociateSsidName OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio ssid name ."
+            ::= { ruijieWifiWlanAssociateEntry 3 }
+            
+        ruijieWifiWlanAssociateStaIpAdress OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio associate station ip ."
+            ::= { ruijieWifiWlanAssociateEntry 4 } 
+        
+        ruijieWifiWlanAssociateStaMaskAdress OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio associate station mask address."
+            ::= { ruijieWifiWlanAssociateEntry 5 }
+    
+        ruijieWifiWlanAssociateStaSigalStrength OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio associate signal strength ."
+            ::= { ruijieWifiWlanAssociateEntry 6 }  
+            
+        ruijieWifiWlanAssociateStaConnectTime OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio associate station time ."
+            ::= { ruijieWifiWlanAssociateEntry 7 } 
+        
+        ruijieWifiWlanAssociateStaConnectTimeLength OBJECT-TYPE
+            SYNTAX DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio associate station time length ."
+            ::= { ruijieWifiWlanAssociateEntry 8 }  
+                    
+        ruijieWifiWlanAssociateStaGate OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio associate station gate address ."
+            ::= { ruijieWifiWlanAssociateEntry 9 } 
+            
+        ruijieWifiWlanAssociateStaDns OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The Dot11radio associate station dns address ."
+            ::= { ruijieWifiWlanAssociateEntry 10 }       
+
+-- End Wlan associate objects         
+END
+-- End module
+

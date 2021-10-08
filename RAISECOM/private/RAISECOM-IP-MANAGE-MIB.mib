@@ -1,0 +1,104 @@
+-- *****************************************************************
+-- RAISECOM-IP-MANAGE-MIB.mib:  Raisecom IP MANAGE MIB file
+--
+-- March 2002, Wuzg
+--
+-- Copyright (c) 2002 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RAISECOM-IP-MANAGE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        IpAddress
+                FROM SNMPv2-SMI
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        EnabledStatus 
+                FROM P-BRIDGE-MIB
+        ruijieMgmt
+                FROM RAISECOM-SMI;
+
+ruijieIpManageMIB MODULE-IDENTITY
+        LAST-UPDATED "200203200000Z"
+        ORGANIZATION "Raisecom Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@raisecom.com.cn"
+        DESCRIPTION
+                "This module defines raisecom IP managment mibs."
+        REVISION      "200203200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 12}
+
+ruijieDhcpMIBObjects OBJECT IDENTIFIER ::= { ruijieIpManageMIB 1 }
+ruijieIpMIBObjects OBJECT IDENTIFIER ::= { ruijieIpManageMIB 2 }
+--
+-- raisecom  Dhcp Group
+--        
+
+ruijieDhcpRelayAgentGlobalStatus OBJECT-TYPE
+    SYNTAX EnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+            "Global Dhcp relay agent status"
+    DEFVAL { disabled }
+            ::={ ruijieDhcpMIBObjects 2 }
+            
+ruijieDhcpServerIp OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION 
+             "Ip address of internet host which returns configuration 
+              parameters to DHCP clients." 
+        ::={ ruijieDhcpMIBObjects 3 }
+        
+
+ruijieIpDefaultGateWay OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION 
+             "Ip default gateway of system. This value applay only in layer 2" 
+        ::={ ruijieIpMIBObjects 1 }
+
+ruijieIpManageMIBConformance OBJECT IDENTIFIER ::= { ruijieIpManageMIB 3 }
+ruijieIpManageMIBCompliances OBJECT IDENTIFIER ::= { ruijieIpManageMIBConformance 1 }
+ruijieIpManageMIBGroups      OBJECT IDENTIFIER ::= { ruijieIpManageMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieIpManageMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Raisecom Snooping Dhcp MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieL2L3DhcpManageMIBGroup
+                 }
+        ::= { ruijieIpManageMIBCompliances 1 }
+                
+-- units of conformance
+               
+ruijieL2L3DhcpManageMIBGroup OBJECT-GROUP
+        OBJECTS {
+           ruijieDhcpRelayAgentGlobalStatus,
+           ruijieDhcpServerIp
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing IP managment in layer2 or layer3 mode."
+        ::= { ruijieIpManageMIBGroups 1 }                
+        
+END

@@ -1,0 +1,590 @@
+-- *****************************************************************
+-- RAISECOM-GVRP-MIB.mib:  Raisecom Gvrp MIB file
+--
+-- March 2002, Wuzg
+--
+-- Copyright (c) 2002 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RAISECOM-GVRP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32,
+        Counter32
+                FROM SNMPv2-SMI
+        VlanId
+                FROM Q-BRIDGE-MIB
+        --DisplayString
+        --        FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        --ConfigStatus,
+        --MemberMap,
+        IfIndex
+                FROM RAISECOM-TC
+        EnabledStatus 
+                FROM P-BRIDGE-MIB
+        ruijieMgmt
+                FROM RAISECOM-SMI;
+        --ruijieVlanMIBObjects
+        --        FROM RAISECOM-VLAN-MIB;
+                
+
+ruijieGvrpMIB MODULE-IDENTITY
+        LAST-UPDATED "200203200000Z"
+        ORGANIZATION "Raisecom Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@raisecom.com.cn"
+        DESCRIPTION
+                "This module defines raisecom Gvrp(Statistical Processing and Analysis)mibs."
+        REVISION      "200203200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 25}
+
+ruijieGvrpMIBObjects OBJECT IDENTIFIER ::= { ruijieGvrpMIB 1 }
+
+
+ruijieGvrpStatus OBJECT-TYPE
+    SYNTAX  EnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+              "Gvrp management function status."
+    DEFVAL { disabled }               
+         ::={ ruijieGvrpMIBObjects 1 }
+
+ruijieGvrpDynamicVlanCreateStauts OBJECT-TYPE
+    SYNTAX  EnabledStatus
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+              "To control wheather dynamic vlan creation is enabled."
+    DEFVAL { disabled }               
+         ::={ ruijieGvrpMIBObjects 2 }
+
+
+ruijieGvrpJoinTimer OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+              "To control Gvrp join timer."
+    DEFVAL { 200 }                
+         ::={ ruijieGvrpMIBObjects 3 }
+         
+ruijieGvrpLeaveTimer  OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+              "To control Gvrp leave timer."
+    DEFVAL { 600 }                
+         ::={ ruijieGvrpMIBObjects 4 }
+
+ruijieGvrpLeaveAllTimer OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+              "To control Gvrp leave all timer."
+    DEFVAL { 10000 }                
+         ::={ ruijieGvrpMIBObjects 5 }
+         
+ruijieGvrpTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieGvrpEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of  Gvrp configuration objects."
+        ::= { ruijieGvrpMIBObjects 6 }
+    
+ruijieGvrpEntry OBJECT-TYPE
+        SYNTAX RuijieGvrpEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains Gvrp configuration objects."
+        INDEX { ruijieGvrpIfIndex}
+        ::= { ruijieGvrpTable 1 }
+
+RuijieGvrpEntry ::=
+        SEQUENCE {
+            ruijieGvrpIfIndex IfIndex,
+            ruijieGvrpRegistrationMode EnabledStatus,
+            ruijieGvrpApplicantState EnabledStatus
+        }
+        
+ruijieGvrpIfIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            " "
+        ::= { ruijieGvrpEntry 1 }
+                                           
+ruijieGvrpRegistrationMode OBJECT-TYPE
+        SYNTAX EnabledStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Registration mode of gvrp for a port."
+  DEFVAL { enabled }                
+        ::= { ruijieGvrpEntry 2 }
+                            
+ruijieGvrpApplicantState OBJECT-TYPE
+        SYNTAX EnabledStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "Applicant state of gvrp for a port."
+  DEFVAL { enabled }                
+        ::= { ruijieGvrpEntry 3 }        
+
+
+ruijieGvrpStatsTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieGvrpStatsEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of statistics of every port."
+        ::= { ruijieGvrpMIBObjects 7 }
+    
+ruijieGvrpStatsEntry OBJECT-TYPE
+        SYNTAX RuijieGvrpStatsEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains Gvrp statistics."
+        INDEX { ruijieGvrpStatsIfIndex }
+        ::= { ruijieGvrpStatsTable 1 }
+
+RuijieGvrpStatsEntry ::=
+        SEQUENCE {
+            ruijieGvrpStatsIfIndex IfIndex,
+            ruijieGvrpRecValidGvrpPdu  Counter32,
+            ruijieGvrpRecInvalidGvrpPdu Counter32,
+            ruijieGvrpRecJoin Counter32,
+            ruijieGvrpRecJoinIn Counter32,
+            ruijieGvrpRecEmpty Counter32,
+            ruijieGvrpRecLeaveEmpty Counter32,
+            ruijieGvrpRecLeaveIn Counter32,
+            ruijieGvrpRecLeaveAll Counter32,
+            ruijieGvrpSentGvrpPdu Counter32,
+            ruijieGvrpSentJoin Counter32,
+            ruijieGvrpSentJoinIn Counter32,
+            ruijieGvrpSentEmpty Counter32,
+            ruijieGvrpSentLeaveEmpty Counter32,
+            ruijieGvrpSentLeaveIn Counter32,
+            ruijieGvrpSentLeaveAll Counter32,
+            ruijieGvrpJoinIndicated Counter32,
+            ruijieGvrpLeaveIndicated Counter32,
+            ruijieGvrpJoinPropagated Counter32,
+            ruijieGvrpLeavePropagated Counter32,
+            ruijieGvrpStatisticsPortClear Integer32
+        }
+        
+ruijieGvrpStatsIfIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            " "
+        ::= { ruijieGvrpStatsEntry 1 }
+                                           
+ruijieGvrpRecValidGvrpPdu OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of valid GVRP PDU received."
+        ::= { ruijieGvrpStatsEntry 2 }
+
+ruijieGvrpRecInvalidGvrpPdu OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of invalid GVRP PDU received."
+        ::= { ruijieGvrpStatsEntry 3 }
+        
+ruijieGvrpRecJoin OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of join message received."
+        ::= { ruijieGvrpStatsEntry 4 }
+        
+ruijieGvrpRecJoinIn OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of join in message received."
+        ::= { ruijieGvrpStatsEntry 5 }
+
+ruijieGvrpRecEmpty OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of empty message received."
+        ::= { ruijieGvrpStatsEntry 6 }
+
+ruijieGvrpRecLeaveEmpty OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of leave message received."
+        ::= { ruijieGvrpStatsEntry 7 }
+
+ruijieGvrpRecLeaveIn OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of leave in message received."
+        ::= { ruijieGvrpStatsEntry 8 }
+
+ruijieGvrpRecLeaveAll OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of leave all message received."
+        ::= { ruijieGvrpStatsEntry 9 }
+
+ruijieGvrpSentGvrpPdu OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of GVRP PDU sent."
+        ::= { ruijieGvrpStatsEntry 10 }
+
+ruijieGvrpSentJoin OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of join message sent."
+        ::= { ruijieGvrpStatsEntry 11 }
+
+ruijieGvrpSentJoinIn OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of join in message sent."
+        ::= { ruijieGvrpStatsEntry 12 }
+
+ruijieGvrpSentEmpty OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of empty message sent."
+        ::= { ruijieGvrpStatsEntry 13 }
+
+ruijieGvrpSentLeaveEmpty OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of leave message sent."
+        ::= { ruijieGvrpStatsEntry 14 }
+
+ruijieGvrpSentLeaveIn OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of leave in message sent."
+        ::= { ruijieGvrpStatsEntry 15 }
+
+ruijieGvrpSentLeaveAll OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of leave all message sent."
+        ::= { ruijieGvrpStatsEntry 16 }
+
+ruijieGvrpJoinIndicated OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of join indicated message."
+        ::= { ruijieGvrpStatsEntry 17 }
+
+ruijieGvrpLeaveIndicated OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of Leave indicated message."
+        ::= { ruijieGvrpStatsEntry 18 }
+
+ruijieGvrpJoinPropagated OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of join propagated message."
+        ::= { ruijieGvrpStatsEntry 19 }
+
+ruijieGvrpLeavePropagated OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The total number of leave propagated message."
+        ::= { ruijieGvrpStatsEntry 20 }
+
+ruijieGvrpStatisticsPortClear OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This object allow of clearing gvrp statistics. 
+            set its value to any but 0, will cause agent clear
+            gvrp statistics, set it to 0 will cause no action." 
+        ::= { ruijieGvrpStatsEntry 21 }
+        
+ruijieGvrpOperVid  OBJECT-TYPE
+    SYNTAX  VlanId
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+              "The vid of vlan where gvrp currently operate in."
+    DEFVAL { 1 }                
+         ::={ ruijieGvrpMIBObjects 8 }
+         
+ruijieGvrpStatisticsClear  OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+            "This object allow of clearing all gvrp statistics. 
+            set its value to any but 0, will cause agent clear
+            all gvrp statistics, set it to 0 will cause no action." 
+         ::={ ruijieGvrpMIBObjects 9 }
+         
+ruijieGvrpResetTimer  OBJECT-TYPE
+    SYNTAX  VlanId
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+              "This object allow of clearing gvrp timer(join,leave,leave) 
+            set its value to any but 0, will cause agent clear
+            gvrp timer, set it to 0 will cause no action."
+         ::={ ruijieGvrpMIBObjects 10 }
+
+        
+
+--ruijieVlanIfStateTable OBJECT-TYPE
+--        SYNTAX SEQUENCE OF RuijieVlanIfStateEntry
+--        MAX-ACCESS not-accessible
+--        STATUS current
+--        DESCRIPTION
+--            "port vlan state table."
+--        ::= { ruijieVlanMIBObjects 6 }
+    
+--ruijieVlanIfStateEntry OBJECT-TYPE
+--        SYNTAX RuijieVlanIfStateEntry
+--        MAX-ACCESS not-accessible
+--        STATUS current
+--        DESCRIPTION
+--          "list of registration state of a vlan of a port."
+--      INDEX { ruijieVlanIfStateVid,ruijieVlanIfStateIndex}
+--    ::= { ruijieVlanIfStateTable 1 }
+--
+--RuijieVlanIfStateEntry ::=
+--        SEQUENCE {
+--        ruijieVlanIfStateVid VlanId,
+--        ruijieVlanIfStateIndex   IfIndex,
+--        ruijieVlanIfState     INTEGER
+--        }    
+--    
+--ruijieVlanIfStateVid OBJECT-TYPE
+--        SYNTAX VlanId
+--        MAX-ACCESS not-accessible
+--        STATUS current
+--        DESCRIPTION
+--            "VID of vlan ."
+--        ::= { ruijieVlanIfStateEntry 1 }  
+
+--ruijieVlanIfStateIndex OBJECT-TYPE
+--        SYNTAX IfIndex
+--        MAX-ACCESS not-accessible
+--        STATUS current
+--        DESCRIPTION
+--            " "
+--        ::= { ruijieVlanIfStateEntry 2 }          
+
+--ruijieVlanIfState OBJECT-TYPE
+--        SYNTAX INTEGER{
+--          dynamic(1),
+--          static(2)
+--  }         
+--        MAX-ACCESS read-only
+--        STATUS current
+--        DESCRIPTION
+--            "The registration state of a port of a vlan ."
+--        ::= { ruijieVlanIfStateEntry 3 }    
+
+--ruijieVlanDynTable OBJECT-TYPE
+--        SYNTAX SEQUENCE OF RuijieVlanDynEntry
+--        MAX-ACCESS not-accessible
+--        STATUS current
+--        DESCRIPTION
+--            "vlan table."
+--        ::= { ruijieVlanMIBObjects 7 }
+    
+--ruijieVlanDynEntry OBJECT-TYPE
+--        SYNTAX RuijieVlanDynEntry
+--        MAX-ACCESS not-accessible
+--        STATUS current
+--        DESCRIPTION
+--            "list of vlan and it's distribution table."
+--        INDEX { ruijieVlanDynVID }
+--        ::= { ruijieVlanDynTable 1 }
+    
+--RuijieVlanDynEntry ::=
+--        SEQUENCE {
+--        ruijieVlanDynVID VlanId,
+--        ruijieVlanDynPortMemberAction MemberMap,
+--        ruijieVlanDynApMemberAction MemberMap,
+--        ruijieVlanDynAlias DisplayString,
+--        ruijieVlanDynEntryStatus ConfigStatus
+--        }
+    
+--ruijieVlanDynVID OBJECT-TYPE
+--        SYNTAX VlanId
+--        MAX-ACCESS read-only
+--        STATUS current
+--        DESCRIPTION
+--            "VID of vlan that is dynamic vlan which includes only dynamic or static 
+--            vlan which includes dynamic members."
+--        ::= { ruijieVlanDynEntry 1 }
+ 
+--ruijieVlanDynPortMemberAction OBJECT-TYPE
+--        SYNTAX MemberMap
+--        MAX-ACCESS read-only
+--        STATUS current
+--        DESCRIPTION
+--            "Each octet in member map assigned to a physical port, the value of
+--             the octect indicates the action of a physical port in the
+--             vlan. Drop(1) indicate that the vlan doesn't include this physical port, 
+--             Add(2) indicate that the vlan include this physical port."
+--        ::= { ruijieVlanDynEntry 2 }
+        
+--ruijieVlanDynApMemberAction OBJECT-TYPE
+--        SYNTAX MemberMap
+--        MAX-ACCESS read-only
+--        STATUS current
+--        DESCRIPTION
+--            "Each octet in member map assigned to a aggreate port, the value of
+--             the octect indicates the action of a aggreate port in the
+--            vlan. Drop(1) indicate that the vlan doesn't include this physical port, 
+--             Add(2) indicate that the vlan include this physical port."
+--        ::= { ruijieVlanDynEntry 3 }        
+        
+--ruijieVlanDynAlias OBJECT-TYPE
+--        SYNTAX DisplayString (SIZE (0..32))
+--        MAX-ACCESS read-only
+--        STATUS current
+--        DESCRIPTION
+--            "Vlan's alias ."
+--        DEFVAL{""}   
+--        ::= { ruijieVlanDynEntry 4 }
+                
+--ruijieVlanDynEntryStatus OBJECT-TYPE
+--        SYNTAX ConfigStatus
+--        MAX-ACCESS read-only
+--        STATUS current
+--        DESCRIPTION
+--            "Status of this entry."
+--        ::= { ruijieVlanDynEntry 5 }
+
+ruijieGvrpMIBConformance OBJECT IDENTIFIER ::= { ruijieGvrpMIB 2 }
+ruijieGvrpMIBCompliances OBJECT IDENTIFIER ::= { ruijieGvrpMIBConformance 1 }
+ruijieGvrpMIBGroups      OBJECT IDENTIFIER ::= { ruijieGvrpMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieGvrpMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Gvrp MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieGvrpMIBGroup ,ruijieGvrpStatsMIBGroup
+                 }
+        ::= { ruijieGvrpMIBCompliances 1 }
+                
+-- units of conformance
+
+ruijieGvrpMIBGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieGvrpStatus,
+            ruijieGvrpDynamicVlanCreateStauts,            
+            ruijieGvrpJoinTimer,
+            ruijieGvrpLeaveTimer,
+            ruijieGvrpLeaveAllTimer,
+--            ruijieGvrpIfIndex,
+            ruijieGvrpRegistrationMode,
+            ruijieGvrpApplicantState
+--        ruijieVlanIfStateVid,
+--        ruijieVlanIfStateIndex,
+--      ruijieVlanIfState
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing Gvrp configuration."
+        ::= { ruijieGvrpMIBGroups 1 }      
+           
+ruijieGvrpStatsMIBGroup OBJECT-GROUP
+        OBJECTS {
+--            ruijieGvrpStatsIfIndex,
+            ruijieGvrpRecValidGvrpPdu,
+            ruijieGvrpRecInvalidGvrpPdu,
+            ruijieGvrpRecJoin, 
+            ruijieGvrpRecJoinIn, 
+            ruijieGvrpRecEmpty,
+            ruijieGvrpRecLeaveEmpty,
+            ruijieGvrpRecLeaveIn,
+            ruijieGvrpRecLeaveAll,
+            ruijieGvrpSentGvrpPdu,
+            ruijieGvrpSentJoin,
+            ruijieGvrpSentJoinIn,
+            ruijieGvrpSentEmpty,
+            ruijieGvrpSentLeaveEmpty,
+            ruijieGvrpSentLeaveIn,
+            ruijieGvrpSentLeaveAll,
+            ruijieGvrpJoinIndicated,
+            ruijieGvrpLeaveIndicated,
+            ruijieGvrpJoinPropagated,
+            ruijieGvrpLeavePropagated,
+            ruijieGvrpStatisticsPortClear
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of statics of GVRP."
+        ::= { ruijieGvrpMIBGroups 2 }   
+        
+                
+END

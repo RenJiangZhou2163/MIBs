@@ -16,7 +16,8 @@ IMPORTS
         mib-2, Integer32, Unsigned32, Counter32, Counter64
         FROM SNMPv2-SMI
 
-    TEXTUAL-CONVENTION, TruthValue, RowStatus, StorageType, TimeStamp
+    TEXTUAL-CONVENTION, TruthValue, RowStatus, StorageType, TimeStamp,
+    DisplayString
         FROM SNMPv2-TC
 
     MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
@@ -354,7 +355,9 @@ RuijieBfdSessEntry ::= SEQUENCE {
     ruijieBfdSessAuthenticationKeyID      Integer32,
     ruijieBfdSessAuthenticationKey        RuijieBfdSessionAuthenticationKeyTC,
     ruijieBfdSessStorageType              StorageType,
-    ruijieBfdSessRowStatus                RowStatus
+    ruijieBfdSessRowStatus                RowStatus,
+    ruijieBfdSessIfName                   DisplayString,
+	ruijieBfdSessIfDes                    DisplayString
 }
 
 ruijieBfdSessIndex OBJECT-TYPE
@@ -824,7 +827,29 @@ ruijieBfdSessRowStatus OBJECT-TYPE
          objects in this row can be modified except the
          ruijieBfdSessRowStatus and ruijieBfdSessStorageType."
     ::= { ruijieBfdSessEntry 36 }
-
+	
+ruijieBfdSessIfName OBJECT-TYPE
+    SYNTAX     DisplayString (SIZE (0..255))
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "This object contains an interface name used to indicate
+         the interface which this BFD session is running on. This
+         value can be zero if there is no interface associated
+         with this BFD session."
+    ::= { ruijieBfdSessEntry 37 }
+	
+ruijieBfdSessIfDes OBJECT-TYPE
+    SYNTAX     DisplayString (SIZE (0..255))
+    MAX-ACCESS read-create
+    STATUS     current
+    DESCRIPTION
+        "This object contains an interface description used to indicate
+         the interface which this BFD session is running on. This
+         value can be zero if there is no interface associated
+         with this BFD session."
+    ::= { ruijieBfdSessEntry 38 }
+	
 -- BFD Session Performance Table
 
 ruijieBfdSessPerfTable OBJECT-TYPE
@@ -1245,8 +1270,11 @@ ruijieBfdSessIpMapRowStatus OBJECT-TYPE
 
 ruijieBfdSessUp NOTIFICATION-TYPE
     OBJECTS {
-        ruijieBfdSessDiag, -- low range value
-        ruijieBfdSessDiag  -- high range value
+        ruijieBfdSessDiag,  -- low range value
+        ruijieBfdSessDiag,  -- high range value
+        ruijieBfdSessInterface, -- bfd session interface index
+        ruijieBfdSessIfName,    -- bfd session interface name
+		ruijieBfdSessIfDes    -- bfd session interface describes
     }
     STATUS     current
     DESCRIPTION
@@ -1255,8 +1283,10 @@ ruijieBfdSessUp NOTIFICATION-TYPE
          entries in ruijieBfdSessTable are about to enter the up(4)
          state from some other state. The included values of
          ruijieBfdSessDiag MUST both be set equal to this
-         new state (i.e: up(4)).  The two instances of
-         ruijieBfdSessDiag in this notification indicate the range
+         new state (i.e: up(4)). The included values of
+         ruijieBfdSessInterface MUST be set equal to interface index of bfd session(i.e: index(2)).
+         The included values of ruijieBfdSessIfname MUST be set equal to interface name of bfd session(i.e: name(GigabitEthernet 0/1)).
+         The two instances of ruijieBfdSessDiag in this notification indicate the range
          of indexes that are affected.  Note that all the indexes
          of the two ends of the range can be derived from the
          instance identifiers of these two objects.  For the
@@ -1273,8 +1303,11 @@ ruijieBfdSessUp NOTIFICATION-TYPE
 
 ruijieBfdSessDown NOTIFICATION-TYPE
     OBJECTS {
-        ruijieBfdSessDiag, -- low range value
-        ruijieBfdSessDiag  -- high range value
+        ruijieBfdSessDiag,  -- low range value
+        ruijieBfdSessDiag,  -- high range value
+        ruijieBfdSessInterface,  -- bfd session interface index
+        ruijieBfdSessIfName,     -- bfd session interface name
+		ruijieBfdSessIfDes     -- bfd session interface describes
     }
     STATUS     current
     DESCRIPTION
@@ -1283,8 +1316,10 @@ ruijieBfdSessDown NOTIFICATION-TYPE
          entries in ruijieBfdSessTable are about to enter the down(2)
          or adminDown(1) states from some other state. The included
          values of ruijieBfdSessDiag MUST both be set equal to this new
-         state (i.e: down(2) or adminDown(1)).  The two instances
-         of ruijieBfdSessDiag in this notification indicate the range
+         state (i.e: down(2) or adminDown(1)). The included values of
+         ruijieBfdSessInterface MUST be set equal to interface index of bfd session(i.e: index(2)). 
+         The included values of ruijieBfdSessIfname MUST be set equal to interface name of bfd session(i.e: name(GigabitEthernet 0/1)).
+         The two instances of ruijieBfdSessDiag in this notification indicate the range
          of indexes that are affected.  Note that all the indexes
          of the two ends of the range can be derived from the
          instance identifiers of these two objects.  For
@@ -1533,6 +1568,14 @@ ruijieBfdModuleReadOnlyCompliance MODULE-COMPLIANCE
     MIN-ACCESS   read-only
     DESCRIPTION  "Write access is not required."
 
+    OBJECT       ruijieBfdSessIfName
+    MIN-ACCESS   read-only
+    DESCRIPTION  "Write access is not required."
+	
+	OBJECT       ruijieBfdSessIfDes
+    MIN-ACCESS   read-only
+    DESCRIPTION  "Write access is not required."
+	
     ::= { ruijieBfdCompliances 2 }
 
 -- Units of conformance.

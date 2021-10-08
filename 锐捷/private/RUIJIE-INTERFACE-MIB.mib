@@ -25,6 +25,7 @@ IMPORTS
         RowStatus, 
         DisplayString,
         PhysAddress,
+        DateAndTime,
         MacAddress
                 FROM SNMPv2-TC
         MODULE-COMPLIANCE,
@@ -124,9 +125,9 @@ RuijieIfEntry ::=
             ruijieIfInNUcastPkts Counter64,
             ruijieIfOutNUcastPkts Counter64,
             ruijieIfUpDownTimes Counter32,
-            ruijieifAdminStatus_w INTEGER,
-            ruijieifOperStatus_w INTEGER,
-            ruijieifSpeed_w Integer32,
+            ruijieifAdminStatusw INTEGER,
+            ruijieifOperStatusw INTEGER,
+            ruijieifSpeedw Integer32,
             ruijieifMacAddress MacAddress,
             ruijieifLastChange TimeTicks,
             ruijieIfInPkts Counter64,
@@ -135,7 +136,17 @@ RuijieIfEntry ::=
             ruijieIfInBitsRate Counter64,
             ruijieIfInPktRate Counter64,
             ruijieIfOutBitsRate Counter64,
-            ruijieIfOutPktRate Counter64
+            ruijieIfOutPktRate Counter64,
+            ruijieIfInBandwidthUsage  DisplayString,
+            ruijieIfOutBandwidthUsage DisplayString,
+            ruijieIfInErrorPktsRate DisplayString, 
+            ruijieIfOutErrorPktsRate  DisplayString,
+            ruijieIfInDropPktsRate    DisplayString,
+            ruijieIfOutDropPktsRate  DisplayString,
+            ruijieIfOutNoBuffer Counter64,
+            ruijieIfOutPkts Counter64,
+            ruijieIfNeighborIP  IpAddress,
+            ruijieIfNeighborIPv6  DisplayString
         }
 
 ruijieIfIndex OBJECT-TYPE
@@ -189,7 +200,14 @@ ruijieIfPortType OBJECT-TYPE
             port622MATM(59),
             port2G5ATM(60),
             port10GATM(61),
-            portE1ELC(62)
+            portE1ELC(62),
+            port20GBASE(63),    
+            port25GBASE(64),
+            port2500MBASE(65),
+            port5000MBASE(66),
+            port50GBASE(67),
+            port200GBASE(68),
+            port400GBASE(69)
         }
         MAX-ACCESS read-only
         STATUS current
@@ -238,7 +256,14 @@ ruijieIfAdminSpeed OBJECT-TYPE
             speed10Gb(5),
             unknown(6),
             speed40Gb(7),   
-            speed100Gb(8)
+            speed100Gb(8),
+            speed20Gb(9),
+            speed25Gb(10),
+            speed2500Mb(11),
+            speed5000Mb(12),
+            speed50Gb(13),
+            speed200Gb(14),
+            speed400Gb(15)
         }
         MAX-ACCESS read-create
         STATUS current
@@ -271,7 +296,14 @@ ruijieIfOperSpeed OBJECT-TYPE
             unknown(4),
             speed10Gb(5),
             speed40Gb(6),
-            speed100Gb(7)
+            speed100Gb(7),
+            speed20Gb(8),
+            speed25Gb(9),
+            speed2500Mb(10),
+            speed5000Mb(11),
+            speed50Gb(12),
+            speed200Gb(13),
+            speed400Gb(14)
         }
         MAX-ACCESS read-only
         STATUS current
@@ -337,7 +369,8 @@ ruijieIfMode OBJECT-TYPE
             other(5), -- other mode 
             uplink(6), -- the mode of interface is uplink port
             host(7), -- the mode of interface is private-vlan host port
-            promiscuous(8) -- the mode of interface is private-vlan promiscuous port
+            promiscuous(8), -- the mode of interface is private-vlan promiscuous port
+            ptrunk(9) -- the mode of interface is ptrunk port
               }
         MAX-ACCESS  read-create
         STATUS  current
@@ -451,7 +484,14 @@ ruijieIfAdminSpeedRW OBJECT-TYPE
             speed10Gb(5),
             unknown(6),
             speed40Gb(7),   
-            speed100Gb(8)
+            speed100Gb(8),
+            speed20Gb(9),
+            speed25Gb(10),
+            speed2500Mb(11),
+            speed5000Mb(12),
+            speed50Gb(13),
+            speed200Gb(14),
+            speed400Gb(15)
         }
         MAX-ACCESS read-write
         STATUS current
@@ -485,7 +525,8 @@ ruijieIfModeRW OBJECT-TYPE
             other(5), -- other mode 
             uplink(6), -- the mode of interface is uplink port
             host(7), -- the mode of interface is private-vlan host port
-            promiscuous(8) -- the mode of interface is private-vlan promiscuous port
+            promiscuous(8), -- the mode of interface is private-vlan promiscuous port
+            ptrunk(9) -- the mode of interface is ptrunk port
               }
         MAX-ACCESS  read-write
         STATUS  current
@@ -692,6 +733,100 @@ ruijieIfModeRW OBJECT-TYPE
           in packets per second on this interface."
          ::= { ruijieIfEntry 42 }   
 
+     ruijieIfInBandwidthUsage OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+         "RX bandwidth utilization ratio of interface."
+         ::= { ruijieIfEntry 43 }   
+         
+     ruijieIfOutBandwidthUsage OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+         "TX bandwidth utilization ratio of interface."
+         ::= { ruijieIfEntry 44 }  
+           
+      ruijieIfInErrorPktsRate OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+         "Input packet error rate."
+         ::= { ruijieIfEntry 45 }    
+         
+       ruijieIfOutErrorPktsRate OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+         "Output packet error rate."
+         ::= { ruijieIfEntry 46 }  
+         
+       ruijieIfInDropPktsRate OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+         "Input packet discarded rate."
+         ::= { ruijieIfEntry 47 } 
+         
+       ruijieIfOutDropPktsRate OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+         "Output packet discarded rate."
+         ::= { ruijieIfEntry 48 }   
+         
+     ruijieIfOutNoBuffer OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+         "Ouyput drop packet rate on this interface due to resource lack."
+         ::= { ruijieIfEntry 49 }
+
+     ruijieIfOutPkts OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+          "The number of packets sent on this interface,
+           including framing characters.
+
+          Discontinuities in the value of this counter can occur at
+          re-initialization of the management system, and at other
+          times as indicated by the value of
+           ifCounterDiscontinuityTime."
+         ::= { ruijieIfEntry 50 }
+
+     ruijieIfNeighborIP OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+          "IP address of the neighbor. if none, return 0.0.0.0"
+         ::= { ruijieIfEntry 51 }
+
+     ruijieIfNeighborIPv6 OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+          "IPv6 address of the neighbor."
+         ::= { ruijieIfEntry 52 }
+
+     ruijieIfIsSubPort OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object indicates whether the interface is a sub-interface."
+        ::= { ruijieIfEntry 53 }
+                
 ruijieIfIpTable OBJECT-TYPE
        SYNTAX      SEQUENCE OF RuijieIfIpEntry
        MAX-ACCESS  not-accessible
@@ -1183,7 +1318,7 @@ ruijieApIfPhyIntNum OBJECT-TYPE
         DESCRIPTION
             "Vlaues Of physical interface number."
     ::= { ruijieApIfNumberEntry 3 }
-
+    
 --
 --ruijieApIfTable
 --
@@ -1237,15 +1372,28 @@ RuijieApIfEntry ::= SEQUENCE {
     ruijieApIfOutDataOctets Counter64,
     ruijieApIfMgmtUploadOctets Counter32,
     ruijieApIfMgmtDownloadOctets Counter32,  
-    ruijieApIfSpeed_w Integer32,
-    ruijieApIfMtu_w Integer32,
-    ruijieApIfPhysAddress_w MacAddress,     
-    ruijieApIfInUcastPkts_w Counter32,
-    ruijieApIfInNUcastPkts_w Counter32,
-    ruijieApIfOutUcastPkts_w Counter32,
-    ruijieApIfOutNUcastPkts_w Counter32,
-    ruijieApIfLinkUPTimes_w Counter32,
-    ruijieApIfInPkts Counter64
+    ruijieApIfSpeedw Integer32,
+    ruijieApIfMtuw Integer32,
+    ruijieApIfPhysAddressw MacAddress,     
+    ruijieApIfInUcastPktsw Counter32,
+    ruijieApIfInNUcastPktsw Counter32,
+    ruijieApIfOutUcastPktsw Counter32,
+    ruijieApIfOutNUcastPktsw Counter32,
+    ruijieApIfLinkUPTimesw Counter32,
+    ruijieApIfInPkts Counter64,
+    ruijieApIfInFlow Counter32,
+    ruijieApIfOutFlow Counter32,
+    ruijieApIfInBrdcastPkts Counter64,
+    ruijieApIfOutBrdcastPkts Counter64,
+    ruijieApIfInMulcastPkts Counter64,
+    ruijieApIfOutMulcastPkts Counter64,
+    ruijieApIfInPayloadOctets Counter64,
+    ruijieApIfOutPayloadOctets Counter64,
+    ruijieApIfAlias DisplayString,
+    ruijieApIfInDateRate Counter64,
+    ruijieApIfOutDateRate Counter64,
+    ruijieApifInNormalPkts Counter64,
+    ruijieApIfOutPkts Counter64
     }
 
 ruijieApPhysAddress OBJECT-TYPE
@@ -1789,7 +1937,184 @@ ruijieApIfInPkts OBJECT-TYPE
         other times as indicated by the value of
         ifCounterDiscontinuityTime."
     ::= { ruijieApIfEntry 36 }
+
+ruijieApIfInFlow OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The flow rate of data octets in units of Bytes per-second received on the interface,
+	including framing characters.
         
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, and at
+        other times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieApIfEntry 37 }
+
+ruijieApIfOutFlow OBJECT-TYPE
+    SYNTAX Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The flow rate of data octets in units of Bytes per-second transmitted out of the
+        interface, including framing characters.
+        
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, and at
+        other times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieApIfEntry 38 }
+
+ruijieApIfInBrdcastPkts OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+        "The total number of broadcast packets received on the interface,
+         including framing characters.
+        
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, and at
+        other times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieApIfEntry 39 }
+
+ruijieApIfOutBrdcastPkts OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+        "The total number of broadcast packets transmitted out of the interface,
+         including framing characters.
+        
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, and at
+        other times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieApIfEntry 40 }
+
+ruijieApIfInMulcastPkts OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+        "The total number of multicast packets received on the interface,
+         including framing characters.
+        
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, and at
+        other times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieApIfEntry 41 }
+
+ruijieApIfOutMulcastPkts OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+        "The total number of multicast packets transmitted out of the interface,
+         including framing characters.
+        
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, and at
+        other times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieApIfEntry 42 }
+
+ruijieApIfInPayloadOctets OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of payload octets received on the interface,
+        including framing characters.
+        
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, and at
+        other times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieApIfEntry 43 }
+
+ruijieApIfOutPayloadOctets OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of payload octets transmitted out of the interface,
+        including framing characters.
+        
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, and at
+        other times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieApIfEntry 44 }
+
+ruijieApIfAlias OBJECT-TYPE
+    SYNTAX DisplayString(SIZE(0..255))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "A textual string containing alias information about the
+        interface."
+    ::= { ruijieApIfEntry 45 }
+
+ruijieApIfInDateRate OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+        "The flow rate of data octets in units of Kilo-Bits per-second received on the interface,
+	including framing characters.
+        
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, and at
+        other times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieApIfEntry 46 }
+
+ruijieApIfOutDateRate OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The flow rate of data octets in units of Kilo-Bits per-second transmitted out of the
+        interface, including framing characters.
+        
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, and at
+        other times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieApIfEntry 47 }
+
+ruijieApifInNormalPkts OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of normal packets received on the interface,
+         including framing characters.
+        
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, and at
+        other times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieApIfEntry 48 }
+
+ruijieApIfOutPkts OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of packets transmitted out of the interface,
+         including framing characters.
+        
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, and at
+        other times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieApIfEntry 49 }
+
 ruijieIfLinkTable OBJECT-TYPE
     SYNTAX      SEQUENCE OF RuijieIfLinkEntry
     MAX-ACCESS  not-accessible
@@ -2245,7 +2570,1210 @@ ruijieIfTrafficStatisticsObjects     OBJECT IDENTIFIER ::= { ruijieIfConfigMIBOb
 ruijieIfLinkTrafficStatistics        OBJECT IDENTIFIER ::= { ruijieIfTrafficStatisticsObjects 1 }
 ruijieIfLinkQosStatistics            OBJECT IDENTIFIER ::= { ruijieIfTrafficStatisticsObjects 2 }
 ruijieIfDeviceTrafficStatistics      OBJECT IDENTIFIER ::= { ruijieIfTrafficStatisticsObjects 3 }
-	
+
+-- physical interface configuration table
+
+ruijieIfPhyTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIfPhyEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of physical interface basic configuration objects."
+        ::= { ruijieIfConfigMIBObjects 16 }
+
+ruijieIfPhyEntry OBJECT-TYPE
+        SYNTAX RuijieIfPhyEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains physical interface basic configurations."
+        INDEX { ruijieIfPhyIndex }
+        ::= { ruijieIfPhyTable 1 }		
+		
+RuijieIfPhyEntry ::=
+		SEQUENCE {
+			ruijieIfPhyIndex IfIndex,
+			ruijieifPhyOperStatus INTEGER
+        }
+
+ruijieIfPhyIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Physical port index."
+        ::= { ruijieIfPhyEntry 1 }		
+		
+ruijieifPhyOperStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+			up(0),
+			down(1),
+			admindown(2)
+		}
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The current operational state of the physical interface."
+        ::= { ruijieIfPhyEntry 2 }
+
+-- interface peak rate information table
+
+ruijieIfPeakRateTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIfPeakRateEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of interface peak rate information objects."
+        ::= { ruijieIfConfigMIBObjects 17 }
+
+ruijieIfPeakRateEntry OBJECT-TYPE
+        SYNTAX RuijieIfPeakRateEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains interface peak rate information."
+        INDEX { ruijieIfPeakRateIndex }
+        ::= { ruijieIfPeakRateTable 1 }		
+		
+RuijieIfPeakRateEntry ::=
+		SEQUENCE {
+			ruijieIfPeakRateIndex IfIndex,
+			ruijieIfRxPeakRate Counter64,
+			ruijieIfRxPeakRateTime DisplayString,
+			ruijieIfTxPeakRate Counter64,
+			ruijieIfTxPeakRateTime DisplayString
+        }
+
+ruijieIfPeakRateIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "interface index."
+        ::= { ruijieIfPeakRateEntry 1 }		
+		
+ruijieIfRxPeakRate OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The receiving peak rate of interface."
+        ::= { ruijieIfPeakRateEntry 2 }
+		
+ruijieIfRxPeakRateTime OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The occuring time of receiving peak rate of interface."
+        ::= { ruijieIfPeakRateEntry 3 }
+
+ruijieIfTxPeakRate OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The transmission peak rate of interface."
+        ::= { ruijieIfPeakRateEntry 4 }
+		
+ruijieIfTxPeakRateTime OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The occuring time of transmission peak rate of interface."
+        ::= { ruijieIfPeakRateEntry 5 }
+
+-- AP info table
+
+ruijieApInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieApInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of ap information objects."
+        ::= { ruijieIfConfigMIBObjects 18 }
+
+ruijieApInfoEntry OBJECT-TYPE
+        SYNTAX RuijieApInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains ap information."
+        INDEX { ruijieApInfoAddress }
+        ::= { ruijieApInfoTable 1 }		
+		
+RuijieApInfoEntry ::=
+		SEQUENCE {
+			ruijieApInfoAddress        PhysAddress,
+			ruijieApInfoWireInRate     Counter64,
+			ruijieApInfoWireOutRate    Counter64,
+            ruijieApInfoWireInOctets   Counter64,
+			ruijieApInfoWireOutOctets  Counter64
+        }
+
+ruijieApInfoAddress OBJECT-TYPE
+    SYNTAX PhysAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The ap's address at its protocol sub-layer.
+        The ap's media-specific MIB must define the bit and byte
+        ordering and the format of the value of this object.
+        For interfaces which do not have such an address
+        (e.g., a serial line), this object should contain an
+        octet string of zero length."
+    ::= { ruijieApInfoEntry 1 }
+
+ruijieApInfoWireInRate OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The input rate in bps of all ap wire-ports."
+    ::= { ruijieApInfoEntry 2 }
+    
+ruijieApInfoWireOutRate OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The output rate in bps of all ap wire-ports."
+    ::= { ruijieApInfoEntry 3 }
+
+ruijieApInfoWireInOctets OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of octets received on the ap wire-ports."
+    ::= { ruijieApInfoEntry 4 }
+
+ruijieApInfoWireOutOctets OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The total number of octets transmitted out of the ap wire-ports."
+    ::= { ruijieApInfoEntry 5 }
+
+-- units of ruijieIfDropTable
+       ruijieIfDropTable OBJECT-TYPE
+       SYNTAX      SEQUENCE OF RuijieIfDropEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+           "A table of interface drop statistics."
+       ::= { ruijieIfConfigMIBObjects 19 }
+
+       ruijieIfDropEntry OBJECT-TYPE
+       SYNTAX      RuijieIfDropEntry
+       MAX-ACCESS  not-accessible
+       STATUS      current
+       DESCRIPTION
+           "Interface statistics drop entry"
+       INDEX { ruijieIfDropIndex }
+       ::= { ruijieIfDropTable 1 }
+
+       RuijieIfDropEntry ::=
+       SEQUENCE {
+           ruijieIfDropIndex                Unsigned32,
+           ruijieIfInDropPkts               Counter64,
+           ruijieIfInResLackPkts            Counter64,
+           ruijieIfInQosDropPkts            Counter64,
+           ruijieIfFwdEntryDropPkts         Counter64,
+           ruijieIfOutDropPkts              Counter64,
+           ruijieIfOutResLackPkts           Counter64,
+           ruijieIfNoBufferConut            Counter64,
+           ruijieIfOBMDropPkts              Counter64,
+           ruijieIfInErrorPkts              Counter64,
+           ruijieIfOutErrorPkts             Counter64
+       }
+
+       ruijieIfDropIndex OBJECT-TYPE
+       SYNTAX        Unsigned32 
+       MAX-ACCESS    read-only
+       STATUS        current
+       DESCRIPTION
+           "The device traffic drop interface index."
+       ::= { ruijieIfDropEntry 1 }
+
+       ruijieIfInDropPkts OBJECT-TYPE
+       SYNTAX       Counter64
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION   "Input discarded packets without drop by QOS."
+       ::= { ruijieIfDropEntry 2 }
+
+       ruijieIfInResLackPkts OBJECT-TYPE
+       SYNTAX       Counter64
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION   "Input discarded packets by resources lack."
+       ::= { ruijieIfDropEntry 3 }
+
+       ruijieIfInQosDropPkts OBJECT-TYPE
+       SYNTAX       Counter64
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION   "Discarded packets by QOS."
+       ::= { ruijieIfDropEntry 4 }
+
+       ruijieIfFwdEntryDropPkts OBJECT-TYPE
+       SYNTAX       Counter64
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION   "Input discarded packets by forwardind entry."
+       ::= { ruijieIfDropEntry 5 }
+
+       ruijieIfOutDropPkts OBJECT-TYPE
+       SYNTAX       Counter64
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION   "Output discarded packets."
+       ::= { ruijieIfDropEntry 6 }
+
+       ruijieIfOutResLackPkts OBJECT-TYPE
+       SYNTAX       Counter64
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION   "Output discarded packets by resources lack."
+       ::= { ruijieIfDropEntry 7 }
+
+       ruijieIfNoBufferConut OBJECT-TYPE
+       SYNTAX       Counter64
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION   "discarded packets by no buffer."
+       ::= { ruijieIfDropEntry 8 }
+
+       ruijieIfOBMDropPkts OBJECT-TYPE
+       SYNTAX       Counter64
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION   "OBM discarded packets."
+       ::= { ruijieIfDropEntry 9 }
+
+       ruijieIfInErrorPkts OBJECT-TYPE
+       SYNTAX       Counter64
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION   "Input error packets."
+       ::= { ruijieIfDropEntry 10 }
+
+       ruijieIfOutErrorPkts OBJECT-TYPE
+       SYNTAX       Counter64
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION   "Output error packets."
+       ::= { ruijieIfDropEntry 11 }
+
+-- units of ruijieEthIfTable
+
+ruijieEthIfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieEthStaEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table of ethernet interface statistics."
+    ::= { ruijieIfConfigMIBObjects 20 }
+
+ruijieEthStaEntry OBJECT-TYPE
+    SYNTAX      RuijieEthStaEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Ethernet interface statistics entry"
+    INDEX { ruijieEthIndex }
+    ::= { ruijieEthIfTable 1 }
+
+RuijieEthStaEntry ::=
+    SEQUENCE {
+        ruijieEthIndex                  Unsigned32,
+        ruijieEthDiscard                Counter64,
+        ruijieEthBandwidthUsage         DisplayString,
+        ruijieEthInOctets               Counter64,
+        ruijieEthInPkts                 Counter64,
+        ruijieEthInBroadcastPkts        Counter64,
+        ruijieEthInMulticastPkts        Counter64,
+        ruijieEthInUcastPkts            Counter64,
+        ruijieEthInNUcastPkts           Counter64,
+        ruijieEthInResLackPkts          Counter64,
+        ruijieEthInDropPkts             Counter64,
+        ruijieEthInErrors               Counter64,
+        ruijieEthOBMDropPkts            Counter64,
+        ruijieEthNoBufferCount          Counter64,
+        ruijieEthFwdEntryDropPkts       Counter64,
+        ruijieEthInQosDropPkts          Counter64,
+        ruijieEthInUnknownProtos        Counter64,
+        ruijieEthInDropPktsRate         DisplayString,
+        ruijieEthInErrorPktsRate        DisplayString,
+        ruijieEthInPktRate              Counter64,
+        ruijieEthInBitsRate             Counter64,
+        ruijieEthInBandwidthUsage       DisplayString,
+        ruijieEthRxPeakRate             Counter64,
+        ruijieEthRxPeakRateTime         DisplayString,
+        ruijieEthOutOctets              Counter64,
+        ruijieEthOutPkts                Counter64,
+        ruijieEthOutBroadcastPkts       Counter64,
+        ruijieEthOutMulticastPkts       Counter64,
+        ruijieEthOutUcastPkts           Counter64,
+        ruijieEthOutNUcastPkts          Counter64,
+        ruijieEthOutResLackPkts         Counter64,
+        ruijieEthOutDropPkts            Counter64,
+        ruijieEthOutErrors              Counter64,
+        ruijieEthOutCollisionPkts       Counter64,
+        ruijieEthOutDropPktsRate        DisplayString,
+        ruijieEthOutErrorPktsRate       DisplayString,
+        ruijieEthOutPktRate             Counter64,
+        ruijieEthOutBitsRate            Counter64,
+        ruijieEthOutBandwidthUsage      DisplayString,
+        ruijieEthTxPeakRate             Counter64,
+        ruijieEthTxPeakRateTime         DisplayString,
+        ruijieEthUplinkInOctets         Counter64,
+        ruijieEthUplinkInUcastPkts      Counter64,
+        ruijieEthUplinkInNUcastPkts     Counter64,
+        ruijieEthUplinkInDiscards       Counter64,
+        ruijieEthUplinkInErrors         Counter64,
+        ruijieEthUplinkOutOctets        Counter64,
+        ruijieEthUplinkOutUcastPkts     Counter64,
+        ruijieEthUplinkOutNUcastPkts    Counter64,
+        ruijieEthUplinkOutDiscards      Counter64,
+        ruijieEthUplinkOutErrors        Counter64,
+        ruijieEthUplinkInBcastPkts      Counter64,
+        ruijieEthUplinkOutBcastPkts     Counter64,
+        ruijieEthDownlinkInOctets       Counter64,
+        ruijieEthDownlinkInUcastPkts    Counter64,
+        ruijieEthDownlinkInNUcastPkts   Counter64,
+        ruijieEthDownlinkInDiscards     Counter64,
+        ruijieEthDownlinkInErrors       Counter64,
+        ruijieEthDownlinkOutOctets      Counter64,
+        ruijieEthDownlinkOutUcastPkts   Counter64,
+        ruijieEthDownlinkOutNUcastPkts  Counter64,
+        ruijieEthDownlinkOutDiscards    Counter64,
+        ruijieEthDownlinkOutErrors      Counter64,
+        ruijieEthDownlinkInBcastPkts    Counter64,
+        ruijieEthDownlinkOutBcastPkts   Counter64
+    }
+
+ruijieEthIndex OBJECT-TYPE
+    SYNTAX        Unsigned32 
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION
+        "The ethernet interface index."
+    ::= { ruijieEthStaEntry 1 }
+
+ruijieEthDiscard OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of bound packets which were chosen to be
+        discarded even though no errors. One possible reason for
+        discarding such a packet could be to free up buffer space.
+
+        Discontinuities in the value of this counter can occur
+        at re-initialization of the management system, and at
+        other times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 2 }
+
+ruijieEthBandwidthUsage OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "RX bandwidth utilization ratio of interface."
+    ::= { ruijieEthStaEntry 3 }
+
+ruijieEthInOctets OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of octets received on the interface,
+        including framing characters.
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 4 }
+
+ruijieEthInPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets received on this interface,
+        including framing characters.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 5 } 
+
+ruijieEthInBroadcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets, delivered by this sub-layer to a
+        higher (sub-)layer, which were addressed to a broadcast
+        address at this sub-layer.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 6 }
+
+ruijieEthInMulticastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets, delivered by this sub-layer to a
+        higher (sub-)layer, which were addressed to a multicast
+        address at this sub-layer.  For a MAC layer protocol, this
+        includes both Group and Functional addresses.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 7 }
+
+ruijieEthInUcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets, delivered by this sub-layer to a
+        higher (sub-)layer, which were not addressed to a multicast
+        or broadcast address at this sub-layer.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 8 }
+
+ruijieEthInNUcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The counter of receiving  packets contain BROADCAST and PACKET_MULTICAST ."
+    ::= { ruijieEthStaEntry 9 }
+
+ruijieEthInResLackPkts OBJECT-TYPE
+   SYNTAX       Counter64
+   MAX-ACCESS   read-only
+   STATUS       current
+   DESCRIPTION   "Input discarded packets by resources lack."
+   ::= { ruijieEthStaEntry 10 }
+
+ruijieEthInDropPkts OBJECT-TYPE
+   SYNTAX       Counter64
+   MAX-ACCESS   read-only
+   STATUS       current
+   DESCRIPTION   "Input discarded packets without drop by QOS."
+   ::= { ruijieEthStaEntry 11 }
+
+ruijieEthInErrors OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "For packet-oriented interfaces, the number of inbound
+        packets that contained errors preventing them from being
+        deliverable to a higher-layer protocol.  For character-
+        oriented or fixed-length interfaces, the number of inbound
+        transmission units that contained errors preventing them
+        from being deliverable to a higher-layer protocol.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 12 }
+
+ruijieEthOBMDropPkts OBJECT-TYPE
+   SYNTAX       Counter64
+   MAX-ACCESS   read-only
+   STATUS       current
+   DESCRIPTION   "OBM discarded packets."
+   ::= { ruijieEthStaEntry 13 }
+
+ruijieEthNoBufferCount OBJECT-TYPE
+   SYNTAX       Counter64
+   MAX-ACCESS   read-only
+   STATUS       current
+   DESCRIPTION   "discarded packets by no buffer."
+   ::= { ruijieEthStaEntry 14 }
+
+ruijieEthFwdEntryDropPkts OBJECT-TYPE
+   SYNTAX       Counter64
+   MAX-ACCESS   read-only
+   STATUS       current
+   DESCRIPTION   "Input discarded packets by forwardind entry."
+   ::= { ruijieEthStaEntry 15 }
+
+ruijieEthInQosDropPkts OBJECT-TYPE
+   SYNTAX       Counter64
+   MAX-ACCESS   read-only
+   STATUS       current
+   DESCRIPTION   "Discarded packets by QOS."
+   ::= { ruijieEthStaEntry 16 }
+
+ruijieEthInUnknownProtos OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "For packet-oriented interfaces, the number of packets
+        received via the interface which were discarded because of
+        an unknown or unsupported protocol.  For character-oriented
+        or fixed-length interfaces that support protocol
+        multiplexing the number of transmission units received via
+        the interface which were discarded because of an unknown or
+        unsupported protocol.  For any interface that does not
+        support protocol multiplexing, this counter will always be
+        0.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 17 }
+
+ruijieEthInDropPktsRate OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Input packet discarded rate."
+    ::= { ruijieEthStaEntry 18 }
+
+ruijieEthInErrorPktsRate OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Input packet error rate."
+    ::= { ruijieEthStaEntry 19 }
+
+ruijieEthInPktRate OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The average input packet-rate over a period of time(configuration by interface command 'load-interval') 
+        in packets per second on this interface."
+    ::= { ruijieEthStaEntry 20 }
+
+ruijieEthInBitsRate OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The average input packet-rate over a period of time(configuration by interface command 'load-interval') 
+        in bits per second on this interface."
+    ::= { ruijieEthStaEntry 21 }
+
+ruijieEthInBandwidthUsage OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "RX bandwidth utilization ratio of interface."
+    ::= { ruijieEthStaEntry 22 }
+
+ruijieEthRxPeakRate OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The receiving peak rate of interface."
+    ::= { ruijieEthStaEntry 23 }
+
+ruijieEthRxPeakRateTime OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The occuring time of receiving peak rate of interface."
+    ::= { ruijieEthStaEntry 24 }
+
+ruijieEthOutOctets OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of octets transmitted out of the
+        interface, including framing characters.
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 25 }
+
+ruijieEthOutPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets sent on this interface,
+        including framing characters.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+     ::= { ruijieEthStaEntry 26 }
+
+ruijieEthOutBroadcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of packets that higher-level protocols
+        requested be transmitted, and which were addressed to a
+        broadcast address at this sub-layer, including those that
+        were discarded or not sent.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 27 }
+
+ruijieEthOutMulticastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of packets that higher-level protocols
+        requested be transmitted, and which were addressed to a
+        multicast address at this sub-layer, including those that
+        were discarded or not sent.  For a MAC layer protocol, this
+        includes both Group and Functional addresses.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 28 }
+
+ruijieEthOutUcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of packets that higher-level protocols
+        requested be transmitted, and which were not addressed to a
+        multicast or broadcast address at this sub-layer, including
+        those that were discarded or not sent.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 29 }
+
+ruijieEthOutNUcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The counter of sending  packets contain BROADCAST and PACKET_MULTICAST ."
+    ::= { ruijieEthStaEntry 30 }
+
+ruijieEthOutResLackPkts OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION   "Output discarded packets by resources lack."
+    ::= { ruijieEthStaEntry 31 }
+
+ruijieEthOutDropPkts OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION   "Output discarded packets."
+    ::= { ruijieEthStaEntry 32 }
+
+ruijieEthOutErrors OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "For packet-oriented interfaces, the number of outbound
+        packets that could not be transmitted because of errors.
+        For character-oriented or fixed-length interfaces, the
+        number of outbound transmission units that could not be
+        transmitted because of errors.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 33 }
+
+ruijieEthOutCollisionPkts OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Interfac frames collision counter."
+    ::= { ruijieEthStaEntry 34 }
+
+ruijieEthOutDropPktsRate OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Output packet discarded rate."
+    ::= { ruijieEthStaEntry 35 }
+
+ruijieEthOutErrorPktsRate OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Output packet error rate."
+    ::= { ruijieEthStaEntry 36 }
+
+ruijieEthOutPktRate OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The average output packet-rate over a period of time(configuration by interface command 'load-interval') 
+        in packets per second on this interface."
+    ::= { ruijieEthStaEntry 37 }
+
+ruijieEthOutBitsRate OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The average output packet-rate over a period of time(configuration by interface command 'load-interval') 
+        in bits per second on this interface."
+    ::= { ruijieEthStaEntry 38 }
+
+ruijieEthOutBandwidthUsage OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "TX bandwidth utilization ratio of interface."
+     ::= { ruijieEthStaEntry 39 }
+
+ruijieEthTxPeakRate OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The transmission peak rate of interface."
+    ::= { ruijieEthStaEntry 40 }
+
+ruijieEthTxPeakRateTime OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The occuring time of transmission peak rate of interface."
+    ::= { ruijieEthStaEntry 41 }
+
+ruijieEthUplinkInOctets OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of octets received on the interface,
+        including framing characters.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 42 }
+
+ruijieEthUplinkInUcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets, delivered by this sub-layer to a
+        higher (sub-)layer, which were not addressed to a multicast
+        or broadcast address at this sub-layer.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 43 }
+
+ruijieEthUplinkInNUcastPkts OBJECT-TYPE
+    SYNTAX  Counter64
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+        "The number of packets, delivered by this sub-layer to a
+        higher (sub-)layer, which were addressed to a multicast or
+        broadcast address at this sub-layer.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime.
+
+        This object is deprecated in favour of ifInMulticastPkts and
+        ifInBroadcastPkts."
+    ::= { ruijieEthStaEntry 44 }
+
+ruijieEthUplinkInDiscards OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of inbound packets which were chosen to be
+        discarded even though no errors had been detected to prevent
+        their being deliverable to a higher-layer protocol.  One
+        possible reason for discarding such a packet could be to
+        free up buffer space.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 45 }
+
+ruijieEthUplinkInErrors OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "For packet-oriented interfaces, the number of inbound
+        packets that contained errors preventing them from being
+        deliverable to a higher-layer protocol.  For character-
+        oriented or fixed-length interfaces, the number of inbound
+        transmission units that contained errors preventing them
+        from being deliverable to a higher-layer protocol.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 46 }
+
+ruijieEthUplinkOutOctets OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of octets transmitted out of the
+        interface, including framing characters.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 47 }
+
+ruijieEthUplinkOutUcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of packets that higher-level protocols
+        requested be transmitted, and which were not addressed to a
+        multicast or broadcast address at this sub-layer, including
+        those that were discarded or not sent.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 48 }
+
+ruijieEthUplinkOutNUcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+        "The total number of packets that higher-level protocols
+        requested be transmitted, and which were addressed to a
+        multicast or broadcast address at this sub-layer, including
+        those that were discarded or not sent.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime.
+
+        This object is deprecated in favour of ifOutMulticastPkts
+        and ifOutBroadcastPkts."
+    ::= { ruijieEthStaEntry 49 }
+
+ruijieEthUplinkOutDiscards OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of outbound packets which were chosen to be
+        discarded even though no errors had been detected to prevent
+        their being transmitted.  One possible reason for discarding
+        such a packet could be to free up buffer space.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 50 }
+
+ruijieEthUplinkOutErrors OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "For packet-oriented interfaces, the number of outbound
+        packets that could not be transmitted because of errors.
+        For character-oriented or fixed-length interfaces, the
+        number of outbound transmission units that could not be
+        transmitted because of errors.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 51 }
+
+ruijieEthUplinkInBcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of upbound and inbound packets, delivered by this 
+        sub-layer to a higher (sub-)layer, which were addressed to a 
+        broadcast address at this sub-layer.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 52 }
+
+ruijieEthUplinkOutBcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of upbound and outbound packets, delivered by this 
+        sub-layer to a higher (sub-)layer, which were addressed to a 
+        broadcast address at this sub-layer.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 53 }
+
+ruijieEthDownlinkInOctets OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of octets received on the interface,
+        including framing characters.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 54 }
+
+ruijieEthDownlinkInUcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of packets, delivered by this sub-layer to a
+        higher (sub-)layer, which were not addressed to a multicast
+        or broadcast address at this sub-layer.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 55 }
+
+ruijieEthDownlinkInNUcastPkts OBJECT-TYPE
+    SYNTAX  Counter64
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+        "The number of packets, delivered by this sub-layer to a
+        higher (sub-)layer, which were addressed to a multicast or
+        broadcast address at this sub-layer.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime.
+
+        This object is deprecated in favour of ifInMulticastPkts and
+        ifInBroadcastPkts."
+    ::= { ruijieEthStaEntry 56 }
+
+ruijieEthDownlinkInDiscards OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of inbound packets which were chosen to be
+        discarded even though no errors had been detected to prevent
+        their being deliverable to a higher-layer protocol.  One
+        possible reason for discarding such a packet could be to
+        free up buffer space.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 57 }
+
+ruijieEthDownlinkInErrors OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "For packet-oriented interfaces, the number of inbound
+        packets that contained errors preventing them from being
+        deliverable to a higher-layer protocol.  For character-
+        oriented or fixed-length interfaces, the number of inbound
+        transmission units that contained errors preventing them
+        from being deliverable to a higher-layer protocol.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 58 }
+
+ruijieEthDownlinkOutOctets OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of octets transmitted out of the
+        interface, including framing characters.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 59 }
+
+ruijieEthDownlinkOutUcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The total number of packets that higher-level protocols
+        requested be transmitted, and which were not addressed to a
+        multicast or broadcast address at this sub-layer, including
+        those that were discarded or not sent.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 60 }
+
+ruijieEthDownlinkOutNUcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      deprecated
+    DESCRIPTION
+        "The total number of packets that higher-level protocols
+        requested be transmitted, and which were addressed to a
+        multicast or broadcast address at this sub-layer, including
+        those that were discarded or not sent.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime.
+
+        This object is deprecated in favour of ifOutMulticastPkts
+        and ifOutBroadcastPkts."
+    ::= { ruijieEthStaEntry 61 }
+
+ruijieEthDownlinkOutDiscards OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of outbound packets which were chosen to be
+        discarded even though no errors had been detected to prevent
+        their being transmitted.  One possible reason for discarding
+        such a packet could be to free up buffer space.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 62 }
+
+ruijieEthDownlinkOutErrors OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "For packet-oriented interfaces, the number of outbound
+        packets that could not be transmitted because of errors.
+        For character-oriented or fixed-length interfaces, the
+        number of outbound transmission units that could not be
+        transmitted because of errors.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 63 }
+
+ruijieEthDownlinkInBcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of downbound and inbound packets, delivered by this 
+        sub-layer to a higher (sub-)layer, which were addressed to a 
+        broadcast address at this sub-layer.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 64 }
+
+ruijieEthDownlinkOutBcastPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of downbound and outbound packets, delivered by this 
+        sub-layer to a higher (sub-)layer, which were addressed to a 
+        broadcast address at this sub-layer.
+
+        Discontinuities in the value of this counter can occur at
+        re-initialization of the management system, and at other
+        times as indicated by the value of
+        ifCounterDiscontinuityTime."
+    ::= { ruijieEthStaEntry 65 }
+
 -- units of LinkTrafficStatistics
        ruijieIfLinkTrafficTable OBJECT-TYPE
        SYNTAX      SEQUENCE OF RuijieIfLinkTrafficEntry
@@ -2729,7 +4257,129 @@ ruijieIfDeviceTrafficStatistics      OBJECT IDENTIFIER ::= { ruijieIfTrafficStat
        STATUS       current
        DESCRIPTION   "Node&device&FC-based Gathers."
        ::= { ruijieIfDeviceTrafficEntry 16 }
+           
+ruijieIfOMCTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieIfOMCEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A table of OMC interface info entries."
+        ::= { ruijieIfConfigMIBObjects 21 }
+               
+ruijieIfOMCEntry OBJECT-TYPE
+        SYNTAX RuijieIfOMCEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains OMC interface info."
+        INDEX { ruijieIfOMCIndex }
+        ::= { ruijieIfOMCTable 1 }
+                
+        RuijieIfOMCEntry ::=
+        SEQUENCE { 
+            ruijieIfOMCIndex                InterfaceIndex,
+            ruijieIfOMCNativeName           DisplayString,
+            ruijieIfOMCPhysicalOrLogical    INTEGER,
+            ruijieIfOMCPortType             INTEGER,
+            ruijieIfOMCPortSubType          INTEGER,
+            ruijieIfOMCSignalType           INTEGER,
+            ruijieIfOMCBindType             INTEGER,
+            ruijieIfOMCCVID                 DisplayString
+         }
 
+        ruijieIfOMCIndex OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The interface index."
+        ::= { ruijieIfOMCEntry 1 }
+                
+        ruijieIfOMCNativeName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..255))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The native name of the interface."
+        ::= { ruijieIfOMCEntry 2 }
+         
+        ruijieIfOMCPhysicalOrLogical OBJECT-TYPE
+        SYNTAX INTEGER {
+            unknown(1),
+            PTP(2),
+            FTP(3)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This object indicates whether the interface is a logical interface(FTP) or a physical interface(PTP)."
+        ::= { ruijieIfOMCEntry 3 }
+            
+        ruijieIfOMCPortType OBJECT-TYPE
+        SYNTAX INTEGER {
+          unknown(1),
+          ETH(2),
+          POS(3),
+          LAG(4),
+          VE(5),
+          Trunk(6),
+          VLAN(7),
+          other(8)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Port type of this port.
+        When the port type is PTP, the value of this item can only be ETH, POS, other;
+        When the Port type is FTP, the value of this item can only be LAG, VE, Trunk, VLAN, and other."
+        ::= { ruijieIfOMCEntry 4 }
+            
+        ruijieIfOMCPortSubType OBJECT-TYPE
+        SYNTAX INTEGER {
+            unknown(1),
+            LAN(2),
+            WAN(3)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "When the molecular type is no longer defined under a certain type of port, 
+        the value of this item is consistent with the value of the port type attribute.
+        For example, the subtype of VE port can be L2VE, L3VE, for example, the subtype of ETH port can be LAN, WAN, etc."
+        ::= { ruijieIfOMCEntry 5 }
+           
+        ruijieIfOMCSignalType OBJECT-TYPE
+        SYNTAX INTEGER {
+            unknown(1),
+            optical(2),
+            electrical(3),
+            invalid(4)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Optical properties of the interface"
+        ::= { ruijieIfOMCEntry 6 }
+
+        ruijieIfOMCBindType OBJECT-TYPE
+        SYNTAX INTEGER {
+            unknown(1),
+            LogicAndPhy(2),
+            SubAndMain(3)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Type of interface binding, logical interface and physical interface, or sub-interface and main interface."
+        ::= { ruijieIfOMCEntry 7 }
+
+        ruijieIfOMCCVID OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..255))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "CVLAN ID of the access point."
+        ::= { ruijieIfOMCEntry 9 }
 
 -- Notification
 ruijieInterfaceTraps      OBJECT IDENTIFIER ::= { ruijieInterfaceMIB 2 }
@@ -2842,6 +4492,12 @@ ruijieInterfaceMIBGroup OBJECT-GROUP
             ruijieIfInPktRate,
             ruijieIfOutBitsRate,
             ruijieIfOutPktRate,
+            ruijieIfInBandwidthUsage,
+            ruijieIfOutBandwidthUsage,
+            ruijieIfInErrorPktsRate,
+            ruijieIfOutErrorPktsRate,
+            ruijieIfInDropPktsRate,
+            ruijieIfOutDropPktsRate,
             ruijieIfIpIfIndex,
             ruijieIfIpId,
             ruijieIfIp,
@@ -2894,6 +4550,19 @@ ruijieInterfaceMIBGroup OBJECT-GROUP
             ruijieApIfOutNUcastPktsw,
             ruijieApIfLinkUPTimesw,
             ruijieApIfInPkts,
+            ruijieApIfInFlow,
+            ruijieApIfOutFlow,
+            ruijieApIfInBrdcastPkts,
+            ruijieApIfOutBrdcastPkts,
+            ruijieApIfInMulcastPkts,
+            ruijieApIfOutMulcastPkts,
+            ruijieApIfInPayloadOctets,
+            ruijieApIfOutPayloadOctets,
+            ruijieApIfAlias,
+            ruijieApIfInDateRate,
+            ruijieApIfOutDateRate,
+            ruijieApifInNormalPkts,
+            ruijieApIfOutPkts,
             ruijieIfLinkIndex,
             ruijieIfUplinkInOctets,
             ruijieIfUplinkInUcastPkts,
@@ -2918,7 +4587,9 @@ ruijieInterfaceMIBGroup OBJECT-GROUP
             ruijieIfUplinkInBcastPkts,
             ruijieIfUplinkOutBcastPkts,
             ruijieIfDownlinkInBcastPkts,
-            ruijieIfDownlinkOutBcastPkts
+            ruijieIfDownlinkOutBcastPkts,
+            ruijieIfNeighborIP,
+            ruijieIfNeighborIPv6
         }
         STATUS  current
         DESCRIPTION

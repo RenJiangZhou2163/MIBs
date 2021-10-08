@@ -29,11 +29,17 @@ IMPORTS
                 FROM SNMPv2-CONF
         ruijieApMacAddr   
                 FROM RUIJIE-AC-MGMT-MIB
-        ruijieMemoryPoolCurrentUtilization
+        ruijieMemoryPoolCurrentUtilization,
+        ruijieNodeMemoryPoolName,
+        ruijieNodeMemoryPoolCurrentUtilization
                 FROM RUIJIE-MEMORY-MIB
         ruijieCPUUtilization1Min,
-        Percent
+        Percent,
+        ruijieNodeCPUTotalName,
+        ruijieNodeCPUTotal1min
                 FROM RUIJIE-PROCESS-MIB
+        entPhysicalName 
+                FROM ENTITY-MIB
         ruijieMgmt
                 FROM RUIJIE-SMI;
 
@@ -266,11 +272,12 @@ ruijieSystemElectricalSourceIsNormalIndex OBJECT-TYPE
 ruijieSystemElectricalSourceIsNormal OBJECT-TYPE
    	SYNTAX  INTEGER {
                 noexist (1),          --no exist
-                existnopower (2),     -- exist no power
+                existnopower (2),     --exist no power
                 existreadypower (3),  --exist ready power
                 normal (4),           --normal
                 powerbutabnormal (5), --power but abnormal
-                unknow (6)            --unknow
+                unknow (6),           --unknow
+                linefail (7)          --line fail
              }
     MAX-ACCESS    read-only
     STATUS        current
@@ -339,11 +346,12 @@ ruijieSystemFanIsNormalIndex OBJECT-TYPE
 ruijieSystemFanIsNormal OBJECT-TYPE
    	SYNTAX  INTEGER {
                 noexist (1),          --no exist
-                existnopower (2),     -- exist no power
+                existnopower (2),     --exist no power
                 existreadypower (3),  --exist ready power
                 normal (4),           --normal
                 powerbutabnormal (5), --power but abnormal
-                unknow (6)            --unknow
+                unknow (6),           --unknow
+                linefail (7)          --line fail
              }
     MAX-ACCESS    read-only
     STATUS        current
@@ -448,8 +456,8 @@ ruijieSystemSerialno OBJECT-TYPE
         MAX-ACCESS read-only
         STATUS current
         DESCRIPTION
-          "Return the string of the serial number resides
-          on the FastSwitch."
+          "Return the string of the serial number resides on the FastSwitch. 
+          Or return the serial number resides on the current master engine of a chassis device."
         ::= { ruijieSystemMIBObjects 24 }    
     
 ruijieSystemVersionTable OBJECT-TYPE
@@ -1144,7 +1152,8 @@ ruijieSystemFanInformationStatus OBJECT-TYPE
                 existreadypower (3),  --exist ready power
                 normal (4),           --normal
                 powerbutabnormal (5), --power but abnormal
-                unknow (6)            --unknow
+                unknow (6),           --unknow
+                linefail (7)          --line fail
              }
     MAX-ACCESS    read-only
     STATUS        current
@@ -1962,7 +1971,7 @@ RuijieSystemFanPad2SpeedEntry ::=
     ruijieSystemOamFanPad2Name	  DisplayString,
     ruijieSystemFanPad2Speed1         Integer32,
     ruijieSystemFanPad2Speed2         Integer32,
-    ruijieSystemFanPad2Speed3         Integer32,
+    ruijieSystemFanPad2Speed3         Integer32
   }
 
 ruijieSystemOamFanPad2Index OBJECT-TYPE
@@ -2030,7 +2039,7 @@ RuijieSystemFanPad3SpeedEntry ::=
     ruijieSystemFanPad3Speed2         Integer32,
     ruijieSystemFanPad3Speed3         Integer32,
     ruijieSystemFanPad3Speed4         Integer32,
-    ruijieSystemFanPad3Speed5         Integer32,
+    ruijieSystemFanPad3Speed5         Integer32
   }
 
 ruijieSystemOamFanPad3Index OBJECT-TYPE
@@ -2088,7 +2097,36 @@ ruijieSystemFanPad3Speed5 OBJECT-TYPE
     DESCRIPTION
         "Return the speed of the fan5."
     ::= { ruijieSystemFanPad3SpeedEntry 7 }
-   
+
+ruijieSystemParamSaveErrIdx  OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Param Save Err Idx."
+    ::= { ruijieSystemMIBObjects 58 }
+
+ruijieSystemParamSaveErrMsg  OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (1..64))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Param Save Err Msg."
+    ::= { ruijieSystemMIBObjects 59 }
+
+ruijieSystemDeviceLevel  OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknown (0), -- Unknown Layer
+                core (1), -- Core Layer
+                collect (2), -- Collect Layer
+                access (3)  -- Access Layer
+             }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+        "This object can display or set which device application level the device belongs to."
+    ::= { ruijieSystemMIBObjects 60 }
+    
 ruijieSystemMIBTraps OBJECT IDENTIFIER ::= { ruijieSystemMIB 2 }
 
 ruijieSystemHardChangeDesc OBJECT-TYPE
@@ -2322,7 +2360,156 @@ ruijieSystemFanTableStateChangeVSU NOTIFICATION-TYPE
         DESCRIPTION
                 "In VSU, while the state of fan changed, then this trap will be sent."
         ::= { ruijieSystemMIBTraps 26 }                
+
+ruijieSystemParamSaveErr NOTIFICATION-TYPE
+        OBJECTS   {
+        ruijieSystemParamSaveErrIdx,
+        ruijieSystemParamSaveErrMsg
+        }
+        STATUS     current
+        DESCRIPTION
+                "while call exec write, then this trap will be sent."
+        ::= { ruijieSystemMIBTraps 27 }                
         
+ruijieSystemFanTableOn  NOTIFICATION-TYPE
+        OBJECTS   {
+            ruijieSystemFanStatusFanIndex,
+            ruijieSystemFanStatusIndex,
+            ruijieSystemFanStatus
+        }
+        STATUS     current
+        DESCRIPTION
+                "while fan is turned on, then this trap will be sent."
+        ::= { ruijieSystemMIBTraps 28 }                
+
+ruijieSystemFanTableOff  NOTIFICATION-TYPE
+        OBJECTS   {
+            ruijieSystemFanStatusFanIndex,
+            ruijieSystemFanStatusIndex,
+            ruijieSystemFanStatus
+        }
+        STATUS     current
+        DESCRIPTION
+                "while fan is turned off, then this trap will be sent."
+        ::= { ruijieSystemMIBTraps 29 }   
+
+ruijieSystemFanTableOnVSU NOTIFICATION-TYPE
+        OBJECTS   {
+            ruijieSystemFanStatusDeviceIndex,  
+            ruijieSystemFanStatusFanIndex,
+            ruijieSystemFanStatusIndex,
+            ruijieSystemFanStatus
+        }
+        STATUS     current
+        DESCRIPTION
+                "In VSU, while fan is turned on, then this trap will be sent."
+        ::= { ruijieSystemMIBTraps 30 }   
+
+ruijieSystemFanTableOffVSU NOTIFICATION-TYPE
+        OBJECTS   {
+            ruijieSystemFanStatusDeviceIndex,  
+            ruijieSystemFanStatusFanIndex,
+            ruijieSystemFanStatusIndex,
+            ruijieSystemFanStatus
+        }
+        STATUS     current
+        DESCRIPTION
+                "In VSU, while fan is turned off, then this trap will be sent."
+        ::= { ruijieSystemMIBTraps 31 }
+
+ruijieSwitchOverNotify NOTIFICATION-TYPE
+        OBJECTS   {
+            ruijieSystemSwitchID
+        }
+        STATUS     current
+        DESCRIPTION
+                " while redundancy forceswitch, then this trap will be sent."
+        ::= { ruijieSystemMIBTraps 32 }
+
+ruijieResetNotify NOTIFICATION-TYPE
+        OBJECTS   {
+            ruijieSystemSwitchID,
+            entPhysicalName
+        }
+        STATUS     current
+        DESCRIPTION
+                " while reset slot, then this trap will be sent."
+        ::= { ruijieSystemMIBTraps 33 }
+
+ruijieOfflineNotify NOTIFICATION-TYPE
+        OBJECTS   {
+            ruijieSystemSwitchID,
+            entPhysicalName
+        }
+        STATUS     current
+        DESCRIPTION
+                " while offline slot, then this trap will be sent."
+        ::= { ruijieSystemMIBTraps 34 }
+
+ruijieSystemPowerOnNotify NOTIFICATION-TYPE
+        OBJECTS   {
+            ruijieSystemSwitchID,
+            entPhysicalName
+        }
+        STATUS     current
+        DESCRIPTION
+                " while user enter power on command, then this trap will be sent."
+        ::= { ruijieSystemMIBTraps 35 }
+        
+ruijieSystemPowerOffNotify NOTIFICATION-TYPE
+        OBJECTS   {
+            ruijieSystemSwitchID,
+            entPhysicalName
+        }
+        STATUS     current
+        DESCRIPTION
+                " while user enter power off command, then this trap will be sent."
+        ::= { ruijieSystemMIBTraps 36 }  
+
+--Memory usage too high trap 2019-03
+ruijieSystemMemusageTooHighAlarm NOTIFICATION-TYPE
+        OBJECTS   {
+                ruijieNodeMemoryPoolName,
+                ruijieNodeMemoryPoolCurrentUtilization
+        }
+        STATUS     current
+        DESCRIPTION
+                "Memory usage too high warning."
+        ::= { ruijieSystemMIBTraps 37 }   
+        
+--Memory usage too high recover trap 2019-03 
+ruijieSystemMemusageTooHighRecovAlarm NOTIFICATION-TYPE
+        OBJECTS   {
+                ruijieNodeMemoryPoolName,
+                ruijieNodeMemoryPoolCurrentUtilization
+        }
+        STATUS     current
+        DESCRIPTION
+                "Clear the warning of memory usage too high and report the current memory usage."
+        ::= { ruijieSystemMIBTraps 38 }  
+
+--CPUsage too high trap 2019-03    
+ruijieSystemCPUusageTooHighAlarm NOTIFICATION-TYPE
+        OBJECTS   {
+                ruijieNodeCPUTotalName,
+                ruijieNodeCPUTotal1min
+        }
+        STATUS     current
+        DESCRIPTION
+                "CPU usage too high warning."
+        ::= { ruijieSystemMIBTraps 39 }
+                      
+--CPUsage too high recover trap 2019-03 
+ruijieSystemCPUusageTooHighRecovAlarm NOTIFICATION-TYPE
+        OBJECTS   {
+                ruijieNodeCPUTotalName,
+                ruijieNodeCPUTotal1min
+        }
+        STATUS     current
+        DESCRIPTION
+                "Clear the warning of CPU usage too high and report the current CPU usage."
+        ::= { ruijieSystemMIBTraps 40 }
+  		
 ruijieSystemMIBConformance OBJECT IDENTIFIER ::= { ruijieSystemMIB 3 }
 ruijieSystemMIBCompliances OBJECT IDENTIFIER ::= { ruijieSystemMIBConformance 1 }
 ruijieSystemMIBGroups      OBJECT IDENTIFIER ::= { ruijieSystemMIBConformance 2 }

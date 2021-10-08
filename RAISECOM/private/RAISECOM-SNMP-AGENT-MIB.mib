@@ -1,0 +1,543 @@
+-- *****************************************************************
+-- RAISECOM-SNMP-AGENT-MIB.mib:  Raisecom Snmp Agent MIB file
+--
+-- March 2002, Wuzg
+--
+-- Copyright (c) 2002 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RAISECOM-SNMP-AGENT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32,
+        IpAddress
+                FROM SNMPv2-SMI
+        DisplayString,
+        RowStatus,
+        TAddress,
+        TEXTUAL-CONVENTION
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        RuijieTrapType       
+                FROM RAISECOM-TC
+        EnabledStatus 
+                FROM P-BRIDGE-MIB
+        InetAddressType,
+        InetAddress
+                FROM INET-ADDRESS-MIB
+        ruijieMgmt
+                FROM RAISECOM-SMI;
+
+ruijieSnmpAgentMIB MODULE-IDENTITY
+        LAST-UPDATED "200203200000Z"
+        ORGANIZATION "Raisecom Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@raisecom.com.cn"
+        DESCRIPTION
+                "This module defines raisecom SNMP agent mibs."
+        REVISION      "200203200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 5}
+
+ruijieSnmpAgentMIBObjects OBJECT IDENTIFIER ::= { ruijieSnmpAgentMIB 1 }
+
+ruijieSnmpCommunityObjects OBJECT IDENTIFIER ::= { ruijieSnmpAgentMIBObjects 1 }
+
+ruijieSnmpTrapObjects OBJECT IDENTIFIER ::= { ruijieSnmpAgentMIBObjects 2 }
+
+ruijieSnmpUdpPortObjects OBJECT IDENTIFIER ::= { ruijieSnmpAgentMIBObjects 3 }
+
+ruijieSnmpNetObjects OBJECT IDENTIFIER ::= {ruijieSnmpAgentMIBObjects 4}
+
+Community ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "community string for the implementation, maximum length of 
+        community strings limited to 32 octets."
+    SYNTAX DisplayString (SIZE (1..32))
+
+--
+--  snmp community
+--
+ruijieCommunityMaxNum OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of Max of communities which the SNMP Agent support."
+        ::= { ruijieSnmpCommunityObjects 1 }
+
+ruijieCommunityTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieCommunityEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A list of SNMP Community configurations."
+        ::= { ruijieSnmpCommunityObjects 2 }
+        
+ruijieCommunityEntry OBJECT-TYPE
+        SYNTAX RuijieCommunityEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Obtain information of SNMP Community configuration."
+        INDEX { ruijieCommunityName }
+        ::= { ruijieCommunityTable 1 }
+        
+RuijieCommunityEntry ::= 
+        SEQUENCE {
+           ruijieCommunityName  Community,
+           ruijieCommunityWritable INTEGER,
+           ruijieCommunityUserIpAddr IpAddress,
+           ruijieCommunityEnableIpAddrAuthen EnabledStatus,
+           ruijieCommunityStatus RowStatus
+        }
+        
+ruijieCommunityName OBJECT-TYPE
+        SYNTAX Community
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Community used by this entry.This value is unique for every entry.
+            When this string be used as an index,Value of a sub-identifier equal 
+            ASCII value of corresponding character(first sub-identifier corresponds
+            first character of string). The number of sub-identifiers of this string
+            must be 32,If length of string is less than 32 the sub-identifier(0x0) 
+            will be filled in tail."
+        ::= { ruijieCommunityEntry 1 }
+    
+ruijieCommunityWritable OBJECT-TYPE
+        SYNTAX INTEGER {
+               readonly(1),
+               readwrite(2)
+        }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Authority of this community"
+        DEFVAL{ readonly }
+        ::= { ruijieCommunityEntry 2 }
+        
+ruijieCommunityUserIpAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "IP address use for the authentication of a user, if the associated object
+             ruijieCommunityEnableIpAddrAuthen status is enable(1), the all messages
+             send to the agent will be authened by community and this IP address. messages
+             that can't pass the authentication will be discarded."
+        ::= { ruijieCommunityEntry 3 }
+        
+ruijieCommunityEnableIpAddrAuthen OBJECT-TYPE
+        SYNTAX EnabledStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "this object offer the means to enable of disable the IP authentications of 
+            SNMP message."
+        ::= { ruijieCommunityEntry 4 }
+            
+ruijieCommunityStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "entry status of this entry. and the means in this enviraments can
+            reffer to the text-convention definition of the RowStatus."
+        ::= { ruijieCommunityEntry 5 }
+
+ruijieReadCommunityName OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "SNMP read community string."
+        ::= { ruijieSnmpCommunityObjects 3 }
+
+ruijieWriteCommunityName OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "SNMP write community string."
+        ::= { ruijieSnmpCommunityObjects 4 }
+
+--
+--trap destination table
+--
+ 
+ruijieTrapDstMaxNumber OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of destination address table entries."
+        ::= { ruijieSnmpTrapObjects 1 }
+                        
+ruijieTrapDstTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieTrapDstEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "table of destination hosts that the trap will be sent to."
+        ::= { ruijieSnmpTrapObjects 2 }
+    
+ruijieTrapDstEntry OBJECT-TYPE
+        SYNTAX RuijieTrapDstEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "list of hosts."
+        INDEX { ruijieTrapDstAddr }
+        ::= { ruijieTrapDstTable 1 }
+    
+RuijieTrapDstEntry ::= 
+        SEQUENCE {
+           ruijieTrapDstAddr IpAddress,
+           ruijieTrapDstCommunity Community,
+           ruijieTrapDstSendTrapClass INTEGER,
+           ruijieTrapDstEntryStatus RowStatus
+        }
+        
+ruijieTrapDstAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "the destination address of a host the trap will be sent to."
+        ::= { ruijieTrapDstEntry 1 }
+                
+ruijieTrapDstCommunity OBJECT-TYPE
+        SYNTAX Community
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "the destination host's SNMP Client wish to receive the community in
+            the trap send by agent."
+        DEFVAL { "public" }
+        ::= { ruijieTrapDstEntry 2 }
+
+ruijieTrapDstSendTrapClass OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    snmpv1-Trap(1), 
+                    snmpv2c-Trap(2),
+                    snmpv3-trap(3)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+            "Indicates that the SNMP entity will send which kind of trap 
+            SNMPv1-Trap and SNMPv2-Trap"
+    DEFVAL { snmpv1-Trap }
+    ::= { ruijieTrapDstEntry 3 }
+        
+ruijieTrapDstEntryStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "entry status of this entry. and the means in this enviraments can
+            reffer to the text-convention definition of the RowStatus."
+        ::= { ruijieTrapDstEntry 4 }
+
+
+ruijieTrapActionTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieTrapActionEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table of the trap's action."
+        ::= { ruijieSnmpTrapObjects 3 }
+
+ruijieTrapActionEntry OBJECT-TYPE
+        SYNTAX RuijieTrapActionEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "List of of the trap's action."
+        INDEX { ruijieTrapType }
+        ::= { ruijieTrapActionTable 1 }
+    
+RuijieTrapActionEntry ::=
+        SEQUENCE {
+           ruijieTrapType RuijieTrapType,
+           ruijieTrapAction INTEGER
+        }
+        
+ruijieTrapType OBJECT-TYPE
+        SYNTAX RuijieTrapType 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Trap type identifier, every kind of trap which the system support
+             will has one entry in this table."
+        ::= { ruijieTrapActionEntry 1 }
+        
+ruijieTrapAction OBJECT-TYPE
+        SYNTAX INTEGER {
+            none(1),       -- do nothing
+            sendtrap(2)    -- send trap
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This value decide how to deal with when this type trap has happened."
+        ::= { ruijieTrapActionEntry 2 }
+
+
+ruijieTrapControlTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieTrapControlEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This table of the trap's control."
+        ::= { ruijieSnmpTrapObjects 4 }
+
+ruijieTrapControlEntry OBJECT-TYPE
+        SYNTAX RuijieTrapControlEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "List of of the trap's action."
+        INDEX { ruijieTrapName }
+        ::= { ruijieTrapControlTable 1 }
+
+RuijieTrapControlEntry ::=
+        SEQUENCE {
+           ruijieTrapName         DisplayString,
+           ruijieTrapDescr        DisplayString,
+           ruijieTrapOnOff        INTEGER
+        }
+
+ruijieTrapName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE(1..64)) 
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Trap name identifier, represent by standard trap oid, 
+             each kind of trap which the system support will has one entry in this table."
+        ::= { ruijieTrapControlEntry 1 }
+
+ruijieTrapDescr OBJECT-TYPE
+        SYNTAX DisplayString(SIZE(1..255)) 
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The description of the trap."
+        ::= { ruijieTrapControlEntry 2 }
+
+ruijieTrapOnOff OBJECT-TYPE
+        SYNTAX INTEGER {
+            off(0),     
+            on(1)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "This value decide how to deal with when this type trap has happened.
+             off(0)  forbid send this trap
+             on(1)   allow send this trap 
+            "
+        ::= { ruijieTrapControlEntry 3 }
+
+
+--
+--trap destination information table
+--
+
+ruijieTrapDesTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieTrapDesEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Table of trap destination hosts information that the trap will be sent to."
+    ::= { ruijieSnmpTrapObjects 5 }
+
+ruijieTrapDesEntry OBJECT-TYPE
+    SYNTAX RuijieTrapDesEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "List of trap destination hosts."
+    INDEX { 
+        ruijieTrapDesIndex
+    }
+    ::= { ruijieTrapDesTable 1 }
+
+RuijieTrapDesEntry ::= 
+    SEQUENCE {
+        ruijieTrapDesIndex         Integer32,
+        ruijieTrapDesIPAddress     TAddress,
+        ruijieTrapDesCommunity     Community,
+        ruijieTrapDesVersion       INTEGER,
+        ruijieTrapDesStatus        RowStatus
+    }
+
+ruijieTrapDesIndex OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only           
+    STATUS current               
+    DESCRIPTION
+        "Index of Trap host information"
+    ::= { ruijieTrapDesEntry 1 }
+
+ruijieTrapDesIPAddress OBJECT-TYPE
+    SYNTAX TAddress
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Taddress of Trap hosts."               
+    ::= { ruijieTrapDesEntry 2 }
+
+ruijieTrapDesCommunity OBJECT-TYPE
+    SYNTAX Community
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "The destination host's SNMP Client wish to receive the community in the trap send by agent."
+    ::= { ruijieTrapDesEntry 3 }
+
+ruijieTrapDesVersion OBJECT-TYPE
+    SYNTAX INTEGER {
+        snmpv1-Trap(1), 
+        snmpv2c-Trap(2),
+        snmpv3-trap(3)
+    }
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Indicates that the SNMP entity will send which kind of trap: SNMPv1-Trap, SNMPv2-Trap, SNMPv3-Trap"
+    ::= { ruijieTrapDesEntry 4 }
+
+ruijieTrapDesStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    MAX-ACCESS read-create
+    STATUS current
+    DESCRIPTION
+        "Entry status of this entry. and the means in this enviraments can
+         reffer to the text-convention definition of the RowStatus."
+    ::= { ruijieTrapDesEntry 5 }
+
+
+--
+-- snmp udp-port information
+--
+
+ruijieSNMPGetSetPort OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Udp-port of snmp get or set operation."
+        ::= { ruijieSnmpUdpPortObjects 1 }
+
+ruijieSNMPTrapPort OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Udp-port of snmp trap operation."
+        ::= { ruijieSnmpUdpPortObjects 2 }
+
+
+--
+-- snmp net-id information
+--
+
+ruijieSysNetID OBJECT-TYPE
+       SYNTAX DisplayString
+       MAX-ACCESS read-write
+       STATUS    current
+       DESCRIPTION
+           "The system netID tells this network element's information 
+            which maybe include province ID,local ID,network element type,network element ID,etc."
+       ::= { ruijieSnmpNetObjects 1 }
+
+ruijieSnmpAgentMIBConformance OBJECT IDENTIFIER ::= { ruijieSnmpAgentMIB 2 }
+ruijieSnmpAgentMIBCompliances OBJECT IDENTIFIER ::= { ruijieSnmpAgentMIBConformance 1 }
+ruijieSnmpAgentMIBGroups      OBJECT IDENTIFIER ::= { ruijieSnmpAgentMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieSnmpAgentMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Raisecom SnmpAgent MIB"
+        MODULE  -- this module
+        MANDATORY-GROUPS { 
+           ruijieCommunityMIBGroup,
+           ruijieSnmpTrapMIBGroup,
+           ruijieSnmpUdpPortMIBGroup
+        }
+        ::= { ruijieSnmpAgentMIBCompliances 1 }
+
+-- units of conformance
+
+ruijieCommunityMIBGroup OBJECT-GROUP
+        OBJECTS {
+           ruijieCommunityMaxNum,
+           ruijieCommunityName,
+           ruijieCommunityWritable,
+           ruijieCommunityUserIpAddr,
+           ruijieCommunityEnableIpAddrAuthen,
+           ruijieCommunityStatus,
+           ruijieReadCommunityName,
+           ruijieWriteCommunityName
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing community management to a
+                Raisecom agent."
+        ::= { ruijieSnmpAgentMIBGroups 1 }         
+
+ruijieSnmpTrapMIBGroup OBJECT-GROUP
+        OBJECTS {
+           ruijieTrapDstSendTrapClass,
+           ruijieTrapDstMaxNumber,
+           ruijieTrapDstAddr,
+           ruijieTrapDstCommunity,
+           ruijieTrapDstEntryStatus,
+           ruijieTrapType,
+           ruijieTrapAction,
+           ruijieTrapName,
+           ruijieTrapDescr,
+           ruijieTrapOnOff,
+           ruijieTrapDesIndex,
+           ruijieTrapDesIPAddress,
+           ruijieTrapDesCommunity,
+           ruijieTrapDesVersion,
+           ruijieTrapDesStatus,
+           ruijieSysNetID
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing trap information to a
+                Raisecom agent."
+        ::= { ruijieSnmpAgentMIBGroups 2 }                 
+
+ruijieSnmpUdpPortMIBGroup OBJECT-GROUP
+        OBJECTS {
+           ruijieSNMPGetSetPort,
+           ruijieSNMPTrapPort
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing udp-port information to a
+                Raisecom agent."
+        ::= { ruijieSnmpAgentMIBGroups 3 }  
+
+END

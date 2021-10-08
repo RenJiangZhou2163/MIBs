@@ -1,0 +1,1374 @@
+-- *****************************************************************
+-- RUIJIE-RS485-CLASS-MIB.mib:  Ruijie Rs485 Class MIB file
+-- 1.3.6.1.4.1.4881.1.1.10.2.149
+--
+-- June 2016, Wushitang
+--
+-- Copyright (c) 2016 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-RS485-CLASS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+      MODULE-IDENTITY,
+      NOTIFICATION-TYPE,
+      OBJECT-TYPE,
+      IpAddress,
+      Counter32
+              FROM SNMPv2-SMI
+      PhysAddress
+              FROM SNMPv2-TC
+      Counter
+              FROM RFC1155-SMI
+      ruijieMgmt
+              FROM RUIJIE-SMI;
+
+ruijieRs485MIB MODULE-IDENTITY
+      LAST-UPDATED "200703200000Z"
+      ORGANIZATION "Ruijie Networks Co.,Ltd."
+      CONTACT-INFO
+              " 
+              Tel: 4008-111-000 
+
+              E-mail: service@ruijie.com.cn"
+      DESCRIPTION
+              "This module defines ruijie smart class mibs."
+      REVISION      "200703200000Z"
+      DESCRIPTION
+              "Initial version of this MIB module."
+      ::= { ruijieMgmt 149 }
+
+ruijieRs485MIBObjects  OBJECT IDENTIFIER ::= { ruijieRs485MIB 1 }
+ruijieRs485MIBTrap  OBJECT IDENTIFIER ::= { ruijieRs485MIB 2 }
+
+ruijieRs485IpAddress OBJECT-TYPE
+        SYNTAX         IpAddress
+        MAX-ACCESS   read-write
+        STATUS         current
+        DESCRIPTION
+            "This object indicates the IP address of RS485."
+        ::= { ruijieRs485MIBObjects 1 }    
+
+ruijieRs485IpAddressMask OBJECT-TYPE
+        SYNTAX         IpAddress
+        MAX-ACCESS   read-write
+        STATUS         current
+        DESCRIPTION
+            "This object indicates the IP address mask."
+        ::= { ruijieRs485MIBObjects 2 }    
+        
+ruijieRs485Gateway OBJECT-TYPE
+        SYNTAX         IpAddress
+        MAX-ACCESS   read-write
+        STATUS         current
+        DESCRIPTION
+            "This object indicates the gateway."
+        ::= { ruijieRs485MIBObjects 3 }    
+        
+ruijieRs485Mac OBJECT-TYPE
+        SYNTAX         PhysAddress
+        MAX-ACCESS   read-write
+        STATUS         current
+        DESCRIPTION
+            "This object indicates the MAC address of RS485."
+        ::= { ruijieRs485MIBObjects 4 }        
+        
+ruijieRs485ServerMode OBJECT-TYPE
+    SYNTAX  INTEGER {
+          client(0),
+          server(1)
+      }
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+              "To control wheather Rs485 is server for controller use."              
+         ::= { ruijieRs485MIBObjects 5 }
+
+ruijieRs485SerialNum OBJECT-TYPE
+    SYNTAX  INTEGER (1..4)
+    MAX-ACCESS read-write
+    STATUS current
+    DESCRIPTION
+              "The number of serial port."              
+         ::= { ruijieRs485MIBObjects 6 }
+
+ruijieRs485TelnetIp OBJECT-TYPE
+        SYNTAX         IpAddress
+        MAX-ACCESS   read-write
+        STATUS         current
+        DESCRIPTION
+            "The telnet connect IP when RS485 in controller mode."
+        ::= { ruijieRs485MIBObjects 7 }             
+
+ruijieRs485State OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The running status of Rs485."
+        ::= { ruijieRs485MIBObjects 8 }  
+
+ruijieRs485SerialPower1 OBJECT-TYPE
+        SYNTAX  INTEGER {
+            unknown(0),
+            normal(1),  -- normal
+            short(2),  
+            break(3)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The serial power 1 state."
+        ::= { ruijieRs485MIBObjects 9 }
+
+ruijieRs485SerialPower2 OBJECT-TYPE
+        SYNTAX  INTEGER {
+            unknown(0),
+            normal(1),  -- normal
+            short(2),  
+            break(3)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The serial power 1 state."
+        ::= { ruijieRs485MIBObjects 10 }        
+        
+ruijieRs485SerialPower3 OBJECT-TYPE
+        SYNTAX  INTEGER {
+            unknown(0),
+            normal(1),  -- normal
+            short(2),  
+            break(3)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The serial power 1 state."
+        ::= { ruijieRs485MIBObjects 11 }
+
+ruijieRs485SerialPower4 OBJECT-TYPE
+        SYNTAX  INTEGER {
+            unknown(0),
+            normal(1),  -- normal
+            short(2),  
+            break(3)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The serial power 1 state."
+        ::= { ruijieRs485MIBObjects 12 }        
+
+--RS485 VLAN table --
+    
+ruijieRs485VlanTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieRs485VlanEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Vlan for Rs485 serial port use."
+        ::= { ruijieRs485MIBObjects 13 }
+
+ruijieRs485VlanEntry OBJECT-TYPE
+        SYNTAX RuijieRs485VlanEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains Rs485 serial port number
+            and corresponding VLAN."
+        INDEX {ruijieRs485SerialPort}
+        ::= { ruijieRs485VlanTable 1 }
+
+RuijieRs485VlanEntry ::=
+        SEQUENCE {
+            ruijieRs485SerialPort Counter,
+            ruijieRs485VLANID INTEGER,
+            ruijieRs485Baudrate INTEGER,
+            ruijieRs485Parity INTEGER,
+            ruijieClassSerialType INTEGER,
+            ruijieClassStatus INTEGER,
+            ruijieClassIsTeleControl INTEGER
+        }
+ruijieRs485SerialPort OBJECT-TYPE
+        SYNTAX  Counter
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The serial number of Rs485."
+        ::= { ruijieRs485VlanEntry 1 }
+
+ruijieRs485VLANID OBJECT-TYPE
+        SYNTAX  INTEGER (2..4094)
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The VLAN of Rs485 serial port use."
+        ::= { ruijieRs485VlanEntry 2 }
+
+ruijieRs485Baudrate OBJECT-TYPE
+        SYNTAX  INTEGER (200..999999)
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The baud rate of Rs485 serial port use."
+        ::= { ruijieRs485VlanEntry 3 }
+
+ruijieRs485Parity OBJECT-TYPE
+        SYNTAX  INTEGER {
+            none(1),
+            odd(2),
+            even(3),
+            mark(4),
+            space(5)
+        }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The parity of Rs485 serial port use."
+        ::= { ruijieRs485VlanEntry 4 }
+
+--used for class        
+ruijieClassSerialType OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    rs485(0),
+                    rs232(1)
+            }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The serial port type of controller."
+        ::= { ruijieRs485VlanEntry 5 }
+        
+ruijieClassStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                normal(0),
+                unnormal(1)
+            }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The status of serial port use."
+        ::= { ruijieRs485VlanEntry 6 }
+
+ruijieClassIsTeleControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                no(0),
+                yes(1)
+            }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The serial port is used for wireless remote control."
+        ::= { ruijieRs485VlanEntry 7 }        
+        
+--SSIftable
+
+ruijieSSIfTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieSSIfEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "List interface configuration of Switch Smart."
+        ::= { ruijieRs485MIBObjects 14 }
+
+ruijieSSIfEntry OBJECT-TYPE
+        SYNTAX RuijieSSIfEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains interface configuration."
+        INDEX {ruijieSSIfIndex}
+        ::= { ruijieSSIfTable 1 }
+
+RuijieSSIfEntry ::=
+        SEQUENCE {
+            ruijieSSIfIndex Counter,
+            ruijieSSIfAccessVlan INTEGER,
+            ruijieSSIfNativeVlan INTEGER,
+            ruijieSSIfTrunk INTEGER,
+            ruijieSSIfSpeed INTEGER,
+            ruijieSSIfDuplex INTEGER,
+            ruijieSSIfNegotiation INTEGER
+        }
+ruijieSSIfIndex OBJECT-TYPE
+        SYNTAX  Counter
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The interface index of switch smart."
+        ::= { ruijieSSIfEntry 1 }
+
+ruijieSSIfAccessVlan OBJECT-TYPE
+        SYNTAX  INTEGER (1..4094)
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The VLAN whitch the interface belongs to."
+        ::= { ruijieSSIfEntry 2 }        
+ruijieSSIfNativeVlan OBJECT-TYPE
+        SYNTAX  INTEGER (1..4094)
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The native vlan of the interface."
+        ::= { ruijieSSIfEntry 3 }            
+ruijieSSIfTrunk OBJECT-TYPE
+        SYNTAX  INTEGER {
+                disable(0),
+                enable(1)
+            }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Enable trunk of the interface."
+        ::= { ruijieSSIfEntry 4 }            
+
+ruijieSSIfSpeed OBJECT-TYPE
+        SYNTAX  INTEGER {
+                speed_10M(0),
+                speed_100M(1),
+                speed_1000M(2)
+            }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Speed set of the interface."
+        ::= { ruijieSSIfEntry 5 }
+        
+ruijieSSIfDuplex OBJECT-TYPE
+        SYNTAX  INTEGER {
+                half(0),
+                full(1)
+            }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Duplex set of the interface."
+        ::= { ruijieSSIfEntry 6 }        
+
+ruijieSSIfNegotiation OBJECT-TYPE
+        SYNTAX  INTEGER {
+                disable(0),
+                enable(1)
+            }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Enable negotiation of the interface."
+        ::= { ruijieSSIfEntry 7 }    
+
+ruijieRs485IpSetStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                default(0),
+                enable(1),  -- ip set enable
+                dhcp(2)    --enable dhcp 
+        }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Enable set ip address of rs485."
+        ::= { ruijieRs485MIBObjects 15 }
+
+ruijieLabelIDReg OBJECT-TYPE
+        SYNTAX         PhysAddress
+        MAX-ACCESS   read-write
+        STATUS         current
+        DESCRIPTION
+            "Register a new label ID."
+        ::= { ruijieRs485MIBObjects 16 }        
+
+ruijieLabelTypeReg OBJECT-TYPE
+        SYNTAX  INTEGER {
+                default(0),
+                rfid(1),  -- RFID
+                ble(2),
+                zibgee(3) --ZIGBEE
+        }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Set label type."
+        ::= { ruijieRs485MIBObjects 17 }
+        
+ruijieLabelRegStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                default(0),
+                enable(1)  -- enable register new label id
+        }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Enable register new label ID & type."
+        ::= { ruijieRs485MIBObjects 18 }
+        
+
+--Label Info table --
+    
+ruijieLabelInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieLabelInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Label information table."
+        ::= { ruijieRs485MIBObjects 19 }
+
+ruijieLabelInfoEntry OBJECT-TYPE
+        SYNTAX RuijieLabelInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains Label information."
+        INDEX {ruijieLabelType,
+               ruijieLabelID }
+        ::= { ruijieLabelInfoTable 1 }
+
+RuijieLabelInfoEntry ::=
+        SEQUENCE {
+            ruijieLabelType INTEGER,
+            ruijieLabelID PhysAddress,
+            ruijieLabelActiveStatus INTEGER,
+            ruijieLabelPowerStatus INTEGER,
+            ruijieLabelWarningCancel INTEGER,
+            ruijieLabelUnregStatus INTEGER,
+            ruijieLabelStolenWarningStatus INTEGER
+        }
+
+ruijieLabelType OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknown(0),
+                rfid(1),
+                ble(2),
+                zigbee(3)
+            }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The Label type."
+        ::= { ruijieLabelInfoEntry 1 }
+        
+ruijieLabelID OBJECT-TYPE
+        SYNTAX  PhysAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The Label ID."
+        ::= { ruijieLabelInfoEntry 2 }
+
+ruijieLabelActiveStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknown(0),
+                active(1),
+                deactive(2),
+                active-success-ack(3),
+                active-fail-ack(4),
+                deactive-success-ack(5),
+                deactive-fail-ack(6)
+            }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The Label active or deactive command."
+        ::= { ruijieLabelInfoEntry 3 }
+
+ruijieLabelPowerStatus OBJECT-TYPE
+        SYNTAX  INTEGER (0..100)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The Label power status."
+        ::= { ruijieLabelInfoEntry 4 }
+
+ruijieLabelWarningCancel OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknown(0),
+                cancel-stolen(1), --cancel stolen trap
+                cancel-power(2),  --cancel power trap
+                cancel-unnormal(3)
+            }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Cancel Trap warning."
+        ::= { ruijieLabelInfoEntry 5 }
+
+
+ruijieLabelUnregStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknown(0),
+                apply-unreg(1), --apply unreg
+                unreg(2),       --unreg
+                allow-unreg(3),
+                not-allow-unreg(4),
+                reg-success(5), --reg successful
+                reg-failed(6)   --reg failed
+            }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Apply unreg Label."
+        ::= { ruijieLabelInfoEntry 6 }        
+
+ruijieLabelStolenWarningStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknown(0),
+                normal(1),       --normal
+                stolen(2),       --stolen
+                unnormal(3)      --unnormal
+            }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "Show label status."
+        ::= { ruijieLabelInfoEntry 7 }                
+
+ruijieRs485TrapIp OBJECT-TYPE
+        SYNTAX         IpAddress
+        MAX-ACCESS   read-write
+        STATUS         current
+        DESCRIPTION
+            "Set the Trap destination IP."
+        ::= { ruijieRs485MIBObjects 20 }             
+
+ruijieRs485HeartbeatStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknown(0),
+                normal(1)
+            }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The heartbeat between rs485 and management system."
+        ::= { ruijieRs485MIBObjects 21 }          
+        
+ruijieClassPDUPower1 OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknown(0),
+                break(1),
+                normal(2)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The PDU power 1 state."
+        ::= { ruijieRs485MIBObjects 22 }
+
+ruijieClassPDUPower2 OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknown(0),
+                break(1),
+            normal(2)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The PDU power 2 state."
+        ::= { ruijieRs485MIBObjects 23 }
+        
+ruijieClassDeviceAddType OBJECT-TYPE
+        SYNTAX INTEGER {
+                unknown(0),
+                video(1),
+                audio(2),
+                videoandaudio(3),
+                light(4),
+                air-con(5),
+                record(6),
+                projector(7),
+                screen(8),
+                app-pad(9),
+                smart-switch(10)
+            }
+        MAX-ACCESS   read-write
+        STATUS current
+        DESCRIPTION
+            "Add new class device and specify the type."
+        ::= { ruijieRs485MIBObjects 24 }
+
+ruijieClassDeviceAddID OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS  read-write
+        STATUS current
+        DESCRIPTION
+            "Add new class device and specify the index."
+        ::= { ruijieRs485MIBObjects 25 }
+  
+ruijieClassDeviceAddStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                add(1)
+            }
+        MAX-ACCESS  read-write
+        STATUS current
+        DESCRIPTION
+            "Add new class device right now."
+        ::= { ruijieRs485MIBObjects 26 }    
+        
+
+--class device table
+
+ruijieClassDeviceInfoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieClassDeviceInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Class Device information table."
+        ::= { ruijieRs485MIBObjects 27 }
+
+ruijieClassDeviceInfoEntry OBJECT-TYPE
+        SYNTAX RuijieClassDeviceInfoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains Class Device information."
+        INDEX { ruijieClassDeviceType, ruijieClassDeviceID }
+        ::= { ruijieClassDeviceInfoTable 1 }
+
+RuijieClassDeviceInfoEntry ::=
+        SEQUENCE {
+            ruijieClassDeviceType INTEGER,
+            ruijieClassDeviceID INTEGER,
+            ruijieClassDeviceIconType INTEGER,
+            ruijieClassDeviceName OCTET STRING,
+            ruijieClassDeviceModelID INTEGER,
+            ruijieClassDeviceControlSerial INTEGER,
+            ruijieClassDeviceTeleControlPort INTEGER,
+            ruijieClassDeviceIOType INTEGER,
+            ruijieClassDeviceVideoPort INTEGER,
+            ruijieClassDeviceAudioPort INTEGER,
+            ruijieClassDeviceVideoUsedStatus INTEGER,
+            ruijieClassDeviceAudioUsedStatus INTEGER,
+            ruijieClassDeviceSwitch INTEGER,
+            ruijieClassDeviceState INTEGER,
+            ruijieClassDeviceZigbeeID INTEGER,
+            ruijieClassDeviceSetStatus INTEGER,
+            ruijieClassDeviceIP IpAddress,
+            ruijieClassBindDeviceID INTEGER,
+            ruijieClassBatchSupport INTEGER
+        }
+        
+ruijieClassDeviceType OBJECT-TYPE
+        SYNTAX  INTEGER  {
+                unknown(0),
+                video(1),
+                audio(2),
+                videoandaudio(3),
+                light(4),
+                air-con(5),
+                record(6),
+                projector(7),
+                screen(8),
+                app-pad(9),
+                smart-switch(10)
+            }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "Device type."
+        ::= { ruijieClassDeviceInfoEntry 1 }        
+
+ruijieClassDeviceID OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "Device ID."
+        ::= { ruijieClassDeviceInfoEntry 2 }
+        
+ruijieClassDeviceIconType OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Device icon type the APP used."
+        ::= { ruijieClassDeviceInfoEntry 3 }    
+        
+ruijieClassDeviceName OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..20))
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Device name."
+        ::= { ruijieClassDeviceInfoEntry 4 }
+
+ruijieClassDeviceModelID OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Device model ID."
+        ::= { ruijieClassDeviceInfoEntry 5 }
+        
+ruijieClassDeviceControlSerial OBJECT-TYPE
+        SYNTAX  INTEGER (0..10)
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Control serial port."
+        ::= { ruijieClassDeviceInfoEntry 6 }
+
+ruijieClassDeviceTeleControlPort OBJECT-TYPE
+        SYNTAX  INTEGER (0..10)
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Tele control port."
+        ::= { ruijieClassDeviceInfoEntry 7 }
+
+ruijieClassDeviceIOType OBJECT-TYPE
+        SYNTAX  INTEGER {
+                input(0),
+                output(1),
+                other(2)
+            }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Device input or output type."
+        ::= { ruijieClassDeviceInfoEntry 8 }
+
+ruijieClassDeviceVideoPort OBJECT-TYPE
+        SYNTAX  INTEGER (0..4)
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Video port."
+        ::= { ruijieClassDeviceInfoEntry 9 }        
+
+ruijieClassDeviceAudioPort OBJECT-TYPE
+        SYNTAX  INTEGER (0..4)
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Audio port."
+        ::= { ruijieClassDeviceInfoEntry 10 }    
+
+ruijieClassDeviceVideoUsedStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+               unused(0),
+               used(1)
+            }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Video used status."
+        ::= { ruijieClassDeviceInfoEntry 11 }    
+
+ruijieClassDeviceAudioUsedStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unused(0),
+                used(1)
+            }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Audio used status."
+        ::= { ruijieClassDeviceInfoEntry 12 }        
+        
+ruijieClassDeviceSwitch OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Device switch status."
+        ::= { ruijieClassDeviceInfoEntry 13 }
+
+ruijieClassDeviceState OBJECT-TYPE
+        SYNTAX  INTEGER {
+                default(0),
+                normal(1),
+                no-ack(2)
+            }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Device communicate state."
+        ::= { ruijieClassDeviceInfoEntry 14 }    
+
+ruijieClassDeviceZigbeeID OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Device value config status."
+        ::= { ruijieClassDeviceInfoEntry 15 }
+        
+ruijieClassDeviceSetStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unset(0),
+                set(1),
+                delete(2),
+                update(3)
+            }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Device info set status."
+        ::= { ruijieClassDeviceInfoEntry 16 }
+        
+ruijieClassDeviceIP OBJECT-TYPE
+        SYNTAX         IpAddress
+        MAX-ACCESS   read-write
+        STATUS         current
+        DESCRIPTION
+            "The ip address of the device."
+        ::= { ruijieClassDeviceInfoEntry 17 }    
+
+ruijieClassBindDeviceID OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Device Switch bind device id ."
+        ::= { ruijieClassDeviceInfoEntry 18 }
+
+ruijieClassBatchSupport OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Device whether support batch or not."
+        ::= { ruijieClassDeviceInfoEntry 19 }        
+        
+-- APP login
+
+ruijieClassAPPUsername OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..12))
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "APP login user name."
+        ::= { ruijieRs485MIBObjects 28 }
+    
+ruijieClassAPPPassword OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..12))
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "APP login password."
+        ::= { ruijieRs485MIBObjects 29 }
+        
+ruijieClassAPPAuth OBJECT-TYPE
+        SYNTAX  INTEGER {
+                success(0),
+                failed(1),
+                success-update(2),
+                card-success(3),
+                card-failed(4),
+                user-info(5)
+            }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Server authority to APP."
+        ::= { ruijieRs485MIBObjects 30 }
+
+
+--Telecommand 
+ruijieClassCMDDeviceModelID OBJECT-TYPE
+        SYNTAX  INTEGER 
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Device model id."
+        ::= { ruijieRs485MIBObjects 31 }
+        
+ruijieClassCMDType OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The telecommand type."
+        ::= { ruijieRs485MIBObjects 32 }
+
+ruijieClassCommand OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..20))
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The telecommand string."
+        ::= { ruijieRs485MIBObjects 33 }
+
+ruijieClassCommandSetStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                auto-get(1),
+                set(2),
+                delete(3)
+            }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Auto get telecommand or set telecommand now."
+        ::= { ruijieRs485MIBObjects 34 }
+        
+ruijieClassOperAll OBJECT-TYPE
+        SYNTAX  INTEGER {
+                open-all(1),
+                close-all(2)
+            }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Operation all device ."
+        ::= { ruijieRs485MIBObjects 35 }
+
+ruijieClassCardID OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..12))
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Card ID when swipe card."
+        ::= { ruijieRs485MIBObjects 36 }
+    
+ruijieClassDateTime OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Date time ."
+        ::= { ruijieRs485MIBObjects 37 }    
+        
+ruijieClassAPPUpdateReq OBJECT-TYPE
+        SYNTAX  INTEGER {
+                device_req(1),
+                user_auth_req(2)
+            }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "APP update local info request ."
+        ::= { ruijieRs485MIBObjects 38 }    
+
+ruijieClassUpdateFileName OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..64))
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The bin file name used for upgrade."
+        ::= { ruijieRs485MIBObjects 39 }
+
+ruijieClassUpdate OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    start(1)
+                }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Enable start upgrade process ."
+        ::= { ruijieRs485MIBObjects 40 }    
+
+ruijieClassSoftVersion OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..64))
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The soft version info."
+        ::= { ruijieRs485MIBObjects 41 }
+
+ruijieClassChannel OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..128))
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The Channel for SNC conmunicating with APP."
+        ::= { ruijieRs485MIBObjects 42 }        
+
+ruijieClassOldDeviceIP OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "The Old device IP address for notify SCP."
+        ::= { ruijieRs485MIBObjects 43 }    
+
+ruijieClassCommunity OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..32))
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The Community of SNMP."
+        ::= { ruijieRs485MIBObjects 44 }
+        
+ruijieClassUpdateStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+            init(0),
+            scc_update_start(1),
+            scc_update_success(2),
+            scc_update_crc_error(3),
+            scc_update_product_id_error(4),
+            scc_update_tftp_timeout_error(5),
+            remote_device_update_no_existerror(6),
+            scc_update_file_too_big_error(7)
+        } 
+        MAX-ACCESS  read-write
+        STATUS current
+        DESCRIPTION
+             "SCC main, remote Device, update status."
+        ::= { ruijieRs485MIBObjects 45 }
+		
+ruijieClassScheduleTableName OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..64))
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "The shedule table name."
+        ::= { ruijieRs485MIBObjects 46 }
+		
+ruijieClassUpdateScheduleTable OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    start(1)
+                }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Enable start upgrade schedule ."
+        ::= { ruijieRs485MIBObjects 47 }
+		
+ruijieClassScheduleTableUpdateStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+            init(0),
+            scc_update_start(1),
+            scc_update_success(2),
+            scc_update_crc_error(3),
+			scc_update_product_id_error(4),
+            scc_update_tftp_timeout_error(5),
+			scc_remote_no_exist_error(6),
+			scc_update_file_too_big_error(7),
+			scc_update_redo(8)
+        } 
+        MAX-ACCESS  read-only
+        STATUS current
+        DESCRIPTION
+             "the scc schedule update status"
+        ::= { ruijieRs485MIBObjects 48 }
+		
+ruijieClassCheckTableName OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..64))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "Get Check Table Name."
+        ::= { ruijieRs485MIBObjects 49 }
+		
+ruijieClassReadCheckTable OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    start(1)
+                }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+              "Enable readback check schedule ."
+        ::= { ruijieRs485MIBObjects 50 }
+		
+ruijieClassReadCheckTable1UploadStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+            init(0),
+            scc_update_start(1),
+            scc_update_success(2),
+            scc_update_crc_error(3),
+			scc_update_product_id_error(4),
+            scc_update_tftp_timeout_error(5),
+			scc_remote_no_exist_error(6),
+			scc_update_file_too_big_error(7)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "Readback check schedule Upload Status ."
+        ::= { ruijieRs485MIBObjects 51 }  
+		
+ruijieClassLampTimeClass OBJECT-TYPE
+        SYNTAX INTEGER 
+        MAX-ACCESS  read-only
+        STATUS current
+        DESCRIPTION
+             "read back the lamp time"
+        ::= { ruijieRs485MIBObjects 52 }
+
+ruijieClassDeleteRecordTable OBJECT-TYPE
+        SYNTAX INTEGER {
+                   start(1)
+        } 
+        MAX-ACCESS  read-write
+        STATUS current
+        DESCRIPTION
+             "delete the record table"
+        ::= { ruijieRs485MIBObjects 53 }
+		
+ruijieClassSystemTime OBJECT-TYPE
+        SYNTAX Counter32 
+        MAX-ACCESS  read-write
+        STATUS current
+        DESCRIPTION
+             "System time of SCC"
+        ::= { ruijieRs485MIBObjects 54 }
+		
+ruijieClassProjectorFact OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..32))
+        MAX-ACCESS  read-only
+        STATUS current
+        DESCRIPTION
+             "Projector manufacturer"
+        ::= { ruijieRs485MIBObjects 55 }
+
+ruijieClassProjectorModel OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..64))
+        MAX-ACCESS  read-only
+        STATUS current
+        DESCRIPTION
+             "Projector model"
+        ::= { ruijieRs485MIBObjects 56 }
+		
+ruijieClassAIOFact OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..32))
+        MAX-ACCESS  read-only
+        STATUS current
+        DESCRIPTION
+             "AIO manufacturer"
+        ::= { ruijieRs485MIBObjects 57 }
+
+ruijieClassAIOModel OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..64))
+        MAX-ACCESS  read-only
+        STATUS current
+        DESCRIPTION
+             "AIO model"
+        ::= { ruijieRs485MIBObjects 58 }
+		
+--trap
+
+ruijieRs485StateChange NOTIFICATION-TYPE
+    OBJECTS   { ruijieRs485State }
+    STATUS  current
+    DESCRIPTION
+            "A state change trap signifies that the
+             state of rs485 device is changing."
+    ::= { ruijieRs485MIBTrap 0 }
+        
+ruijieRs485Power1Change NOTIFICATION-TYPE
+        OBJECTS   { ruijieRs485SerialPower1 }
+        STATUS  current
+        DESCRIPTION
+              "A power1 change trap signifies that the
+              state of rs485 device serial power 1 is changing."
+        ::= { ruijieRs485MIBTrap 1 }
+
+ruijieRs485Power2Change NOTIFICATION-TYPE
+        OBJECTS   { ruijieRs485SerialPower2 }
+        STATUS  current
+        DESCRIPTION
+              "A power2 change trap signifies that the
+              state of rs485 device serial power 2 is changing."
+        ::= { ruijieRs485MIBTrap 2 }
+        
+ruijieRs485Power3Change NOTIFICATION-TYPE
+        OBJECTS   { ruijieRs485SerialPower3 }
+        STATUS  current
+        DESCRIPTION
+              "A power3 change trap signifies that the
+              state of rs485 device serial power 3 is changing."
+        ::= { ruijieRs485MIBTrap 3 }
+
+ruijieRs485Power4Change NOTIFICATION-TYPE
+        OBJECTS   { ruijieRs485SerialPower4 }
+        STATUS  current
+        DESCRIPTION
+              "A power4 change trap signifies that the
+              state of rs485 device serial power 4 is changing."
+        ::= { ruijieRs485MIBTrap 4 }    
+
+ruijieRs485TelnetFail NOTIFICATION-TYPE
+    OBJECTS   { ruijieRs485TelnetIp }
+    STATUS  current
+    DESCRIPTION
+        "The Rs485 Telnet Failed."
+    ::= { ruijieRs485MIBTrap 5 }
+
+ruijieLabelActiveACK NOTIFICATION-TYPE
+    OBJECTS   { 
+                ruijieLabelType,
+                ruijieLabelID,
+                ruijieLabelActiveStatus
+            }
+        STATUS  current    
+    DESCRIPTION
+        "The Label active ack."
+    ::= { ruijieRs485MIBTrap 6 }
+
+ruijieLabelLowPower NOTIFICATION-TYPE
+    OBJECTS   { 
+                ruijieLabelType,
+                ruijieLabelID,
+                ruijieLabelPowerStatus
+            }
+        STATUS  current
+    DESCRIPTION
+        "The Label low power status trap."
+    ::= { ruijieRs485MIBTrap 7 }
+        
+ruijieLabelStolen NOTIFICATION-TYPE
+    OBJECTS   { 
+                ruijieLabelType,
+                ruijieLabelID,
+                ruijieLabelStolenWarningStatus
+            }
+        STATUS  current
+    DESCRIPTION
+        "The Label stolen trap."
+    ::= { ruijieRs485MIBTrap 8 }
+
+ruijieLabelUnregACK NOTIFICATION-TYPE
+    OBJECTS   { 
+            ruijieLabelType,
+        ruijieLabelID,
+            ruijieLabelUnregStatus
+        }
+        STATUS  current
+    DESCRIPTION
+        "The Label unreg ack."
+    ::= { ruijieRs485MIBTrap 9 }
+        
+ruijieRs485Heartbeat NOTIFICATION-TYPE
+        OBJECTS   { ruijieRs485HeartbeatStatus }
+        STATUS  current 
+        DESCRIPTION
+              "Heart beat between rs485 and management system."
+        ::= { ruijieRs485MIBTrap 10    }    
+
+ruijieLabelRegACK NOTIFICATION-TYPE
+    OBJECTS   { 
+            ruijieLabelType,
+            ruijieLabelID,
+            ruijieLabelUnregStatus
+        }
+        STATUS  current
+    DESCRIPTION
+        "The Label reg ack."
+    ::= { ruijieRs485MIBTrap 11 }
+
+--class used trap
+ruijieClassAPPLoginREQ NOTIFICATION-TYPE
+    OBJECTS   { 
+            ruijieClassAPPUsername,
+            ruijieClassAPPPassword,
+            ruijieClassDateTime
+        }
+        STATUS  current
+    DESCRIPTION
+            "APP user login info send to server."
+    ::= { ruijieRs485MIBTrap 12 }
+
+ruijieClassAPPOperation NOTIFICATION-TYPE
+    OBJECTS   { 
+            ruijieClassDeviceType,
+            ruijieClassDeviceID,
+            ruijieClassDeviceSwitch,
+            ruijieClassDeviceState  
+        }
+        STATUS  current
+    DESCRIPTION
+           "APP switch video need trap to server."
+    ::= { ruijieRs485MIBTrap 13 }
+
+ruijieClassTelecommand NOTIFICATION-TYPE
+    OBJECTS   { 
+            ruijieClassDeviceType,
+            ruijieClassCMDType,
+            ruijieClassCommand 
+        }
+        STATUS  current
+    DESCRIPTION
+            "Send telecommand to server."
+    ::= { ruijieRs485MIBTrap 14 }
+        
+ruijieClassSwipeCard NOTIFICATION-TYPE
+    OBJECTS   { 
+            ruijieClassCardID
+        }
+        STATUS  current
+    DESCRIPTION
+            "Send card id to server."
+    ::= { ruijieRs485MIBTrap 15 }
+
+ruijieClassUpdateReq NOTIFICATION-TYPE
+    OBJECTS   { 
+            ruijieClassAPPUpdateReq,
+            ruijieClassDateTime
+        }
+        STATUS  current 
+    DESCRIPTION
+            "Send update request to server."
+    ::= { ruijieRs485MIBTrap 16 }
+
+ruijieClassOperationAll  NOTIFICATION-TYPE
+    OBJECTS   { 
+            ruijieClassOperAll
+        }
+        STATUS  current
+    DESCRIPTION
+            "APP operation all sync to SNC."
+    ::= { ruijieRs485MIBTrap 17 }
+        
+ruijieClassChannelToServer  NOTIFICATION-TYPE
+    OBJECTS   { 
+            ruijieClassChannel
+        }
+        STATUS  current
+    DESCRIPTION
+            "Channel for APP communicating with SNC ."
+    ::= { ruijieRs485MIBTrap 18 }
+
+ruijieClassDevIPChange  NOTIFICATION-TYPE
+    OBJECTS   { 
+        ruijieClassOldDeviceIP,
+        ruijieRs485IpAddress,
+        ruijieRs485Mac
+    }
+    STATUS  current
+    DESCRIPTION
+        "Change Device IP, then notify SCP."
+    ::= { ruijieRs485MIBTrap 19 }
+
+ruijieClassCardOperationAll  NOTIFICATION-TYPE
+    OBJECTS   { 
+        ruijieClassCardID,
+        ruijieClassOperAll
+    }
+    STATUS  current
+    DESCRIPTION
+        "Swip card to begin class or end class."
+    ::= { ruijieRs485MIBTrap 20 }
+
+ruijieClassAccountOperationAll  NOTIFICATION-TYPE
+    OBJECTS   { 
+        ruijieClassAPPUsername,
+		ruijieClassAPPPassword,
+        ruijieClassOperAll
+    }
+    STATUS  current
+    DESCRIPTION
+        "User account to begin class or end class."
+    ::= { ruijieRs485MIBTrap 21 }
+	
+ruijieClassTableRedo  NOTIFICATION-TYPE
+    OBJECTS   { 
+        ruijieClassScheduleTableUpdateStatus
+    }
+    STATUS  current
+    DESCRIPTION
+        "Tell SCP reset table."
+    ::= { ruijieRs485MIBTrap 22 }
+	
+ruijieClassDeviceStateChange  NOTIFICATION-TYPE
+    OBJECTS   { 
+        ruijieClassDeviceID,
+		ruijieClassDeviceState
+    }
+    STATUS  current
+    DESCRIPTION
+        "State change trap of device."
+    ::= { ruijieRs485MIBTrap 23 }
+	
+END

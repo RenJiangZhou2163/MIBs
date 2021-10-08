@@ -1,0 +1,125 @@
+-- *****************************************************************
+-- RUIJIE-MSTP-MIB.mib: Ruijie MSTP MIB file
+--
+-- Feb 2021, huangd
+-- 
+-- Copyright (c) 2021 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- *****************************************************************
+
+RUIJIE-MSTP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY, 
+        OBJECT-TYPE, 
+        Integer32, Unsigned32,
+        Counter32
+            FROM SNMPv2-SMI
+        MacAddress, 
+        DisplayString
+            FROM SNMPv2-TC
+        MODULE-COMPLIANCE, 
+        OBJECT-GROUP
+            FROM SNMPv2-CONF
+        IfIndex
+            FROM RUIJIE-TC
+        EnabledStatus
+            FROM P-BRIDGE-MIB
+        ruijieMgmt
+            FROM RUIJIE-SMI;
+
+ruijieMstpMIB MODULE-IDENTITY
+        LAST-UPDATED "202102230000Z"
+          ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000
+
+                E-mail: service@ruijie.com.cn"
+          DESCRIPTION
+                    "The MIB module for managing the Physical Topology Discovery
+            Protocol."
+          REVISION  "202102230000Z"
+          DESCRIPTION
+                    ""
+        ::= { ruijieMgmt 167 }
+
+ruijieMstpMibObjects OBJECT IDENTIFIER ::= { ruijieMstpMIB 1 }
+
+-- MIB groups
+
+ruijieMstpPortTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieMstpPortEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+              "The MSTP Port Table."
+    ::= { ruijieMstpMibObjects 1 }
+
+ruijieMstpPortEntry OBJECT-TYPE
+        SYNTAX  RuijieMstpPortEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+              "The entry of MSTP Port table."
+        INDEX   { ruijieMstpPortIndex,ruijieMstpInstanceID,ruijieMstpPortName}
+    ::= { ruijieMstpPortTable 1 }
+
+ RuijieMstpPortEntry ::=
+     SEQUENCE {
+             ruijieMstpPortIndex IfIndex,
+             ruijieMstpInstanceID Unsigned32,
+             ruijieMstpPortName DisplayString
+     }
+
+ruijieMstpPortIndex OBJECT-TYPE
+        SYNTAX       IfIndex
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "Port index of the port."
+    ::= { ruijieMstpPortEntry 1 }
+
+ruijieMstpInstanceID OBJECT-TYPE
+        SYNTAX       Unsigned32 (0..64)
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "In an MSTP Bridge, an MSTID, i.e., a value used to identify
+             a spanning tree (or MST) instance."
+    ::= { ruijieMstpPortEntry 2 }
+
+ruijieMstpPortName OBJECT-TYPE
+        SYNTAX       DisplayString
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "Port Name of the port."
+    ::= { ruijieMstpPortEntry 3 }
+
+ruijieMstpTraps      OBJECT IDENTIFIER ::= { ruijieMstpMIB 2 }
+
+ruijieMstpPortStateForwarding NOTIFICATION-TYPE
+    OBJECTS { 
+        ruijieMstpPortIndex,
+        ruijieMstpPortName,
+        ruijieMstpInstanceID
+    } 
+    STATUS  current
+    DESCRIPTION
+        "The notification is triggered when the port enters the forwarding state." 
+    ::= { ruijieMstpTraps 1 } 
+    
+ruijieMstpPortStateDiscarding NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieMstpPortIndex,
+        ruijieMstpPortName,
+        ruijieMstpInstanceID
+    } 
+    STATUS  current
+    DESCRIPTION
+        "The notification is triggered when the port enters a blocked state." 
+    ::= { ruijieMstpTraps 2 } 
+    
+
+END

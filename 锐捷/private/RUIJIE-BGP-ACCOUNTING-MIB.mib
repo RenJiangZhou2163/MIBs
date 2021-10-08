@@ -1,0 +1,243 @@
+-- *****************************************************************
+-- RUIJIE-BGP-ACCOUNTING-MIB.mib:  Ruijie BGP Accounting MIB file
+--
+--
+-- October 2020, zhangfengwei
+--
+-- Copyright (c) 2020 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+--
+-- *****************************************************************
+--
+
+RUIJIE-BGP-ACCOUNTING-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    IpAddress,
+    Unsigned32,
+    Integer32,
+    Counter64
+            FROM SNMPv2-SMI
+    InetAddressType
+            FROM INET-ADDRESS-MIB
+    DisplayString,
+    RowStatus
+            FROM SNMPv2-TC
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP
+            FROM SNMPv2-CONF
+    ruijieMgmt
+            FROM RUIJIE-SMI
+    IfIndex
+            FROM RUIJIE-TC;
+
+ruijieBgpAccountingMIB MODULE-IDENTITY
+    LAST-UPDATED "202010210000Z"
+    ORGANIZATION "Ruijie Networks Co.,Ltd."
+    CONTACT-INFO
+            "
+            Tel: 4008-111-000
+
+            E-mail: service@ruijie.com.cn"
+    DESCRIPTION
+            "This module defines bgp accounting mibs."
+    REVISION      "202010210000Z"
+    DESCRIPTION
+            "Initial version of this MIB module."
+    ::= { ruijieMgmt 166 }
+
+ruijieBgpAccountingMIBObjects OBJECT IDENTIFIER ::= { ruijieBgpAccountingMIB 1 }
+
+-- BGP Accounting Statistics table
+
+ruijieBgpAccountingStatisticsTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieBgpAccountingStatisticsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A table that contains bgp accounting statistics."
+    ::= { ruijieBgpAccountingMIBObjects 1 }
+
+ruijieBgpAccountingStatisticsEntry OBJECT-TYPE
+    SYNTAX  RuijieBgpAccountingStatisticsEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The entry of bgp accounting statistics table."
+    INDEX   { bgpAccountingAddrType, bgpAccountingInterfaceIndex, bgpAccountingDirection, bgpAccountingTrafficIndex }
+    ::= { ruijieBgpAccountingStatisticsTable 1 }
+
+RuijieBgpAccountingStatisticsEntry ::=
+    SEQUENCE {
+        bgpAccountingAddrType           InetAddressType,
+        bgpAccountingInterfaceIndex     IfIndex,
+        bgpAccountingDirection          INTEGER,
+        bgpAccountingTrafficIndex       INTEGER,
+        bgpAccountingMatchedPackets     Counter64,
+        bgpAccountingMatchedBytes       Counter64,
+        bgpAccountingMatchedPacketsRate Counter64,
+        bgpAccountingMatchedBitsRate    Counter64
+    }
+
+bgpAccountingAddrType OBJECT-TYPE
+    SYNTAX InetAddressType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "bgp accounting address family type."
+    ::= { ruijieBgpAccountingStatisticsEntry  1 }
+
+bgpAccountingInterfaceIndex OBJECT-TYPE
+    SYNTAX IfIndex
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "interface index of this entry."
+    ::= { ruijieBgpAccountingStatisticsEntry  2 }
+
+bgpAccountingDirection OBJECT-TYPE
+    SYNTAX INTEGER{
+        inbound(1),
+        outbound(2)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "bgp accounting apply direction."
+    ::= { ruijieBgpAccountingStatisticsEntry  3 }
+
+bgpAccountingTrafficIndex OBJECT-TYPE
+    SYNTAX  INTEGER(1..128)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "traffic index of this entry."
+    ::= { ruijieBgpAccountingStatisticsEntry 4 }
+
+bgpAccountingMatchedPackets OBJECT-TYPE
+    SYNTAX  Counter64
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total matched packets."
+    ::= { ruijieBgpAccountingStatisticsEntry 5 }
+
+
+bgpAccountingMatchedBytes OBJECT-TYPE
+    SYNTAX  Counter64
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total matched bytes."
+    ::= { ruijieBgpAccountingStatisticsEntry 6 }
+
+bgpAccountingMatchedPacketsRate OBJECT-TYPE
+    SYNTAX  Counter64
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total matched packets rate, Unit: pps."
+    ::= { ruijieBgpAccountingStatisticsEntry 7 }
+
+bgpAccountingMatchedBitsRate OBJECT-TYPE
+    SYNTAX  Counter64
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total matched bits rate, Unit: bps."
+    ::= { ruijieBgpAccountingStatisticsEntry 8 }
+
+-- BGP Accounting Statistics reset table
+
+ruijieBgpAccountingStatisticsResetTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieBgpAccountingStatisticsResetEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A table that contains bgp accounting statistics reset."
+    ::= { ruijieBgpAccountingMIBObjects 2 }
+
+ruijieBgpAccountingStatisticsResetEntry OBJECT-TYPE
+    SYNTAX  RuijieBgpAccountingStatisticsResetEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The entry of bgp accounting statistics reset."
+    INDEX   { bgpAccountingResetInterfaceIndex, bgpAccountingResetDirection }
+    ::= { ruijieBgpAccountingStatisticsResetTable 1 }
+
+RuijieBgpAccountingStatisticsResetEntry ::=
+    SEQUENCE {
+    	bgpAccountingResetInterfaceIndex  IfIndex,
+        bgpAccountingResetDirection       INTEGER,
+        bgpAccountingStatisticsReset      INTEGER
+    }
+
+bgpAccountingResetInterfaceIndex OBJECT-TYPE
+    SYNTAX IfIndex
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "bgp accounting apply interface's index."
+    ::= { ruijieBgpAccountingStatisticsResetEntry  1 }
+
+bgpAccountingResetDirection OBJECT-TYPE
+    SYNTAX INTEGER{
+        inbound(1),
+        outbound(2)
+    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "bgp accounting apply direction."
+    ::= { ruijieBgpAccountingStatisticsResetEntry  2 }
+
+bgpAccountingStatisticsReset OBJECT-TYPE
+    SYNTAX  INTEGER{reset(1)}
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "bgp accounting statistics reset."
+    ::= { ruijieBgpAccountingStatisticsResetEntry 3 }
+
+-- compliance statements
+
+ruijieBgpAccountingMIBConformance OBJECT IDENTIFIER ::= { ruijieBgpAccountingMIB 3 }
+ruijieBgpAccountingMIBCompliances OBJECT IDENTIFIER ::= { ruijieBgpAccountingMIBConformance 1 }
+ruijieBgpAccountingMIBGroups      OBJECT IDENTIFIER ::= { ruijieBgpAccountingMIBConformance 2 }
+
+ruijieBgpAccountingMIBCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for entities which implement
+            the BGP Accounting MIB for multiple context"
+    MODULE  -- this module
+            MANDATORY-GROUPS { ruijieBgpAccountingMIBGroup
+             }
+
+    ::= { ruijieBgpAccountingMIBCompliances 1 }
+
+-- units of conformance
+
+ruijieBgpAccountingMIBGroup OBJECT-GROUP
+    OBJECTS {
+        bgpAccountingInterfaceIndex,
+        bgpAccountingDirection,
+        bgpAccountingTrafficIndex,
+        bgpAccountingMatchedPackets,
+        bgpAccountingMatchedBytes,
+    	bgpAccountingResetInterfaceIndex,
+	    bgpAccountingResetDirection,
+        bgpAccountingStatisticsReset
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing bgp accounting management and
+            opertion to a My agent."
+    ::= { ruijieBgpAccountingMIBGroups 1 }
+
+--
+
+END

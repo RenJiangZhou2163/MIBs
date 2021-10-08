@@ -1,0 +1,303 @@
+-- *****************************************************************
+-- RAISECOM-MPLS-SIGNAL-MIB.mib:  Raisecom MPLS Signal MIB file
+--
+-- MAY 2011, Liujinhui
+--
+-- Copyright (c) 2011 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RAISECOM-MPLS-SIGNAL-MIB DEFINITIONS ::= BEGIN
+
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        TimeTicks,
+        IpAddress,
+        Unsigned32,
+        Gauge32,
+        Counter32
+                FROM SNMPv2-SMI
+        TruthValue,
+        DisplayString,
+        RowStatus
+                FROM SNMPv2-TC
+        TimeStamp
+                FROM SNMPv2-TC          -- [RFC2579]
+        InetAddressPrefixLength,
+        InetAddressType,
+        InetAddress,
+        InetPortNumber
+             FROM INET-ADDRESS-MIB      --  [RFC3291]                
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ConfigStatus
+                FROM RAISECOM-TC    
+        EnabledStatus 
+                FROM P-BRIDGE-MIB                
+        AreaID,
+        Status,
+        PositiveInteger,
+        DesignatedRouterPriority,
+        RouterID,
+        HelloRange 
+                FROM OSPF-MIB
+        ruijieMgmt
+                FROM RAISECOM-SMI;
+
+ruijieMplsSignalMIB MODULE-IDENTITY
+        LAST-UPDATED "201105150000Z"
+        ORGANIZATION "Raisecom Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@raisecom.com.cn"
+        DESCRIPTION
+                "This module defines raisecom mpls signal mibs."
+        REVISION      "201105150000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 98}
+
+ruijieMplsSignalMIBObjects OBJECT IDENTIFIER ::= { ruijieMplsSignalMIB 1 }
+--****************************************************************
+
+ruijieMplsSignalObjects       OBJECT IDENTIFIER ::= { ruijieMplsSignalMIBObjects 1 }
+ruijieMplsSignalConformance   OBJECT IDENTIFIER ::= { ruijieMplsSignalMIBObjects 2 }
+
+--****************************************************************
+-- MPLS Signale Objects
+--****************************************************************
+
+ruijieMplsSignalmplsGernalMibObjects  OBJECT IDENTIFIER ::= { ruijieMplsSignalObjects 1 }     
+ruijieMplsSignalConfigMibObjects      OBJECT IDENTIFIER ::= { ruijieMplsSignalObjects 2 } 
+
+ruijieMplsVersion OBJECT-TYPE
+    SYNTAX  Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "Current mpls version used."
+     ::={ ruijieMplsSignalmplsGernalMibObjects 1 }
+ruijieMPLSSignal    OBJECT-TYPE
+    SYNTAX  INTEGER {
+                     ldp(1),
+                     rsvp-te(2),
+                     cr-ldp(3),
+                     other(4)
+                       }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "MPLS signal we support."
+     ::={ ruijieMplsSignalmplsGernalMibObjects 2 }
+ruijieMPLSTESignal     OBJECT-TYPE
+    SYNTAX      TruthValue     
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION   
+          "Enable TE or not."
+    ::={ ruijieMplsSignalmplsGernalMibObjects 3 }     
+                        
+ruijieMPLSConfigLspNum  OBJECT-TYPE
+    SYNTAX  Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "The number of static LSP configuration."
+     ::={ ruijieMplsSignalConfigMibObjects 1 }   
+        
+ruijieMPLSActiveLspNum  OBJECT-TYPE
+    SYNTAX  Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "Total number of active LSP."
+     ::={ ruijieMplsSignalConfigMibObjects 2 }   
+              
+ruijieMPLSAdministrativeGroupTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieMPLSAdministrativeGroupEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Information describing the configured  parame-ters  
+         and cumulative statistics of the LSP Administrative Group."
+    ::= { ruijieMplsSignalObjects 3} 
+          
+ruijieMPLSAdministrativeGroupEntry OBJECT-TYPE
+    SYNTAX RuijieMPLSAdministrativeGroupEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+            "The entry of ruijieMPLSAdministrativeGroupTable."
+    INDEX { ruijieMPLSFecIndex }
+    ::= { ruijieMPLSAdministrativeGroupTable 1 }     
+
+RuijieMPLSAdministrativeGroupEntry ::= 
+    SEQUENCE {
+      ruijieMPLSFecIndex                INTEGER,
+      ruijieMPLSLSPName                 DisplayString,
+      ruijieMPLSLSPStates               INTEGER,
+      ruijieMPLSLSPForwardBytes         INTEGER,
+      ruijieMPLSLSPForwardPackets       INTEGER,
+      ruijieMPLSLSPActiveTime           TimeStamp,
+      ruijieMPLSLSPCreationTime         TimeStamp,
+      ruijieMPLSLSPPrimaryCreationTime  TimeStamp,
+      ruijieMPLSLSPSwitchTimes          INTEGER,
+      ruijieMPLSLSPLatestSwitchTime     TimeStamp,
+      ruijieMPLSLSPPathchangeTime       TimeStamp,
+      ruijieMPLSLSPConfigChangeTime     TimeStamp,
+      ruijieMPLSLSPBackupPath           DisplayString,
+      ruijieMPLSLSPOperationPath        INTEGER,
+      ruijieMPLSLSPIngress              InetAddressType,
+      ruijieMPLSLSPDestination          InetAddressType,
+      ruijieMPLSLSPAdministrativeGroupName DisplayString
+    }
+
+ruijieMPLSFecIndex OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+           "The index which uniquely identifies this entry."
+     ::={ ruijieMPLSAdministrativeGroupEntry 1 } 
+     
+ruijieMPLSLSPName       OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "LSP name."
+     ::={ ruijieMPLSAdministrativeGroupEntry 2 }  
+ruijieMPLSLSPStates          OBJECT-TYPE
+    SYNTAX                 INTEGER {
+                                    active(1),
+                                    inactive(2)
+                                   }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+      "LSP states"
+      ::= { ruijieMPLSAdministrativeGroupEntry 3 }
+ruijieMPLSLSPForwardBytes       OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "Forwarding bytes by LSP,where 0 means does not support."
+     ::={ ruijieMPLSAdministrativeGroupEntry 4 }  
+     
+ruijieMPLSLSPForwardPackets       OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "Forwarding packets by LSP,where 0 means does not support"
+     ::={ ruijieMPLSAdministrativeGroupEntry 5 }  
+     
+ruijieMPLSLSPActiveTime      OBJECT-TYPE  
+    SYNTAX  TimeStamp
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "Total LSP Active time."
+     ::={ ruijieMPLSAdministrativeGroupEntry 6 }  
+      
+ruijieMPLSLSPCreationTime      OBJECT-TYPE  
+    SYNTAX  TimeStamp
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "LSP creation time."
+     ::={ ruijieMPLSAdministrativeGroupEntry 7 }    
+     
+ruijieMPLSLSPPrimaryCreationTime      OBJECT-TYPE  
+    SYNTAX  TimeStamp
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "Primary LSP creation time."
+     ::={ ruijieMPLSAdministrativeGroupEntry 8 } 
+      
+ruijieMPLSLSPSwitchTimes    OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "Total primary-standby switching times."
+     ::={ ruijieMPLSAdministrativeGroupEntry 9 }
+       
+ruijieMPLSLSPLatestSwitchTime      OBJECT-TYPE   
+    SYNTAX  TimeStamp
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "The latest switching time"
+     ::={ ruijieMPLSAdministrativeGroupEntry 10 }   
+       
+ruijieMPLSLSPPathchangeTime      OBJECT-TYPE   
+    SYNTAX  TimeStamp
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "The latest LSP change time."
+     ::={ ruijieMPLSAdministrativeGroupEntry 11 }  
+     
+ruijieMPLSLSPConfigChangeTime      OBJECT-TYPE   
+    SYNTAX  TimeStamp
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "The Latest LSP configuration change time."
+     ::={ ruijieMPLSAdministrativeGroupEntry 12 }   
+     
+ruijieMPLSLSPBackupPath      OBJECT-TYPE   
+    SYNTAX  DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "Backup path name."
+     ::={ ruijieMPLSAdministrativeGroupEntry 13 }   
+     
+ruijieMPLSLSPOperationPath      OBJECT-TYPE   
+    SYNTAX  INTEGER {
+                    primary(1),
+                    backup(2),
+                    none(3)
+                    }
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "Operational path which is used"
+     ::={ ruijieMPLSAdministrativeGroupEntry 14 }
+     
+ruijieMPLSLSPIngress        OBJECT-TYPE   
+    SYNTAX  InetAddressType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "LSP ingress."
+     ::={ ruijieMPLSAdministrativeGroupEntry 15 }   
+     
+ruijieMPLSLSPDestination        OBJECT-TYPE   
+    SYNTAX  InetAddressType
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "LSP egress."
+     ::={ ruijieMPLSAdministrativeGroupEntry 16 }  
+
+ruijieMPLSLSPAdministrativeGroupName     OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+           "LSP Administrative Group name."
+     ::={ ruijieMPLSAdministrativeGroupEntry 17 }                             
+END
+                

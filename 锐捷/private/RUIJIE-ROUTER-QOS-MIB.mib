@@ -9,6 +9,8 @@
 -- ****************************************************************
 
 
+
+
 -- Start module
 RUIJIE-ROUTER-QOS-MIB DEFINITIONS ::= BEGIN
 
@@ -92,6 +94,7 @@ ruijieRouterQoSMIB MODULE-IDENTITY
           DESCRIPTION
              "Layer type to apply match rule."
           SYNTAX INTEGER {
+                     l3-layer(0),
                      link-layer(1),
                      all-layer(2)
                      }
@@ -151,7 +154,15 @@ ruijieRouterQoSMIB MODULE-IDENTITY
                 ruijieCBQoSIfCbwfqBeTotalQueueNum
                     Integer32,
                 ruijieCBQoSIfCbwfqAfAllocatedQueueNum
-                    Integer32
+                    Integer32,
+                ruijieCBQoSIfCbwfqPass
+                    Counter64,
+                ruijieCBQoSIfCbwfqDroppedRateIn5Min
+                    Integer32,
+                ruijieCBQoSIfCbwfqPassBytes  
+                    Counter64, 
+                ruijieCBQoSIfCbwfqDiscardBytes
+                   Counter64      
              }
              
         ruijieCBQoSIfCbwfqPolicyIfIndex OBJECT-TYPE
@@ -233,8 +244,40 @@ ruijieRouterQoSMIB MODULE-IDENTITY
             DESCRIPTION
                 "the Allocated number of Af Queue"
             ::= { ruijieCBQoSIfCbwfqRunInfoEntry 10 }
-   
-        
+ 
+        ruijieCBQoSIfCbwfqPass OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The number of pass packets ."
+            ::= { ruijieCBQoSIfCbwfqRunInfoEntry 11 }
+
+ 		ruijieCBQoSIfCbwfqDroppedRateIn5Min OBJECT-TYPE
+            SYNTAX Integer32 (0..100)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Rate of dropped packets in five minite."
+            ::= { ruijieCBQoSIfCbwfqRunInfoEntry 12 }   
+
+        ruijieCBQoSIfCbwfqPassBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The bytes of pass packets ."
+            ::= { ruijieCBQoSIfCbwfqRunInfoEntry 13 }
+ 
+        ruijieCBQoSIfCbwfqDiscardBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The bytes of discarded packets which coundn't be enqueued."
+            ::= { ruijieCBQoSIfCbwfqRunInfoEntry 14 }
+
+                    
 --  Class match statistics
         ruijieCBQoSIfClassMatchRunInfoTable OBJECT-TYPE
             SYNTAX SEQUENCE OF RuijieCBQoSIfClassMatchRunInfoEntry
@@ -269,7 +312,15 @@ ruijieRouterQoSMIB MODULE-IDENTITY
                 ruijieCBQosIfClassPassedPackets
                     Counter64,
                 ruijieCBQosIfClassDroppedPackets
-                    Counter64
+                    Counter64,
+                ruijieCBQoSIfPolicyName
+                    OCTET STRING,
+                 ruijieCBQoSIfClassName
+                    OCTET STRING,
+                ruijieCBQoSIfClassPassBytes
+                    Counter64,
+                ruijieCBQoSIfClassDiscardBytes
+                    Counter64   
              }
 
         ruijieCBQoSIfClassMatchIfIndex OBJECT-TYPE
@@ -331,8 +382,40 @@ ruijieRouterQoSMIB MODULE-IDENTITY
             DESCRIPTION
                 "Number of dropped packets matching a class in a QoS policy."
             ::= { ruijieCBQoSIfClassMatchRunInfoEntry 7 }      
-    
-        
+                
+        ruijieCBQoSIfPolicyName OBJECT-TYPE
+            SYNTAX        OCTET STRING (SIZE (0..32))
+            MAX-ACCESS    read-only
+            STATUS        current
+            DESCRIPTION
+            "The classifier in this interface."
+            ::= { ruijieCBQoSIfClassMatchRunInfoEntry 8 }
+  
+        ruijieCBQoSIfClassName OBJECT-TYPE
+            SYNTAX        OCTET STRING (SIZE (0..32))
+            MAX-ACCESS    read-only
+            STATUS        current
+            DESCRIPTION
+            "The policy in this interface."
+            ::= { ruijieCBQoSIfClassMatchRunInfoEntry 9 }  
+            
+        ruijieCBQoSIfClassPassBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The bytes of pass packets ."
+            ::= { ruijieCBQoSIfClassMatchRunInfoEntry 10 }
+ 
+        ruijieCBQoSIfClassDiscardBytes OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The bytes of discarded packets which coundn't be enqueued."
+            ::= { ruijieCBQoSIfClassMatchRunInfoEntry 11 }
+
+       
 --  CAR statistics
     	ruijieCBQoSIfCarRunInfoTable OBJECT-TYPE
             SYNTAX SEQUENCE OF RuijieCBQoSIfCarRunInfoEntry
@@ -1934,22 +2017,21 @@ ruijieRouterQoSMIB MODULE-IDENTITY
             "the bytes of packets which exceeded CIR."
         ::= { ruijieIfQosFlowLimitRunInfoEntry 13 }
 
--- End of IF QoS MIB
--- start of hqos mib object, add by tangyoucan
-    ruijieHQoSScalarObjects      OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  1 }
-    ruijieHQoSUserQObjects       OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  2 }
-    ruijieHQoSUserGroupQObjects  OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  3 }
-    ruijieHQoSFlowQObjects       OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  4 }
-    ruijieHQoSFlowMapObjects     OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  5 }
-    ruijieHQoSTClassifierObjects OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  6 }
-    ruijieHQoSTBehaviorObjects   OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  7 }
-    ruijieHQoSTPolicyObjects     OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  8 }
-    ruijieHQoSVoQObjects         OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  9 }
-    ruijieHQoSPortQObjects       OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  10 }
-    ruijieHQoSIfAppObjects       OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  11 }
+-- end of IF QoS MIB
+        ruijieHQoSScalarObjects  OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  1 }
+        ruijieHQoSUserQObjects   OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  2 }
+        ruijieHQoSUserGroupQObjects  OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  3 }
+        ruijieHQoSFlowQObjects   OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  4 }
+        ruijieHQoSFlowMapObjects  OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  5 }
+        ruijieHQoSTClassifierObjects OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  6 }
+        ruijieHQoSTBehaviorObjects OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  7 }
+        ruijieHQoSTPolicyObjects  OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  8 }
+        ruijieHQoSVoQObjects      OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  9 }
+        ruijieHQoSPortQObjects    OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  10 }
+        ruijieHQoSIfAppObjects    OBJECT IDENTIFIER ::= { ruijieHQoSMIBObjects  11 }
 	
--- 通过名称查询节点索引
-    ruijieHQoSNameType OBJECT-TYPE
+-- 
+		ruijieHQoSNameType OBJECT-TYPE
         SYNTAX     INTEGER {
                        unknownName(0),   
                        userQNameIn(1), 
@@ -1985,8 +2067,8 @@ ruijieRouterQoSMIB MODULE-IDENTITY
         DESCRIPTION
             "Corresponding entry index." 
         DEFVAL { 0 }
-        ::= { ruijieHQoSScalarObjects 3 }  
-        
+        ::= { ruijieHQoSScalarObjects 3 }
+------------------------------------------------------------------------------------------
     -- Next free index in ruijieHQoSUserQTable.
     ruijieHQoSUserQInIndexNext OBJECT-TYPE
         SYNTAX                INTEGER
@@ -3120,6 +3202,7 @@ ruijieRouterQoSMIB MODULE-IDENTITY
         ruijieHQoSTBehaviorRowStatus       RowStatus,
         ruijieHQoSTBehaviorMask            BITS,
         ruijieHQoSTBehaviorUserQName       OCTET STRING,
+        ruijieHQoSTBehaviorUserQDir        RuijieQDirectionType,
         ruijieHQoSTBehaviorTCos            RuijieCosType,
         ruijieHQoSTBehaviorTColor          INTEGER,
         ruijieHQoSTBehaviorRV4Dscp         INTEGER,
@@ -3186,6 +3269,16 @@ ruijieRouterQoSMIB MODULE-IDENTITY
        DESCRIPTION
          "User queue belong to this traffic behavior."
      ::= { ruijieHQoSTBehaviorEntry 5 }
+     
+     ruijieHQoSTBehaviorUserQDir OBJECT-TYPE
+        SYNTAX RuijieQDirectionType
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "Direction of the user queue belong to this traffic behavior.
+             There are two directions: inbound(1) and outbound(2)."
+        ::= { ruijieHQoSTBehaviorEntry 6 }
+     
      ruijieHQoSTBehaviorTCos OBJECT-TYPE
         SYNTAX                RuijieCosType
         MAX-ACCESS            read-create
@@ -3193,7 +3286,7 @@ ruijieRouterQoSMIB MODULE-IDENTITY
         DESCRIPTION
             "Set service-class."
         DEFVAL {cos-be}
-        ::=  { ruijieHQoSTBehaviorEntry 6 }
+        ::=  { ruijieHQoSTBehaviorEntry 7 }
 
     ruijieHQoSTBehaviorTColor OBJECT-TYPE
         SYNTAX  INTEGER {
@@ -3206,7 +3299,7 @@ ruijieRouterQoSMIB MODULE-IDENTITY
         DESCRIPTION
             "Set color." 
         DEFVAL {green}
-        ::= { ruijieHQoSTBehaviorEntry 7 }
+        ::= { ruijieHQoSTBehaviorEntry 8 }
 
     ruijieHQoSTBehaviorRV4Dscp OBJECT-TYPE
         SYNTAX  INTEGER (0..63)
@@ -3215,7 +3308,7 @@ ruijieRouterQoSMIB MODULE-IDENTITY
         DESCRIPTION
             "Remark traffic ipv4 dscp" 
         DEFVAL {0}
-        ::= { ruijieHQoSTBehaviorEntry 8 }
+        ::= { ruijieHQoSTBehaviorEntry 9 }
 
     ruijieHQoSTBehaviorRV4Tos OBJECT-TYPE
         SYNTAX  INTEGER (0..7)
@@ -3224,7 +3317,7 @@ ruijieRouterQoSMIB MODULE-IDENTITY
         DESCRIPTION
             "Remark traffic ipv4 precedence"  
         DEFVAL {0}
-        ::= { ruijieHQoSTBehaviorEntry 9 }
+        ::= { ruijieHQoSTBehaviorEntry 10 }
 
     ruijieHQoSTBehaviorRV6Dscp OBJECT-TYPE
         SYNTAX  INTEGER (0..255)
@@ -3233,7 +3326,7 @@ ruijieRouterQoSMIB MODULE-IDENTITY
         DESCRIPTION
             "Remark traffic ipv6 dscp."  
         DEFVAL {0}
-        ::= { ruijieHQoSTBehaviorEntry 10 }
+        ::= { ruijieHQoSTBehaviorEntry 11 }
 
     ruijieHQoSTBehaviorRVlanCos OBJECT-TYPE
         SYNTAX  INTEGER (0..7)
@@ -3242,7 +3335,7 @@ ruijieRouterQoSMIB MODULE-IDENTITY
         DESCRIPTION
             "Remark traffic ethernet vlan cos."  
         DEFVAL {0}
-        ::= { ruijieHQoSTBehaviorEntry 11 }
+        ::= { ruijieHQoSTBehaviorEntry 12 }
 
     ruijieHQoSTBehaviorRExp OBJECT-TYPE
         SYNTAX  INTEGER (0..7)
@@ -3251,7 +3344,7 @@ ruijieRouterQoSMIB MODULE-IDENTITY
         DESCRIPTION
             "Remark traffic mpls label exp." 
         DEFVAL {0}
-        ::= { ruijieHQoSTBehaviorEntry 12 }
+        ::= { ruijieHQoSTBehaviorEntry 13 }
 
      ruijieHQoSTBehaviorSubPolicyName OBJECT-TYPE
        SYNTAX        OCTET STRING (SIZE (0..32))
@@ -3259,7 +3352,7 @@ ruijieRouterQoSMIB MODULE-IDENTITY
        STATUS        current
        DESCRIPTION
          "Sub traffic policy under this traffic behavior."
-     ::= { ruijieHQoSTBehaviorEntry 13 }        
+     ::= { ruijieHQoSTBehaviorEntry 14 }        
 --end of traffic behavior entry
 
 -- Next free index in ruijieHQoSTPolicyTable. 
@@ -4016,7 +4109,7 @@ ruijieRouterQoSMIB MODULE-IDENTITY
         STATUS                current
         DESCRIPTION
             "Inbound policy layer with this interface."
-        DEFVAL {all-layer}
+        DEFVAL {l3-layer}
         ::= { ruijieHQoSIfAppEntry 4 }
 
     ruijieHQoSIfAppOutPolicyName OBJECT-TYPE
@@ -4041,7 +4134,7 @@ ruijieRouterQoSMIB MODULE-IDENTITY
         STATUS                current
         DESCRIPTION
             "Outbound policy layer with this interface."
-        DEFVAL {all-layer}
+        DEFVAL {l3-layer}
         ::= { ruijieHQoSIfAppEntry 7 }
 
     ruijieHQoSIfAppPortQueueName OBJECT-TYPE

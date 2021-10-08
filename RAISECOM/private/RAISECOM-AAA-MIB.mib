@@ -1,0 +1,2702 @@
+-- *****************************************************************
+-- RAISECOM-AAA-MIB.mib:  Raisecom AAA MIB file
+--
+-- March 2002, Wuzg
+--
+-- Copyright (c) 2002 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RAISECOM-AAA-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Counter32,
+        Unsigned32,
+        Integer32,
+        IpAddress
+                FROM SNMPv2-SMI
+        InetAddressType, 
+        InetAddress
+                FROM INET-ADDRESS-MIB
+        Counter
+                FROM RFC1155-SMI
+        TruthValue,
+        DisplayString,
+        RowStatus,
+        MacAddress
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ConfigStatus,
+        IfIndex
+                FROM RAISECOM-TC
+        EnabledStatus 
+                FROM P-BRIDGE-MIB       
+        radiusAuthServerAddress,
+        radiusAuthClientServerPortNumber
+            FROM RADIUS-AUTH-CLIENT-MIB
+        radiusAccServerAddress, 
+        radiusAccClientServerPortNumber
+            FROM RADIUS-ACC-CLIENT-MIB
+        ruijieMgmt
+                FROM RAISECOM-SMI;
+
+ruijieAAAMIB MODULE-IDENTITY
+        LAST-UPDATED "200203200000Z"
+        ORGANIZATION "Raisecom Networks Co.,Ltd."
+        CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@raisecom.com.cn"
+        DESCRIPTION
+                "This module defines raisecom AAA(802.1x) mibs."
+        REVISION      "200203200000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 19}
+
+ruijieAAAMIBObjects OBJECT IDENTIFIER ::= { ruijieAAAMIB 1 }
+
+ruijieDot1xAuthObjects OBJECT IDENTIFIER ::= { ruijieAAAMIBObjects 1 }
+ruijieAAAServerObjects OBJECT IDENTIFIER ::=    { ruijieAAAMIBObjects 2 }
+ruijieAuthUserObjects OBJECT IDENTIFIER ::=  { ruijieAAAMIBObjects 3 }
+ruijieAuthModeObjects OBJECT IDENTIFIER ::=  { ruijieAAAMIBObjects 4 }
+ruijieClientProbeObjects OBJECT IDENTIFIER ::=  { ruijieAAAMIBObjects 5 }
+
+--     
+-- ruijieDot1xAuth Groupfor 802.1x global settings.
+--
+ruijieDot1xAuthStatus OBJECT-TYPE
+        SYNTAX EnabledStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            "The enable(1)/disable(2) control used by the  
+            802.1x global settings."
+        DEFVAL { disabled }
+        ::= { ruijieDot1xAuthObjects 1 }
+
+ruijieDot1xAuthObjectsQuietPeriod OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            "The value, in seconds, of the quietPeriod constant
+             currently in use by the Authenticator PAE state
+             machine."
+        DEFVAL { 60 }
+        ::= { ruijieDot1xAuthObjects 2 } 
+
+ruijieDot1xAuthObjectsTxPeriod OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            "The value, in seconds, of the txPeriod constant
+             currently in use by the Authenticator PAE state
+             machine."
+        DEFVAL { 30 }
+        ::= { ruijieDot1xAuthObjects 3 } 
+
+ruijieDot1xAuthObjectsSuppTimeout OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            "The value, in seconds, of the suppTimeout constant
+             currently in use by the Backend Authentication state
+             machine."
+        DEFVAL { 30 }
+        ::= { ruijieDot1xAuthObjects 4 } 
+
+ruijieDot1xAuthObjectsServerTimeout OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+        "The value, in seconds, of the serverTimeout constant
+         currently in use by the Backend Authentication state
+         machine."
+        DEFVAL { 30 }
+    ::= { ruijieDot1xAuthObjects 5 }
+
+ruijieDot1xAuthObjectsMaxReq OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            "The value of the maxReq constant currently in use by
+             the Backend Authentication state machine."
+        DEFVAL { 2 }
+        ::= { ruijieDot1xAuthObjects 6 } 
+
+ruijieDot1xAuthObjectsReAuthPeriod OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            "The value, in seconds, of the reAuthPeriod constant
+             currently in use by the Reauthentication Timer state
+             machine."
+        DEFVAL { 3600 }
+        ::= { ruijieDot1xAuthObjects 7 } 
+
+ruijieDot1xAuthObjectsMaxReauth OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            "The value of the reAuthMax constant currently in use by
+             the Authenticator PAE state machine."
+        DEFVAL { 2 }
+        ::= { ruijieDot1xAuthObjects 8 } 
+        
+ruijieDot1xAuthObjectsReAuthEnable OBJECT-TYPE
+        SYNTAX EnabledStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            "The enable(1)/disable(2) control used by the Reauthentication
+             Timer state machine."
+        DEFVAL { 2 }
+        ::= { ruijieDot1xAuthObjects 9 } 
+        
+ruijieDot1xAuthObjectsConfigTable OBJECT-TYPE
+         SYNTAX SEQUENCE OF RuijieDot1xAuthConfigEntry
+         MAX-ACCESS not-accessible
+         STATUS current
+         DESCRIPTION
+           "A table that contains the configuration objects for the
+              Authenticator PAE associated with each MAC address.
+              An entry appears in this table for each MAC address that 
+              may authenticate access to itself."
+          ::= { ruijieDot1xAuthObjects 10 }
+        
+ruijieDot1xAuthObjectsConfigEntry OBJECT-TYPE
+        SYNTAX RuijieDot1xAuthConfigEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+         "The configuration information for an Authenticator
+              PAE."
+       INDEX { ruijieDot1xAuthObjectsConfigFdbId,ruijieDot1xAuthObjectsConfigAddr }
+       ::= { ruijieDot1xAuthObjectsConfigTable 1 }
+
+RuijieDot1xAuthConfigEntry ::=
+        SEQUENCE {
+        ruijieDot1xAuthObjectsConfigFdbId
+                 Unsigned32,
+        ruijieDot1xAuthObjectsConfigAddr
+                 MacAddress,
+         ruijieDot1xAuthObjectsPaeState
+                 INTEGER,
+         ruijieDot1xAuthObjectsBackendAuthState
+                 INTEGER,
+         ruijieDot1xAuthObjectsAuthControlledPortStatus
+                 INTEGER,
+        ruijieDot1xAuthObjectsKeyTxEnabled
+                 TruthValue,        
+  ruijieDot1xAuthObjectsIfIndex
+     IfIndex
+         }
+ruijieDot1xAuthObjectsConfigFdbId OBJECT-TYPE
+        SYNTAX       Unsigned32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The VID of vlan which the address blongs to."
+    ::= { ruijieDot1xAuthObjectsConfigEntry 1 }
+    
+ruijieDot1xAuthObjectsConfigAddr OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The MAC address associated with this configurations."
+        ::= { ruijieDot1xAuthObjectsConfigEntry 2 }
+
+ruijieDot1xAuthObjectsPaeState OBJECT-TYPE
+        SYNTAX INTEGER {
+               initialize(1),
+               disconnected(2),
+               connecting(3),
+               authenticating(4),
+               authenticated(5),
+               aborting(6),
+               held(7),
+               forceAuth(8),
+               forceUnauth(9)
+               }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The current value of the Authenticator PAE state
+             machine."
+        ::= { ruijieDot1xAuthObjectsConfigEntry 3 }
+
+ruijieDot1xAuthObjectsBackendAuthState OBJECT-TYPE
+        SYNTAX INTEGER {
+               request(1),
+               response(2),
+               success(3),
+               fail(4),
+               timeout(5),
+               idle(6),
+               initialize(7)
+               }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The current state of the Backend Authentication
+             state machine."
+        ::= { ruijieDot1xAuthObjectsConfigEntry 4 }
+
+ruijieDot1xAuthObjectsAuthControlledPortStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+               authorized(1),
+               unauthorized(2)
+               }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The current value of the controlled Port
+             status parameter for the Port."
+        ::= { ruijieDot1xAuthObjectsConfigEntry 5 }
+
+ruijieDot1xAuthObjectsKeyTxEnabled OBJECT-TYPE
+        SYNTAX TruthValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The value of the keyTransmissionEnabled constant
+             currently in use by the Authenticator PAE state
+             machine."
+        ::= { ruijieDot1xAuthObjectsConfigEntry 6 }
+                
+ruijieDot1xAuthObjectsIfIndex OBJECT-TYPE
+        SYNTAX IfIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The interface index associated with this configurations"
+        ::= { ruijieDot1xAuthObjectsConfigEntry 7 }
+        
+                
+ruijieDot1xAuthObjectsStatsTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieDot1xAuthStatsEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A table that contains the statistics objects for the
+             Authenticator PAE associated with each MAC address.
+             An entry appears in this table for each MAC address 
+             that may authenticate access to itself."
+        ::= { ruijieDot1xAuthObjects 11 }
+
+ruijieDot1xAuthStatsEntry OBJECT-TYPE
+        SYNTAX RuijieDot1xAuthStatsEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The statistics information for an Authenticator PAE."
+        INDEX { ruijieDot1xAuthObjectsStatsFdbId,ruijieDot1xAuthObjectsStatsAddr }
+        ::= { ruijieDot1xAuthObjectsStatsTable 1 }
+
+RuijieDot1xAuthStatsEntry ::=
+        SEQUENCE {
+        ruijieDot1xAuthObjectsStatsFdbId
+                Unsigned32,
+        ruijieDot1xAuthObjectsStatsAddr
+                MacAddress,
+        ruijieDot1xAuthObjectsEapolFramesRx
+                Counter32,
+        ruijieDot1xAuthObjectsEapolFramesTx
+                Counter32,
+        ruijieDot1xAuthObjectsEapolRuijieFramesRx
+                Counter32,
+        ruijieDot1xAuthObjectsEapolLogoffFramesRx
+                Counter32,
+        ruijieDot1xAuthObjectsEapolRespIdFramesRx
+                Counter32,
+        ruijieDot1xAuthObjectsEapolRespFramesRx
+                Counter32,
+        ruijieDot1xAuthObjectsEapolReqIdFramesTx
+                Counter32,
+        ruijieDot1xAuthObjectsEapolReqFramesTx
+                Counter32,
+        ruijieDot1xAuthObjectsInvalidEapolFramesRx
+                Counter32,
+        ruijieDot1xAuthObjectsEapLengthErrorFramesRx
+                Counter32,
+        ruijieDot1xAuthObjectsLastEapolFrameVersion
+                Unsigned32,
+        ruijieDot1xAuthObjectsLastEapolFrameSource
+                MacAddress
+            }
+ruijieDot1xAuthObjectsStatsFdbId OBJECT-TYPE
+        SYNTAX       Unsigned32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The VID of vlan which the address blongs to."
+        ::= { ruijieDot1xAuthStatsEntry 1 }
+
+ruijieDot1xAuthObjectsStatsAddr OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The MAC address associated with this states."
+        ::= { ruijieDot1xAuthStatsEntry 2 }
+
+ruijieDot1xAuthObjectsEapolFramesRx OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of valid EAPOL frames of any type
+             that have been received by this Authenticator."
+        ::= { ruijieDot1xAuthStatsEntry 3 }
+
+ruijieDot1xAuthObjectsEapolFramesTx OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of EAPOL frames of any type
+             that have been transmitted by this Authenticator."
+        ::= { ruijieDot1xAuthStatsEntry 4 }
+
+ruijieDot1xAuthObjectsEapolRuijieFramesRx OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of EAPOL Raisecom frames that have
+             been received by this Authenticator."
+        ::= { ruijieDot1xAuthStatsEntry 5 }
+
+ruijieDot1xAuthObjectsEapolLogoffFramesRx OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of EAPOL Logoff frames that have
+             been received by this Authenticator."
+        ::= { ruijieDot1xAuthStatsEntry 6 }
+
+ruijieDot1xAuthObjectsEapolRespIdFramesRx OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of EAP Resp/Id frames that have
+             been received by this Authenticator."
+        ::= { ruijieDot1xAuthStatsEntry 7 }
+
+ruijieDot1xAuthObjectsEapolRespFramesRx OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The number of valid EAP Response frames
+             (other than Resp/Id frames) that have been
+             received by this Authenticator."
+        ::= { ruijieDot1xAuthStatsEntry 8 }
+
+ruijieDot1xAuthObjectsEapolReqIdFramesTx OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+        "The number of EAP Req/Id frames that have been
+        transmitted by this Authenticator."
+    ::= { ruijieDot1xAuthStatsEntry 9 }
+
+ruijieDot1xAuthObjectsEapolReqFramesTx OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+        "The number of EAP Request frames
+         (other than Rq/Id frames) that have been
+         transmitted by this Authenticator."
+    ::= { ruijieDot1xAuthStatsEntry 10 }
+
+ruijieDot1xAuthObjectsInvalidEapolFramesRx OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+        "The number of EAPOL frames that have been
+         received by this Authenticator in which the
+         frame type is not recognized."
+    ::= { ruijieDot1xAuthStatsEntry 11 }
+
+ruijieDot1xAuthObjectsEapLengthErrorFramesRx OBJECT-TYPE
+        SYNTAX Counter32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+        "The number of EAPOL frames that have been received
+         by this Authenticator in which the Packet Body
+        Length field is invalid."
+    ::= { ruijieDot1xAuthStatsEntry 12 }
+
+ruijieDot1xAuthObjectsLastEapolFrameVersion OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+        "The protocol version number carried in the
+         most recently received EAPOL frame."
+    ::= { ruijieDot1xAuthStatsEntry 13 }
+
+ruijieDot1xAuthObjectsLastEapolFrameSource OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+        "The source MAC address carried in the
+         most recently received EAPOL frame."
+    ::= { ruijieDot1xAuthStatsEntry 14 }
+    
+ruijieDot1xCurrentUserNumber OBJECT-TYPE
+        SYNTAX Counter
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION 
+             "Numbers of users who attached to the system ,regardless of their state."
+        ::= { ruijieDot1xAuthObjects 12 }      
+
+ruijieDot1xCurrentAuthenticatedUserNumber OBJECT-TYPE
+        SYNTAX Counter
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION 
+                "Numbers of user who attached to the system and their current state is
+                 authorized"
+        ::= { ruijieDot1xAuthObjects 13 }           
+
+ruijieDot1xAccountStatus OBJECT-TYPE
+        SYNTAX EnabledStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            "The enable(1)/disable(2) control used by the  
+             accounting function."
+        DEFVAL { 2 }
+        ::= { ruijieDot1xAuthObjects 14 }
+
+ruijieAuthIfTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieAuthIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The table of the authenticated status of interface."
+        ::= { ruijieDot1xAuthObjects 15 }
+
+ruijieAuthIfEntry OBJECT-TYPE
+        SYNTAX  RuijieAuthIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The entry of MAC address which can be authenticated."
+        INDEX   { ruijieAuthIf}
+        ::= { ruijieAuthIfTable 1 }
+
+RuijieAuthIfEntry ::=
+        SEQUENCE {
+        ruijieAuthIf
+                IfIndex,           
+        ruijieAuthIfStatus
+                EnabledStatus
+        }
+ruijieAuthIf OBJECT-TYPE
+        SYNTAX  IfIndex
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The port number of the port/trunk to which frames received from a
+              specific port/trunk and destined for a specific MAC address."
+        ::= { ruijieAuthIfEntry 1 }
+
+ruijieAuthIfStatus OBJECT-TYPE
+        SYNTAX EnabledStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The authentication status of a port, can be opened by setting its
+            value to Enabled(1), or closed by setting its value to Disabled(2)."
+        DEFVAL { 2 }
+        ::= { ruijieAuthIfEntry 2 }
+
+ruijieAuthenticationMode OBJECT-TYPE
+        SYNTAX  INTEGER {
+                eap(1),       
+                chap(2),
+                pap(3)
+                }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "Mode used for authentication"
+        ::= { ruijieDot1xAuthObjects 16 }        
+
+ruijieDot1xAccountUpdateStatus OBJECT-TYPE
+        SYNTAX  EnabledStatus
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "Account Update Status"
+        ::= { ruijieDot1xAuthObjects 17 }  
+
+ruijieDot1xAcctInterimInterval OBJECT-TYPE
+        SYNTAX  Unsigned32 (60..65535)
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "Account Interim Interval"
+        ::= { ruijieDot1xAuthObjects 18 }               
+       
+ruijieDot1xEapolTagEnabled OBJECT-TYPE
+        SYNTAX  EnabledStatus
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "Eapol Tag Enabled"
+        ::= { ruijieDot1xAuthObjects 19 }            
+
+ruijieDot1xIfUserMaxTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieDot1xIfUserMaxEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The table of the max dot1x user number on authenticated interface."
+        ::= { ruijieDot1xAuthObjects 20 }
+
+ruijieDot1xIfUserMaxEntry OBJECT-TYPE
+        SYNTAX  RuijieDot1xIfUserMaxEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The entry of max dot1x user number on authenticated interface."
+        INDEX   { ruijieDot1xIfUserMaxIndex}
+        ::= { ruijieDot1xIfUserMaxTable 1 }
+
+RuijieDot1xIfUserMaxEntry ::=
+        SEQUENCE {
+        ruijieDot1xIfUserMaxIndex
+                IfIndex,           
+        ruijieDot1xIfUserMaxNum
+                Unsigned32
+        }
+ruijieDot1xIfUserMaxIndex OBJECT-TYPE
+        SYNTAX  IfIndex
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The interface index which dot1x authentication is enabled."
+        ::= { ruijieDot1xIfUserMaxEntry 1 }
+
+ruijieDot1xIfUserMaxNum OBJECT-TYPE
+        SYNTAX Unsigned32 (1..4000)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The max dot1x user num on the interface, this is valid only 
+            when dot1x authentication is enable on that interface.
+            Number 0 indicates no user number limits enabled on the interface."
+        ::= { ruijieDot1xIfUserMaxEntry 2 }
+
+ruijieDot1xPseudoSrcmac OBJECT-TYPE
+        SYNTAX EnabledStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            "Enable(1)/disable(2) use pseudo mac as the source mac of 802.1x
+            authentication frame."
+        DEFVAL { enabled }
+        ::= { ruijieDot1xAuthObjects 21 } 
+
+ruijieDot1xUserMIB OBJECT IDENTIFIER ::= { ruijieDot1xAuthObjects 22 }
+
+ruijieDot1xUserTrapsObjects OBJECT IDENTIFIER ::= { ruijieDot1xUserMIB 1 }
+ruijieDot1xUserTraps OBJECT IDENTIFIER ::= { ruijieDot1xUserMIB 2 }
+
+ruijieDot1xUserMac OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "802.1X user's MAC address."
+        ::= { ruijieDot1xUserTrapsObjects 1 }
+
+ruijieDot1xUserName OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "802.1X user's name"
+        ::= { ruijieDot1xUserTrapsObjects 2 }
+
+ruijieDot1xUserIp OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "802.1X user's IPv4 address."
+        ::= { ruijieDot1xUserTrapsObjects 3 }
+
+ruijieDot1xUserIpv6 OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS accessible-for-notify
+        STATUS current  
+        DESCRIPTION
+            "802.1x user's IPv6 address."
+        ::= { ruijieDot1xUserTrapsObjects 4 }
+
+ruijieDot1xUserWlanId OBJECT-TYPE
+        SYNTAX INTEGER (1..4095)
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The wlan id that 802.1X user associated with."
+        ::= { ruijieDot1xUserTrapsObjects 5 }
+
+ruijieDot1xUserVlanId OBJECT-TYPE
+        SYNTAX INTEGER (1..4094)
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The vlan id that 801.1X user belongs to."
+        ::= { ruijieDot1xUserTrapsObjects 6 }
+
+ruijieDot1xUserSsid OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The SSID that 802.1X user associated with."
+        ::= { ruijieDot1xUserTrapsObjects 7 }
+
+ruijieDot1xUserApMac OBJECT-TYPE
+        SYNTAX MacAddress
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The MAC address of the AP that 802.1X user associated with."
+        ::= { ruijieDot1xUserTrapsObjects 8 }
+
+ruijieDot1xUserTerminalType OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "802.1X user's terminal type."
+        ::= { ruijieDot1xUserTrapsObjects 9 }
+
+ruijieDot1xUserOperType OBJECT-TYPE
+        SYNTAX INTEGER {
+            online(1),
+            offline(2),
+            authenfail(3)
+        }
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "Operation type of 802.1X user's trap."
+        ::= { ruijieDot1xUserTrapsObjects 10 }
+
+ruijieDot1xUserTerminateCause OBJECT-TYPE
+        SYNTAX INTEGER
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "Terminate cause of 802.1X user."
+        ::= { ruijieDot1xUserTrapsObjects 11 }
+
+ruijieDot1xUserReplyMessage OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "Message of authentication failure of a 802.1X user."
+        ::= { ruijieDot1xUserTrapsObjects 12 }
+        
+ruijieDot1xUserIfIndex OBJECT-TYPE
+        SYNTAX INTEGER (1..4095)
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The interface id that 802.1X user belongs to."
+        ::= { ruijieDot1xUserTrapsObjects 13 }
+
+ruijieDot1xUserMgmtTrap NOTIFICATION-TYPE
+        OBJECTS {
+            ruijieDot1xUserMac,
+            ruijieDot1xUserName,
+            ruijieDot1xUserIp,
+            ruijieDot1xUserIpv6,
+            ruijieDot1xUserWlanId,
+            ruijieDot1xUserVlanId,
+            ruijieDot1xUserSsid,
+            ruijieDot1xUserApMac,
+            ruijieDot1xUserTerminalType,
+            ruijieDot1xUserOperType,
+            ruijieDot1xUserTerminateCause,
+            ruijieDot1xUserReplyMessage,
+            ruijieDot1xUserIfIndex
+        }
+        STATUS current
+        DESCRIPTION
+            "802.1X wireless user online/offline trap."
+        ::= { ruijieDot1xUserTraps 1 }
+
+ruijieDot1xWiredUserTrap NOTIFICATION-TYPE
+        OBJECTS {
+            ruijieDot1xUserMac,
+            ruijieDot1xUserName,
+            ruijieDot1xUserIfIndex,
+            ruijieDot1xUserVlanId,
+            ruijieDot1xUserIp,
+            ruijieDot1xUserIpv6,
+            ruijieDot1xUserOperType,
+            ruijieDot1xUserTerminateCause
+        }
+        STATUS current
+        DESCRIPTION
+            "802.1X wired user online/offline/authentication trap."
+        ::= { ruijieDot1xUserTraps 2 }
+
+--**********************************************************************
+-- about dot1x online user table info 
+--**********************************************************************    
+ruijieDot1xOnlineUserTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieDot1xOnlineUserEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+            "Detail information of dot1x online user."
+        ::= { ruijieDot1xUserMIB 3 }
+
+ruijieDot1xOnlineUserEntry OBJECT-TYPE
+    SYNTAX RuijieDot1xOnlineUserEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The entry of ruijieDot1xOnlineUserTable."
+    INDEX { ruijieDot1xOnlineUserID }
+    ::= { ruijieDot1xOnlineUserTable 1 }
+
+RuijieDot1xOnlineUserEntry ::=  
+    SEQUENCE {
+        ruijieDot1xOnlineUserID                 INTEGER,
+        ruijieDot1xOnlineUserName               DisplayString,
+        ruijieDot1xOnlineUserMacAddr            MacAddress,
+        ruijieDot1xOnlineUserIfIndex            INTEGER,
+        ruijieDot1xOnlineUserVlanId             INTEGER,
+        ruijieDot1xOnlineUserIp                 IpAddress,
+        ruijieDot1xOnlineUserIpv6               InetAddress
+    }
+
+ruijieDot1xOnlineUserID OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The ID of Dot1xOnlineuser that is uniqueness."
+    ::= {ruijieDot1xOnlineUserEntry 1 }
+
+ruijieDot1xOnlineUserName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Name of dot1x online user."
+    ::= {ruijieDot1xOnlineUserEntry 2}
+
+ruijieDot1xOnlineUserMacAddr OBJECT-TYPE
+    SYNTAX MacAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Mac address of dot1x online user."
+    ::= {ruijieDot1xOnlineUserEntry 3}
+
+ruijieDot1xOnlineUserIfIndex OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Interface index of dot1x online user."
+    ::= {ruijieDot1xOnlineUserEntry 4}
+
+ruijieDot1xOnlineUserVlanId OBJECT-TYPE
+    SYNTAX INTEGER
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Vlan id of dot1x online user."
+    ::= {ruijieDot1xOnlineUserEntry 5}
+    
+ruijieDot1xOnlineUserIp OBJECT-TYPE
+    SYNTAX IpAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Ipv4 address of dot1x online user."
+    ::= {ruijieDot1xOnlineUserEntry 6}
+    
+ruijieDot1xOnlineUserIpv6 OBJECT-TYPE
+    SYNTAX InetAddress
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Ipv6 address of dot1x online user."
+    ::= {ruijieDot1xOnlineUserEntry 7}
+
+ruijieDot1xAbnormalOfflineUserCount OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The number of offline users with abnormal terminate-cause"
+        ::= { ruijieDot1xAuthObjects 23 }
+
+ruijieDot1xTotalAuthUserCount OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The totaol number of users who send authentication request"
+        ::= { ruijieDot1xAuthObjects 24 }
+
+ruijieDot1xAuthSuccUserCount OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The number of users who pass authentication"
+        ::= { ruijieDot1xAuthObjects 25 }
+        
+ruijieDot1xAuthFailUserCount OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The number of users who authenticate fail"
+        ::= { ruijieDot1xAuthObjects 26 }
+
+--     
+-- ruijieAAAServer Group.
+--
+        
+--      ::= { ruijieAAAServerObjects 1 }     this OID is obsolete
+
+ruijieAAAServerAuthPort OBJECT-TYPE
+        SYNTAX      INTEGER (0..65535)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION 
+            "UDP port used for authentication in the global 
+            configuration.
+            For RADIUS only, default value is 1812."
+        DEFVAL  { 1812 }
+        ::= { ruijieAAAServerObjects 2 }
+
+ruijieAAAServerAcctPort OBJECT-TYPE
+        SYNTAX      INTEGER (0..65535)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION 
+            "UDP port used for accounting service in the global
+            configuration.
+            For RADIUS only, default value is 1813."
+        DEFVAL  { 1813 }
+        ::= { ruijieAAAServerObjects 3 } 
+
+ruijieAAAServerRadiusKeyStr OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE (0..255))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The server key to be used with all RADIUS server.
+            Retrieving the  value of this object via SNMP will
+            return an empty string  for security reasons."
+        DEFVAL { "" }
+        ::= { ruijieAAAServerObjects 4 }        
+
+--      ::= { ruijieAAAServerObjects 5 }     this OID is obsolete
+
+--      ::= { ruijieAAAServerObjects 6 }     this OID is obsolete
+
+--      ::= { ruijieAAAServerObjects 7 }     this OID is obsolete
+
+ruijieAAAServerTacplusKeyStr OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE (0..255))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The server key to be used with all TACACS+ server.
+            Retrieving the  value of this object via SNMP will return 
+            an empty string  for security reasons."
+        DEFVAL { "" }
+        ::= { ruijieAAAServerObjects 8 }
+      
+--     
+-- ruijieAAAServerConfigTable
+--        
+ruijieAAAServerConfigTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RuijieAAAServerConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This table shows current configurations for each
+            AAA server, allows existing servers to be removed
+            and new ones to be created."
+        ::= { ruijieAAAServerObjects 9 }
+
+ruijieAAAServerConfigEntry OBJECT-TYPE
+        SYNTAX      RuijieAAAServerConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The table of AAA server configuration identified by its 
+            protocol and its index."
+        INDEX { ruijieAAAServerConfigProtocol,
+                ruijieAAAServerConfigIndex }
+        ::= { ruijieAAAServerConfigTable 1}
+
+RuijieAAAServerConfigEntry ::=
+        SEQUENCE {
+            ruijieAAAServerConfigProtocol        INTEGER,
+            ruijieAAAServerConfigIndex           Unsigned32,
+            ruijieAAAServerConfigAddressType     InetAddressType,
+            ruijieAAAServerConfigAddress         InetAddress,
+            ruijieAAAServerConfigAuthPort        INTEGER,
+            ruijieAAAServerConfigAcctPort        INTEGER,
+            ruijieAAAServerConfigKeyStr          DisplayString,
+            ruijieAAAServerConfigRowStatus       RowStatus
+        }
+
+ruijieAAAServerConfigProtocol OBJECT-TYPE
+        SYNTAX      INTEGER {
+                    radius(1),   -- RADIUS
+                    tacplus(2)   -- TACACS+
+                    }
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The variable denotes the protocol used by the managed 
+            device with the AAA server corresponding to this entry
+            in the table."
+       ::= { ruijieAAAServerConfigEntry 1 }
+
+ruijieAAAServerConfigIndex OBJECT-TYPE
+       SYNTAX       Unsigned32 (1..4294967295)
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+           "A number uniquely identifying each server. 
+           If the ruijieAAAServerConfigIndex value for row creation is 
+           already in use by an existing entry, snmp set to the
+           ruijieAAAServerConfigIndex value will fail.
+           Upon reload, casIndex values may be changed."
+       ::= { ruijieAAAServerConfigEntry 2 }
+
+ruijieAAAServerConfigAddressType OBJECT-TYPE 
+       SYNTAX       InetAddressType 
+       MAX-ACCESS   read-create 
+       STATUS       current 
+       DESCRIPTION 
+           "The type of address format used for the 
+           ruijieAAAServerConfigAddress object." 
+       ::= { ruijieAAAServerConfigEntry 3 } 
+
+ruijieAAAServerConfigAddress OBJECT-TYPE 
+       SYNTAX       InetAddress 
+       MAX-ACCESS   read-create 
+       STATUS       current 
+       DESCRIPTION 
+             "The IP address of the server." 
+       ::= { ruijieAAAServerConfigEntry 4 } 
+
+ruijieAAAServerConfigAuthPort OBJECT-TYPE
+       SYNTAX      INTEGER (0..65535)
+       MAX-ACCESS  read-create
+       STATUS      current
+       DESCRIPTION
+             "UDP/TCP port used for authentication in the server.
+             For RADIUS, default value is 1812.
+             For TACACS+, default value is 49."
+       ::= { ruijieAAAServerConfigEntry 5 }
+
+ruijieAAAServerConfigAcctPort OBJECT-TYPE
+       SYNTAX       INTEGER (0..65535)
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+             "UDP/TCP port used for accounting service in the server.
+             For RADIUS, default value is 1813.
+             For TACACS+, the value of ruijieAAAServerConfigAcctPort is
+             ignored, ruijieAAAServerConfigAuthPort will be used instead."
+       ::= { ruijieAAAServerConfigEntry 6 }
+
+ruijieAAAServerConfigKeyStr OBJECT-TYPE
+       SYNTAX       DisplayString (SIZE (0..255))
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "The server key to be used with this server.
+           Retrieving the value of this object via SNMP will return an
+           empty string for security reasons."
+       DEFVAL { "" }
+       ::= { ruijieAAAServerConfigEntry 7 }
+
+ruijieAAAServerConfigRowStatus OBJECT-TYPE
+       SYNTAX       RowStatus
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "The status of this table entry.  Once the entry status is
+           set to active, the associated entry cannot be modified except
+           destroyed by setting this object to destroy(6)."
+       ::= { ruijieAAAServerConfigEntry 8 }
+        
+--     
+-- ruijieAuthAddress Group.
+--        
+ruijieAuthAddrTable OBJECT-TYPE
+  SYNTAX  SEQUENCE OF RuijieAuthAddrEntry
+  MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The table of MAC address which can be authenticated."
+        ::= { ruijieAuthUserObjects 1 }
+
+ruijieAuthAddrEntry OBJECT-TYPE
+        SYNTAX  RuijieAuthAddrEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The entry of MAC address which can be authenticated."
+        INDEX   { ruijieAuthPort,ruijieAuthMacAddress}
+        ::= { ruijieAuthAddrTable 1 }
+
+RuijieAuthAddrEntry ::=
+        SEQUENCE {
+        ruijieAuthPort
+                IfIndex,           
+        ruijieAuthMacAddress
+                MacAddress,
+        ruijieAuthAddrStatus
+                INTEGER
+        }
+ruijieAuthPort OBJECT-TYPE
+        SYNTAX  IfIndex
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The port number of the port/trunk to which frames received from a
+              specific port/trunk and destined for a specific MAC address."
+        ::= { ruijieAuthAddrEntry 1 }
+        
+ruijieAuthMacAddress OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The MAC address which can be authenticated."
+        ::= { ruijieAuthAddrEntry 2 }
+
+ruijieAuthAddrStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                valid(1),
+                invalid(2)
+                }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "valid(1) - this entry is currently in use .
+            invalid(2) - writing this value to the object
+            removes the corresponding entry."
+        ::= { ruijieAuthAddrEntry 3 }    
+
+
+--
+-- raisecom authentication user information
+--        
+ruijieAuthUserTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieAuthUserEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The table of authentication User Info."
+        ::= { ruijieAuthUserObjects 2 }
+
+ruijieAuthUserEntry OBJECT-TYPE
+        SYNTAX  RuijieAuthUserEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The entry of authentication User Info table."
+        INDEX   { ruijieAuthUserFdbId,ruijieAuthUserMacAddress}
+        ::= { ruijieAuthUserTable 1 }
+
+RuijieAuthUserEntry ::=
+    SEQUENCE {
+            ruijieAuthUserFdbId  Unsigned32,
+            ruijieAuthUserMacAddress  MacAddress,            
+            ruijieAuthUserName  DisplayString,
+            ruijieAuthUserSessionId DisplayString,
+            ruijieAuthUserIpAddr IpAddress,
+            ruijieAuthUserPort   INTEGER,                        
+            ruijieAuthUserStatus ConfigStatus
+            }
+        
+ruijieAuthUserFdbId OBJECT-TYPE
+        SYNTAX       Unsigned32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The VID of vlan which the address blongs to."    
+        ::= { ruijieAuthUserEntry 1 }
+
+ruijieAuthUserMacAddress OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            " The MAC Address of authentication User ."
+          ::= { ruijieAuthUserEntry 2 }
+                    
+ruijieAuthUserName OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The Name of authentication User."
+           ::= { ruijieAuthUserEntry 3 }
+
+ruijieAuthUserSessionId OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            " The Session Id of authentication User ."
+         ::= { ruijieAuthUserEntry 4 }
+
+ruijieAuthUserIpAddr OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            " The IP Address of authentication User ."
+         ::= { ruijieAuthUserEntry 5 }
+         
+ruijieAuthUserPort OBJECT-TYPE
+        SYNTAX  INTEGER 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            " The interface of authentication User ."
+        ::= { ruijieAuthUserEntry 6 }
+         
+ruijieAuthUserStatus OBJECT-TYPE
+        SYNTAX  ConfigStatus
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "Setting this object to 'invalid' will close a authenticated user,
+             set its value to valid will cause no action of agent,
+             when query always return value valid." 
+         ::= { ruijieAuthUserEntry 7 }
+
+
+--
+-- raisecom vpn authentication user information
+--        
+ruijieAuthUserForVPNDel OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE (1..255))
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "VPN user's name. Setting this object will delete a authenticated user and this user is unauthenticated.
+            The set string is the username.
+             
+             Reading this object always return null string."
+        ::= { ruijieAuthUserObjects 3 }
+
+--
+-- raisecom online user information
+--        
+ruijieOnlineUserTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF RuijieOnlineUserEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The table of online User Info."
+        ::= { ruijieAuthUserObjects 4 }
+
+ruijieOnlineUserEntry OBJECT-TYPE
+        SYNTAX  RuijieOnlineUserEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The entry of online User Info table."
+        INDEX   {ruijieOnlineUserSessionId}
+        ::= { ruijieOnlineUserTable 1 }
+
+RuijieOnlineUserEntry ::=
+    SEQUENCE {
+            ruijieOnlineUserSessionId DisplayString,
+            ruijieOnlineUserVid Unsigned32,
+            ruijieOnlineUserMacAddress MacAddress,
+            ruijieOnlineUserPort INTEGER,
+            ruijieOnlineUserName DisplayString,
+            ruijieOnlineUserIpAddr IpAddress,
+            ruijieOnlineUserStatus ConfigStatus
+            }
+
+ruijieOnlineUserSessionId OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            " The Session Id of online User ."
+         ::= { ruijieOnlineUserEntry 1 }
+
+ruijieOnlineUserVid OBJECT-TYPE
+        SYNTAX       Unsigned32
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "The VID of vlan which the address blongs to."    
+        ::= { ruijieOnlineUserEntry 2 }
+
+ruijieOnlineUserMacAddress OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            " The MAC Address of online User ."
+          ::= { ruijieOnlineUserEntry 3 }
+
+ruijieOnlineUserPort OBJECT-TYPE
+        SYNTAX  INTEGER 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            " The interface of online User ."
+        ::= { ruijieOnlineUserEntry 4 }
+
+ruijieOnlineUserName OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The Name of online User."
+           ::= { ruijieOnlineUserEntry 5 }
+
+ruijieOnlineUserIpAddr OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            " The IP Address of online User ."
+         ::= { ruijieOnlineUserEntry 6 }
+         
+ruijieOnlineUserStatus OBJECT-TYPE
+        SYNTAX  ConfigStatus
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "Setting this object to 'invalid' will close a authenticated user,
+             set its value to valid will cause no action of agent,
+             when query always return value valid." 
+         ::= { ruijieOnlineUserEntry 7 }
+
+--
+-- raisecom aaa version
+--        
+ruijieAaaVersion OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Raisecom Authentication/Accounting/Authorization(AAA) Version"
+        ::= { ruijieAuthUserObjects 5 }
+         
+-- authorization mode objects
+
+ruijieIpAuthorizationMode OBJECT-TYPE
+        SYNTAX  INTEGER {
+                disable(1),       
+                dhcpServer(2),
+                radiusServer(3),
+                supplicant(4)
+                }
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "disable(1)    - don't limit ip address of user
+             dhcpServer(2) - limit ip address of user, only ip address assigned by the dhcp
+                             server is legit.
+             radiusServer(3) - limit ip address of user, only ip address assigned by the radius
+                              server is legit.
+             supplicant(4) - mac+ip+port indicates different users (get the IP adress through supplicant)"
+        ::= { ruijieAuthModeObjects 1 }    
+---
+---Client probe
+---
+ruijieClientProbeEnabledStatus OBJECT-TYPE
+        SYNTAX EnabledStatus
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            "The status of client probe function."
+        ::= { ruijieClientProbeObjects 1 }
+
+ruijieClientProbeHelloInterval OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            "The interval that client send hello packets."
+        ::= { ruijieClientProbeObjects 2 }
+        
+ruijieClientProbeAliveInteval OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            "When switch does not receive any legal hello packets from client 
+            in this interval,it will send RADIUS-Account-Stop to RADIUS server
+            to stop this connection.The value of the objects must be more than 
+            ruijieClientProbeHelloInterval"
+        ::= { ruijieClientProbeObjects 3 }   
+
+
+
+ruijieAAAConfigObjects     OBJECT IDENTIFIER ::=  { ruijieAAAMIBObjects 6 }
+ruijieAuthenConfigObjects  OBJECT IDENTIFIER ::=  { ruijieAAAConfigObjects 1 }
+ruijieAuthorConfigObjects  OBJECT IDENTIFIER ::=  { ruijieAAAConfigObjects 2 }
+ruijieAcctConfigObjects    OBJECT IDENTIFIER ::=  { ruijieAAAConfigObjects 3 }
+
+--     
+-- Authentication configurations parameters.
+--
+--     
+-- ruijieAuthenMethodListTable
+--        
+ruijieAuthenMethodListTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RuijieAuthenMethodListEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This table shows current configurations for each authentication
+            method-list, allows existing method-lists to be removed and new
+            ones to be created."
+        ::= { ruijieAuthenConfigObjects 1 }
+
+ruijieAuthenMethodListEntry OBJECT-TYPE
+        SYNTAX      RuijieAuthenMethodListEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The table of authentication method-list configuration identified
+            by its type and its name."
+        INDEX { ruijieAuthenMethodListType,
+                ruijieAuthenMethodListName }
+        ::= { ruijieAuthenMethodListTable 1}
+
+RuijieAuthenMethodListEntry ::=
+        SEQUENCE {
+            ruijieAuthenMethodListType        INTEGER,
+            ruijieAuthenMethodListName        DisplayString,
+            ruijieAuthenMethodListString      DisplayString,
+            ruijieAuthenMethodListRowStatus   RowStatus
+        }
+
+ruijieAuthenMethodListType OBJECT-TYPE
+        SYNTAX      INTEGER {
+                    login(1),   -- for logins.
+                    ppp(2),     -- for ppp.
+                    dot1x(3),   -- for IEEE 802.1x.
+                    enable(4),  -- for enable.
+                    web(5),     -- for inter portal.
+                    cmweb(6),   -- for cmweb.
+                    mt(7)       -- for mt.
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The variable denotes the authentication method-list used by 
+            the managed device with the AAA user corresponding to this entry
+            in the table."
+       ::= { ruijieAuthenMethodListEntry 1 }
+
+ruijieAuthenMethodListName OBJECT-TYPE
+       SYNTAX       DisplayString (SIZE (1..63))
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+           "A human readable string representing the name of authentication
+            method-list."
+       ::= { ruijieAuthenMethodListEntry 2 }
+
+ruijieAuthenMethodListString OBJECT-TYPE 
+       SYNTAX       DisplayString (SIZE (1..255))
+       MAX-ACCESS   read-create 
+       STATUS       current 
+       DESCRIPTION 
+           "A human readable string representing the corresponding
+            value of of authentication method-list. 
+            ie: group radius group tacacs+ local none
+            " 
+       ::= { ruijieAuthenMethodListEntry 3 } 
+
+ruijieAuthenMethodListRowStatus OBJECT-TYPE
+       SYNTAX       RowStatus
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "The status of this table entry.  Once the entry status is
+           set to active, the associated entry cannot be modified except
+           destroyed by setting this object to destroy(6)."
+       ::= { ruijieAuthenMethodListEntry 4 }
+
+--     
+-- Authorization configurations parameters.
+--
+--     
+-- ruijieAuthorMethodListTable
+--        
+ruijieAuthorMethodListTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RuijieAuthorMethodListEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This table shows current configurations for each authorization
+            method-list, allows existing method-lists to be removed and new
+            ones to be created."
+        ::= { ruijieAuthorConfigObjects 1 }
+
+ruijieAuthorMethodListEntry OBJECT-TYPE
+        SYNTAX      RuijieAuthorMethodListEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The table of authorization method-list configuration identified
+            by its type and its name."
+        INDEX { ruijieAuthorMethodListType,
+                ruijieAuthorMethodListName,
+                ruijieAuthorMethodListCmdLevel }
+        ::= { ruijieAuthorMethodListTable 1}
+
+RuijieAuthorMethodListEntry ::=
+        SEQUENCE {
+            ruijieAuthorMethodListType        INTEGER,
+            ruijieAuthorMethodListName        DisplayString,
+            ruijieAuthorMethodListCmdLevel    INTEGER,           
+            ruijieAuthorMethodListString      DisplayString,
+            ruijieAuthorMethodListRowStatus   RowStatus
+        }
+
+ruijieAuthorMethodListType OBJECT-TYPE
+        SYNTAX      INTEGER {
+                    exec(1),      -- for starting an exec (shell).
+                    command(2),   -- for exec (shell) commands.
+                    network(3)    -- for network services.
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The variable denotes the authorization method-list used by 
+            the managed device with the AAA user corresponding to this entry
+            in the table."
+       ::= { ruijieAuthorMethodListEntry 1 }
+
+ruijieAuthorMethodListName OBJECT-TYPE
+       SYNTAX       DisplayString (SIZE (1..63))
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+           "A human readable string representing the name of authorization
+            method-list."
+       ::= { ruijieAuthorMethodListEntry 2 }
+
+ruijieAuthorMethodListCmdLevel OBJECT-TYPE
+       SYNTAX       INTEGER (0..15)
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+           "The variable denotes the command level when the value of 
+           ruijieAuthorMethodListType is command(2). Otherwise, the value
+           must be zero."
+       ::= { ruijieAuthorMethodListEntry 3 }
+
+ruijieAuthorMethodListString OBJECT-TYPE 
+       SYNTAX       DisplayString (SIZE (1..255))
+       MAX-ACCESS   read-create 
+       STATUS       current 
+       DESCRIPTION 
+           "A human readable string representing the corresponding
+            value of of authentication method-list. 
+            ie: group radius group tacacs+ none
+            " 
+       ::= { ruijieAuthorMethodListEntry 4 } 
+
+ruijieAuthorMethodListRowStatus OBJECT-TYPE
+       SYNTAX       RowStatus
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "The status of this table entry.  Once the entry status is
+           set to active, the associated entry cannot be modified except
+           destroyed by setting this object to destroy(6)."
+       ::= { ruijieAuthorMethodListEntry 5 }
+
+--     
+-- Accounting configurations parameters.
+--
+--     
+-- ruijieAuthorMethodListTable
+--        
+ruijieAcctMethodListTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RuijieAcctMethodListEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This table shows current configurations for each accounting
+            method-list, allows existing method-lists to be removed and new
+            ones to be created."
+        ::= { ruijieAcctConfigObjects 1 }
+
+ruijieAcctMethodListEntry OBJECT-TYPE
+        SYNTAX      RuijieAcctMethodListEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The table of accounting method-list configuration identified
+            by its type and its name."
+        INDEX { ruijieAcctMethodListType,
+                ruijieAcctMethodListName,
+                ruijieAcctMethodListCmdLevel }
+        ::= { ruijieAcctMethodListTable 1}
+
+RuijieAcctMethodListEntry ::=
+        SEQUENCE {
+            ruijieAcctMethodListType        INTEGER,
+            ruijieAcctMethodListName        DisplayString,
+            ruijieAcctMethodListMode        INTEGER,
+            ruijieAcctMethodListCmdLevel    INTEGER,        
+            ruijieAcctMethodListString      DisplayString,
+            ruijieAcctMethodListRowStatus   RowStatus
+        }
+
+ruijieAcctMethodListType OBJECT-TYPE
+        SYNTAX      INTEGER {
+                    exec(1),      -- for starting an exec (shell).
+                    command(2),   -- for exec (shell) commands.
+                    network(3)    -- for network services.
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The variable denotes the accounting method-list used by 
+            the managed device with the AAA user corresponding to this entry
+            in the table."
+       ::= { ruijieAcctMethodListEntry 1 }
+
+ruijieAcctMethodListName OBJECT-TYPE
+       SYNTAX       DisplayString (SIZE (1..63))
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+           "A human readable string representing the name of accounting
+            method-list."
+       ::= { ruijieAcctMethodListEntry 2 }
+
+ruijieAcctMethodListMode OBJECT-TYPE
+        SYNTAX      INTEGER {
+                    start-stop(1),   -- record start and stop without waiting.
+                    stop-only(2)     -- record stop when service terminates.
+                    }
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "Set record start and stop without waiting or record stop when 
+           service terminates."
+       ::= { ruijieAcctMethodListEntry 3 }
+
+ruijieAcctMethodListCmdLevel OBJECT-TYPE
+       SYNTAX       INTEGER (0..15)
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+           "The variable denotes the command level when the value of 
+           ruijieAcctMethodListType is command(2). Otherwise, the value
+           must be zero."
+       ::= { ruijieAcctMethodListEntry 4 }
+
+ruijieAcctMethodListString OBJECT-TYPE 
+       SYNTAX       DisplayString (SIZE (1..255))
+       MAX-ACCESS   read-create 
+       STATUS       current 
+       DESCRIPTION 
+           "A human readable string representing the corresponding
+            value of of authentication method-list. 
+            ie: group radius group tacacs+ none
+            " 
+       ::= { ruijieAcctMethodListEntry 5 } 
+
+ruijieAcctMethodListRowStatus OBJECT-TYPE
+       SYNTAX       RowStatus
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "The status of this table entry.  Once the entry status is
+           set to active, the associated entry cannot be modified except
+           destroyed by setting this object to destroy(6)."
+       ::= { ruijieAcctMethodListEntry 6 }
+
+
+--     
+-- ruijieAAAServerGroupTable
+--        
+ruijieAAARadiusGroupTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RuijieAAARadiusGroupEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This table shows current group configurations for each
+            RADIUS server group, allows existing groups to be removed
+            and new ones to be created."
+        ::= { ruijieAAAServerObjects 10 }
+
+ruijieAAARadiusGroupEntry OBJECT-TYPE
+        SYNTAX      RuijieAAARadiusGroupEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The table of RADIUS server group configuration identified
+            by its protocol and its name."
+        INDEX { ruijieAAARadiusGroupName }
+        ::= { ruijieAAARadiusGroupTable 1}
+
+RuijieAAARadiusGroupEntry ::=
+        SEQUENCE {
+            ruijieAAARadiusGroupName            DisplayString,
+            ruijieAAARadiusGroupVrf             DisplayString,
+            ruijieAAARadiusGroupRowStatus       RowStatus
+        }
+
+ruijieAAARadiusGroupName OBJECT-TYPE
+       SYNTAX       DisplayString (SIZE (1..63))
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+           "A human readable string representing the name of RADIUS server
+            group."
+       ::= { ruijieAAARadiusGroupEntry 1 }
+
+ruijieAAARadiusGroupVrf OBJECT-TYPE
+       SYNTAX       DisplayString (SIZE (0..31))
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "The VPN Routing Forwarding to use with the servers."
+       DEFVAL { "" }
+       ::= { ruijieAAARadiusGroupEntry 2 }
+
+ruijieAAARadiusGroupRowStatus OBJECT-TYPE
+       SYNTAX       RowStatus
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "The status of this table entry.  Once the entry status is
+           set to active, the associated entry cannot be modified except
+           destroyed by setting this object to destroy(6)."
+       ::= { ruijieAAARadiusGroupEntry 3 }
+
+--     
+-- ruijieAAARadiusGroupServerTable
+--        
+ruijieAAARadiusGroupServerTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RuijieAAARadiusGroupServerEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This table shows current configurations for each
+            AAA server, allows existing servers to be removed
+            and new ones to be created."
+        ::= { ruijieAAAServerObjects 11 }
+
+ruijieAAARadiusGroupServerEntry OBJECT-TYPE
+        SYNTAX      RuijieAAARadiusGroupServerEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The table of AAA server configuration identified by its 
+            protocol and its index."
+        INDEX { ruijieAAARadiusGroupName,
+                ruijieAAARadiusGroupServerIndex }
+        ::= { ruijieAAARadiusGroupServerTable 1}
+
+RuijieAAARadiusGroupServerEntry ::=
+        SEQUENCE {
+            ruijieAAARadiusGroupServerIndex           Unsigned32,
+            ruijieAAARadiusGroupServerAddressType     InetAddressType,
+            ruijieAAARadiusGroupServerAddress         InetAddress,
+            ruijieAAARadiusGroupServerAuthPort        INTEGER,
+            ruijieAAARadiusGroupServerAcctPort        INTEGER,
+            ruijieAAARadiusGroupServerRowStatus       RowStatus
+        }
+
+ruijieAAARadiusGroupServerIndex OBJECT-TYPE
+       SYNTAX       Unsigned32 (1..4294967295)
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+           "A number uniquely identifying each RADIUS server. If the
+           ruijieAAARadiusGroupServerIndex value for row creation is already
+           in use by an existing entry, snmp set to the 
+           ruijieAAARadiusGroupServerIndex value will fail.
+           Upon reload, casIndex values may be changed."
+       ::= { ruijieAAARadiusGroupServerEntry 1 }
+
+ruijieAAARadiusGroupServerAddressType OBJECT-TYPE 
+       SYNTAX       InetAddressType 
+       MAX-ACCESS   read-create 
+       STATUS       current 
+       DESCRIPTION 
+           "The type of address format used for the 
+           ruijieAAARadiusGroupServerAddress object." 
+       ::= { ruijieAAARadiusGroupServerEntry 2 } 
+
+ruijieAAARadiusGroupServerAddress OBJECT-TYPE 
+       SYNTAX       InetAddress 
+       MAX-ACCESS   read-create 
+       STATUS       current 
+       DESCRIPTION 
+             "The IP address of the RADIUS server." 
+       ::= { ruijieAAARadiusGroupServerEntry 3 } 
+
+ruijieAAARadiusGroupServerAuthPort OBJECT-TYPE
+       SYNTAX      INTEGER (0..65535)
+       MAX-ACCESS  read-create
+       STATUS      current
+       DESCRIPTION
+             "UDP port used for authentication in the RADIUS server."
+       DEFVAL { 1812 }          
+       ::= { ruijieAAARadiusGroupServerEntry 4 }
+
+ruijieAAARadiusGroupServerAcctPort OBJECT-TYPE
+       SYNTAX       INTEGER (0..65535)
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+             "UDP port used for accounting service in the RADIUS server."
+       DEFVAL { 1813 }          
+       ::= { ruijieAAARadiusGroupServerEntry 5 }
+
+ruijieAAARadiusGroupServerRowStatus OBJECT-TYPE
+       SYNTAX       RowStatus
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "The status of this table entry.  Once the entry status is
+           set to active, the associated entry cannot be modified except
+           destroyed by setting this object to destroy(6)."
+       ::= { ruijieAAARadiusGroupServerEntry 6 }
+
+ruijieAAAServerTotalOnlineCount OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "All RADIUS Access-Accept packets received."
+        DEFVAL { 0 }
+        ::= { ruijieAAAServerObjects 12 }
+        
+ruijieAAAServerAbnormalOffline OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of offline users with abnormal terminate-cause."
+        DEFVAL { 0 }
+        ::= { ruijieAAAServerObjects 13 }
+
+ruijieAAAServerRadiusAuthReqCount OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of radius authention request send from device."
+        DEFVAL { 0 }
+        ::= { ruijieAAAServerObjects 14 }
+
+ruijieAAAServerRadiusAuthRespCount OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of radius authen response send from server."
+        DEFVAL { 0 }
+        ::= { ruijieAAAServerObjects 15 }
+
+ruijieAAAServerRadiusAuthSuccessCount OBJECT-TYPE
+        SYNTAX      Counter32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of radius authen success response send from server."
+        DEFVAL { 0 }
+        ::= { ruijieAAAServerObjects 16 }     
+
+ruijieAAAServerCurrOnlineUserCount OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of user online."
+        DEFVAL { 0 }
+        ::= { ruijieAAAServerObjects 17 }
+        
+--     
+-- ruijieAAAMasterAuthenServerConfigTable
+--        
+ruijieAAAMasterAuthenServerConfigTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RuijieAAAMasterAuthenServerConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This table shows current configurations for 
+            AAA Master authentication server, allows existing servers to be removed
+            and new ones to be created."
+        ::= { ruijieAAAServerObjects 18 }
+
+ruijieAAAMasterAuthenServerConfigEntry OBJECT-TYPE
+        SYNTAX      RuijieAAAMasterAuthenServerConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+             "The table of AAA Master authentication server configuration identified by its group name and its index."
+        INDEX { ruijieAAAMasterAuthenServerConfigGrpName,
+                ruijieAAAMasterAuthenServerConfigSrvIndex}
+        ::= { ruijieAAAMasterAuthenServerConfigTable 1}
+
+RuijieAAAMasterAuthenServerConfigEntry ::=
+        SEQUENCE {
+            ruijieAAAMasterAuthenServerConfigGrpName         DisplayString,
+            ruijieAAAMasterAuthenServerConfigSrvIndex        Unsigned32,
+            ruijieAAAMasterAuthenServerConfigAddress         IpAddress,
+            ruijieAAAMasterAuthenServerConfigAuthPort        INTEGER,
+            ruijieAAAMasterAuthenServerConfigAcctPort        INTEGER,
+            ruijieAAAMasterAuthenServerConfigKeyStr          DisplayString,
+            ruijieAAAMasterAuthenServerConfigRowStatus       RowStatus
+        }
+
+ruijieAAAMasterAuthenServerConfigGrpName OBJECT-TYPE
+       SYNTAX       DisplayString (SIZE (1..63))
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+            "The variable denotes the group name it belong to."
+       ::= { ruijieAAAMasterAuthenServerConfigEntry 1 }
+
+ruijieAAAMasterAuthenServerConfigSrvIndex OBJECT-TYPE
+       SYNTAX       Unsigned32 (1..4294967295)
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+           "A number uniquely identifying each server. 
+           If the ruijieAAAMasterAuthenServerConfigSrvIndex value for row creation is 
+           already in use by an existing entry, snmp set to the
+           ruijieAAAMasterAuthenServerConfigSrvIndex value will fail.
+           Upon reload, casIndex values may be changed."
+       ::= { ruijieAAAMasterAuthenServerConfigEntry 2 }
+       
+ruijieAAAMasterAuthenServerConfigAddress OBJECT-TYPE 
+       SYNTAX       IpAddress 
+       MAX-ACCESS   read-create 
+       STATUS       current 
+       DESCRIPTION 
+             "The IP address of the server." 
+       ::= { ruijieAAAMasterAuthenServerConfigEntry 3 } 
+
+ruijieAAAMasterAuthenServerConfigAuthPort OBJECT-TYPE
+       SYNTAX      INTEGER (0..65535)
+       MAX-ACCESS  read-create
+       STATUS      current
+       DESCRIPTION
+             "UDP/TCP port used for authentication in the server.
+             For RADIUS, default value is 1812."
+       ::= { ruijieAAAMasterAuthenServerConfigEntry 4 }
+
+ruijieAAAMasterAuthenServerConfigAcctPort OBJECT-TYPE
+       SYNTAX       INTEGER (0..65535)
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+             "UDP/TCP port used for accounting service in the server.
+             For RADIUS, default value is 1813."
+       ::= { ruijieAAAMasterAuthenServerConfigEntry 5 }
+
+ruijieAAAMasterAuthenServerConfigKeyStr OBJECT-TYPE
+       SYNTAX       DisplayString (SIZE (0..255))
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "The server key to be used with this server.
+           Retrieving the value of this object via SNMP will return an
+           empty string for security reasons."
+       DEFVAL { "" }
+       ::= { ruijieAAAMasterAuthenServerConfigEntry 6 }
+
+ruijieAAAMasterAuthenServerConfigRowStatus OBJECT-TYPE
+       SYNTAX       RowStatus
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "The status of this table entry.  Once the entry status is
+           set to active, the associated entry cannot be modified except
+           destroyed by setting this object to destroy(6)."
+       ::= { ruijieAAAMasterAuthenServerConfigEntry 7 }
+
+--     
+-- ruijieAAABackAuthenServerConfigTable
+--        
+ruijieAAABackAuthenServerConfigTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RuijieAAABackAuthenServerConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This table shows current configurations for 
+            AAA Back Authentication server, allows existing servers to be removed
+            and new ones to be created."
+        ::= { ruijieAAAServerObjects 19 }
+
+ruijieAAABackAuthenServerConfigEntry OBJECT-TYPE
+        SYNTAX      RuijieAAABackAuthenServerConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The table of AAA Back Authentication server configuration identified by its group name and its index."
+        INDEX { ruijieAAABackAuthenServerConfigGrpName,
+                ruijieAAABackAuthenServerConfigSrvIndex }
+        ::= { ruijieAAABackAuthenServerConfigTable 1}
+
+RuijieAAABackAuthenServerConfigEntry ::=
+        SEQUENCE {
+            ruijieAAABackAuthenServerConfigGrpName         DisplayString,
+            ruijieAAABackAuthenServerConfigSrvIndex        Unsigned32,
+            ruijieAAABackAuthenServerConfigAddress         IpAddress,
+            ruijieAAABackAuthenServerConfigAuthPort        INTEGER,
+            ruijieAAABackAuthenServerConfigAcctPort        INTEGER,
+            ruijieAAABackAuthenServerConfigKeyStr          DisplayString,
+            ruijieAAABackAuthenServerConfigRowStatus       RowStatus
+        }
+
+ruijieAAABackAuthenServerConfigGrpName OBJECT-TYPE
+       SYNTAX       DisplayString (SIZE (1..63))
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+            "The variable denotes the group name the server belong to."
+       ::= { ruijieAAABackAuthenServerConfigEntry 1 }
+
+ruijieAAABackAuthenServerConfigSrvIndex OBJECT-TYPE
+       SYNTAX       Unsigned32 (1..4294967295)
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+           "A number uniquely identifying each server. 
+           If the ruijieAAABackAuthenServerConfigSrvIndex value for row creation is 
+           already in use by an existing entry, snmp set to the
+           ruijieAAABackAuthenServerConfigSrvIndex value will fail.
+           Upon reload, casIndex values may be changed."
+       ::= { ruijieAAABackAuthenServerConfigEntry 2 }
+       
+ruijieAAABackAuthenServerConfigAddress OBJECT-TYPE 
+       SYNTAX       IpAddress 
+       MAX-ACCESS   read-create 
+       STATUS       current 
+       DESCRIPTION 
+             "The IP address of the server." 
+       ::= { ruijieAAABackAuthenServerConfigEntry 3 } 
+
+ruijieAAABackAuthenServerConfigAuthPort OBJECT-TYPE
+       SYNTAX      INTEGER (0..65535)
+       MAX-ACCESS  read-create
+       STATUS      current
+       DESCRIPTION
+             "UDP/TCP port used for authentication in the server.
+             For RADIUS, default value is 1812."
+       ::= { ruijieAAABackAuthenServerConfigEntry 4 }
+
+ruijieAAABackAuthenServerConfigAcctPort OBJECT-TYPE
+       SYNTAX       INTEGER (0..65535)
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+             "UDP/TCP port used for accounting service in the server.
+             For RADIUS, default value is 1813."
+       ::= { ruijieAAABackAuthenServerConfigEntry 5 }
+
+ruijieAAABackAuthenServerConfigKeyStr OBJECT-TYPE
+       SYNTAX       DisplayString (SIZE (0..255))
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "The server key to be used with this server.
+           Retrieving the value of this object via SNMP will return an
+           empty string for security reasons."
+       DEFVAL { "" }
+       ::= { ruijieAAABackAuthenServerConfigEntry 6 }
+
+ruijieAAABackAuthenServerConfigRowStatus OBJECT-TYPE
+       SYNTAX       RowStatus
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "The status of this table entry.  Once the entry status is
+           set to active, the associated entry cannot be modified except
+           destroyed by setting this object to destroy(6)."
+       ::= { ruijieAAABackAuthenServerConfigEntry 7 }
+
+--     
+-- ruijieAAAMasterAcctServerConfigTable
+--        
+ruijieAAAMasterAcctServerConfigTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RuijieAAAMasterAcctServerConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This table shows current configurations for 
+            AAA Master Accounting server, allows existing servers to be removed
+            and new ones to be created."
+        ::= { ruijieAAAServerObjects 20 }
+
+ruijieAAAMasterAcctServerConfigEntry OBJECT-TYPE
+        SYNTAX      RuijieAAAMasterAcctServerConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The table of AAA Master Accounting server configuration identified by its 
+            group name and its index."
+        INDEX { ruijieAAAMasterAcctServerConfigGrpName, 
+                ruijieAAAMasterAcctServerConfigSrvIndex}
+        ::= { ruijieAAAMasterAcctServerConfigTable 1}
+
+RuijieAAAMasterAcctServerConfigEntry ::=
+        SEQUENCE {
+            ruijieAAAMasterAcctServerConfigGrpName         DisplayString,
+            ruijieAAAMasterAcctServerConfigSrvIndex        Unsigned32,
+            ruijieAAAMasterAcctServerConfigAddress         IpAddress,
+            ruijieAAAMasterAcctServerConfigAuthPort        INTEGER,
+            ruijieAAAMasterAcctServerConfigAcctPort        INTEGER,
+            ruijieAAAMasterAcctServerConfigKeyStr          DisplayString,
+            ruijieAAAMasterAcctServerConfigRowStatus       RowStatus
+        }
+
+ruijieAAAMasterAcctServerConfigGrpName OBJECT-TYPE
+        SYNTAX       DisplayString (SIZE (1..63))
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "The variable denotes the group name it belong to.."
+            ::= { ruijieAAAMasterAcctServerConfigEntry 1 }
+            
+ruijieAAAMasterAcctServerConfigSrvIndex OBJECT-TYPE
+       SYNTAX       Unsigned32 (1..4294967295)
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+           "A number uniquely identifying each server. 
+           If the ruijieAAAMasterAcctServerConfigSrvIndex value for row creation is 
+           already in use by an existing entry, snmp set to the
+           ruijieAAAMasterAcctServerConfigSrvIndex value will fail.
+           Upon reload, casIndex values may be changed."
+       ::= { ruijieAAAMasterAcctServerConfigEntry 2 }
+
+ruijieAAAMasterAcctServerConfigAddress OBJECT-TYPE 
+       SYNTAX       IpAddress 
+       MAX-ACCESS   read-create 
+       STATUS       current 
+       DESCRIPTION 
+             "The IP address of the server." 
+       ::= { ruijieAAAMasterAcctServerConfigEntry 3 } 
+
+ruijieAAAMasterAcctServerConfigAuthPort OBJECT-TYPE
+       SYNTAX      INTEGER (0..65535)
+       MAX-ACCESS  read-create
+       STATUS      current
+       DESCRIPTION
+             "UDP/TCP port used for authentication in the server.
+             For RADIUS, default value is 1812."
+       ::= { ruijieAAAMasterAcctServerConfigEntry 4 }
+
+ruijieAAAMasterAcctServerConfigAcctPort OBJECT-TYPE
+       SYNTAX       INTEGER (0..65535)
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+             "UDP/TCP port used for accounting service in the server.
+             For RADIUS, default value is 1813."
+       ::= { ruijieAAAMasterAcctServerConfigEntry 5 }
+
+ruijieAAAMasterAcctServerConfigKeyStr OBJECT-TYPE
+       SYNTAX       DisplayString (SIZE (0..255))
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "The server key to be used with this server.
+           Retrieving the value of this object via SNMP will return an
+           empty string for security reasons."
+       DEFVAL { "" }
+       ::= { ruijieAAAMasterAcctServerConfigEntry 6 }
+
+ruijieAAAMasterAcctServerConfigRowStatus OBJECT-TYPE
+       SYNTAX       RowStatus
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "The status of this table entry.  Once the entry status is
+           set to active, the associated entry cannot be modified except
+           destroyed by setting this object to destroy(6)."
+       ::= { ruijieAAAMasterAcctServerConfigEntry 7 }
+
+--     
+-- ruijieAAABackAcctServerConfigTable
+--        
+ruijieAAABackAcctServerConfigTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RuijieAAABackAcctServerConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This table shows current configurations for 
+            AAA Back Accounting server, allows existing servers to be removed
+            and new ones to be created."
+        ::= { ruijieAAAServerObjects 21 }
+
+ruijieAAABackAcctServerConfigEntry OBJECT-TYPE
+        SYNTAX      RuijieAAABackAcctServerConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The table of AAA Back Accounting server configuration identified by its 
+            group name and its index."
+        INDEX { ruijieAAABackAcctServerConfigGrpName,
+                ruijieAAABackAcctServerConfigSrvIndex }
+        ::= { ruijieAAABackAcctServerConfigTable 1}
+
+RuijieAAABackAcctServerConfigEntry ::=
+        SEQUENCE {
+            ruijieAAABackAcctServerConfigGrpName         DisplayString,
+            ruijieAAABackAcctServerConfigSrvIndex        Unsigned32,
+            ruijieAAABackAcctServerConfigAddress         IpAddress,
+            ruijieAAABackAcctServerConfigAuthPort        INTEGER,
+            ruijieAAABackAcctServerConfigAcctPort        INTEGER,
+            ruijieAAABackAcctServerConfigKeyStr          DisplayString,
+            ruijieAAABackAcctServerConfigRowStatus       RowStatus
+        }
+
+ruijieAAABackAcctServerConfigGrpName OBJECT-TYPE
+        SYNTAX       DisplayString (SIZE (1..63))
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "The variable denotes the group name the server belong to."
+        ::= { ruijieAAABackAcctServerConfigEntry 1 }
+
+ruijieAAABackAcctServerConfigSrvIndex OBJECT-TYPE
+       SYNTAX       Unsigned32 (1..4294967295)
+       MAX-ACCESS   not-accessible
+       STATUS       current
+       DESCRIPTION
+           "A number uniquely identifying each server. 
+           If the ruijieAAABackAcctServerConfigSrvIndex value for row creation is 
+           already in use by an existing entry, snmp set to the
+           ruijieAAABackAcctServerConfigSrvIndex value will fail.
+           Upon reload, casIndex values may be changed."
+       ::= { ruijieAAABackAcctServerConfigEntry 2 }
+
+ruijieAAABackAcctServerConfigAddress OBJECT-TYPE 
+       SYNTAX       IpAddress 
+       MAX-ACCESS   read-create 
+       STATUS       current 
+       DESCRIPTION 
+             "The IP address of the server." 
+       ::= { ruijieAAABackAcctServerConfigEntry 3 } 
+
+ruijieAAABackAcctServerConfigAuthPort OBJECT-TYPE
+       SYNTAX      INTEGER (0..65535)
+       MAX-ACCESS  read-create
+       STATUS      current
+       DESCRIPTION
+             "UDP/TCP port used for authentication in the server.
+             For RADIUS, default value is 1812."
+       ::= { ruijieAAABackAcctServerConfigEntry 4 }
+
+ruijieAAABackAcctServerConfigAcctPort OBJECT-TYPE
+       SYNTAX       INTEGER (0..65535)
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+             "UDP/TCP port used for accounting service in the server.
+             For RADIUS, default value is 1813."
+       ::= { ruijieAAABackAcctServerConfigEntry 5 }
+
+ruijieAAABackAcctServerConfigKeyStr OBJECT-TYPE
+       SYNTAX       DisplayString (SIZE (0..255))
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "The server key to be used with this server.
+           Retrieving the value of this object via SNMP will return an
+           empty string for security reasons."
+       DEFVAL { "" }
+       ::= { ruijieAAABackAcctServerConfigEntry 6 }
+
+ruijieAAABackAcctServerConfigRowStatus OBJECT-TYPE
+       SYNTAX       RowStatus
+       MAX-ACCESS   read-create
+       STATUS       current
+       DESCRIPTION
+           "The status of this table entry.  Once the entry status is
+           set to active, the associated entry cannot be modified except
+           destroyed by setting this object to destroy(6)."
+       ::= { ruijieAAABackAcctServerConfigEntry 7 } 
+       
+ruijieAAAServerTotalAuthUserCount OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The total number of users who send authentication request."
+        DEFVAL { 0 }
+        ::= { ruijieAAAServerObjects 22 }  
+        
+ ruijieAAAServerAuthSuccUserCount OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of users who pass authentication."
+        DEFVAL { 0 }
+        ::= { ruijieAAAServerObjects 23 }
+
+ruijieAAAServerDot1xOnlineUserCount OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of dot1x user online."
+        DEFVAL { 0 }
+        ::= { ruijieAAAServerObjects 24 }
+
+ruijieAAAServerMacOnlineUserCount OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of mac user online."
+        DEFVAL { 0 }
+        ::= { ruijieAAAServerObjects 25 }
+
+ruijieAAAServerWebOnlineUserCount OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of web user online."
+        DEFVAL { 0 }
+        ::= { ruijieAAAServerObjects 26 }
+
+ruijieAAAServerTatalOnlineUserCount OBJECT-TYPE
+        SYNTAX      Integer32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The tatal number of user online."
+        DEFVAL { 0 }
+        ::= { ruijieAAAServerObjects 27 }
+
+--
+-- ruijieAAAServerIfOnlineUserTable
+--
+ruijieAAAServerIfOnlineUserTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RuijieAAAServerIfOnlineUserEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This table shows current dot1x mac and web user online on 
+            the interface." 
+        ::= { ruijieAAAServerObjects 28 } 
+
+ruijieAAAServerIfOnlineUserEntry OBJECT-TYPE
+        SYNTAX      RuijieAAAServerIfOnlineUserEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The table of AAA Server If Online User identified by if 
+            index."
+        INDEX { ruijieAAAServerIfOnlineUserIfIndex}
+        ::= { ruijieAAAServerIfOnlineUserTable 1 }
+RuijieAAAServerIfOnlineUserEntry ::=
+        SEQUENCE {
+            ruijieAAAServerIfOnlineUserIfIndex                Unsigned32,
+            ruijieAAAServerIfOnlineUserDot1xCount             Unsigned32,
+            ruijieAAAServerIfOnlineUserWebCount               Unsigned32,
+            ruijieAAAServerIfOnlineUserMacCount               Unsigned32,
+            ruijieAAAServerIfOnlineUserTotalCount             Unsigned32
+        }
+
+ruijieAAAServerIfOnlineUserIfIndex OBJECT-TYPE
+        SYNTAX       Unsigned32 (1..4294967295)
+        MAX-ACCESS   not-accessible
+        STATUS       current
+        DESCRIPTION
+            "The variable denotes the interface index the user on."
+        ::= { ruijieAAAServerIfOnlineUserEntry 1 }
+
+ruijieAAAServerIfOnlineUserDot1xCount OBJECT-TYPE
+        SYNTAX       Unsigned32 (1..4294967295)
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "Dot1x user online count on this interface."
+        ::= { ruijieAAAServerIfOnlineUserEntry 2 }
+
+ruijieAAAServerIfOnlineUserWebCount OBJECT-TYPE
+        SYNTAX       Unsigned32 (1..4294967295)
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "Web user online count on this interface."
+        ::= { ruijieAAAServerIfOnlineUserEntry 3 }
+
+ruijieAAAServerIfOnlineUserMacCount OBJECT-TYPE
+        SYNTAX       Unsigned32 (1..4294967295)
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "Mac user online count on this interface."
+        ::= { ruijieAAAServerIfOnlineUserEntry 4 }
+
+ruijieAAAServerIfOnlineUserTotalCount OBJECT-TYPE
+        SYNTAX       Unsigned32 (1..4294967295)
+        MAX-ACCESS   read-only
+        STATUS       current
+        DESCRIPTION
+            "Web mac and 1x total online count on this interface."
+        ::= { ruijieAAAServerIfOnlineUserEntry 5 }
+
+--     
+-- AAA user apply parameters.
+--
+ruijieAAAUserApplyObjects  OBJECT IDENTIFIER ::=  { ruijieAAAMIBObjects 7 }
+ruijieAAADo1xApplyObjects  OBJECT IDENTIFIER ::=  { ruijieAAAUserApplyObjects 1 }
+
+--     
+-- AAA dot1x apply settings.
+--
+ruijieDot1xAuthenMethodList OBJECT-TYPE
+       SYNTAX       DisplayString (SIZE (1..63))
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+           "A human readable string representing the name of 802.1x
+           authentication method-list."
+       DEFVAL { "" }
+       ::= { ruijieAAADo1xApplyObjects 1 }
+
+ruijieDot1xAuthorMethodList OBJECT-TYPE
+       SYNTAX       DisplayString (SIZE (1..63))
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+           "A human readable string representing the name of 802.1x
+           authorization method-list."
+       DEFVAL { "" }
+       ::= { ruijieAAADo1xApplyObjects 2 } 
+
+ruijieDot1xAcctMethodList OBJECT-TYPE
+       SYNTAX       DisplayString (SIZE (1..63))
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+           "A human readable string representing the name of 802.1x
+           accounting method-list."
+       DEFVAL { "" }
+       ::= { ruijieAAADo1xApplyObjects 3 } 
+
+---
+---AS Server IP configure 
+---
+
+ruijieRdASObjects OBJECT IDENTIFIER ::=  { ruijieAAAMIBObjects 8 }
+
+ruijieRdASipInetAddreType OBJECT-TYPE
+        SYNTAX InetAddressType
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            "The type of address format used for the 
+             ruijieRdASipInetAddreType object." 
+        ::= { ruijieRdASObjects 1 }   
+
+ruijieRdASipInsetAddres OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+            "The IP address of the AS server." 
+        ::= { ruijieRdASObjects 2 }   
+
+
+---
+---Radius Auth and Acc Traps
+---
+-- All trap definitions should be placed under this object.
+ruijieRadiusServerTrap OBJECT IDENTIFIER ::= { ruijieAAAMIB 0 }
+
+ruijieRadiusAuthServerDownTrap NOTIFICATION-TYPE
+   OBJECTS { 
+            radiusAuthServerAddress,
+          radiusAuthClientServerPortNumber }
+   STATUS      current
+   DESCRIPTION
+        "This trap is generated when the Authentication Radius server
+       doesn't respond client's requests for specified times."
+   ::= { ruijieRadiusServerTrap 1 }
+
+ruijieRadiusAccServerDownTrap NOTIFICATION-TYPE
+   OBJECTS { 
+            radiusAccServerAddress,
+        radiusAccClientServerPortNumber }
+   STATUS      current
+   DESCRIPTION
+        "This trap is generated when the Accounting Radius server
+         doesn't respond client's requests for specified times."
+   ::= { ruijieRadiusServerTrap 2 }
+
+ruijieRadiusAuthServerRecoverTrap NOTIFICATION-TYPE
+   OBJECTS { 
+            radiusAuthServerAddress,
+          radiusAuthClientServerPortNumber }
+   STATUS      current
+   DESCRIPTION
+        "This trap is generated when the Authentication Radius server
+       recover from the down status."
+   ::= { ruijieRadiusServerTrap 3 }
+
+ruijieRadiusAccServerRecoverTrap NOTIFICATION-TYPE
+   OBJECTS { 
+            radiusAccServerAddress,
+        radiusAccClientServerPortNumber }
+   STATUS      current
+   DESCRIPTION
+        "This trap is generated when the Accounting Radius server
+         recover from the down status."
+   ::= { ruijieRadiusServerTrap 4 }
+
+ruijieAAAMIBConformance OBJECT IDENTIFIER ::= { ruijieAAAMIB 2 }
+ruijieAAAMIBCompliances OBJECT IDENTIFIER ::= { ruijieAAAMIBConformance 1 }
+ruijieAAAMIBGroups      OBJECT IDENTIFIER ::= { ruijieAAAMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieAAAMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Raisecom AAA MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { 
+                        ruijieDot1xAuthMIBGroup,
+                        ruijieAAAServerMIBGroup,
+                        ruijieAuthAddrMIBGroup,
+                        ruijieAuthModeMIBGroup,
+                        ruijieAAAConfigMIBGroup,
+                        ruijieAAAUserApplyMIBGroup,
+                        ruijieRdASGroup
+                 }
+                 GROUP      ruijieClientProbeGroup
+                 DESCRIPTION
+                     "This group is mandatory only for those system which support client 
+                      probe function."          
+ 
+         ::= { ruijieAAAMIBCompliances 1 }
+                
+-- units of conformance
+
+ruijieDot1xAuthMIBGroup OBJECT-GROUP
+        OBJECTS {
+           ruijieDot1xAuthStatus,
+           ruijieDot1xAuthObjectsQuietPeriod,
+           ruijieDot1xAuthObjectsTxPeriod,
+           ruijieDot1xAuthObjectsSuppTimeout,
+           ruijieDot1xAuthObjectsServerTimeout,
+           ruijieDot1xAuthObjectsMaxReq,
+           ruijieDot1xAuthObjectsReAuthPeriod,
+           ruijieDot1xAuthObjectsReAuthEnable,
+           ruijieDot1xAuthObjectsConfigFdbId,
+           ruijieDot1xAuthObjectsConfigAddr,
+           ruijieDot1xAuthObjectsPaeState,
+           ruijieDot1xAuthObjectsBackendAuthState,
+           ruijieDot1xAuthObjectsAuthControlledPortStatus,
+           ruijieDot1xAuthObjectsKeyTxEnabled,           
+           ruijieDot1xAuthObjectsIfIndex, 
+           ruijieDot1xAuthObjectsStatsFdbId,
+           ruijieDot1xAuthObjectsStatsAddr,
+           ruijieDot1xAuthObjectsEapolFramesRx,
+           ruijieDot1xAuthObjectsEapolFramesTx,
+           ruijieDot1xAuthObjectsEapolRuijieFramesRx,
+           ruijieDot1xAuthObjectsEapolLogoffFramesRx,
+           ruijieDot1xAuthObjectsEapolRespIdFramesRx,
+           ruijieDot1xAuthObjectsEapolRespFramesRx,
+           ruijieDot1xAuthObjectsEapolReqIdFramesTx,
+           ruijieDot1xAuthObjectsEapolReqFramesTx,
+           ruijieDot1xAuthObjectsInvalidEapolFramesRx,
+           ruijieDot1xAuthObjectsEapLengthErrorFramesRx,
+           ruijieDot1xAuthObjectsLastEapolFrameVersion,
+           ruijieDot1xAuthObjectsLastEapolFrameSource,
+           ruijieDot1xCurrentUserNumber,
+           ruijieDot1xCurrentAuthenticatedUserNumber,
+           ruijieDot1xAuthObjectsMaxReauth,
+           ruijieAuthIf,           
+           ruijieAuthIfStatus,
+           ruijieAuthenticationMode,
+           ruijieDot1xPseudoSrcmac,
+           ruijieDot1xAbnormalOfflineUserCount,
+           ruijieDot1xTotalAuthUserCount,
+           ruijieDot1xAuthSuccUserCount,
+           ruijieDot1xAuthFailUserCount
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing dot1x  authentication managment."
+        ::= { ruijieAAAMIBGroups 1 }
+
+        
+ruijieAAAServerMIBGroup OBJECT-GROUP
+        OBJECTS {
+           ruijieAAAServerAuthPort,
+           ruijieAAAServerAcctPort,
+           ruijieAAAServerRadiusKeyStr,
+           ruijieAAAServerTacplusKeyStr,
+           ruijieAAAServerConfigAddressType,
+           ruijieAAAServerConfigAddress,
+           ruijieAAAServerConfigAuthPort,
+           ruijieAAAServerConfigAcctPort,
+           ruijieAAAServerConfigKeyStr,
+           ruijieAAAServerConfigRowStatus
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing AAA server managment."
+        ::= { ruijieAAAMIBGroups 2 }
+
+ruijieAuthAddrMIBGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieAuthMacAddress,
+            ruijieAuthPort,   
+            ruijieAuthAddrStatus,
+            ruijieAuthUserFdbId,
+            ruijieAuthUserMacAddress,            
+            ruijieAuthUserName,
+            ruijieAuthUserSessionId,
+            ruijieAuthUserIpAddr,
+            ruijieAuthUserPort, 
+            ruijieAuthUserStatus
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing  address permitted authentication managment."
+        ::= { ruijieAAAMIBGroups 3 } 
+
+ruijieAuthModeMIBGroup OBJECT-GROUP
+        OBJECTS {
+                ruijieIpAuthorizationMode                
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing  authentication mode managment."
+        ::= { ruijieAAAMIBGroups 4 }  
+        
+ruijieClientProbeGroup OBJECT-GROUP
+        OBJECTS {
+                ruijieClientProbeEnabledStatus,
+                ruijieClientProbeHelloInterval,
+                ruijieClientProbeAliveInteval                
+                }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing  client probe management."
+        ::= { ruijieAAAMIBGroups 5 }  
+
+ruijieAAAConfigMIBGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieAuthenMethodListType,
+            ruijieAuthenMethodListName,
+            ruijieAuthenMethodListString,
+            ruijieAuthenMethodListRowStatus,
+            ruijieAuthorMethodListType,
+            ruijieAuthorMethodListName,
+            ruijieAuthorMethodListCmdLevel,
+            ruijieAuthorMethodListString,
+            ruijieAuthorMethodListRowStatus,
+            ruijieAcctMethodListType,
+            ruijieAcctMethodListName,
+            ruijieAcctMethodListMode,
+            ruijieAcctMethodListCmdLevel,
+            ruijieAcctMethodListString,
+            ruijieAcctMethodListRowStatus,
+            ruijieAAARadiusGroupName,
+            ruijieAAARadiusGroupVrf,
+            ruijieAAARadiusGroupRowStatus,
+            ruijieAAARadiusGroupServerAddressType,
+            ruijieAAARadiusGroupServerAddress,
+            ruijieAAARadiusGroupServerAuthPort,
+            ruijieAAARadiusGroupServerAcctPort,
+            ruijieAAARadiusGroupServerRowStatus
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing AAA configuration managment."
+        ::= { ruijieAAAMIBGroups 6 }
+                
+ruijieAAAUserApplyMIBGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieDot1xAuthenMethodList,
+            ruijieDot1xAuthorMethodList,
+            ruijieDot1xAcctMethodList
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing AAA user apply managment."
+        ::= { ruijieAAAMIBGroups 7 }        
+
+ruijieRdASGroup OBJECT-GROUP
+        OBJECTS {
+                ruijieRdASipInetAddreType,
+                ruijieRdASipInsetAddres              
+                }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing Radius AS management."
+        ::= { ruijieAAAMIBGroups 8 }          
+                
+END

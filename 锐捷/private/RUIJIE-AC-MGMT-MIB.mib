@@ -14,7 +14,8 @@ IMPORTS
         MODULE-IDENTITY,
         NOTIFICATION-TYPE,
         TimeTicks,
-        Counter32
+        Counter32,
+		Counter64
                 FROM SNMPv2-SMI
         MacAddress,
         TruthValue,
@@ -485,7 +486,12 @@ ruijieAcType  OBJECT-TYPE
         ws6816(8),
         m18000-WS-ED(9),
         m8600E-WS-ED(10),
-        eg2000(11)
+        eg2000(11),
+        ws6008(12),
+        ws6812(13),
+        aw608(14),
+        ws6024(15),
+        eg350(16)
     }
     MAX-ACCESS  read-only
     STATUS  current
@@ -634,7 +640,7 @@ ruijieAcFlowBlGroupTable OBJECT-TYPE
     DESCRIPTION
             "The flow balance group table"
     ::= { ruijieAcMgmtAc 48 }
-
+	
 ruijieAcFlowBlGroupEntry OBJECT-TYPE
     SYNTAX  RuijieAcFlowBlGroupEntry
     MAX-ACCESS  not-accessible
@@ -1185,7 +1191,143 @@ ruijieAcWepPskStaAbnormalDownTimes  OBJECT-TYPE
     DESCRIPTION
             "The times WEP/PSK client is abnormaly offline."
     ::= { ruijieAcMgmtAc 77} 
+    
+ruijieAcPriorStaTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieAcPriorStaEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The prior sta table"
+    ::= { ruijieAcMgmtAc 78 }
 
+ruijieAcMicroAPUpDownCtrl  OBJECT-TYPE
+    SYNTAX  INTEGER (0..1)
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The Micro AP Up/Down trap control
+                0 - off
+                1 - on."
+    ::= { ruijieAcMgmtAc 79}
+ruijieAcPriorStaEntry OBJECT-TYPE
+    SYNTAX  RuijieAcPriorStaEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Get and set prior sta mac."
+    INDEX   { ruijieAcPriorStaMac }
+    ::= { ruijieAcPriorStaTable 1 }
+
+RuijieAcPriorStaEntry ::=
+    SEQUENCE {
+        ruijieAcPriorStaMac                MacAddress,
+        ruijieAcPriorStaRowStatus          RowStatus
+    }
+    
+ruijieAcPriorStaMac  OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The prior sta mac."
+    ::= { ruijieAcPriorStaEntry 1}
+    
+ruijieAcPriorStaRowStatus OBJECT-TYPE
+    SYNTAX     RowStatus 
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+         "Used to add or del prior sta."
+    ::= { ruijieAcPriorStaEntry 2}
+
+ruijieAcOfflineApNum OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Offline ap num in this ac."
+    ::= { ruijieAcMgmtAc 80 }
+
+ruijieAcTotalApNum OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total ap num in this ac."
+    ::= { ruijieAcMgmtAc 81 }
+
+ruijieAcTotalMicrolApNum OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total microl ap num in this ac."
+    ::= { ruijieAcMgmtAc 82 }
+
+ruijieAcOnlineMicrolApNum OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total online microl ap num in this ac."
+    ::= { ruijieAcMgmtAc 83 }
+
+ruijieAcOfflineMicrolApNum OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total offline microl ap num in this ac."
+    ::= { ruijieAcMgmtAc 84 }
+
+ruijieAcStaLinkTimes OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total sta link times in this ac of one day."
+    ::= { ruijieAcMgmtAc 85 }
+
+ruijieAcStaLinkSuccessTimes OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total sta link success times in this ac of one day."
+    ::= { ruijieAcMgmtAc 86 }
+	
+ruijieAcStaLinkFailTimes OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total sta link fail times in this ac of one day."
+    ::= { ruijieAcMgmtAc 87 }
+	
+ruijieAcStaAuthTimes OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total sta auth times in this ac of one day."
+    ::= { ruijieAcMgmtAc 88 }
+	
+ruijieAcStaAuthSuccessTimes OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total sta auth success times in this ac of one day."
+    ::= { ruijieAcMgmtAc 89 }
+	
+ruijieAcStaAuthFailTimes OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total sta auth fail times in this ac of one day."
+    ::= { ruijieAcMgmtAc 90 }
+	
 --********************************************************************
 --                                                                  **
 --                  AP nodes                                        **
@@ -1268,7 +1410,18 @@ RuijieApCfgEntry ::=
         ruijieApIpv6PrefixLen           INTEGER,
         ruijieApIpv6Type                INTEGER,
         ruijieApIpv6Gateway             DisplayString,
-        ruijieApIpv6StaNum              INTEGER
+        ruijieApIpv6StaNum              INTEGER,
+        ruijieApMacAddrColon            DisplayString,
+        ruijieApMacAddrLine             DisplayString,
+        ruijieApMacAddrDot              DisplayString,
+		ruijieApEchoRequestCnt          Counter32,
+        ruijieApEchoResponseDropCnt     Counter32,
+        ruijieApEchoDelayTimeMS         INTEGER,
+		ruijieApIsIsharePlus            INTEGER,
+		ruijieApTotalMicrolApNum        INTEGER,
+		ruijieApOnlineMicrolApNum       INTEGER,
+		ruijieApOfflineMicrolApNum      INTEGER,
+		ruijieApStateTime               DisplayString
     }
 
 ruijieApMacAddr  OBJECT-TYPE
@@ -1816,6 +1969,95 @@ ruijieApIpv6StaNum OBJECT-TYPE
     DESCRIPTION
             "This object represents ipv6 Sta Num attach to the AP."
     ::= { ruijieApCfgEntry 59 }
+
+ruijieApMacAddrColon OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (17..17))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The AP's ethernet mac address separated by the colon character, format: XX:XX:XX:XX:XX:XX"
+    ::= { ruijieApCfgEntry 60 }
+
+ruijieApMacAddrLine OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (17..17))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The AP's ethernet mac address separated by the line character, format: XX-XX-XX-XX-XX-XX"
+    ::= { ruijieApCfgEntry 61 }
+
+ruijieApMacAddrDot OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (14..14))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The AP's ethernet mac address separated by the dot character, format: xxxx.xxxx.xxxx"
+    ::= { ruijieApCfgEntry 62 }
+	
+ruijieApEchoRequestCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This object represents echo request Num from the AP."
+    ::= { ruijieApCfgEntry 63 }
+ 
+ruijieApEchoResponseDropCnt OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This object represents echo response drop Num from the AP."
+    ::= { ruijieApCfgEntry 64 }
+    
+ruijieApEchoDelayTimeMS OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "This object represents echo delay time from the AP."
+    ::= { ruijieApCfgEntry 65 }
+    
+ruijieApIsIsharePlus OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The AP is or not IsharePlus."
+    ::= { ruijieApCfgEntry 66 }
+    
+ruijieApTotalMicrolApNum OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The total microl Ap number."
+    ::= { ruijieApCfgEntry 67 }
+    
+ruijieApOnlineMicrolApNum OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The online microl Ap number."
+    ::= { ruijieApCfgEntry 68 }
+    
+ruijieApOfflineMicrolApNum OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The offline microl Ap number."
+    ::= { ruijieApCfgEntry 69 }
+    
+ruijieApStateTime OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The time of AP state transition, format: YYYY-MM-DD hh:mm:ss."
+    ::= { ruijieApCfgEntry 70}
+
 -- ***********************************
 -- ap configuration per radio
 -- ***********************************
@@ -2154,7 +2396,12 @@ RuijieApOfflineEntry ::=
     SEQUENCE {
         ruijieApOfftime                    INTEGER,
         ruijieApOffApName                  DisplayString,
-        ruijieApOffMacAddr                 MacAddress
+        ruijieApOffMacAddr                 MacAddress,
+        ruijieApOffIp                      IpAddress,
+        ruijieApOffMacAddrColon            DisplayString,
+        ruijieApOffMacAddrLine             DisplayString,
+        ruijieApOffMacAddrDot              DisplayString,
+		ruijieApOffStateTime               DisplayString
     }
 
 ruijieApOfftime  OBJECT-TYPE
@@ -2162,7 +2409,7 @@ ruijieApOfftime  OBJECT-TYPE
     MAX-ACCESS  read-only
     STATUS  current
     DESCRIPTION
-            "The AP's ethernet mac address."
+            "The AP's offtime, uint: second."
     ::= { ruijieApOfflineEntry 1}
 
 -- The AP Name
@@ -2181,7 +2428,47 @@ ruijieApOffMacAddr  OBJECT-TYPE
     DESCRIPTION
             "The offline AP's ethernet mac address."
     ::= { ruijieApOfflineEntry 3}
-    
+
+ruijieApOffIp OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The IP address for the last use of the offline AP."
+    ::= { ruijieApOfflineEntry 4 }
+
+ruijieApOffMacAddrColon OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (17..17))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The offline AP's ethernet mac address separated by the colon character, format: XX:XX:XX:XX:XX:XX"
+    ::= { ruijieApOfflineEntry 5 }
+
+ruijieApOffMacAddrLine OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (17..17))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The offline AP's ethernet mac address separated by the line character, format: XX-XX-XX-XX-XX-XX"
+    ::= { ruijieApOfflineEntry 6 }
+
+ruijieApOffMacAddrDot OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (14..14))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The offline AP's ethernet mac address separated by the dot character, format: xxxx.xxxx.xxxx"
+    ::= { ruijieApOfflineEntry 7 }
+
+ruijieApOffStateTime OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The time of AP state transition, format: YYYY-MM-DD hh:mm:ss."
+    ::= { ruijieApOfflineEntry 8}
+
 --********************************************************************
 --    ruijieApBackupState                                           **
 --********************************************************************
@@ -2219,6 +2506,629 @@ ruijieApBackupState  OBJECT-TYPE
             "The AP's backup state."
     ::= { ruijieApBackupStateEntry 1 }
 
+--********************************************************************
+--    ruijieApMicroAp                                               **
+--********************************************************************
+ruijieApMicroApTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieApMicroApEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The Micro AP configure."
+    ::= { ruijieAcMgmtAp 7 }
+
+ruijieApMicroApEntry OBJECT-TYPE
+    SYNTAX  RuijieApMicroApEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Config Micro AP."
+    INDEX   { ruijieApMacAddr, ruijieApMicroApSlot }
+    ::= { ruijieApMicroApTable 1 }
+
+RuijieApMicroApEntry ::=
+    SEQUENCE {
+        ruijieApMicroApSlot             INTEGER,
+		ruijieApMicroApName				DisplayString,
+		ruijieApMicroApReset            INTEGER,
+		ruijieApMicroApUninstall		INTEGER,
+		ruijieApMicroApMac            	MacAddress,
+		ruijieApMicroApBoard			DisplayString,
+		ruijieApMicroApState			INTEGER,
+		ruijieApMicroApRole             DisplayString,
+		ruijieApMicroApMasterSlot       INTEGER
+    }
+
+ruijieApMicroApSlot  OBJECT-TYPE
+    SYNTAX  INTEGER (1..48)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The Micro Ap's Slot Id."
+    ::= { ruijieApMicroApEntry 1 }
+
+ruijieApMicroApName  OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (1..32))
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "Micro Ap's Name."
+    ::= { ruijieApMicroApEntry 2}
+
+ruijieApMicroApReset  OBJECT-TYPE
+    SYNTAX  INTEGER (0..1)
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "Reset Micro AP:
+            1--Reset"
+    ::= { ruijieApMicroApEntry 3}
+
+ruijieApMicroApUninstall  OBJECT-TYPE
+    SYNTAX  INTEGER (0..1)
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "Uninstall Micro AP:
+            1--Uninstall"
+    ::= { ruijieApMicroApEntry 4}
+
+ruijieApMicroApMac  OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Micro AP Mac address"
+    ::= { ruijieApMicroApEntry 5}
+
+ruijieApMicroApBoard  OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (1..32))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Micro AP Board ID"
+    ::= { ruijieApMicroApEntry 6}
+
+ruijieApMicroApState  OBJECT-TYPE
+    SYNTAX  INTEGER (0..2)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Micro AP State:
+            0--Not Exist
+			1--Offline
+			2--Online"
+    ::= { ruijieApMicroApEntry 7}
+	
+ruijieApMicroApRole  OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (1..64))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Micro AP Role"
+    ::= { ruijieApMicroApEntry 8}
+	
+ruijieApMicroApMasterSlot  OBJECT-TYPE
+    SYNTAX  INTEGER (1..24)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The Micro Ap's Intf Id."
+    ::= { ruijieApMicroApEntry 9 }
+
+--********************************************************************
+--    ruijieApGeneralCfgTable                                       **
+--********************************************************************
+
+ruijieApGeneralCfgTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieApGeneralCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The general Ap attribtues, include online and offline Aps."
+    ::= { ruijieAcMgmtAp 8 }
+
+ruijieApGeneralCfgEntry OBJECT-TYPE
+    SYNTAX  RuijieApGeneralCfgEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Get and set the general Ap attribtues."
+    INDEX   { ruijieApGeneralMacAddr }
+    ::= { ruijieApGeneralCfgTable 1 }
+
+RuijieApGeneralCfgEntry ::=
+    SEQUENCE {
+        ruijieApGeneralMacAddr             MacAddress,
+        ruijieApGeneralApName              DisplayString,
+        ruijieApGeneralState               INTEGER,
+        ruijieApGeneralTime                DisplayString,
+        ruijieApGeneralTimeMs              TimeTicks,
+        ruijieApGeneralIp                  IpAddress,
+        ruijieApGeneralMacAddrColon        DisplayString,
+        ruijieApGeneralMacAddrLine         DisplayString,
+        ruijieApGeneralMacAddrDot          DisplayString,
+		ruijieApGeneralLocation            DisplayString,
+		ruijieApGeneralCPUCurrentUsage     INTEGER,
+		ruijieApGeneralCPUAverageUsage     INTEGER,
+		ruijieApGeneralMemoryCurrentUsage  INTEGER,
+		ruijieApGeneralMemoryAverageUsage  INTEGER,
+		ruijieApGeneralApStaNum            Counter32, 
+		ruijieApGeneralApUpRate            Counter64,
+		ruijieApGeneralApDownRate          Counter64,
+		ruijieApGeneralAp24GChannel        Counter32,
+		ruijieApGeneralAp5GChannel         Counter32,
+		ruijieApGeneralStatus              RowStatus
+    } 
+
+ruijieApGeneralMacAddr  OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The AP's ethernet mac address."
+    ::= { ruijieApGeneralCfgEntry 1}
+
+-- The AP Name
+ruijieApGeneralApName  OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (1..64))
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The Ap's Name."
+    ::= { ruijieApGeneralCfgEntry 2}
+
+ruijieApGeneralState  OBJECT-TYPE
+    SYNTAX  INTEGER {
+        online(1),
+        offline(2)
+    }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+			"The AP's state.
+			1 -- online;
+			2 -- offline"
+    ::= { ruijieApGeneralCfgEntry 3}
+
+ruijieApGeneralTime OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The AP's capwap change time or add time, format: d:hh:mm:ss"
+    ::= { ruijieApGeneralCfgEntry 4 }
+
+ruijieApGeneralTimeMs OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The AP's capwap change time or add time, 0.01seconds."
+    ::= { ruijieApGeneralCfgEntry 5 }
+
+ruijieApGeneralIp OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The AP's ip address."
+    ::= { ruijieApGeneralCfgEntry 6 }
+
+ruijieApGeneralMacAddrColon OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (17..17))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The AP's ethernet mac address separated by the colon character, format: XX:XX:XX:XX:XX:XX"
+    ::= { ruijieApGeneralCfgEntry 7 }
+
+ruijieApGeneralMacAddrLine OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (17..17))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The AP's ethernet mac address separated by the line character, format: XX-XX-XX-XX-XX-XX"
+    ::= { ruijieApGeneralCfgEntry 8 }
+
+ruijieApGeneralMacAddrDot OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (14..14))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The AP's ethernet mac address separated by the dot character, format: xxxx.xxxx.xxxx"
+    ::= { ruijieApGeneralCfgEntry 9 }
+	
+ruijieApGeneralLocation OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (1..256))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+            "The AP's location"
+    ::= { ruijieApGeneralCfgEntry 10 }	
+	
+ruijieApGeneralCPUCurrentUsage  OBJECT-TYPE
+    SYNTAX  INTEGER 
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+			"The CPU current usage"
+    ::= { ruijieApGeneralCfgEntry 11}
+
+ruijieApGeneralCPUAverageUsage  OBJECT-TYPE
+    SYNTAX  INTEGER 
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+			"The CPU average usage"
+    ::= { ruijieApGeneralCfgEntry 12}	
+
+ruijieApGeneralMemoryCurrentUsage  OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+			"The CPU current usage"
+    ::= { ruijieApGeneralCfgEntry 13}	
+
+ruijieApGeneralMemoryAverageUsage  OBJECT-TYPE
+    SYNTAX  INTEGER 
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+			"The CPU average usage"
+    ::= { ruijieApGeneralCfgEntry 14}
+	
+ruijieApGeneralApStaNum  OBJECT-TYPE
+    SYNTAX  Counter32 
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+			"The Ap sta num"
+    ::= { ruijieApGeneralCfgEntry 15}
+
+ruijieApGeneralApUpRate  OBJECT-TYPE
+    SYNTAX  Counter64 
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+			"The Ap up rate"
+    ::= { ruijieApGeneralCfgEntry 16}
+
+ruijieApGeneralApDownRate  OBJECT-TYPE
+    SYNTAX  Counter64 
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+			"The Ap down rate"
+    ::= { ruijieApGeneralCfgEntry 17}
+	
+ruijieApGeneralAp24GChannel  OBJECT-TYPE
+    SYNTAX  Counter32 
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+			"The Ap 2.4g channel"
+    ::= { ruijieApGeneralCfgEntry 18}
+
+ruijieApGeneralAp5GChannel  OBJECT-TYPE
+    SYNTAX  Counter32 
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+			"The Ap 5g channel"
+    ::= { ruijieApGeneralCfgEntry 19}
+	
+ruijieApGeneralStatus  OBJECT-TYPE
+    SYNTAX  RowStatus 
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+			"The Ap Item Status"
+    ::= { ruijieApGeneralCfgEntry 20}
+	
+--********************************************************************
+--    ruijieApOnlineJsonTable                                       **
+--********************************************************************
+
+ruijieApOnlineJsonTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieApOnlineJsonEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The online AP attributes."
+    ::= { ruijieAcMgmtAp 9 }
+
+ruijieApOnlineJsonEntry OBJECT-TYPE
+    SYNTAX  RuijieApOnlineJsonEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Get the online AP attribtues."
+    INDEX   { ruijieApOnlineJsonMacAddr}
+    ::= { ruijieApOnlineJsonTable 1 }
+
+RuijieApOnlineJsonEntry ::=
+    SEQUENCE {
+        ruijieApOnlineJsonMacAddr            MacAddress,
+        ruijieApOnlineJsonContent            OCTET STRING
+     }
+         
+ruijieApOnlineJsonMacAddr  OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The AP's mac address."
+    ::= { ruijieApOnlineJsonEntry 1}
+    
+ruijieApOnlineJsonContent OBJECT-TYPE
+	SYNTAX  OCTET STRING (SIZE (1..1023))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This object represents the ap content with json format."
+    ::= { ruijieApOnlineJsonEntry 2}
+
+--********************************************************************
+--    ruijieApMicroApJsonTable                                      **
+--********************************************************************
+
+ruijieApMicroApJsonTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieApMicroApJsonEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The Micro AP attributes."
+    ::= { ruijieAcMgmtAp 10 }
+
+ruijieApMicroApJsonEntry OBJECT-TYPE
+    SYNTAX  RuijieApMicroApJsonEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Get the Micro AP attributes."
+	INDEX   { ruijieApMicroApJsonMacAddr, ruijieApMicroApJsonSlot }
+    ::= { ruijieApMicroApJsonTable 1 }
+
+RuijieApMicroApJsonEntry ::=
+    SEQUENCE {
+        ruijieApMicroApJsonMacAddr            MacAddress,
+        ruijieApMicroApJsonSlot               INTEGER,
+        ruijieApMicroApJsonContent            OCTET STRING
+     }
+         
+ruijieApMicroApJsonMacAddr  OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The AP's mac address."
+    ::= { ruijieApMicroApJsonEntry 1}
+    
+ruijieApMicroApJsonSlot  OBJECT-TYPE
+    SYNTAX  INTEGER (1..48)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The Micro Ap's Slot Id."
+    ::= { ruijieApMicroApJsonEntry 2}
+
+ruijieApMicroApJsonContent OBJECT-TYPE
+	SYNTAX  OCTET STRING (SIZE (1..1023))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This object represents the ap content with json format."
+    ::= { ruijieApMicroApJsonEntry 3}
+
+--********************************************************************
+--    ruijieApRadioWlanJsonTable                                    **
+--********************************************************************
+
+ruijieApRadioWlanJsonTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieApRadioWlanJsonEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The AP WLAN attributes."
+    ::= { ruijieAcMgmtAp 11 }
+
+ruijieApRadioWlanJsonEntry OBJECT-TYPE
+    SYNTAX  RuijieApRadioWlanJsonEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Get the AP WLAN attributes."
+	INDEX   { ruijieApRadioWlanJsonMacAddr, ruijieApRadioWlanJsonRadioId, ruijieApRadioWlanJsonWlanId }
+    ::= { ruijieApRadioWlanJsonTable 1 }
+
+RuijieApRadioWlanJsonEntry ::=
+    SEQUENCE {
+        ruijieApRadioWlanJsonMacAddr            MacAddress,
+        ruijieApRadioWlanJsonRadioId            INTEGER,
+		ruijieApRadioWlanJsonWlanId             INTEGER,
+        ruijieApRadioWlanJsonContent            OCTET STRING
+     }
+         
+ruijieApRadioWlanJsonMacAddr  OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The AP's mac address."
+    ::= { ruijieApRadioWlanJsonEntry 1}
+    
+ruijieApRadioWlanJsonRadioId  OBJECT-TYPE
+    SYNTAX  INTEGER (1..48)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The Ap's Radio Id."
+    ::= { ruijieApRadioWlanJsonEntry 2}
+
+ruijieApRadioWlanJsonWlanId  OBJECT-TYPE
+    SYNTAX  INTEGER (1..4094)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The Ap's Wlan Id."
+    ::= { ruijieApRadioWlanJsonEntry 3}
+
+ruijieApRadioWlanJsonContent OBJECT-TYPE
+	SYNTAX  OCTET STRING (SIZE (1..1023))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This object represents the ap wlan content with json format."
+    ::= { ruijieApRadioWlanJsonEntry 4}
+
+--********************************************************************
+--    ruijieApDMJsonTable                                           **
+--********************************************************************
+
+ruijieApDMJsonTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieApDMJsonEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The AP device management attributes."
+    ::= { ruijieAcMgmtAp 12 }
+
+ruijieApDMJsonEntry OBJECT-TYPE
+    SYNTAX  RuijieApDMJsonEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Get the AP device management attributes."
+	INDEX   { ruijieApDMJsonMacAddr }
+    ::= { ruijieApDMJsonTable 1 }
+
+RuijieApDMJsonEntry ::=
+    SEQUENCE {
+        ruijieApDMJsonMacAddr            MacAddress,
+        ruijieApDMJsonContent            OCTET STRING
+     }
+         
+ruijieApDMJsonMacAddr  OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The AP's mac address."
+    ::= { ruijieApDMJsonEntry 1}
+
+ruijieApDMJsonContent OBJECT-TYPE
+	SYNTAX  OCTET STRING (SIZE (1..1023))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This object represents the ap device management content with json format."
+    ::= { ruijieApDMJsonEntry 2}
+
+--********************************************************************
+--    ruijieApDeviceGpsTable                                        **
+--********************************************************************
+ruijieApDeviceGpsTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieApDeviceGpsEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "The Ap device GPS attribtues."
+    ::= { ruijieAcMgmtAp 13 }
+
+ruijieApDeviceGpsEntry OBJECT-TYPE
+    SYNTAX  RuijieApDeviceGpsEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Get the Ap device GPS attribtues"
+    INDEX   { ruijieApGpsMacAddr }
+    ::= { ruijieApDeviceGpsTable 1 }
+
+RuijieApDeviceGpsEntry ::=
+    SEQUENCE {
+        ruijieApGpsMacAddr           MacAddress,
+        ruijieApGpsLongitude         DisplayString,
+        ruijieApGpsLatitude          DisplayString
+    }
+
+ruijieApGpsMacAddr  OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The AP's ethernet mac address."
+    ::= { ruijieApDeviceGpsEntry 1}
+
+ruijieApGpsLongitude  OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (1..64))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The Ap's Gps longitude."
+    ::= { ruijieApDeviceGpsEntry 2}
+
+ruijieApGpsLatitude  OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (1..64))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The Ap's Gps latitude."
+    ::= { ruijieApDeviceGpsEntry 3}
+
+--********************************************************************
+--    ruijieApWiredTable                                           **
+--********************************************************************
+
+ruijieApWiredTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieApWiredEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "Get/Set the AP wired vlan."
+    ::= { ruijieAcMgmtAp 14 }
+
+ruijieApWiredEntry OBJECT-TYPE
+    SYNTAX  RuijieApWiredEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Get/Set the AP wired vlan."
+	INDEX   { ruijieApWiredMacAddr, ruijieApWiredPort}
+    ::= { ruijieApWiredTable 1 }
+
+RuijieApWiredEntry ::=
+    SEQUENCE {
+        ruijieApWiredMacAddr         MacAddress,
+		ruijieApWiredPort            INTEGER,
+        ruijieApWiredVlanId          INTEGER
+     }
+         
+ruijieApWiredMacAddr  OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The AP's mac address."
+    ::= { ruijieApWiredEntry 1}
+
+ruijieApWiredPort  OBJECT-TYPE
+	SYNTAX  INTEGER
+	MAX-ACCESS  read-only
+	STATUS  current
+	DESCRIPTION
+			"The AP's wired port."
+	::= { ruijieApWiredEntry 2}
+	
+ruijieApWiredVlanId OBJECT-TYPE
+	SYNTAX  INTEGER (0..4094)
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The AP's wired vlan."
+    ::= { ruijieApWiredEntry 3}
+	
 --********************************************************************
 --                                                                  **
 --                  AP Group nodes                                  **
@@ -2853,7 +3763,8 @@ RuijieStaEntry ::=
         ruijieStaUserName               DisplayString,
         ruijieStaTerminalType           DisplayString,
         ruijieStaOnlineTime             DisplayString,
-        ruijieStaUpTimeInterval         INTEGER
+        ruijieStaUpTimeInterval         INTEGER,
+        ruijieStaUserAuthTime           DisplayString
      }
          
 ruijieStaMacAddr  OBJECT-TYPE
@@ -3068,6 +3979,54 @@ ruijieStaUpTimeInterval OBJECT-TYPE
     DESCRIPTION
             "This object represents how long sta is online(in seconds)."
     ::= { ruijieStaEntry 25}
+    
+ruijieStaUserAuthTime OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This object represents the time when user is authed(dot1x or webauth)."
+    ::= { ruijieStaEntry 26}
+
+--*********2.Sta Json***************
+ruijieStaJsonTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieStaJsonEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "ruijie AC MGMT station json table."
+    ::= { ruijieAcMgmtSta 2 }
+
+ruijieStaJsonEntry OBJECT-TYPE
+    SYNTAX  RuijieStaJsonEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "ruijie AC MGMT station json entry."
+    INDEX   { ruijieStaJsonMacAddr}
+    ::= { ruijieStaJsonTable 1 }
+
+RuijieStaJsonEntry ::=
+    SEQUENCE {
+        ruijieStaJsonMacAddr            MacAddress,
+        ruijieStaJsonContent            OCTET STRING
+     }
+         
+ruijieStaJsonMacAddr  OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The STA's mac address."
+    ::= { ruijieStaJsonEntry 1}
+    
+ruijieStaJsonContent OBJECT-TYPE
+	SYNTAX  OCTET STRING (SIZE (1..1023))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This object represents the sta content with json format."
+    ::= { ruijieStaJsonEntry 2}
 
 -- ****************************************
 --
@@ -3336,6 +4295,34 @@ ruijieNotifyStaIpv4Downflow OBJECT-TYPE
             "Sta's total IPv4 downflow in kbps."
     ::= { ruijieAcMgmtNtfObjects 30}
 
+ruijieNotifyMicroApSlot OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Micro Ap Slot Id"
+    ::= { ruijieAcMgmtNtfObjects 31 }
+
+ruijieNotifyMicroApEvent OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Micro Ap Event: 1---up 2---down"
+    ::= { ruijieAcMgmtNtfObjects 32 }
+
+ruijieNotifyApLastFailureType OBJECT-TYPE
+    SYNTAX      INTEGER (1..4)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "This object present the AP's Last Failure Type.
+		  1 -- Power off or other failure.
+		  2 -- AP hang up.
+		  3 -- AP link failure.
+		  4 -- External command."
+    ::= { ruijieAcMgmtNtfObjects 33 }
+	
 ruijieNotifyApTimeStampFail NOTIFICATION-TYPE
     OBJECTS     {
                   ruijieNotifyApMac
@@ -3492,7 +4479,8 @@ ruijieNotifyApUp NOTIFICATION-TYPE
     OBJECTS     {
                   ruijieApMacAddr,
                   capwapBaseNtfChannelType,
-                  capwapBaseNtfAuthenMethod
+                  capwapBaseNtfAuthenMethod,
+				  ruijieNotifyApLastFailureType
                 }
     STATUS      current
     DESCRIPTION
@@ -3558,7 +4546,30 @@ ruijieNotifyStaOperAlternate NOTIFICATION-TYPE
         "This notification is sent by the AC when a sta is up, down or roaming."
     ::= { ruijieAcMgmtNotifications 17 }
 
+ruijieNotifyNonrootOper NOTIFICATION-TYPE
+    OBJECTS     {
+                  ruijieNotifyStaOperType,
+                  ruijieNotifyStaMac,
+                  ruijieNotifyApMac,
+                  ruijieNotifyStaApRadioId,
+                  ruijieNotifyStaTimestamp
+                }
+    STATUS      current
+    DESCRIPTION
+        "This notification is sent by the AC when a Nonroot is attach or leave."
+    ::= { ruijieAcMgmtNotifications 18 }
 
+ruijieNotifyMicroApAction NOTIFICATION-TYPE
+    OBJECTS     {
+                  ruijieNotifyApMac,
+                  ruijieNotifyMicroApSlot,
+                  ruijieNotifyMicroApEvent
+                }
+    STATUS      current
+    DESCRIPTION
+        "This notification when Micro Ap up or down."
+    ::= { ruijieAcMgmtNotifications 19 }
+	
 --********************************************************************
 --                                                                  **
 --           conformance information                                **
@@ -3744,6 +4755,17 @@ ruijieAcMgmtAcMIBGroup OBJECT-GROUP
             ruijieApIpv6Type,
             ruijieApIpv6Gateway,
             ruijieApIpv6StaNum,
+            ruijieApMacAddrColon,
+            ruijieApMacAddrLine,
+            ruijieApMacAddrDot,
+			ruijieApEchoRequestCnt,     
+            ruijieApEchoResponseDropCnt,
+			ruijieApIsIsharePlus,
+			ruijieApTotalMicrolApNum,
+			ruijieApOnlineMicrolApNum,
+			ruijieApOfflineMicrolApNum,
+			ruijieApStateTime,
+            ruijieApEchoDelayTimeMS,
             ruijieApRadioEn,
             ruijieApTxPower,
             ruijieApDtimPeriod,

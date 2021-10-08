@@ -1,0 +1,154 @@
+-- ====================================================================
+-- Copyright (c) 2012 by Raisecom Networks Co.,Ltd. All rights reserved.
+--
+-- Description: The MIB is designed to get SMM(short message management) statistic information of 3G router .
+-- Reference: rujie Enterprise MIB
+-- =====================================================================
+
+RAISECOM-SMM-MIB DEFINITIONS ::= BEGIN
+    IMPORTS
+        MODULE-IDENTITY,
+        NOTIFICATION-TYPE,
+        OBJECT-TYPE,
+        IpAddress,
+        Integer32,
+        Counter32,
+        Counter64,
+        Gauge32,
+        Unsigned32
+            FROM SNMPv2-SMI
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP,
+        NOTIFICATION-GROUP
+            FROM SNMPv2-CONF
+        DisplayString,
+        TEXTUAL-CONVENTION,
+        TimeStamp
+            FROM SNMPv2-TC
+        ruijieMgmt
+            FROM RAISECOM-SMI;
+
+    ruijieSmmMIB MODULE-IDENTITY
+        LAST-UPDATED "201212100000Z"            
+        ORGANIZATION
+            "Raisecom Networks Co.,Ltd."
+        CONTACT-INFO
+            "Tel: 4008-111-000 
+             E-mail: service@raisecom.com.cn"  
+        DESCRIPTION
+            "The MIB is designed to get SMM statistic information of 3G router.
+            With this MIB, we can get information of a certain 3G user or all users."
+        REVISION      "201212100000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 120 }       
+
+    ruijieSmmObjects OBJECT IDENTIFIER ::= { ruijieSmmMIB 1 }
+    ruijieSmmTrapObjects OBJECT IDENTIFIER ::= { ruijieSmmMIB 2 }
+    ruijieSmmTraps OBJECT IDENTIFIER ::= { ruijieSmmMIB 3 }
+  
+-- ===============================================
+-- Begin the scalar parameters
+-- =============================================== 
+    ruijieReportSimBillSwitch OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The switch of reporting sim bill."
+        ::= { ruijieSmmObjects 1 }
+    
+    ruijieQuerySimBillCmd OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..256))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The cmd of query sim bill"
+        ::= { ruijieSmmObjects 2 }
+			
+-- ===============================================
+-- Begin the table of ruijieSmsUseTable.
+-- ===============================================
+    ruijieSmsUseTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieSmsUseEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The statistic information of sms."
+        ::= { ruijieSmmObjects 3 }
+    
+    ruijieSmsUseEntry OBJECT-TYPE
+        SYNTAX RuijieSmsUseEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The statistic information of sms."
+        INDEX { ruijieSimImsi }
+        ::= { ruijieSmsUseTable 1 }
+    
+    RuijieSmsUseEntry ::=
+        SEQUENCE {
+            ruijieSimImsi
+                DisplayString,
+            ruijieSmsUseCnt
+           	    Unsigned32
+        }
+   
+    ruijieSimImsi OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..20))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The imsi of sim card."
+        ::= { ruijieSmsUseEntry 1 } 
+    
+    ruijieSmsUseCnt OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The sms count of using"
+        ::= { ruijieSmsUseEntry 2 }  
+		
+-- ===============================================
+-- Begin the trap bindvar.
+-- ===============================================
+    ruijieSimBillTrapObjects OBJECT IDENTIFIER ::= { ruijieSmmTrapObjects 1 }
+    ruijieQuerySimBillContent OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..1024))
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The sim bill content of query "
+        ::= { ruijieSimBillTrapObjects 1 }
+ 
+    ruijieReportSimBillContent OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..1024))
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The sim bill content of report "
+        ::= { ruijieSimBillTrapObjects 2 }
+
+
+-- ===============================================
+-- Begin the ruijieSimBillTrap.
+-- =============================================== 
+	ruijieSimBillNotifications OBJECT IDENTIFIER ::= { ruijieSmmTraps 1 } 
+    ruijieQuerySimBill NOTIFICATION-TYPE
+        OBJECTS { ruijieQuerySimBillContent }
+        STATUS current
+        DESCRIPTION
+            "This notification is sim bill content of query."
+        ::= { ruijieSimBillNotifications 1 }
+
+    ruijieReportSimBill NOTIFICATION-TYPE
+        OBJECTS { ruijieReportSimBillContent }
+        STATUS current
+        DESCRIPTION
+            "This notification is sim bill content of report."
+        ::= { ruijieSimBillNotifications 2 }     
+       
+
+    
+END

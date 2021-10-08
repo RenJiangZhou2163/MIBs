@@ -1,0 +1,1220 @@
+-- *****************************************************************
+-- RUIJIE-VXLAN-MIB.mib:  Ruijie VXLAN MIB file
+--
+-- 2019-4-10, weilin1@ruijie.com.cn
+--
+-- Copyright (c) 2019 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-VXLAN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        NOTIFICATION-TYPE,
+        OBJECT-IDENTITY,
+        Integer32,
+        Counter32,
+        Counter64,
+        Unsigned32,
+        IpAddress
+                FROM SNMPv2-SMI
+        InetAddressIPv6,
+        InetAddress,
+        InetAddressType
+                FROM INET-ADDRESS-MIB                   -- [RFC4001]
+        RowStatus
+                FROM SNMPv2-TC               
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP,
+        NOTIFICATION-GROUP
+                FROM SNMPv2-CONF
+        ConfigStatus,
+        IfIndex
+                FROM RUIJIE-TC
+        ifIndex
+                FROM RFC1213-MIB
+        ruijieMgmt
+                FROM RUIJIE-SMI
+        InterfaceIndex
+                FROM IF-MIB
+        VlanId
+                FROM Q-BRIDGE-MIB;
+                
+ruijieVxlanMIB    MODULE-IDENTITY
+       LAST-UPDATED    "201904100000Z"
+       ORGANIZATION    "Ruijie Networks Co.,Ltd."
+       CONTACT-INFO
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie vxlan mibs."
+        REVISION      "201904100000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 161}
+
+ruijieVxlanMIBObjects  OBJECT IDENTIFIER ::= { ruijieVxlanMIB 1 }
+ruijieVxlanMIBTraps  OBJECT IDENTIFIER ::= { ruijieVxlanMIB 2 }
+ruijieVxlanMIBConformance  OBJECT IDENTIFIER ::= { ruijieVxlanMIB 3 }
+
+--****************************************************************
+-- ruijieVxlanMIBObjects
+--****************************************************************
+
+--
+-- ruijieVxlanVniStatisticTable
+--
+ruijieVxlanVniStatisticTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVxlanVniStatisticEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "List of VXLAN vni statistic objects."
+        ::= { ruijieVxlanMIBObjects 1 }
+    
+ruijieVxlanVniStatisticEntry OBJECT-TYPE
+        SYNTAX RuijieVxlanVniStatisticEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains packets statistics of a vni."
+        INDEX   { 
+                    ruijieVxlanVniStatisticVni
+                }
+        ::= { ruijieVxlanVniStatisticTable 1 }
+
+RuijieVxlanVniStatisticEntry ::=
+        SEQUENCE {
+            ruijieVxlanVniStatisticVni              Unsigned32,
+            ruijieVxlanVniStatisticInPackets        Counter64,
+            ruijieVxlanVniStatisticOutPackets       Counter64,
+            ruijieVxlanVniStatisticInBytes          Counter64,
+            ruijieVxlanVniStatisticOutBytes         Counter64,
+            ruijieVxlanVniStatisticInPps            Counter64,
+            ruijieVxlanVniStatisticOutPps           Counter64,
+            ruijieVxlanVniStatisticInBps            Counter64,
+            ruijieVxlanVniStatisticOutBps           Counter64
+        }
+
+ruijieVxlanVniStatisticVni OBJECT-TYPE
+        SYNTAX Unsigned32 (1..16777215)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "vni : VXLAN Network Identifier."
+        ::= { ruijieVxlanVniStatisticEntry 1 }
+
+ruijieVxlanVniStatisticInPackets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Inbound packets in this vni."
+        ::= { ruijieVxlanVniStatisticEntry 2 }
+           
+ruijieVxlanVniStatisticOutPackets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Outbound packets in this vni."
+        ::= { ruijieVxlanVniStatisticEntry 3 }
+    
+ruijieVxlanVniStatisticInBytes OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Inbound bytes in this vni."
+        ::= { ruijieVxlanVniStatisticEntry 4 }
+
+ruijieVxlanVniStatisticOutBytes OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Outbound bytes in this vni."
+        ::= { ruijieVxlanVniStatisticEntry 5 }
+
+ruijieVxlanVniStatisticInPps OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Inbound packets per second in this vni."
+        ::= { ruijieVxlanVniStatisticEntry 6 }
+        
+ruijieVxlanVniStatisticOutPps OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Outbound packets per second in this vni."
+        ::= { ruijieVxlanVniStatisticEntry 7 }
+        
+ruijieVxlanVniStatisticInBps OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Inbound bits per second in this vni."
+        ::= { ruijieVxlanVniStatisticEntry 8 }
+        
+ruijieVxlanVniStatisticOutBps OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Outbound bits per second in this vni."
+        ::= { ruijieVxlanVniStatisticEntry 9 }
+        
+--
+-- ruijieVxlanStaticTnlTable
+--
+ruijieVxlanStaticTnlTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVxlanStaticTnlEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "List of VXLAN static tunnel objects."
+        ::= { ruijieVxlanMIBObjects 2 }
+        
+ruijieVxlanStaticTnlEntry OBJECT-TYPE
+        SYNTAX RuijieVxlanStaticTnlEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains a VXLAN static tunnel."
+        INDEX   {
+                    ruijieVxlanStaticTnlDestIp,
+                    ruijieVxlanStaticTnlSourceIp
+                }
+        ::= { ruijieVxlanStaticTnlTable 1 }
+
+RuijieVxlanStaticTnlEntry ::=
+        SEQUENCE {
+            ruijieVxlanStaticTnlDestIp      IpAddress,
+            ruijieVxlanStaticTnlSourceIp    IpAddress,
+            ruijieVxlanStaticTnlRowStatus   RowStatus
+        }
+        
+ruijieVxlanStaticTnlDestIp OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The destination IP address of the VXLAN static tunnel."
+        ::= { ruijieVxlanStaticTnlEntry 1 }
+        
+ruijieVxlanStaticTnlSourceIp OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The source IP address of the VXLAN static tunnel."
+        ::= { ruijieVxlanStaticTnlEntry 2 }
+        
+ruijieVxlanStaticTnlRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The status of this conceptual row.  The RowStatus becomes
+             active on successful creation of a VXLAN static tunnel."
+        DEFVAL { active }
+        ::= { ruijieVxlanStaticTnlEntry 3 }
+        
+--
+-- ruijieVxlanVniTnlTable
+--
+ruijieVxlanVniTnlTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVxlanVniTnlEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "List of relations of vnis and static tunnels."
+        ::= { ruijieVxlanMIBObjects 3 }
+    
+ruijieVxlanVniTnlEntry OBJECT-TYPE
+        SYNTAX RuijieVxlanVniTnlEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains the relation of a vni and a static tunnel."
+        INDEX   { 
+                    ruijieVxlanVniTnlVni,
+                    ruijieVxlanVniTnlDestIp,
+                    ruijieVxlanVniTnlSourceIp
+                }
+        ::= { ruijieVxlanVniTnlTable 1 }
+
+RuijieVxlanVniTnlEntry ::=
+        SEQUENCE {
+            ruijieVxlanVniTnlVni            Unsigned32,
+            ruijieVxlanVniTnlDestIp         IpAddress,
+            ruijieVxlanVniTnlSourceIp       IpAddress,
+            ruijieVxlanVniTnlRowStatus      RowStatus
+        }
+
+ruijieVxlanVniTnlVni OBJECT-TYPE
+        SYNTAX Unsigned32 (1..16777215)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "vni : VXLAN Network Identifier."
+        ::= { ruijieVxlanVniTnlEntry 1 }
+
+ruijieVxlanVniTnlDestIp OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The destination IP address of the VXLAN static tunnel."
+        ::= { ruijieVxlanVniTnlEntry 2 }
+           
+ruijieVxlanVniTnlSourceIp OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The source IP address of the VXLAN static tunnel."
+        ::= { ruijieVxlanVniTnlEntry 3 }
+    
+ruijieVxlanVniTnlRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The status of this conceptual row.  The RowStatus becomes
+             active on successful creation of the relation of the vni
+             and the VXLAN static tunnel."
+        ::= { ruijieVxlanVniTnlEntry 4 }
+
+--
+-- ruijieVxlanTnlTable
+--
+ruijieVxlanTnlTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVxlanTnlEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "List of VXLAN tunnels."
+        ::= { ruijieVxlanMIBObjects 4 }
+    
+ruijieVxlanTnlEntry OBJECT-TYPE
+        SYNTAX RuijieVxlanTnlEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains a VXLAN tunnel."
+        INDEX   { 
+                    ruijieVxlanTnlDestIp,
+                    ruijieVxlanTnlSourceIp
+                }
+        ::= { ruijieVxlanTnlTable 1 }
+
+RuijieVxlanTnlEntry ::=
+        SEQUENCE {
+            ruijieVxlanTnlDestIp        IpAddress,
+            ruijieVxlanTnlSourceIp      IpAddress,
+            ruijieVxlanTnlPortNum       Unsigned32,
+            ruijieVxlanTnlStatus        INTEGER
+        }
+
+ruijieVxlanTnlDestIp OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The destination IP address of the VXLAN tunnel."
+        ::= { ruijieVxlanTnlEntry 1 }
+
+ruijieVxlanTnlSourceIp OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The source IP address of the VXLAN tunnel."
+        ::= { ruijieVxlanTnlEntry 2 }
+
+ruijieVxlanTnlPortNum OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The interface port-number of the VXLAN tunnel."
+        ::= { ruijieVxlanTnlEntry 3 }
+        
+ruijieVxlanTnlStatus OBJECT-TYPE
+        SYNTAX INTEGER { 
+           down(2), 
+           up(1)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The status(up or down) of the VXLAN tunnel."
+        ::= { ruijieVxlanTnlEntry 4 }
+    
+--
+-- ruijieVxlanTnlVniStatisticTable
+--  
+ruijieVxlanTnlVniStatisticTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVxlanTnlVniStatisticEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "List of packets statistics of relations of vnis and static tunnels."
+        ::= { ruijieVxlanMIBObjects 5 }
+    
+ruijieVxlanTnlVniStatisticEntry OBJECT-TYPE
+        SYNTAX RuijieVxlanTnlVniStatisticEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains packets statistics of the relation of a vni and a VXLAN tunnel."
+        INDEX   { 
+                    ruijieVxlanTnlVniStatisticDestIp,
+                    ruijieVxlanTnlVniStatisticSourceIp,
+                    ruijieVxlanTnlVniStatisticVni
+                }
+        ::= { ruijieVxlanTnlVniStatisticTable 1 }
+
+RuijieVxlanTnlVniStatisticEntry ::=
+        SEQUENCE {
+            ruijieVxlanTnlVniStatisticDestIp        IpAddress,
+            ruijieVxlanTnlVniStatisticSourceIp      IpAddress,
+            ruijieVxlanTnlVniStatisticVni           Unsigned32,
+            ruijieVxlanTnlVniStatisticInPackets     Counter64,
+            ruijieVxlanTnlVniStatisticOutPackets    Counter64,
+            ruijieVxlanTnlVniStatisticInBytes       Counter64,
+            ruijieVxlanTnlVniStatisticOutBytes      Counter64,
+            ruijieVxlanTnlVniStatisticInPps         Counter64,
+            ruijieVxlanTnlVniStatisticOutPps        Counter64,
+            ruijieVxlanTnlVniStatisticInBps         Counter64,
+            ruijieVxlanTnlVniStatisticOutBps        Counter64
+        }
+
+ruijieVxlanTnlVniStatisticDestIp OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The destination IP address of the VXLAN tunnel."
+        ::= { ruijieVxlanTnlVniStatisticEntry 1 }
+
+ruijieVxlanTnlVniStatisticSourceIp OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The source IP address of the VXLAN tunnel."
+        ::= { ruijieVxlanTnlVniStatisticEntry 2 }
+           
+ruijieVxlanTnlVniStatisticVni OBJECT-TYPE
+        SYNTAX Unsigned32 (1..16777215)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "vni : VXLAN Network Identifier."
+        ::= { ruijieVxlanTnlVniStatisticEntry 3 }
+        
+ruijieVxlanTnlVniStatisticInPackets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The packets received from this VXLAN tunnel in this vni."
+        ::= { ruijieVxlanTnlVniStatisticEntry 4 } 
+        
+ruijieVxlanTnlVniStatisticOutPackets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The packets sent to this VXLAN tunnel in this vni."
+        ::= { ruijieVxlanTnlVniStatisticEntry 5 }
+        
+ruijieVxlanTnlVniStatisticInBytes OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The bytes received from this VXLAN tunnel in this vni."
+        ::= { ruijieVxlanTnlVniStatisticEntry 6 }   
+
+ruijieVxlanTnlVniStatisticOutBytes OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The bytes sent to this VXLAN tunnel in this vni."
+        ::= { ruijieVxlanTnlVniStatisticEntry 7 }
+        
+ruijieVxlanTnlVniStatisticInPps OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The packets received from this VXLAN tunnel in this vni per second ."
+        ::= { ruijieVxlanTnlVniStatisticEntry 8 } 
+        
+ruijieVxlanTnlVniStatisticOutPps OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The packets sent to this VXLAN tunnel in this vni per second."
+        ::= { ruijieVxlanTnlVniStatisticEntry 9 }
+        
+ruijieVxlanTnlVniStatisticInBps OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The bytes received from this VXLAN tunnel in this vni per second."
+        ::= { ruijieVxlanTnlVniStatisticEntry 10 }   
+
+ruijieVxlanTnlVniStatisticOutBps OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The bytes sent to this VXLAN tunnel in this vni per second."
+        ::= { ruijieVxlanTnlVniStatisticEntry 11 }        
+
+--
+-- ruijieVxlanVtepTable
+--        
+ruijieVxlanVtepTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVxlanVtepEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "List of vteps' configurations."
+        ::= { ruijieVxlanMIBObjects 6 }
+       
+ruijieVxlanVtepEntry OBJECT-TYPE
+        SYNTAX RuijieVxlanVtepEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains one vtep's configurations."
+        INDEX   {
+                    ruijieVxlanVtepId
+                }
+        ::= { ruijieVxlanVtepTable 1 }
+        
+RuijieVxlanVtepEntry ::=
+        SEQUENCE {
+            ruijieVxlanVtepId                   Unsigned32,
+            ruijieVxlanVtepSourceLoopbackNum    Integer32,
+            ruijieVxlanVtepSourceIPv4Addr       IpAddress,
+            ruijieVxlanVtepSourceIPv6Addr       InetAddressIPv6
+        }
+
+ruijieVxlanVtepId OBJECT-TYPE
+        SYNTAX Unsigned32 (1..1)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Vtep's id. Now only support '1' because only one vtep is
+             supported in a system."
+        ::= { ruijieVxlanVtepEntry 1 }
+        
+ruijieVxlanVtepSourceLoopbackNum OBJECT-TYPE
+        SYNTAX Integer32 (-1..2147483647)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The source loopback interface port-number of this vtep,
+            the '-1' means that the source loopback interface has not
+            been configured when get it, or want to delete configuration
+            of the source loopback interface when set it.
+            One thing to note is that the ruijieVxlanVtepSourceLoopbackNum,
+            ruijieVxlanVtepSourceIPv4Addr and ruijieVxlanVtepSourceIPv6Addr
+            are mutually exclusive."
+        ::= { ruijieVxlanVtepEntry 2 }
+        
+ruijieVxlanVtepSourceIPv4Addr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The IPv4 address of this vtep,
+            the zero address means that the IPv4 address has not
+            been configured when get it, or want to delete configuration
+            of the IPv4 address when set it.
+            One thing to note is that the ruijieVxlanVtepSourceLoopbackNum,
+            ruijieVxlanVtepSourceIPv4Addr and ruijieVxlanVtepSourceIPv6Addr
+            are mutually exclusive."
+        ::= { ruijieVxlanVtepEntry 3 }
+        
+ruijieVxlanVtepSourceIPv6Addr OBJECT-TYPE
+        SYNTAX InetAddressIPv6
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            "The IPv6 address of this vtep,
+            the zero address means that the IPv6 address has not
+            been configured when get it, or want to delete configuration
+            of the IPv6 address when set it.
+            One thing to note is that the ruijieVxlanVtepSourceLoopbackNum,
+            ruijieVxlanVtepSourceIPv4Addr and ruijieVxlanVtepSourceIPv6Addr
+            are mutually exclusive."
+        ::= { ruijieVxlanVtepEntry 4 }
+
+--
+-- ruijieVxlanVlanAssoTable
+--
+ruijieVxlanVlanAssoTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVxlanVlanAssoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "List of vlan association."
+        ::= { ruijieVxlanMIBObjects 7 }
+    
+ruijieVxlanVlanAssoEntry OBJECT-TYPE
+        SYNTAX RuijieVxlanVlanAssoEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains a vlan association."
+        INDEX   { 
+                    ruijieVxlanVlanAssoVid
+                }
+        ::= { ruijieVxlanVlanAssoTable 1 }
+
+RuijieVxlanVlanAssoEntry ::=
+        SEQUENCE {
+            ruijieVxlanVlanAssoVid      VlanId,
+            ruijieVxlanVlanAssoVni      Unsigned32
+        }
+
+ruijieVxlanVlanAssoVid OBJECT-TYPE
+        SYNTAX VlanId
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The VID of vlan."
+        ::= { ruijieVxlanVlanAssoEntry 1 }
+        
+ruijieVxlanVlanAssoVni OBJECT-TYPE
+        SYNTAX Unsigned32 (1..16777215)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "VXLAN Network Identifier."
+        ::= { ruijieVxlanVlanAssoEntry 2 }
+
+--
+-- ruijieVxlanStaticTnlExtTable
+--
+ruijieVxlanStaticTnlExtTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVxlanStaticTnlExtEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "List of VXLAN static tunnel objects."
+        ::= { ruijieVxlanMIBObjects 8 }
+        
+ruijieVxlanStaticTnlExtEntry OBJECT-TYPE
+        SYNTAX RuijieVxlanStaticTnlExtEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains a VXLAN static tunnel."
+        INDEX   {
+                    ruijieVxlanStaticTnlExtDestIpType,
+                    ruijieVxlanStaticTnlExtDestIp,
+                    ruijieVxlanStaticTnlExtSourceIpType,
+                    ruijieVxlanStaticTnlExtSourceIp
+                }
+        ::= { ruijieVxlanStaticTnlExtTable 1 }
+
+RuijieVxlanStaticTnlExtEntry ::=
+        SEQUENCE {
+            ruijieVxlanStaticTnlExtDestIpType   InetAddressType,   
+            ruijieVxlanStaticTnlExtDestIp       InetAddress,
+            ruijieVxlanStaticTnlExtSourceIpType InetAddressType,
+            ruijieVxlanStaticTnlExtSourceIp     InetAddress,
+            ruijieVxlanStaticTnlExtRowStatus    RowStatus
+        }
+
+ruijieVxlanStaticTnlExtDestIpType OBJECT-TYPE
+        SYNTAX InetAddressType (1..2)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The destination IP address type of the VXLAN static tunnel."
+        ::= { ruijieVxlanStaticTnlExtEntry 1 }
+        
+ruijieVxlanStaticTnlExtDestIp OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The destination IP address of the VXLAN static tunnel."
+        ::= { ruijieVxlanStaticTnlExtEntry 2 }
+
+ruijieVxlanStaticTnlExtSourceIpType OBJECT-TYPE
+        SYNTAX InetAddressType (1..2)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The source IP address type of the VXLAN static tunnel."
+        ::= { ruijieVxlanStaticTnlExtEntry 3 }
+        
+ruijieVxlanStaticTnlExtSourceIp OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The source IP address of the VXLAN static tunnel."
+        ::= { ruijieVxlanStaticTnlExtEntry 4 }
+        
+ruijieVxlanStaticTnlExtRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The status of this conceptual row.  The RowStatus becomes
+             active on successful creation of a VXLAN static tunnel."
+        DEFVAL { active }
+        ::= { ruijieVxlanStaticTnlExtEntry 5 }
+
+--
+-- ruijieVxlanVniTnlExtTable
+--
+ruijieVxlanVniTnlExtTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVxlanVniTnlExtEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "List of relations of vnis and static tunnels."
+        ::= { ruijieVxlanMIBObjects 9 }
+    
+ruijieVxlanVniTnlExtEntry OBJECT-TYPE
+        SYNTAX RuijieVxlanVniTnlExtEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains the relation of a vni and a static tunnel."
+        INDEX   { 
+                    ruijieVxlanVniTnlExtVni,
+                    ruijieVxlanVniTnlExtDestIpType,
+                    ruijieVxlanVniTnlExtDestIp,
+                    ruijieVxlanVniTnlExtSourceIpType,
+                    ruijieVxlanVniTnlExtSourceIp
+                }
+        ::= { ruijieVxlanVniTnlExtTable 1 }
+
+RuijieVxlanVniTnlExtEntry ::=
+        SEQUENCE {
+            ruijieVxlanVniTnlExtVni            Unsigned32,
+            ruijieVxlanVniTnlExtDestIpType     InetAddressType,
+            ruijieVxlanVniTnlExtDestIp         InetAddress,
+            ruijieVxlanVniTnlExtSourceIpType   InetAddressType,
+            ruijieVxlanVniTnlExtSourceIp       InetAddress,
+            ruijieVxlanVniTnlExtRowStatus      RowStatus
+        }
+
+ruijieVxlanVniTnlExtVni OBJECT-TYPE
+        SYNTAX Unsigned32 (1..16777215)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "vni : VXLAN Network Identifier."
+        ::= { ruijieVxlanVniTnlExtEntry 1 }
+
+ruijieVxlanVniTnlExtDestIpType OBJECT-TYPE
+        SYNTAX InetAddressType (1..2)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The destination IP address type of the VXLAN static tunnel."
+        ::= { ruijieVxlanVniTnlExtEntry 2 }
+        
+ruijieVxlanVniTnlExtDestIp OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The destination IP address of the VXLAN static tunnel."
+        ::= { ruijieVxlanVniTnlExtEntry 3 }
+
+ruijieVxlanVniTnlExtSourceIpType OBJECT-TYPE
+        SYNTAX InetAddressType (1..2)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The source IP address type of the VXLAN static tunnel."
+        ::= { ruijieVxlanVniTnlExtEntry 4 }
+        
+ruijieVxlanVniTnlExtSourceIp OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The source IP address of the VXLAN static tunnel."
+        ::= { ruijieVxlanVniTnlExtEntry 5 }
+    
+ruijieVxlanVniTnlExtRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The status of this conceptual row.  The RowStatus becomes
+             active on successful creation of the relation of the vni
+             and the VXLAN static tunnel."
+        ::= { ruijieVxlanVniTnlExtEntry 6 }
+
+--
+-- ruijieVxlanTnlExtTable
+--
+ruijieVxlanTnlExtTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVxlanTnlExtEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "List of VXLAN tunnels."
+        ::= { ruijieVxlanMIBObjects 10 }
+    
+ruijieVxlanTnlExtEntry OBJECT-TYPE
+        SYNTAX RuijieVxlanTnlExtEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains a VXLAN tunnel."
+        INDEX   { 
+                    ruijieVxlanTnlExtDestIpType,
+                    ruijieVxlanTnlExtDestIp,
+                    ruijieVxlanTnlExtSourceIpType,
+                    ruijieVxlanTnlExtSourceIp
+                }
+        ::= { ruijieVxlanTnlExtTable 1 }
+
+RuijieVxlanTnlExtEntry ::=
+        SEQUENCE {
+            ruijieVxlanTnlExtDestIpType    InetAddressType,
+            ruijieVxlanTnlExtDestIp        InetAddress,
+            ruijieVxlanTnlExtSourceIpType  InetAddressType,
+            ruijieVxlanTnlExtSourceIp      InetAddress,
+            ruijieVxlanTnlExtPortNum       Unsigned32,
+            ruijieVxlanTnlExtStatus        INTEGER
+        }
+
+ruijieVxlanTnlExtDestIpType OBJECT-TYPE
+        SYNTAX InetAddressType (1..2)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The destination IP address tyep of the VXLAN tunnel."
+        ::= { ruijieVxlanTnlExtEntry 1 }
+        
+ruijieVxlanTnlExtDestIp OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The destination IP address of the VXLAN tunnel."
+        ::= { ruijieVxlanTnlExtEntry 2 }
+
+ruijieVxlanTnlExtSourceIpType OBJECT-TYPE
+        SYNTAX InetAddressType (1..2)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The source IP address type of the VXLAN tunnel."
+        ::= { ruijieVxlanTnlExtEntry 3 }
+        
+ruijieVxlanTnlExtSourceIp OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The source IP address of the VXLAN tunnel."
+        ::= { ruijieVxlanTnlExtEntry 4 }
+
+ruijieVxlanTnlExtPortNum OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The interface port-number of the VXLAN tunnel."
+        ::= { ruijieVxlanTnlExtEntry 5 }
+        
+ruijieVxlanTnlExtStatus OBJECT-TYPE
+        SYNTAX INTEGER { 
+           down(2), 
+           up(1)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The status(up or down) of the VXLAN tunnel."
+        ::= { ruijieVxlanTnlExtEntry 6 }
+    
+--
+-- ruijieVxlanTnlVniStatisticExtTable
+--  
+ruijieVxlanTnlVniStatisticExtTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF RuijieVxlanTnlVniStatisticExtEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "List of packets statistics of relations of vnis and static tunnels."
+        ::= { ruijieVxlanMIBObjects 11 }
+    
+ruijieVxlanTnlVniStatisticExtEntry OBJECT-TYPE
+        SYNTAX RuijieVxlanTnlVniStatisticExtEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Entry contains packets statistics of the relation of a vni and a VXLAN tunnel."
+        INDEX   { 
+                    ruijieVxlanTnlVniStatisticExtDestIpType,
+                    ruijieVxlanTnlVniStatisticExtDestIp,
+                    ruijieVxlanTnlVniStatisticExtSourceIpType,
+                    ruijieVxlanTnlVniStatisticExtSourceIp,
+                    ruijieVxlanTnlVniStatisticExtVni
+                }
+        ::= { ruijieVxlanTnlVniStatisticExtTable 1 }
+
+RuijieVxlanTnlVniStatisticExtEntry ::=
+        SEQUENCE {
+            ruijieVxlanTnlVniStatisticExtDestIpType    InetAddressType,
+            ruijieVxlanTnlVniStatisticExtDestIp        InetAddress,
+            ruijieVxlanTnlVniStatisticExtSourceIpType  InetAddressType,
+            ruijieVxlanTnlVniStatisticExtSourceIp      InetAddress,
+            ruijieVxlanTnlVniStatisticExtVni           Unsigned32,
+            ruijieVxlanTnlVniStatisticExtInPackets     Counter64,
+            ruijieVxlanTnlVniStatisticExtOutPackets    Counter64,
+            ruijieVxlanTnlVniStatisticExtInBytes       Counter64,
+            ruijieVxlanTnlVniStatisticExtOutBytes      Counter64,
+            ruijieVxlanTnlVniStatisticExtInPps         Counter64,
+            ruijieVxlanTnlVniStatisticExtOutPps        Counter64,
+            ruijieVxlanTnlVniStatisticExtInBps         Counter64,
+            ruijieVxlanTnlVniStatisticExtOutBps        Counter64
+        }
+
+ruijieVxlanTnlVniStatisticExtDestIpType OBJECT-TYPE
+        SYNTAX InetAddressType (1..2)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The destination IP address type of the VXLAN tunnel."
+        ::= { ruijieVxlanTnlVniStatisticExtEntry 1 }
+        
+ruijieVxlanTnlVniStatisticExtDestIp OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The destination IP address of the VXLAN tunnel."
+        ::= { ruijieVxlanTnlVniStatisticExtEntry 2 }
+
+ruijieVxlanTnlVniStatisticExtSourceIpType OBJECT-TYPE
+        SYNTAX InetAddressType (1..2)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The source IP address type of the VXLAN tunnel."
+        ::= { ruijieVxlanTnlVniStatisticExtEntry 3 }   
+     
+ruijieVxlanTnlVniStatisticExtSourceIp OBJECT-TYPE
+        SYNTAX InetAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The source IP address of the VXLAN tunnel."
+        ::= { ruijieVxlanTnlVniStatisticExtEntry 4 }
+           
+ruijieVxlanTnlVniStatisticExtVni OBJECT-TYPE
+        SYNTAX Unsigned32 (1..16777215)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "vni : VXLAN Network Identifier."
+        ::= { ruijieVxlanTnlVniStatisticExtEntry 5 }
+        
+ruijieVxlanTnlVniStatisticExtInPackets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The packets received from this VXLAN tunnel in this vni."
+        ::= { ruijieVxlanTnlVniStatisticExtEntry 6 } 
+        
+ruijieVxlanTnlVniStatisticExtOutPackets OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The packets sent to this VXLAN tunnel in this vni."
+        ::= { ruijieVxlanTnlVniStatisticExtEntry 7 }
+        
+ruijieVxlanTnlVniStatisticExtInBytes OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The bytes received from this VXLAN tunnel in this vni."
+        ::= { ruijieVxlanTnlVniStatisticExtEntry 8 }   
+
+ruijieVxlanTnlVniStatisticExtOutBytes OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The bytes sent to this VXLAN tunnel in this vni."
+        ::= { ruijieVxlanTnlVniStatisticExtEntry 9 }
+        
+ruijieVxlanTnlVniStatisticExtInPps OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The packets received from this VXLAN tunnel in this vni per second ."
+        ::= { ruijieVxlanTnlVniStatisticExtEntry 10 } 
+        
+ruijieVxlanTnlVniStatisticExtOutPps OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The packets sent to this VXLAN tunnel in this vni per second."
+        ::= { ruijieVxlanTnlVniStatisticExtEntry 11 }
+        
+ruijieVxlanTnlVniStatisticExtInBps OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The bytes received from this VXLAN tunnel in this vni per second."
+        ::= { ruijieVxlanTnlVniStatisticExtEntry 12 }   
+
+ruijieVxlanTnlVniStatisticExtOutBps OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The bytes sent to this VXLAN tunnel in this vni per second."
+        ::= { ruijieVxlanTnlVniStatisticExtEntry 13 }
+        
+--****************************************************************
+-- ruijieVxlanMIBTraps
+--****************************************************************
+ruijieVxlanTrapTnlUp NOTIFICATION-TYPE
+        OBJECTS {
+            ruijieVxlanTnlDestIp,
+            ruijieVxlanTnlSourceIp
+        }
+        STATUS current
+        DESCRIPTION
+            "This notification signifies that the status of a VXLAN 
+             tunnel has been changed to Up. 
+             The value of  'ruijieVxlanTnlDestIp' is the destination
+             IP address of the VXLAN tunnel.
+             The value of  'ruijieVxlanTnlSourceIp' is the source
+             IP address of the VXLAN tunnel."
+        ::= { ruijieVxlanMIBTraps 1 }
+        
+ruijieVxlanTrapTnlDown NOTIFICATION-TYPE
+        OBJECTS {
+            ruijieVxlanTnlDestIp,
+            ruijieVxlanTnlSourceIp
+        }
+        STATUS current
+        DESCRIPTION
+            "This notification signifies that the status of a VXLAN 
+             tunnel has been changed to Down. 
+             The value of  'ruijieVxlanTnlDestIp' is the destination
+             IP address of the VXLAN tunnel.
+             The value of  'ruijieVxlanTnlSourceIp' is the source
+             IP address of the VXLAN tunnel."
+        ::= { ruijieVxlanMIBTraps 2 }
+
+ruijieVxlanTrapTnlExtUp NOTIFICATION-TYPE
+        OBJECTS {
+            ruijieVxlanTnlExtDestIpType,
+            ruijieVxlanTnlExtDestIp,
+            ruijieVxlanTnlExtSourceIpType,
+            ruijieVxlanTnlExtSourceIp
+        }
+        STATUS current
+        DESCRIPTION
+            "This notification signifies that the status of a VXLAN 
+             tunnel has been changed to Up. 
+             The value of  'ruijieVxlanTnlExtDestIpType' is the destination
+             IP address type of the VXLAN tunnel.
+             The value of  'ruijieVxlanTnlExtDestIp' is the destination
+             IP address of the VXLAN tunnel.
+             The value of  'ruijieVxlanTnlExtSourceIpType' is the source
+             IP address type of the VXLAN tunnel.
+             The value of  'ruijieVxlanTnlExtSourceIp' is the source
+             IP address of the VXLAN tunnel."
+        ::= { ruijieVxlanMIBTraps 3 }
+        
+ruijieVxlanTrapTnlExtDown NOTIFICATION-TYPE
+        OBJECTS {
+            ruijieVxlanTnlExtDestIpType,
+            ruijieVxlanTnlExtDestIp,
+            ruijieVxlanTnlExtSourceIpType,
+            ruijieVxlanTnlExtSourceIp
+        }
+        STATUS current
+        DESCRIPTION
+            "This notification signifies that the status of a VXLAN 
+             tunnel has been changed to Down. 
+             The value of  'ruijieVxlanTnlExtDestIpType' is the destination
+             IP address type of the VXLAN tunnel.
+             The value of  'ruijieVxlanTnlExtDestIp' is the destination
+             IP address of the VXLAN tunnel.
+             The value of  'ruijieVxlanTnlExtSourceIpType' is the source
+             IP address type of the VXLAN tunnel.
+             The value of  'ruijieVxlanTnlExtSourceIp' is the source
+             IP address of the VXLAN tunnel."
+        ::= { ruijieVxlanMIBTraps 4 }
+        
+--****************************************************************
+-- ruijieVxlanMIBConformance
+--****************************************************************    
+ruijieVxlanCompliances  OBJECT IDENTIFIER ::= { ruijieVxlanMIBConformance 1 }
+ruijieVxlanGroups       OBJECT IDENTIFIER ::= { ruijieVxlanMIBConformance 2 }
+
+--
+-- compliance statements
+--
+ruijieVxlanCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+            ""
+        MODULE -- this module
+            MANDATORY-GROUPS {
+                ruijieVxlanStaticTnlCfgGroup,
+                ruijieVxlanTnlGroup,
+                ruijieVxlanVtepCfgGroup,
+                ruijieVxlanTrapTnlStatusGroup,
+                ruijieVxlanVlanAssoGroup
+            }
+            GROUP  ruijieVxlanVniStatisticGroup
+            DESCRIPTION
+                "These statistics are mandatory only for those systems 
+                 that count such statistics."
+            GROUP  ruijieVxlanTnlVniStatisticGroup
+            DESCRIPTION
+                "These statistics are mandatory only for those systems 
+                 that count such statistics."             
+        ::= { ruijieVxlanCompliances 1 }
+        
+--
+-- groups statements
+--  
+ruijieVxlanVniStatisticGroup  OBJECT-GROUP
+        OBJECTS {
+            ruijieVxlanVniStatisticInPackets,
+            ruijieVxlanVniStatisticOutPackets,
+            ruijieVxlanVniStatisticInBytes,
+            ruijieVxlanVniStatisticOutBytes,
+            ruijieVxlanVniStatisticInPps,
+            ruijieVxlanVniStatisticOutPps,
+            ruijieVxlanVniStatisticInBps,
+            ruijieVxlanVniStatisticOutBps
+        }
+        STATUS  current
+        DESCRIPTION
+            "A collection of objects for packets statistics of vni."
+        ::= { ruijieVxlanGroups 1 } 
+        
+ruijieVxlanStaticTnlCfgGroup  OBJECT-GROUP
+        OBJECTS {
+            ruijieVxlanStaticTnlRowStatus,
+            ruijieVxlanVniTnlRowStatus,
+            ruijieVxlanStaticTnlExtRowStatus,
+            ruijieVxlanVniTnlExtRowStatus
+        }
+        STATUS  current
+        DESCRIPTION
+            "A collection of objects for ceating VXLAN static tunnels and
+             relate VXLAN static tunnels to vnis."
+        ::= { ruijieVxlanGroups 2 }
+        
+ruijieVxlanTnlGroup  OBJECT-GROUP
+        OBJECTS {
+            ruijieVxlanTnlPortNum,
+            ruijieVxlanTnlStatus,
+            ruijieVxlanTnlExtPortNum,
+            ruijieVxlanTnlExtStatus
+        }
+        STATUS  current
+        DESCRIPTION
+            "A collection of objects for VXLAN tunnels. "
+        ::= { ruijieVxlanGroups 3 }        
+   
+ruijieVxlanTnlVniStatisticGroup  OBJECT-GROUP
+        OBJECTS {
+            ruijieVxlanTnlVniStatisticInPackets,
+            ruijieVxlanTnlVniStatisticOutPackets,
+            ruijieVxlanTnlVniStatisticInBytes,
+            ruijieVxlanTnlVniStatisticOutBytes,
+            ruijieVxlanTnlVniStatisticInPps,
+            ruijieVxlanTnlVniStatisticOutPps,
+            ruijieVxlanTnlVniStatisticInBps,
+            ruijieVxlanTnlVniStatisticOutBps,
+            ruijieVxlanTnlVniStatisticExtInPackets,
+            ruijieVxlanTnlVniStatisticExtOutPackets,
+            ruijieVxlanTnlVniStatisticExtInBytes,
+            ruijieVxlanTnlVniStatisticExtOutBytes,
+            ruijieVxlanTnlVniStatisticExtInPps,
+            ruijieVxlanTnlVniStatisticExtOutPps,
+            ruijieVxlanTnlVniStatisticExtInBps,
+            ruijieVxlanTnlVniStatisticExtOutBps
+        }
+        STATUS  current
+        DESCRIPTION
+            "A collection of objects for packets statistics of VXLAN tunnels
+             in certain vni."
+        ::= { ruijieVxlanGroups 4 }
+
+ruijieVxlanVtepCfgGroup  OBJECT-GROUP
+        OBJECTS {
+            ruijieVxlanVtepSourceLoopbackNum,
+            ruijieVxlanVtepSourceIPv4Addr,
+            ruijieVxlanVtepSourceIPv6Addr
+        }
+        STATUS  current
+        DESCRIPTION
+            "A collection of objects for configing vtep."
+        ::= { ruijieVxlanGroups 5 }
+        
+ruijieVxlanTrapTnlStatusGroup NOTIFICATION-GROUP
+        NOTIFICATIONS {
+            ruijieVxlanTrapTnlUp,
+            ruijieVxlanTrapTnlDown,
+            ruijieVxlanTrapTnlExtUp,
+            ruijieVxlanTrapTnlExtDown
+        }
+        STATUS  current
+        DESCRIPTION
+            "The collections of notifications sent for signifying that
+             the status of a VXLAN tunnel has been changed."
+        ::= { ruijieVxlanGroups 6 }
+
+ruijieVxlanVlanAssoGroup  OBJECT-GROUP
+        OBJECTS {
+            ruijieVxlanVlanAssoVni
+        }
+        STATUS  current
+        DESCRIPTION
+            "A collection of objects for vlan association."
+        ::= { ruijieVxlanGroups 7 }
+
+END

@@ -1,0 +1,569 @@
+-- *****************************************************************
+-- RAISECOM-DHCP-SNOOPING-MIB.mib:  Raisecom DHCP snooping MIB file
+--
+-- Oct. 2007, chenfeng
+--
+-- Copyright (c) 2007 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RAISECOM-DHCP-SNOOPING-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, 
+    OBJECT-TYPE,
+    IpAddress,
+    Unsigned32
+        FROM SNMPv2-SMI
+
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP
+        FROM SNMPv2-CONF
+
+    TruthValue,
+    MacAddress, 
+    DisplayString,
+    RowStatus
+        FROM SNMPv2-TC
+
+    InterfaceIndex
+        FROM IF-MIB
+
+    VlanIndex
+        FROM Q-BRIDGE-MIB 
+
+    ruijieMgmt
+        FROM RAISECOM-SMI;
+
+ruijieDhcpSnoopingMIB MODULE-IDENTITY
+    LAST-UPDATED "200710180000Z"
+    ORGANIZATION "Raisecom Networks Co.,Ltd."
+    CONTACT-INFO
+        " 
+        Tel: 4008-111-000 
+
+        E-mail: service@raisecom.com.cn"
+    DESCRIPTION
+        "This module defines raisecom DHCP snooping mibs."
+    REVISION    "200710180000Z"
+    DESCRIPTION
+        "Initial version of this MIB module."
+    ::= { ruijieMgmt 42} 
+
+ruijieDhcpSnoopingMIBObjects
+    OBJECT IDENTIFIER ::= { ruijieDhcpSnoopingMIB 1 }
+ruijieDhcpSnoopingMIBConformance
+    OBJECT IDENTIFIER ::= { ruijieDhcpSnoopingMIB 2 }
+
+ruijieSNDhcpGlobal
+    OBJECT IDENTIFIER ::= { ruijieDhcpSnoopingMIBObjects 1 }
+ruijieSNDhcpInterface
+    OBJECT IDENTIFIER ::= { ruijieDhcpSnoopingMIBObjects 2 }
+ruijieSNDhcpBindings
+    OBJECT IDENTIFIER ::= { ruijieDhcpSnoopingMIBObjects 3 }
+--
+-- The Global group  
+-- 
+
+ruijieSNDhcpFeatureEnable  OBJECT-TYPE
+    SYNTAX        TruthValue
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION
+        "This object indicates whether the DHCP Snooping feature is
+        enabled. 
+        Setting this object to 'false' disables the DHCP Snooping 
+        feature. Setting this object to 'true' will start the DHCP Snooping 
+        feature running in the device."
+    ::= { ruijieSNDhcpGlobal 1 }
+
+ruijieSNDhcpDatabaseUpdateInterval OBJECT-TYPE
+    SYNTAX          Unsigned32
+    UNITS            "seconds"
+    MAX-ACCESS    read-write
+    STATUS          current
+    DESCRIPTION
+        "This object indicates the time interval at which DHCP
+         bindings information will be written to the database file
+         denoted by ruijieSNDhcpDatabaseFile object."
+    ::= { ruijieSNDhcpGlobal 2 }
+
+ruijieSNDhcpRelayAgentInfoOptEnable OBJECT-TYPE
+    SYNTAX         TruthValue
+    MAX-ACCESS    read-write
+    STATUS          current
+    DESCRIPTION
+        "This object indicates if the DHCP relay agent information
+        option (option 82) will be inserted to DHCP packets by
+        DHCP Snooping feature.
+        If this object is set to 'true', DHCP option 82 data will
+        be inserted to DHCP packets.
+        If this object is set to 'false', DHCP option 82 data
+        will not be inserted."
+    REFERENCE
+        "RFC 3046, DHCP Relay Agent Information Option."
+    ::= { ruijieSNDhcpGlobal 3 }
+
+ruijieSNDhcpMatchMacAddressEnable OBJECT-TYPE
+    SYNTAX          TruthValue
+    MAX-ACCESS    read-write
+    STATUS          current
+    DESCRIPTION
+        "This object indicates if DHCP Snooping Mac address
+        matching is enabled. 
+        If this object is set to 'true', DHCP Snooping Mac
+        address matching is enabled.
+        If this object is set to 'false', DHCP Snooping Mac
+        address matching is disabled."
+    ::= { ruijieSNDhcpGlobal 4 }
+
+--
+-- The DHCP Snooping Interface Trust Table
+--
+
+ruijieSNDhcpIfTrustTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF RuijieSNDhcpIfTrustEntry
+    MAX-ACCESS   not-accessible
+    STATUS         current
+    DESCRIPTION
+        "A table provides the mechanism to configure the trust
+        state for DHCP Snooping purpose at each physical interface
+        capable of this feature. Some of the interfaces
+        (but not limited to) for which this feature might be
+        applicable are: ifType = ethernetCsmacd(6)." 
+    ::= { ruijieSNDhcpInterface 1 }
+ 
+ruijieSNDhcpIfTrustEntry OBJECT-TYPE
+    SYNTAX         RuijieSNDhcpIfTrustEntry 
+    MAX-ACCESS   not-accessible
+    STATUS         current
+    DESCRIPTION
+        "A row instance contains the configuration to enable
+        or disable trust state for DHCP Snooping at each physical
+        interface capable of this feature." 
+    INDEX { ruijieSNDhcpIfTrustIndex }
+    ::= { ruijieSNDhcpIfTrustTable 1 }
+
+RuijieSNDhcpIfTrustEntry ::= SEQUENCE {
+    ruijieSNDhcpIfTrustIndex        InterfaceIndex,
+    ruijieSNDhcpIfTrustEnable       TruthValue 
+}
+
+ruijieSNDhcpIfTrustIndex OBJECT-TYPE
+        SYNTAX         InterfaceIndex
+        MAX-ACCESS   not-accessible
+        STATUS         current
+        DESCRIPTION
+            " "
+        ::= { ruijieSNDhcpIfTrustEntry 1 }  
+     
+ruijieSNDhcpIfTrustEnable OBJECT-TYPE
+    SYNTAX        TruthValue
+    MAX-ACCESS  read-write
+    STATUS        current
+    DESCRIPTION
+        "This object indicates whether the interface is trusted for
+        DHCP Snooping purpose. 
+        If this object is set to 'true', the interface is trusted.
+        DHCP packets coming to this interface will be forwarded
+        without checking.
+        If this object is set to 'false', the interface is not
+        trusted. DHCP packets coming to this interface will be
+        subjected to DHCP checks." 
+    ::= { ruijieSNDhcpIfTrustEntry 2 }
+
+--
+-- The DHCP Snooping Interface Suppression Table
+--
+
+ruijieSNDhcpIfSuppressionTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF RuijieSNDhcpIfSuppressionEntry
+    MAX-ACCESS   not-accessible
+    STATUS         current
+    DESCRIPTION
+        "A table provides the mechanism to configure the suppression
+        state for DHCP Snooping purpose at each physical interface
+        capable of this feature. Some of the interfaces
+        (but not limited to) for which this feature might be
+        applicable are: ifType = ethernetCsmacd(6)." 
+    ::= { ruijieSNDhcpInterface 2 }
+ 
+ruijieSNDhcpIfSuppressionEntry OBJECT-TYPE
+    SYNTAX         RuijieSNDhcpIfSuppressionEntry 
+    MAX-ACCESS   not-accessible
+    STATUS         current
+    DESCRIPTION
+        "A row instance contains the configuration to enable
+        or disable suppression state for DHCP Snooping at each physical
+        interface capable of this feature." 
+    INDEX { ruijieSNDhcpIfSuppressionIndex }
+    ::= { ruijieSNDhcpIfSuppressionTable 1 }
+
+RuijieSNDhcpIfSuppressionEntry ::= SEQUENCE {
+    ruijieSNDhcpIfSuppressionIndex               InterfaceIndex,
+    ruijieSNDhcpIfSuppressionEnable       TruthValue 
+}
+
+ruijieSNDhcpIfSuppressionIndex OBJECT-TYPE
+        SYNTAX        InterfaceIndex
+        MAX-ACCESS  not-accessible
+        STATUS        current
+        DESCRIPTION
+            "This object indicates the interface open Suppression"
+        ::= { ruijieSNDhcpIfSuppressionEntry 1 }  
+     
+ruijieSNDhcpIfSuppressionEnable OBJECT-TYPE
+    SYNTAX         TruthValue
+    MAX-ACCESS   read-write
+    STATUS         current
+    DESCRIPTION
+        "This object indicates whether the interface is suppression for
+        DHCP Snooping purpose. 
+        If this object is set to 'true', the interface is suppressed.
+        DHCP packets coming to this interface will be ingnored.
+        If this object is set to 'false', the interface is not
+        suppressed. DHCP packets coming to this interface will be
+        processed by DHCP Snooping."
+    ::= { ruijieSNDhcpIfSuppressionEntry 2 }
+
+--
+--   The DHCP Address Binding Table
+--
+
+ruijieSNDhcpAddressBindTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF RuijieSNDhcpAddressBindEntry
+    MAX-ACCESS   not-accessible
+    STATUS         current
+    DESCRIPTION
+        "A table provides the mechanism to configure the DHCP Snooping 
+        binding database set as IP+MAC Address binding."
+    ::= { ruijieSNDhcpInterface 3 }
+ 
+ruijieSNDhcpAddressBindEntry OBJECT-TYPE
+    SYNTAX         RuijieSNDhcpAddressBindEntry 
+    MAX-ACCESS   not-accessible
+    STATUS         current
+    DESCRIPTION
+        "A row instance contains the configuration to enable
+        or disable address bind for DHCP Snooping at each physical
+        interface capable of this feature." 
+    INDEX { ruijieSNDhcpAddressBindIndex }
+    ::= { ruijieSNDhcpAddressBindTable 1 }
+
+RuijieSNDhcpAddressBindEntry ::= SEQUENCE {
+    ruijieSNDhcpAddressBindIndex        InterfaceIndex,
+    ruijieSNDhcpAddressBindEnable       TruthValue 
+}
+
+ruijieSNDhcpAddressBindIndex OBJECT-TYPE
+        SYNTAX        InterfaceIndex
+        MAX-ACCESS  not-accessible
+        STATUS        current
+        DESCRIPTION
+            "This object indicates the interface open Address binding."
+        ::= { ruijieSNDhcpAddressBindEntry 1 }  
+
+ruijieSNDhcpAddressBindEnable OBJECT-TYPE
+    SYNTAX         TruthValue
+    MAX-ACCESS   read-write
+    STATUS         current
+    DESCRIPTION
+        "This object indicates if DHCP Snooping Address Binding
+        is enabled.
+        Setting this object to 'true', DHCP binding entry is set as
+        Address binding entrys; Otherwise, this funciton is disabled."
+    ::= { ruijieSNDhcpAddressBindEntry 2 }
+    
+ruijieDhcpSnpFalsePktStatisticTable  OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieDhcpSnpFalsePktStatisticEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "The false packets statistic information table."
+    ::= { ruijieSNDhcpInterface 4 }
+
+       
+ruijieDhcpSnpFalsePktStatisticEntry OBJECT-TYPE
+    SYNTAX RuijieDhcpSnpFalsePktStatisticEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry in the snooping false packets statistic information table."
+    INDEX { ruijieDhcpSnpStatisticIfIndex, ruijieDhcpSnpStatisticVlanIndex }
+    ::= { ruijieDhcpSnpFalsePktStatisticTable 1 }
+        
+RuijieDhcpSnpFalsePktStatisticEntry ::=
+    SEQUENCE {
+        ruijieDhcpSnpStatisticIfIndex        InterfaceIndex,
+        ruijieDhcpSnpStatisticVlanIndex      VlanIndex,
+        ruijieDhcpSnpStatisticIfDescr        DisplayString,
+        ruijieDhcpSnpStatisticVlanId         VlanIndex,  
+        ruijieChaddrNomatchSrcMacDhcpPktNum  Counter32,
+        ruijieArpNomatchSnpBindTblPktNum     Counter32,
+        ruijieIpNomatchSnpBindTblPktNum      Counter32,
+        ruijieNomatchSnpBindTblDhcpPktNum    Counter32,
+        ruijieUntrustedReplyPktNum           Counter32,
+        ruijieDhcpPktIfRateDiscardNum        Counter32      
+    }
+    
+ruijieDhcpSnpStatisticIfIndex OBJECT-TYPE
+    SYNTAX        InterfaceIndex
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+        "The index of the interfaces."
+    ::= { ruijieDhcpSnpFalsePktStatisticEntry 1 }      
+    
+ruijieDhcpSnpStatisticVlanIndex OBJECT-TYPE
+    SYNTAX  VlanIndex
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION 
+        "The vlan Id."
+    ::= { ruijieDhcpSnpFalsePktStatisticEntry 2 }      
+
+ruijieDhcpSnpStatisticIfDescr OBJECT-TYPE
+    SYNTAX  DisplayString(SIZE(0..255))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION 
+        "The description of the interfaces."
+    ::= { ruijieDhcpSnpFalsePktStatisticEntry 3 }      
+    
+ruijieDhcpSnpStatisticVlanId OBJECT-TYPE
+    SYNTAX  VlanIndex
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION 
+        "The vlan Id."
+    ::= { ruijieDhcpSnpFalsePktStatisticEntry 4 }
+      
+ruijieChaddrNomatchSrcMacDhcpPktNum OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION 
+        "The false packets(chaddr in Dhcp packets is not same with source mac-address in
+        ethernet frame) count."
+    ::= { ruijieDhcpSnpFalsePktStatisticEntry 5 }   
+      
+ruijieArpNomatchSnpBindTblPktNum OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION 
+        "The false Arp packets match in snooping bind table count."
+    ::= { ruijieDhcpSnpFalsePktStatisticEntry 6 }   
+       
+ruijieIpNomatchSnpBindTblPktNum OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION 
+        "The false Ip packets do not match snooping bind table count."
+    ::= { ruijieDhcpSnpFalsePktStatisticEntry 7 }   
+
+ruijieNomatchSnpBindTblDhcpPktNum OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION 
+        "The Dhcp request packets do not match the snooping bind table."
+    ::= { ruijieDhcpSnpFalsePktStatisticEntry 8 }   
+      
+ruijieUntrustedReplyPktNum OBJECT-TYPE
+    SYNTAX  Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION 
+        "The untrusted port Dhcp reply packets count."
+    ::= { ruijieDhcpSnpFalsePktStatisticEntry 9 }
+
+ruijieDhcpPktIfRateDiscardNum OBJECT-TYPE
+    SYNTAX     Counter32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "DHCP packets that discarded for the rate limit on the interface. "
+    ::= { ruijieDhcpSnpFalsePktStatisticEntry 10 }
+
+--
+--   The DHCP Bindings Table
+--
+
+ruijieSNDhcpBindingsTable OBJECT-TYPE
+    SYNTAX         SEQUENCE OF RuijieSNDhcpBindingsEntry
+    MAX-ACCESS   not-accessible
+    STATUS         current
+    DESCRIPTION
+        "A table provides the DHCP bindings information learnt by
+        the device." 
+    ::= { ruijieSNDhcpBindings 1 }
+ 
+ruijieSNDhcpBindingsEntry OBJECT-TYPE
+    SYNTAX         RuijieSNDhcpBindingsEntry 
+    MAX-ACCESS   not-accessible
+    STATUS         current
+    DESCRIPTION
+        "A row instance contains the Mac address, IP address type,
+        IP address, VLAN number, interface number, leased time and
+        status of this instance." 
+    INDEX { ruijieSNDhcpBindingsVlan, 
+            ruijieSNDhcpBindingsMacAddress,
+            ruijieSNDhcpBindingsAddrType }
+    ::= { ruijieSNDhcpBindingsTable 1 }
+
+RuijieSNDhcpBindingsEntry ::= SEQUENCE {
+    ruijieSNDhcpBindingsVlan            VlanIndex,
+    ruijieSNDhcpBindingsMacAddress      MacAddress, 
+    ruijieSNDhcpBindingsAddrType        INTEGER,
+    ruijieSNDhcpBindingsIpAddress       IpAddress,
+    ruijieSNDhcpBindingsInterface       InterfaceIndex,
+    ruijieSNDhcpBindingsLeasedTime      Unsigned32,
+    ruijieSNDhcpBindingsStatus          RowStatus
+}
+ 
+ruijieSNDhcpBindingsVlan OBJECT-TYPE
+    SYNTAX         VlanIndex
+    MAX-ACCESS     not-accessible 
+    STATUS         current
+    DESCRIPTION
+        "This object indicates the VLAN to which a DHCP client host
+         belongs."
+    ::= { ruijieSNDhcpBindingsEntry 1 }
+
+ruijieSNDhcpBindingsMacAddress OBJECT-TYPE
+    SYNTAX         MacAddress 
+    MAX-ACCESS     not-accessible 
+    STATUS         current
+    DESCRIPTION
+        "This object indicates the MAC address of a DHCP client
+         host." 
+    ::= { ruijieSNDhcpBindingsEntry 2 }
+
+ruijieSNDhcpBindingsAddrType OBJECT-TYPE
+    SYNTAX INTEGER{
+        dynamic(1),     -- Dynamic Addresss bind, Dynamic get from DHCP Snooping address binding database;
+        static(2)       -- Static Address bind, Added by Administrator;
+    }
+    MAX-ACCESS   not-accessible
+    STATUS         current
+    DESCRIPTION
+        "This object indicates the type of IP+MAC binding address denoted
+        in ruijieSNDhcpBindingsIpAddress object." 
+    ::= { ruijieSNDhcpBindingsEntry 3 }
+
+ruijieSNDhcpBindingsIpAddress OBJECT-TYPE
+    SYNTAX         IpAddress
+    MAX-ACCESS   read-create
+    STATUS         current
+    DESCRIPTION
+        "This object indicates the allocated IP address of
+        a DHCP client host."
+    ::= { ruijieSNDhcpBindingsEntry 4 }
+
+ruijieSNDhcpBindingsInterface OBJECT-TYPE
+    SYNTAX         InterfaceIndex
+    MAX-ACCESS   read-create
+    STATUS         current
+    DESCRIPTION
+        "This object indicates the interface where a DHCP client
+        host connects to."
+    ::= { ruijieSNDhcpBindingsEntry 5 }
+
+ruijieSNDhcpBindingsLeasedTime OBJECT-TYPE
+    SYNTAX        Unsigned32
+    UNITS          "seconds" 
+    MAX-ACCESS  read-only
+    STATUS        current
+    DESCRIPTION
+        "This object indicates the leased time of this DHCP
+        bindings."
+    ::= { ruijieSNDhcpBindingsEntry 6 }
+
+ruijieSNDhcpBindingsStatus OBJECT-TYPE
+    SYNTAX         RowStatus 
+    MAX-ACCESS   read-create
+    STATUS         current
+    DESCRIPTION
+        "This object is used to to manage the deletion of rows
+        in this table. This object only supports active(1) and
+        destroy(6) value. 
+        Whenever a DHCP binding is learnt by the device, an
+        entry will be created by the device in this table with
+        its RowStatus object set to active(1). Setting this
+        object value to destroy(6) will clear the DHCP bindings
+        information represented by this row instance."
+    ::= { ruijieSNDhcpBindingsEntry 7 }
+
+ruijieDhcpTrapMacAddress OBJECT-TYPE
+    SYNTAX         MacAddress 
+    MAX-ACCESS     accessible-for-notify
+    STATUS         current
+    DESCRIPTION
+        "Dhcp trap macaddress"
+    ::= { ruijieDhcpSnoopingMIBObjects 4 }
+    
+
+-- dhcp snooping traps
+ruijieDhcpSnoopingMIBTraps  OBJECT IDENTIFIER ::= { ruijieDhcpSnoopingMIB 0 }
+                                 
+ruijieDhcpSnoopingNoResponseTrap NOTIFICATION-TYPE
+    OBJECTS { 
+        ruijieDhcpTrapMacAddress
+    }
+    STATUS current
+    DESCRIPTION
+          "Send trap when dhcp request packets not been response."
+    ::= { ruijieDhcpSnoopingMIBTraps 1 }
+
+
+ruijieDhcpSnoopingMIBCompliances OBJECT IDENTIFIER ::= { ruijieDhcpSnoopingMIBConformance 1 }
+ruijieDhcpSnoopingMIBGroups      OBJECT IDENTIFIER ::= { ruijieDhcpSnoopingMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieDhcpSnoopingMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Raisecom Dhcp Snooping MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieDhcpSnoopingMIBGroup
+                 }
+        ::= { ruijieDhcpSnoopingMIBCompliances 1 }
+                
+-- units of conformance
+
+ruijieDhcpSnoopingMIBGroup OBJECT-GROUP
+        OBJECTS {
+          ruijieSNDhcpFeatureEnable,
+          ruijieSNDhcpDatabaseUpdateInterval,
+          ruijieSNDhcpRelayAgentInfoOptEnable,
+          ruijieSNDhcpMatchMacAddressEnable,
+          ruijieSNDhcpIfTrustEnable,
+          ruijieSNDhcpIfSuppressionEnable,
+          ruijieSNDhcpAddressBindEnable,
+          ruijieDhcpSnpStatisticIfDescr,
+          ruijieDhcpSnpStatisticVlanId,  
+          ruijieChaddrNomatchSrcMacDhcpPktNum,
+          ruijieArpNomatchSnpBindTblPktNum,
+          ruijieIpNomatchSnpBindTblPktNum,
+          ruijieNomatchSnpBindTblDhcpPktNum,
+          ruijieUntrustedReplyPktNum,
+          ruijieDhcpPktIfRateDiscardNum,  
+          ruijieSNDhcpBindingsIpAddress,
+          ruijieSNDhcpBindingsInterface,
+          ruijieSNDhcpBindingsLeasedTime,
+          ruijieSNDhcpBindingsStatus,
+          ruijieDhcpTrapMacAddress
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing snooping Dhcp configure ."
+        ::= { ruijieDhcpSnoopingMIBGroups 1 }
+        
+END

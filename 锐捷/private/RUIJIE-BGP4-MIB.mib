@@ -14,13 +14,18 @@ IMPORTS
         MODULE-IDENTITY, 
         OBJECT-TYPE, 
         Unsigned32,
+        NOTIFICATION-TYPE,
         Counter32
               FROM SNMPv2-SMI
         TruthValue,
         TEXTUAL-CONVENTION
               FROM SNMPv2-TC
-        InetAutonomousSystemNumber 	
-	            FROM INET-ADDRESS-MIB
+        InetAutonomousSystemNumber,
+        InetAddressType,
+        InetAddress 	
+	      FROM INET-ADDRESS-MIB
+        AddressFamilyNumbers
+          FROM IANA-ADDRESS-FAMILY-NUMBERS-MIB        
         bgpPeerEntry,
         bgpPeerRemoteAddr
               FROM BGP4-MIB
@@ -62,7 +67,29 @@ RuijieBgpID ::= TEXTUAL-CONVENTION
 	SYNTAX OCTET STRING(SIZE (4))                             
 -- END£ºNoun definition 
 
+-- BEGIN£º RuijieBgpVrfName definition.
+RuijieBgpVrfName ::= TEXTUAL-CONVENTION
+   STATUS        current
+   DESCRIPTION
+       "An identifier that is assigned to each MPLS/BGP VPN and
+        is used to uniquely identify it.  This is assigned by the
+        system operator or NMS and SHOULD be unique throughout
+        the MPLS domain.  If this is the case, then this identifier
+        can then be used at any LSR within a specific MPLS domain
+        to identify this MPLS/BGP VPN.  It may also be possible to
+        preserve the uniqueness of this identifier across MPLS
+        domain boundaries, in which case this identifier can then
+        be used to uniquely identify MPLS/BGP VPNs on a more global
+        basis.  This object MAY be set to the VPN ID as defined in
+        RFC 2685."
+   REFERENCE
+        "RFC 2685 Fox B., et al, 'Virtual Private
 
+
+         Networks Identifier', September 1999."
+   SYNTAX OCTET STRING (SIZE (0..31))
+-- END£ºRuijieBgpVrfName definition 
+   
 -- BEGIN£ºruijieBgpBaseScalars
 
 ruijieBgpBaseScalars
@@ -201,6 +228,69 @@ ruijieBgpConfederationId OBJECT-TYPE
 	    ::= { ruijieBgpBaseScalarASConfedExts 2 }
 
 -- END£ºruijieBgpBaseScalarExtensions
+
+ruijieBgpRpkiSession
+        OBJECT IDENTIFIER ::= { ruijieBgpBaseScalars 3 }
+
+ruijieBgpRpkiTrap
+	OBJECT IDENTIFIER ::= { ruijieBgpRpkiSession 1 }
+
+ruijiebgpRpkiRoaExceed NOTIFICATION-TYPE
+    OBJECTS         {
+                        ruijieBgpRouteVrfName,
+                        ruijieBgpRpkiSessionAddrType,
+                        ruijieBgpRpkiSessionAddr,
+                        ruijieBgpRpkiSessionRoaLimit
+
+                    }
+    STATUS          current
+    DESCRIPTION
+        "The ruijiebgpRpkiRoaExceed is generated when the 
+        number of ROAs received from the session exceeded 
+        the alarm number."
+   ::= { ruijieBgpRpkiTrap 1 }
+
+ruijiebgpRpkiRoaExceedClear NOTIFICATION-TYPE
+    OBJECTS         {
+                        ruijieBgpRouteVrfName,
+                        ruijieBgpRpkiSessionAddrType,
+                        ruijieBgpRpkiSessionAddr,
+                        ruijieBgpRpkiSessionRoaLimit
+
+                    }
+    STATUS          current
+    DESCRIPTION
+        "The ruijiebgpRpkiRoaExceedClear is generated when the 
+        number of ROAs received from the session decreased below
+         the alarm number."
+   ::= { ruijieBgpRpkiTrap 2 }   
+
+ruijieBgpRpkiSessionLimit
+	OBJECT IDENTIFIER ::= { ruijieBgpRpkiSession 2 }   
+
+ruijieBgpRpkiSessionAddrType  OBJECT-TYPE
+        SYNTAX      InetAddressType
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The BGP rpki session IP address type."
+        ::= { ruijieBgpRpkiSessionLimit 1 }
+
+ruijieBgpRpkiSessionAddr OBJECT-TYPE
+          SYNTAX InetAddress
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "The BGP rpki session IP address. "
+           ::= { ruijieBgpRpkiSessionLimit 2 } 
+
+ruijieBgpRpkiSessionRoaLimit OBJECT-TYPE
+          SYNTAX Unsigned32 (0..4294967295)
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "The BGP rpki session Roa limit. "
+           ::= { ruijieBgpRpkiSessionLimit 3 }              
 
 -- END£ºruijieBgpBaseScalars
 
@@ -363,7 +453,7 @@ ruijieBgpPeerCapReceivedCode OBJECT-TYPE
 	MAX-ACCESS read-only
 	STATUS	   current
 	DESCRIPTION
-	    "The BGP Capability Advertisement Capability Code."
+	    "The BGP Capability Received Capability Code."
 	::= { ruijieBgpPeerCapsReceivedEntry 1 }
 
 ruijieBgpPeerCapReceivedValue OBJECT-TYPE
@@ -371,7 +461,7 @@ ruijieBgpPeerCapReceivedValue OBJECT-TYPE
 	MAX-ACCESS read-only
 	STATUS	   current
 	DESCRIPTION
-	    "The value of the announced capability."
+	    "The value of the received capability."
 	::= { ruijieBgpPeerCapsReceivedEntry 3 }
 
 -- END£ºruijieBgpPeerCapsReceivedTable
@@ -489,7 +579,300 @@ ruijieBgpPeerConfedMember OBJECT-TYPE
 	::= { ruijieBgpPeerConfedMemberEntry 1 }
 	
 -- END£ºruijieBgpPeerExtensions	 
-	
+
+-- Notifications
+ruijieBgpPeerTrap
+	OBJECT IDENTIFIER ::= { ruijieBgpPeer 4 }
+
+ruijiebgpEstablished NOTIFICATION-TYPE
+    OBJECTS         {
+                        ruijiebgpPeerLastError,
+                        ruijiebgpPeerState
+                    }
+    STATUS          current
+    DESCRIPTION
+        "The BGP rjbgpFsmStateChange notification is generated
+        for every BGP FSM state change. The bgpPeerRemoteAddr
+        value is attached to the notification object ID."
+   ::= { ruijieBgpPeerTrap 1 }
+
+ruijiebgpBackwardTransition NOTIFICATION-TYPE
+    OBJECTS         {
+                        ruijiebgpPeerLastError,
+                        ruijiebgpPeerState
+                    }
+    STATUS          current
+    DESCRIPTION
+        "The rjbgpBackwardTransition Event is generated when the
+        BGP FSM moves from a higher numbered state to a lower
+        numbered state. The bgpPeerRemoteAddr value is attached
+        to the notification object ID."
+   ::= { ruijieBgpPeerTrap 2 }
+
+ruijiebgpRouteThresholdExceed NOTIFICATION-TYPE
+    OBJECTS {
+                ruijieBgpAddressFamilyAfi,
+                ruijieBgpAddressFamilySafi,
+                ruijieBgpPeerType,
+                ruijieBgpPeerRemoteAddr,
+                ruijieBgpRouteLimitNum,
+                ruijieBgpRouteLimitThreshold
+            }
+    STATUS          current
+    DESCRIPTION
+        "The ruijiebgpRouteThresholdExceed is generated when the 
+        number of routes received from the BGP peer exceeded the
+         alarm threshold."
+   ::= { ruijieBgpPeerTrap 3 }   
+
+ruijiebgpRouteThresholdClear NOTIFICATION-TYPE
+    OBJECTS {
+                ruijieBgpAddressFamilyAfi,
+                ruijieBgpAddressFamilySafi,
+                ruijieBgpPeerType,
+                ruijieBgpPeerRemoteAddr,
+                ruijieBgpRouteLimitNum,
+                ruijieBgpRouteLimitThreshold
+            }
+    STATUS          current
+    DESCRIPTION
+        "The ruijiebgpRouteThresholdClear is generated when the 
+        number of routes received from the BGP peer decreased 
+        below the alarm threshold."
+   ::= { ruijieBgpPeerTrap 4 }   
+
+ruijiebgpRouteExceed NOTIFICATION-TYPE
+    OBJECTS {
+                ruijieBgpAddressFamilyAfi,
+                ruijieBgpAddressFamilySafi,
+                ruijieBgpPeerType,
+                ruijieBgpPeerRemoteAddr,
+                ruijieBgpRouteLimitNum,
+                ruijieBgpRouteLimitThreshold
+            }
+    STATUS          current
+    DESCRIPTION
+        "The ruijiebgpRouteExceed is generated when the
+        number of routes received from the BGP peer 
+        exceeded the alarm number."
+   ::= { ruijieBgpPeerTrap 5 }  
+
+ruijiebgpRouteExceedClear NOTIFICATION-TYPE
+    OBJECTS {
+                ruijieBgpAddressFamilyAfi,
+                ruijieBgpAddressFamilySafi,
+                ruijieBgpPeerType,
+                ruijieBgpPeerRemoteAddr,
+                ruijieBgpRouteLimitNum,
+                ruijieBgpRouteLimitThreshold
+            }
+    STATUS          current
+    DESCRIPTION
+        "The ruijiebgpRouteClear is generated when the
+        number of routes received from the BGP peer 
+        decreased below the alarm number."
+   ::= { ruijieBgpPeerTrap 6 }  
+
+ruijiebgpVrfRouteExceed NOTIFICATION-TYPE
+    OBJECTS {
+                ruijieBgpRouteVrfName,
+                ruijieBgpRouteLimitNum,
+                ruijieBgpRouteLimitCurrentNum
+            }
+    STATUS          current
+    DESCRIPTION
+        "The ruijiebgpVrfRouteExceed is generated when the
+        number of routes in the VPN instance reached the 
+        alarm threshould."
+   ::= { ruijieBgpPeerTrap 7 }  
+
+ruijiebgpVrfRouteExceedClear NOTIFICATION-TYPE
+    OBJECTS {
+                ruijieBgpRouteVrfName,
+                ruijieBgpRouteLimitNum,
+                ruijieBgpRouteLimitCurrentNum
+            }
+    STATUS          current
+    DESCRIPTION
+        "The ruijiebgpVrfRouteClear is generated when the
+        number of routes in the VPN instance fell below 
+        the clear alarm threshold."
+   ::= { ruijieBgpPeerTrap 8 }                
+
+-- END£ºruijieBgpPeerTrap 
+
+-- BEGIN£ºruijieBgpPeerExtensions
+
+-- ruijieBGP Peer table.  This table contains, one entry per
+-- BGP peer, information about the BGP peer.
+
+ruijieBgpPeerTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF RuijieBgpPeerEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "BGP peer table.  This table contains,
+            one entry per BGP peer, information about
+            the connections with BGP peers."
+    ::= { ruijieBgpPeer 5 }
+
+ruijieBgpPeerEntry OBJECT-TYPE
+    SYNTAX     RuijieBgpPeerEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "Entry containing information about the
+            connection with a BGP peer."
+    INDEX { ruijieBgpPeerVrfName,
+            ruijieBgpPeerType,
+            ruijieBgpPeerRemoteAddr      
+        }
+    ::= { ruijieBgpPeerTable 1 }
+
+RuijieBgpPeerEntry ::= SEQUENCE {
+        ruijieBgpPeerVrfName                    RuijieBgpVrfName,
+        ruijieBgpPeerType                       InetAddressType,
+        ruijieBgpPeerRemoteAddr                 InetAddress,
+        ruijiebgpPeerLastError                  OCTET STRING,
+        ruijiebgpPeerState                      INTEGER
+        }
+
+ruijieBgpPeerVrfName OBJECT-TYPE
+   SYNTAX        RuijieBgpVrfName
+   MAX-ACCESS    read-only
+   STATUS        current
+   DESCRIPTION
+       "The human-readable name of this VPN.  This MAY
+        be equivalent to the [RFC2685] VPN-ID, but may
+        also vary.  If it is set to the VPN ID, it MUST
+        be equivalent to the value of mplsL3VpnVrfVpnId.
+        It is strongly recommended that all sites supporting
+        VRFs that are part of the same VPN use the same
+        naming convention for VRFs as well as the same VPN
+        ID."
+   REFERENCE
+       "[RFC2685]"
+   ::= { ruijieBgpPeerEntry 1 }        
+  
+ruijieBgpPeerType OBJECT-TYPE
+          SYNTAX InetAddressType
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "This attribute shall specify the address family of the peer's address. "
+           ::= { ruijieBgpPeerEntry 2 }
+
+ruijieBgpPeerRemoteAddr OBJECT-TYPE
+          SYNTAX InetAddress
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "This attribute shall specify the address of the peer. "
+           ::= { ruijieBgpPeerEntry 3 }   
+
+ruijiebgpPeerLastError OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE  (2))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The last error code and subcode seen by this
+        peer on this connection.  If no error has
+        occurred, this field is zero.  Otherwise, the
+        first byte of this two byte OCTET STRING
+        contains the error code, and the second byte
+        contains the subcode."
+    REFERENCE       "RFC 4271, Section 4.5." 
+    ::= { ruijieBgpPeerEntry 4 }
+           
+ruijiebgpPeerState OBJECT-TYPE
+          SYNTAX   INTEGER  {
+                        none(0),
+                        idle(1),
+                        connect(2),
+                        active(3),
+                        opensent(4),
+                        openconfirm(5),
+                        established(6)
+                    }
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The BGP peer connection previous state."
+    REFERENCE
+        "RFC 1771, Section 8, A Border Gateway Protocol 4
+         (BGP-4)." 
+    ::= { ruijieBgpPeerEntry 5 }
+  
+    
+-- END£ºrjbgpPeerTable
+    
+ruijieBgpPeerRouteLimit OBJECT IDENTIFIER ::= { ruijieBgpPeer 6 }
+
+ruijieBgpAddressFamilyAfi OBJECT-TYPE
+    SYNTAX     AddressFamilyNumbers
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "BGP peer address family afi."
+    ::= { ruijieBgpPeerRouteLimit 1 }
+
+ruijieBgpAddressFamilySafi OBJECT-TYPE
+    SYNTAX   INTEGER  {
+        unicast(1),
+        multicast(2),
+        unicast-multicast(3),
+        mpls-label(4),
+        static-multicast(5),
+        mdt-map(6),
+        vpls(65),
+        mdt(66),
+        evpn(70),
+        bgp-ls(71),
+        sr-policy(73),
+        mpls-vpn(128),
+        vr-labeled(129),
+        flowspec(133),
+        flowspec-vpn(134),
+        vr-unlabeled(140)
+    }
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "BGP peer subsequent address family."
+    ::= { ruijieBgpPeerRouteLimit 2 }
+
+ruijieBgpRouteLimitNum OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "BGP peer route limit."
+    ::= { ruijieBgpPeerRouteLimit 3 }
+
+ruijieBgpRouteLimitThreshold OBJECT-TYPE
+    SYNTAX     INTEGER(1..100)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "BGP peer route limit threshold."
+    ::= { ruijieBgpPeerRouteLimit 4 }    
+
+ruijieBgpRouteLimitCurrentNum OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "BGP peer current route number."
+    ::= { ruijieBgpPeerRouteLimit 5 } 
+
+ruijieBgpRouteVrfName OBJECT-TYPE
+    SYNTAX     RuijieBgpVrfName
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "BGP VRF name."
+    ::= { ruijieBgpPeerRouteLimit 6 }          
+
 -- END£ºruijieBgpPeer
 
 -- BEGIN£ºConformance Information

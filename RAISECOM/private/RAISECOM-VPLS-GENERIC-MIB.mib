@@ -1,0 +1,891 @@
+RAISECOM-VPLS-GENERIC-MIB DEFINITIONS ::= BEGIN
+      IMPORTS
+      NOTIFICATION-TYPE, MODULE-IDENTITY, OBJECT-TYPE,
+      Unsigned32, Counter32, transmission
+         FROM SNMPv2-SMI                    -- RFC2578
+
+      MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+         FROM SNMPv2-CONF                   -- RFC2580
+
+      TruthValue, RowStatus, StorageType
+         FROM SNMPv2-TC                     -- RFC2579
+
+      SnmpAdminString
+         FROM SNMP-FRAMEWORK-MIB            -- RFC3411
+
+      PwIndexType
+         FROM PW-TC-STD-MIB
+
+--  We need to add this for vpls instance
+			InterfaceIndexOrZero
+        FROM IF-MIB                        -- [RFC2863]
+
+      VPNIdOrZero
+         FROM VPN-TC-STD-MIB                -- RFC4265
+
+      ruijieMgmt
+         FROM RAISECOM-SMI
+      ;
+
+    -- Vpls BGP Autodiscovery specific Textual Convention
+    RuijieVplsBgpRouteDistinguisher ::= TEXTUAL-CONVENTION
+      STATUS        current
+      DESCRIPTION
+          "Syntax for a route distinguisher. For a complete
+           definition of a route distinguisher, see [RFC4364].
+           For more details on use of a route distinguisher
+           for a VPLS service, see [RFC4761]"
+      REFERENCE
+          "[RFC4364]"
+      SYNTAX  OCTET STRING(SIZE (0..256))
+
+    RuijieVplsBgpRouteTarget ::= TEXTUAL-CONVENTION
+      STATUS        current
+      DESCRIPTION
+          "Syntax for a route target. For a complete
+           definition of a route target, see [RFC4364]."
+      REFERENCE
+          "[RFC4364]"
+      SYNTAX  OCTET STRING(SIZE (0..256))
+
+    RuijieVplsBgpRouteTargetType ::= TEXTUAL-CONVENTION
+      STATUS        current
+      DESCRIPTION
+       "Used to define the type of a route target usage.
+        Route targets can be specified to be imported,
+        exported, or both.  For a complete definition of a
+        route target, see [RFC4364]."
+      REFERENCE
+        "[RFC4364]"
+      SYNTAX INTEGER { import(1), export(2), both(3) }
+
+   ruijievplsGenericDraft01MIB MODULE-IDENTITY
+      LAST-UPDATED "201004281200Z"  -- 28 April 2010 12:00:00 GMT
+      ORGANIZATION "Raisecom Networks Co.,Ltd."
+      CONTACT-INFO
+                "
+                Tel: 4008-111-000
+
+                E-mail: service@raisecom.com.cn"
+
+      DESCRIPTION
+          "Copyright (C) Raisecom Networks.
+           This MIB module contains generic managed object definitions
+           for Virtual Private LAN Services as in [RFC4762] and
+           [RFC4761]
+
+           This MIB module enables the use of any underlying PseudoWire
+           network."
+      -- Revision history.
+      REVISION
+          "201004281200Z"  -- 28 April 2010 12:00:00 GMT
+      DESCRIPTION
+          "Changes from previous version:
+           1) Moved LDP Specific information to VPLS-LDP-MIB
+           2) Created the ruijievplsStatusTable to store status information.
+          "
+      REVISION
+          "201006041200Z"  -- 4 June 2010 12:00:00 GMT
+
+
+      DESCRIPTION "Initial version"
+           ::= { ruijieMgmt 77 }
+
+   -- Top-level components of this MIB.
+
+   -- Notifications
+   ruijievplsNotifications OBJECT IDENTIFIER
+                                 ::= { ruijievplsGenericDraft01MIB 0 }
+   -- Tables, Scalars
+   ruijievplsObjects       OBJECT IDENTIFIER
+                                 ::= { ruijievplsGenericDraft01MIB 1 }
+   -- Conformance
+   ruijievplsConformance   OBJECT IDENTIFIER
+                                 ::= { ruijievplsGenericDraft01MIB 2 }
+
+   -- PW Virtual Connection Table
+
+   ruijievplsConfigIndexNext OBJECT-TYPE
+      SYNTAX            Unsigned32
+      MAX-ACCESS        read-only
+      STATUS            current
+      DESCRIPTION
+          "This object contains an appropriate value to be used
+           for ruijievplsConfigIndex when creating entries in the
+           ruijievplsConfigTable. The value 0 indicates that no
+           unassigned entries are available.  To obtain the
+           value of ruijievplsConfigIndex for a new entry in the
+           ruijievplsConfigTable, the manager issues a management
+           protocol retrieval operation to obtain the current
+           value of ruijievplsConfigIndex.  After each retrieval
+           operation, the agent should modify the value to
+           reflect the next unassigned index.  After a manager
+           retrieves a value the agent will determine through
+           its local policy when this index value will be made
+           available for reuse."
+      ::= { ruijievplsObjects 1 }
+
+      ruijievplsConfigTable OBJECT-TYPE
+          SYNTAX          SEQUENCE OF RuijieVplsConfigEntry
+          MAX-ACCESS      not-accessible
+          STATUS          current
+          DESCRIPTION
+               "This table specifies information for configuring
+                and monitoring Virtual Private Lan Services(VPLS).
+                "
+          ::= { ruijievplsObjects 2 }
+
+      ruijievplsConfigEntry OBJECT-TYPE
+          SYNTAX          RuijieVplsConfigEntry
+          MAX-ACCESS      not-accessible
+          STATUS          current
+          DESCRIPTION
+           "A row in this table represents a Virtual Private Lan
+            Service(VPLS) in a packet network. It is indexed by
+            ruijievplsConfigIndex, which uniquely identifies a single VPLS.
+
+            A row is created by the operator or by the agent if a
+            VPLS service is created by non-SNMP application or
+            due to autodiscovery process.
+
+            None of the read-create objects values can be
+            changed when ruijievplsConfigRowStatus is in the active(1)
+            state. Changes are allowed when the ruijievplsConfigRowStatus
+            is in notInService(2) or notReady(3) states only.
+            If the operator need to change one of the values
+            for an active row the ruijievplsConfigRowStatus should be
+            first changed to notInService(2), the objects may
+            be changed now, and later to active(1) in order to
+            re-initiate the signaling process with the new
+            values in effect.
+            "
+          INDEX           { ruijievplsConfigIndex }
+          ::= { ruijievplsConfigTable 1 }
+
+     RuijieVplsConfigEntry ::=
+        SEQUENCE {
+         ruijievplsConfigIndex                                Unsigned32,
+         ruijievplsConfigName                                 SnmpAdminString,
+         ruijievplsConfigDescr                                SnmpAdminString,
+         ruijievplsConfigAdminStatus                          INTEGER,
+         ruijievplsConfigMacLearning                          TruthValue,
+         ruijievplsConfigDiscardUnknownDest                   TruthValue,
+         ruijievplsConfigMacAging                             TruthValue,
+         ruijievplsConfigFwdFullHighWatermark                 Unsigned32,
+         ruijievplsConfigFwdFullLowWatermark                  Unsigned32,
+         ruijievplsConfigRowStatus                            RowStatus,
+         ruijievplsConfigMtu                                  Unsigned32,
+         ruijievplsConfigVpnId                                VPNIdOrZero,
+         ruijievplsConfigServiceType                          INTEGER,
+         ruijievplsConfigServiceSignal                        INTEGER
+          }
+
+      ruijievplsConfigIndex  OBJECT-TYPE
+          SYNTAX          Unsigned32  (1..2147483647)
+          MAX-ACCESS      not-accessible
+          STATUS          current
+          DESCRIPTION
+               "Unique index for the conceptual row identifying
+                a VPLS service."
+          ::= { ruijievplsConfigEntry 1 }
+
+      ruijievplsConfigName  OBJECT-TYPE
+          SYNTAX          SnmpAdminString
+          MAX-ACCESS      read-create
+          STATUS          current
+          DESCRIPTION
+               "A textual name of the VPLS.
+                If there is no local name, or this object is
+                otherwise not applicable, then this object MUST
+                contain a zero-length octet string."
+          DEFVAL           { "" }
+          ::= { ruijievplsConfigEntry 2 }
+
+      ruijievplsConfigDescr  OBJECT-TYPE
+          SYNTAX          SnmpAdminString
+          MAX-ACCESS      read-create
+          STATUS          current
+          DESCRIPTION
+               "A textual string containing information about the
+               VPLS service. If there is no information for this VPLS
+               service, then this object MUST contain a zero-length
+               octet string."
+          DEFVAL           { "" }
+          ::= { ruijievplsConfigEntry 3 }
+
+      ruijievplsConfigAdminStatus OBJECT-TYPE
+          SYNTAX          INTEGER {
+                              up(1),
+                              down(2),
+                              testing(3)   -- in some test mode
+
+                          }
+          MAX-ACCESS      read-only
+          STATUS          current
+          DESCRIPTION
+               "The desired administrative state of the VPLS
+                service. If the administrative status of the
+                Vpls service is changed to enable then this
+                service is able to utilize the pseudo wire to
+                perform the tasks of a VPLS service.
+                The testing(3) state indicates that no operational
+                packets can be passed. "
+          DEFVAL           { up }
+          ::= { ruijievplsConfigEntry 4 }
+
+      ruijievplsConfigMacLearning OBJECT-TYPE
+          SYNTAX          TruthValue
+          MAX-ACCESS      read-create
+          STATUS          current
+          DESCRIPTION
+               "This object specifies if MAC Learning is enabled
+                in this service. If this object is true then Mac
+                Learning is enabled. If false, then Mac Learning is
+                disabled."
+          DEFVAL          { true }
+          ::= { ruijievplsConfigEntry 5 }
+
+      ruijievplsConfigDiscardUnknownDest OBJECT-TYPE
+          SYNTAX          TruthValue
+          MAX-ACCESS      read-create
+          STATUS          current
+          DESCRIPTION
+               "If the value of this object is 'true', then frames
+                received with an unknown destination MAC are discarded
+                in this VPLS. If 'false', then the packets are
+                processed."
+          DEFVAL          { false }
+          ::= { ruijievplsConfigEntry 6 }
+
+      ruijievplsConfigMacAging OBJECT-TYPE
+          SYNTAX          TruthValue
+          MAX-ACCESS      read-only
+          STATUS          current
+          DESCRIPTION
+               "If the value of this object is 'true'
+                then the MAC aging process is enabled in
+                this VPLS. If 'false', then the MAC aging process
+                is disabled"
+          DEFVAL          { true }
+          ::= { ruijievplsConfigEntry 7 }
+
+      ruijievplsConfigFwdFullHighWatermark OBJECT-TYPE
+          SYNTAX          Unsigned32 (0..100)
+          UNITS           "percentage"
+          MAX-ACCESS      read-create
+          STATUS          current
+          DESCRIPTION
+               "This object specifies the utilization of the
+                forwarding database for this VPLS instance at
+                which the ruijievplsFwdFullAlarmRaised notification
+                will be sent."
+          DEFVAL          { 100 }
+          ::= { ruijievplsConfigEntry 8 }
+
+      ruijievplsConfigFwdFullLowWatermark OBJECT-TYPE
+          SYNTAX          Unsigned32 (0..100)
+          UNITS           "percentage"
+          MAX-ACCESS      read-create
+          STATUS          current
+          DESCRIPTION
+               "This object specifies the utilization of the
+                forwarding database for this VPLS instance
+                at which the ruijievplsFwdFullAlarmCleared
+                notification will be sent."
+          DEFVAL          { 80 }
+          ::= { ruijievplsConfigEntry 9 }
+
+      ruijievplsConfigRowStatus OBJECT-TYPE
+          SYNTAX          RowStatus
+          MAX-ACCESS      read-create
+          STATUS          current
+          DESCRIPTION
+               "For creating, modifying, and deleting this row.
+                None of the read-create objects in the
+                conceptual rows may be changed when this
+                object is in the active(1) state."
+          ::= { ruijievplsConfigEntry 10 }
+
+      ruijievplsConfigMtu OBJECT-TYPE
+          SYNTAX          Unsigned32 (46..1530)
+          MAX-ACCESS      read-create
+          STATUS          current
+          DESCRIPTION
+               "The value of this object specifies the MTU of this
+                vpls instance."
+          DEFVAL          { 1500 }
+          ::= { ruijievplsConfigEntry 11 }
+
+      ruijievplsConfigVpnId OBJECT-TYPE
+          SYNTAX          VPNIdOrZero
+          MAX-ACCESS      read-create
+          STATUS          current
+          DESCRIPTION
+               "This objects indicates the IEEE 802-1990
+                VPN ID of the associated VPLS service."
+-- Ed note: Should we import the VPNIdOrZero TC or
+--              define a new TC?
+          ::= { ruijievplsConfigEntry 12 }
+
+      ruijievplsConfigServiceType OBJECT-TYPE
+          SYNTAX          INTEGER {
+                           vlan     (1),
+                           ethernet (2)
+                          }
+          MAX-ACCESS      read-create
+          STATUS          current
+          DESCRIPTION
+               "The value of this object specifies the type of
+                service emulated by this vpls instance. Invalid for RFC 4762"
+          DEFVAL          { vlan }
+          ::= { ruijievplsConfigEntry 13 }
+
+      ruijievplsConfigServiceSignal   OBJECT-TYPE
+           SYNTAX          INTEGER {
+                                   manual        (1),
+                                   autodiscovery (2)
+                           }
+           MAX-ACCESS      read-create
+           STATUS          current
+           DESCRIPTION
+                "The value of this object indicates
+                 vpls is created with LDP or BGP signalling.
+
+                 The value of this object must be
+                 specifed when the row is created and cannot
+                 be changed while the row status is active(1)"
+          ::= { ruijievplsConfigEntry 14}
+
+
+-- VPLS Status table
+
+      ruijievplsStatusTable OBJECT-TYPE
+          SYNTAX          SEQUENCE OF RuijieVplsStatusEntry
+          MAX-ACCESS      not-accessible
+          STATUS          current
+          DESCRIPTION
+                "This table provides information for monitoring
+                Virtual Private Lan Services(VPLS).
+                "
+          ::= { ruijievplsObjects 3 }
+
+      ruijievplsStatusEntry OBJECT-TYPE
+          SYNTAX          RuijieVplsStatusEntry
+          MAX-ACCESS      not-accessible
+          STATUS          current
+
+          DESCRIPTION
+           "A row in this table represents a Virtual Private Lan
+            Service(VPLS) in a packet network. It is indexed by
+            ruijievplsConfigIndex, which uniquely identifies a single VPLS.
+
+            A row in this table is automatically created by the agent
+            when a VPLS service is configured.
+            "
+          INDEX           { ruijievplsConfigIndex }
+          ::= { ruijievplsStatusTable 1 }
+
+     RuijieVplsStatusEntry ::=
+        SEQUENCE {
+         ruijievplsStatusOperStatus                        INTEGER,
+         ruijievplsStatusPeerCount                         Counter32
+          }
+
+      ruijievplsStatusOperStatus OBJECT-TYPE
+          SYNTAX          INTEGER {
+                              up(1),
+                              down(2)
+                          }
+          MAX-ACCESS      read-only
+          STATUS          current
+          DESCRIPTION
+               "The current operational state of this VPLS Service."
+          ::= { ruijievplsStatusEntry 1 }
+
+      ruijievplsStatusPeerCount OBJECT-TYPE
+          SYNTAX          Counter32
+          MAX-ACCESS      read-only
+          STATUS          current
+          DESCRIPTION
+               "This objects specifies the number of peers
+                present in this vpls instance."
+          ::= { ruijievplsStatusEntry 2 }
+
+
+      -- VPLS PW Binding Table
+
+      ruijievplsPwBindTable OBJECT-TYPE
+          SYNTAX          SEQUENCE OF RuijieVplsPwBindEntry
+          MAX-ACCESS      not-accessible
+          STATUS          current
+          DESCRIPTION
+               "This table provides an association between a
+                VPLS service and the corresponding Pseudo
+                Wires. A service can have more than one Pseudo
+                Wire association. Pseudo Wires are defined in
+                the pwTable"
+          ::= { ruijievplsObjects 4 }
+
+      ruijievplsPwBindEntry OBJECT-TYPE
+          SYNTAX          RuijieVplsPwBindEntry
+          MAX-ACCESS      not-accessible
+          STATUS          current
+          DESCRIPTION
+               "Each row represents an association between a
+                VPLS instance and one or more Pseudo Wires
+                defined in the pwTable. Each index is unique
+                in describing an entry in this table. However
+                both indexes are required to define the one
+                to many association of service to
+                pseudowire."
+          INDEX  { ruijievplsConfigIndex,ruijievplsPwBindIndex }
+          ::= { ruijievplsPwBindTable 1 }
+
+      RuijieVplsPwBindEntry ::=
+          SEQUENCE {
+							ruijievplsPwBindIndex            Unsigned32,
+              ruijievplsPwBindConfigType       INTEGER,
+              ruijievplsPwBindType             INTEGER
+          }
+
+     ruijievplsPwBindIndex  OBJECT-TYPE
+          SYNTAX          Unsigned32
+          MAX-ACCESS      not-accessible
+          STATUS          current
+          DESCRIPTION
+               "Unique index for PW bind in vpls instance."
+          ::= { ruijievplsPwBindEntry 1 }
+
+-- ruijievplsPwBindConfigType depends on vpls implementation type.
+      ruijievplsPwBindConfigType   OBJECT-TYPE
+           SYNTAX          INTEGER {
+                                   manual        (1),
+                                   autodiscovery (2)
+                           }
+           MAX-ACCESS      read-only
+           STATUS          current
+           DESCRIPTION
+                "The value of this object indicates
+                 whether the Pseudo Wire binding was created
+                 manually or via autodiscovery.
+
+                 The value of this object must be
+                 specifed when the row is created and cannot
+                 be changed while the row status is active(1)"
+          ::= { ruijievplsPwBindEntry 2}
+
+--  This is hub pw or spoke pw
+      ruijievplsPwBindType   OBJECT-TYPE
+           SYNTAX          INTEGER {
+                                   mesh  (1),
+                                   spoke (2)
+                           }
+           MAX-ACCESS      read-only
+           STATUS          current
+           DESCRIPTION
+                "The value of this object indicates
+                 whether the Pseudo Wire binding is of
+                 type mesh or spoke.
+
+                 The value of this object must be
+                 specifed when the row is created and cannot
+                 be changed while the row status is active(1)"
+          ::= { ruijievplsPwBindEntry 3 }
+
+
+-- ruijievplsBgpADConfigTable
+
+      ruijievplsBgpADConfigTable OBJECT-TYPE
+            SYNTAX          SEQUENCE OF RuijieVplsBgpADConfigEntry
+            MAX-ACCESS      not-accessible
+            STATUS          current
+            DESCRIPTION
+            "This table specifies information for configuring
+             BGP Auto-discovery parameters for a given Vpls service.
+            "
+            ::= { ruijievplsObjects 5 }
+
+      ruijievplsBgpADConfigEntry OBJECT-TYPE
+            SYNTAX          RuijieVplsBgpADConfigEntry
+            MAX-ACCESS      not-accessible
+            STATUS          current
+            DESCRIPTION
+            "A row in this table represents BGP based autodiscovery
+             is in use for this instance of Vpls.
+             A row in this table is indexed by ruijievplsConfigIndex, which
+             uniquely identifies a single VPLS.
+             None of the read-create objects can be changed when
+             vplsBGPADConfigRowStatus is in active(1) state. Changes
+             are allowed when the vplsBGPADConfigRowStatus is in
+             notInService(2) or notReady(3) states only.
+             If the operator need to change one of the values
+             for an active row the ruijievplsConfigRowStatus should be
+             first changed to notInService(2), the objects may
+             be changed now, and later to active(1) in order to
+             re-initiate the signaling process with the new
+             values in effect.
+            "
+            INDEX      { ruijievplsConfigIndex }
+            ::= { ruijievplsBgpADConfigTable 1 }
+
+      RuijieVplsBgpADConfigEntry ::=
+         SEQUENCE {
+          ruijievplsBgpADConfigRouteDistinguisher   RuijieVplsBgpRouteDistinguisher,
+          ruijievplsBgpADConfigRowStatus            RowStatus
+         }
+
+      ruijievplsBgpADConfigRouteDistinguisher OBJECT-TYPE
+            SYNTAX          RuijieVplsBgpRouteDistinguisher
+            MAX-ACCESS      read-create
+            STATUS          current
+            DESCRIPTION
+            " The route distinguisher for this VPLS. See [RFC4364]
+            for a complete definition of a route distinguisher.
+            for more details on use of a route distinguisher
+            for a VPLS service, see [RFC4761]
+            "
+            ::= { ruijievplsBgpADConfigEntry 1 }
+
+      ruijievplsBgpADConfigRowStatus OBJECT-TYPE
+            SYNTAX          RowStatus
+            MAX-ACCESS      read-create
+            STATUS          current
+            DESCRIPTION
+            " For creating, modifying, and deleting this row.
+            None of the read-create objects in the
+            conceptual rows may be changed when this
+            object is in the active(1) state.
+            "
+            ::= { ruijievplsBgpADConfigEntry 2 }
+
+
+    -- ruijievplsBgpRteTargetTable
+
+      ruijievplsBgpRteTargetTable   OBJECT-TYPE
+            SYNTAX          SEQUENCE OF RuijieVplsBgpRteTargetEntry
+            MAX-ACCESS      not-accessible
+            STATUS          current
+            DESCRIPTION
+            " This table specifies the list of Route Targets
+              imported or exported by BGP during auto-discovery of VPLS.
+            "
+            ::= { ruijievplsObjects 6 }
+
+      ruijievplsBgpRteTargetEntry   OBJECT-TYPE
+            SYNTAX          RuijieVplsBgpRteTargetEntry
+            MAX-ACCESS      not-accessible
+            STATUS          current
+            DESCRIPTION
+              "An entry in this table specifies the value of the
+               Route Target being used by BGP. Depending on the value
+               of vplsBgpRteTargetType an RT might be exported or
+               imported or both. Every VPLS which
+              uses auto-discovery for finding peer nodes can import and
+              export multiple Route Targets. This representation allows
+              support for hierarchical VPLS.
+            "
+            INDEX     { ruijievplsConfigIndex, ruijievplsBgpRteTargetIndex }
+            ::= { ruijievplsBgpRteTargetTable 1 }
+
+      RuijieVplsBgpRteTargetEntry ::=
+         SEQUENCE {
+          ruijievplsBgpRteTargetIndex          Unsigned32,
+          ruijievplsBgpRteTargetRTType         RuijieVplsBgpRouteTargetType,
+          ruijievplsBgpRteTargetRT             RuijieVplsBgpRouteTarget,
+          ruijievplsBgpRteTargetRTRowStatus    RowStatus
+         }
+
+      ruijievplsBgpRteTargetIndex   OBJECT-TYPE
+            SYNTAX          Unsigned32
+            MAX-ACCESS      not-accessible
+            STATUS          current
+            DESCRIPTION
+            "This index along with ruijievplsConfigIndex,identifies one entry
+             in the ruijievplsBgpRteTargetTable. By keeping ruijievplsConfigIndex
+             constant and using new value of ruijievplsBgpRteTargetIndex user
+              can configure multiple Route Targets for the same Vpls.
+            "
+            ::= {ruijievplsBgpRteTargetEntry  1 }
+
+      ruijievplsBgpRteTargetRTType  OBJECT-TYPE
+            SYNTAX          RuijieVplsBgpRouteTargetType
+            MAX-ACCESS      read-create
+            STATUS          current
+            DESCRIPTION
+            " Used to define the type of a route target usage.
+              Route targets can be specified to be imported,
+              exported, or both.  For a complete definition of a
+              route target, see [RFC4364]."
+            ::= { ruijievplsBgpRteTargetEntry 2 }
+
+      ruijievplsBgpRteTargetRT     OBJECT-TYPE
+            SYNTAX          RuijieVplsBgpRouteTarget
+            MAX-ACCESS      read-create
+            STATUS          current
+            DESCRIPTION
+            " The route target associated with the VPLS service.
+              For more details on use of route targets
+              for a VPLS service, see [RFC4761] "
+            ::= { ruijievplsBgpRteTargetEntry 3 }
+
+      ruijievplsBgpRteTargetRTRowStatus     OBJECT-TYPE
+            SYNTAX          RowStatus
+            MAX-ACCESS      read-create
+            STATUS          current
+            DESCRIPTION
+            "This variable is used to create, modify, and/or
+             delete a row in this table.  When a row in this
+             table is in active(1) state, no objects in that row
+             can be modified "
+            ::= { ruijievplsBgpRteTargetEntry 4 }
+
+--  ruijievplsIfBindTable
+
+          ruijievplsIfBindTable OBJECT-TYPE
+          SYNTAX          SEQUENCE OF RuijieVplsIfBindEntry
+          MAX-ACCESS      not-accessible
+          STATUS          current
+          DESCRIPTION
+               "This table provides an association between a
+                VPLS service and interface. A service can bind
+                more than one interface. "
+          ::= { ruijievplsObjects 7 }
+
+      ruijieVplsIfBindEntry OBJECT-TYPE
+          SYNTAX          RuijieVplsIfBindEntry
+          MAX-ACCESS      not-accessible
+          STATUS          current
+          DESCRIPTION
+               "Each row represents an association between a
+                VPLS instance and one or more interface. Each
+                index is unique in describing an entry in this table. "
+          INDEX  { ruijievplsConfigIndex,ruijievplsIfBindIndex}
+          ::= { ruijievplsIfBindTable 1 }
+
+      RuijieVplsIfBindEntry ::=
+          SEQUENCE {
+			        ruijievplsIfBindIndex           InterfaceIndexOrZero,
+							ruijievplsSiteId                Unsigned32,
+							ruijievplsIfRowStatus           RowStatus
+          }
+
+     ruijievplsIfBindIndex  OBJECT-TYPE
+          SYNTAX          InterfaceIndexOrZero
+          MAX-ACCESS      read-create
+          STATUS          current
+          DESCRIPTION
+               "Interface index for vpls instance.
+               "
+          ::= { ruijieVplsIfBindEntry 1 }
+
+     ruijievplsSiteId  OBJECT-TYPE
+          SYNTAX          Unsigned32
+          MAX-ACCESS      read-create
+          STATUS          current
+          DESCRIPTION
+               "VE id associated with the VPLS service.
+               "
+          ::= { ruijieVplsIfBindEntry 2 }
+
+		ruijievplsIfRowStatus OBJECT-TYPE
+        SYNTAX        RowStatus
+        MAX-ACCESS    read-create
+        STATUS        current
+        DESCRIPTION
+            "This variable is used to create, modify, and/or
+             delete a row in this table.  When a row in this
+             table is in active(1) state, no objects in that row
+             can be modified except vplsBgpSiteRowStatus."
+        ::= { ruijieVplsIfBindEntry 3 }
+
+
+      -- VPLS Service Notifications
+
+      ruijievplsFwdFullAlarmRaised NOTIFICATION-TYPE
+          OBJECTS {
+              ruijievplsConfigVpnId,
+              ruijievplsConfigFwdFullHighWatermark,
+              ruijievplsConfigFwdFullLowWatermark
+          }
+          STATUS          current
+          DESCRIPTION
+               "The ruijievplsFwdFullAlarmRaised notification is
+                generated when the utilization of the Forwarding
+                database is above the value specified by
+                ruijievplsConfigFwdFullHighWatermark."
+          ::= { ruijievplsNotifications 1 }
+
+      ruijievplsFwdFullAlarmCleared NOTIFICATION-TYPE
+          OBJECTS {
+              ruijievplsConfigVpnId,
+              ruijievplsConfigFwdFullHighWatermark,
+              ruijievplsConfigFwdFullLowWatermark
+          }
+          STATUS          current
+          DESCRIPTION
+               "The ruijievplsFwdFullAlarmCleared notification is
+                generated when the utilization of the Forwarding
+                database is below the value specified by
+                ruijievplsConfigFwdFullLowWatermark."
+          ::= { ruijievplsNotifications 2 }
+
+   -- Compliance requirement for read-only implementations.
+
+   ruijievplsCompliances
+     OBJECT IDENTIFIER ::= { ruijievplsConformance 1 }
+   ruijievplsModuleFullCompliance MODULE-COMPLIANCE
+      STATUS current
+      DESCRIPTION
+           "Compliance requirement for implementations that
+            provide full support for VPLS-GENERIC-DRAFT-01-MIB.
+            Such devices can then be monitored and configured using
+            this MIB module."
+      MODULE -- this module
+
+          MANDATORY-GROUPS {
+               ruijievplsGroup,
+               ruijievplsPwBindGroup,
+               ruijievplsNotificationGroup
+           }
+
+      ::= { ruijievplsCompliances 1 }
+
+
+   ruijievplsModuleReadOnlyCompliance MODULE-COMPLIANCE
+      STATUS current
+      DESCRIPTION
+           "Compliance requirement for implementations that only
+            provide read-only support for VPLS-GENERIC-DRAFT-01-MIB.
+            Such devices can then be monitored but cannot be
+            configured using this MIB modules."
+
+      MODULE -- this module
+
+          MANDATORY-GROUPS {
+               ruijievplsGroup,
+               ruijievplsPwBindGroup,
+               ruijievplsNotificationGroup
+           }
+
+           OBJECT          ruijievplsConfigName
+           MIN-ACCESS      read-only
+           DESCRIPTION
+               "Write access is not required."
+
+
+           OBJECT          ruijievplsConfigDescr
+           MIN-ACCESS      read-only
+           DESCRIPTION
+               "Write access is not required."
+
+           OBJECT          ruijievplsConfigAdminStatus
+           MIN-ACCESS      read-only
+           DESCRIPTION
+               "Write access is not required."
+
+           OBJECT          ruijievplsConfigMacLearning
+           MIN-ACCESS      read-only
+           DESCRIPTION
+               "Write access is not required."
+
+           OBJECT          ruijievplsConfigDiscardUnknownDest
+           MIN-ACCESS      read-only
+           DESCRIPTION
+               "Write access is not required."
+
+           OBJECT          ruijievplsConfigMacAging
+           MIN-ACCESS      read-only
+           DESCRIPTION
+               "Write access is not required."
+
+           OBJECT          ruijievplsConfigFwdFullHighWatermark
+           MIN-ACCESS      read-only
+           DESCRIPTION
+
+               "Write access is not required."
+
+           OBJECT          ruijievplsConfigFwdFullLowWatermark
+           MIN-ACCESS      read-only
+           DESCRIPTION
+               "Write access is not required."
+
+           OBJECT          ruijievplsConfigRowStatus
+           MIN-ACCESS      read-only
+           DESCRIPTION
+               "Write access is not required."
+
+           OBJECT          ruijievplsConfigMtu
+           MIN-ACCESS      read-only
+           DESCRIPTION
+               "Write access is not required."
+
+           OBJECT          ruijievplsConfigServiceType
+           MIN-ACCESS      read-only
+           DESCRIPTION
+               "Write access is not required."
+
+           OBJECT          ruijievplsPwBindConfigType
+           MIN-ACCESS      read-only
+           DESCRIPTION
+               "Write access is not required."
+           OBJECT          ruijievplsPwBindType
+           MIN-ACCESS      read-only
+           DESCRIPTION
+               "Write access is not required."
+
+      ::= { ruijievplsCompliances 2 }
+
+-- Units of conformance.
+
+      ruijievplsGroups
+        OBJECT IDENTIFIER ::= { ruijievplsConformance 2 }
+
+
+      ruijievplsGroup OBJECT-GROUP
+          OBJECTS {
+              ruijievplsConfigName,
+              ruijievplsConfigDescr,
+              ruijievplsConfigAdminStatus,
+              ruijievplsConfigMacLearning,
+              ruijievplsConfigDiscardUnknownDest,
+              ruijievplsConfigMacAging,
+              ruijievplsConfigVpnId,
+              ruijievplsConfigFwdFullHighWatermark,
+              ruijievplsConfigFwdFullLowWatermark,
+              ruijievplsConfigRowStatus,
+              ruijievplsConfigIndexNext,
+              ruijievplsConfigMtu,
+              ruijievplsConfigServiceType,
+              ruijievplsStatusOperStatus,
+              ruijievplsStatusPeerCount
+          }
+          STATUS          current
+          DESCRIPTION
+               "The group of objects supporting
+                management of L2VPN VPLS services"
+          ::= { ruijievplsGroups 1 }
+
+      ruijievplsPwBindGroup OBJECT-GROUP
+          OBJECTS {
+              ruijievplsPwBindConfigType,
+              ruijievplsPwBindType
+          }
+          STATUS          current
+          DESCRIPTION
+               "The group of objects supporting
+                management of
+                Pseudo Wire (PW) Binding to VPLS."
+          ::= { ruijievplsGroups 2 }
+
+      ruijievplsNotificationGroup NOTIFICATION-GROUP
+          NOTIFICATIONS   {
+              ruijievplsFwdFullAlarmRaised,
+              ruijievplsFwdFullAlarmCleared
+          }
+          STATUS          current
+          DESCRIPTION
+               "The group of notifications supporting
+                the  Notifications generated for
+                VPLS Services"
+          ::= { ruijievplsGroups 3 }
+END

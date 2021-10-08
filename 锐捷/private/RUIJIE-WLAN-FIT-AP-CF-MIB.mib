@@ -71,6 +71,8 @@ apSystemAlarmTraps            OBJECT IDENTIFIER  ::= { apRuijieAlarmTraps 1 }
 apWirelessAlarmTraps          OBJECT IDENTIFIER  ::= { apRuijieAlarmTraps 2 }
 apStaAnnounceTraps            OBJECT IDENTIFIER  ::= { apRuijieAlarmTraps 3 }
 apWAPISecurityAlarmTraps      OBJECT IDENTIFIER  ::= { apRuijieAlarmTraps 4 }
+apEgAnnounceTraps             OBJECT IDENTIFIER  ::= { apRuijieAlarmTraps 5 }
+
 --**************apSystemAlarmTraps start ************************************
 apCPUusageTooHighTrap NOTIFICATION-TYPE
     STATUS  current
@@ -97,7 +99,7 @@ apMemUsageTooHighRecovTrap  NOTIFICATION-TYPE
     ::= { apSystemAlarmTraps 4 }  
     
 aPOfflineTrap    NOTIFICATION-TYPE
-    STATUS  current
+    STATUS  current		
     DESCRIPTION
             " This trap will be sent when the ap offline."
     ::= { apSystemAlarmTraps 5 }  
@@ -110,7 +112,7 @@ aPOnlineTrap    NOTIFICATION-TYPE
 
 aPMtWorkModeChgTrap    NOTIFICATION-TYPE
     OBJECTS {
-        apAPMac,
+        ruijieApMacAddr,
         apWorkModeBeforeChange,
         apWorkModeAfterChange
     } 
@@ -480,6 +482,17 @@ apStAssociationFailTrap    NOTIFICATION-TYPE
     DESCRIPTION
             " This trap will be sent when station Associa  Fail appeared."
     ::= { apStaAnnounceTraps 2 } 
+
+ruijieNotifyWebAuthMacTrap      NOTIFICATION-TYPE
+	OBJECTS {
+    		webAuthTlvCount,
+    	    webAuthTlvString
+    }
+    STATUS  current
+    DESCRIPTION
+            " This trap will be sent when station auth success."
+    ::= { apStaAnnounceTraps 3 }
+    
 --****************apWAPISecurityAlarmTraps************
 userwithInvalidCerficationInbreakNetwork NOTIFICATION-TYPE
     OBJECTS {
@@ -555,7 +568,73 @@ addressRedirectionAttack NOTIFICATION-TYPE
             " This trap will be sent when detecting an client passes the authentication
             process, but the destination address of the 802.11 head of the WPI frame."
     ::= { apWAPISecurityAlarmTraps 5 }     
+
        
+--**************apEgAnnounceTraps start ************************************
+apEgAnnounceApReport NOTIFICATION-TYPE
+    OBJECTS {
+        apAPMac,
+        apApName,
+        apApLocation,
+        apApUptime,
+        apApChannel2,
+        apApChannel5,
+        apApUserNum
+    }
+    STATUS current
+    DESCRIPTION
+            "This trap will be sent to EG when AP is up and every 5 minutes thereafter."
+    ::= { apEgAnnounceTraps 1 }
+    
+apEgAnnounceSsidReport NOTIFICATION-TYPE
+    OBJECTS {
+        apAPMac,
+        apSsidName,
+        apSsidIndex,
+        apSsidDot11Auth,
+        apSsidSecurityMode,
+        apSsidAuthenMode
+    }
+    STATUS current
+    DESCRIPTION
+            "This trap will be sent to EG together with apEgAnnounceApReport, one trap for each ssid."
+    ::= { apEgAnnounceTraps 2 }
+
+apEgAnnounceApDown NOTIFICATION-TYPE
+    OBJECTS {
+        apAPMac
+    }
+    STATUS current
+    DESCRIPTION
+            "This trap will be sent to EG when AP is down(if possible)."
+    ::= { apEgAnnounceTraps 3 }
+    
+apEgAnnounceStaUp NOTIFICATION-TYPE
+    OBJECTS {
+        apAPMac,
+        apStaMacAddr,
+        apWlanSSID,
+        apStaRSSI
+    }
+    STATUS current
+    DESCRIPTION
+            "This trap will be sent to EG when STA attaches to AP."
+    ::= { apEgAnnounceTraps 4 }
+    
+apEgAnnounceStaDown NOTIFICATION-TYPE
+    OBJECTS {
+        apAPMac,
+        apStaMacAddr,
+        apWlanSSID,
+        apStaRSSI
+    }
+    STATUS current
+    DESCRIPTION
+            "This trap will be sent to EG when STA leaves AP."
+    ::= { apEgAnnounceTraps 5 }
+--**************apEgAnnounceTraps end ************************************
+
+
 --***************apRuijieAlarmTrapObjects*************
 apAPMac OBJECT-TYPE
     SYNTAX MacAddress
@@ -969,10 +1048,115 @@ apCounterMeasureBssid   OBJECT-TYPE
     DESCRIPTION
         "the bssid which is countered, trap bind var."
     ::= { apRuijieAlarmTrapObjects 51 }
+    
+apApName   OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "current AP name"
+    ::= { apRuijieAlarmTrapObjects 52 }
+    
+apApLocation   OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "current AP location"
+    ::= { apRuijieAlarmTrapObjects 53 }
+    
+apApUptime   OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "current AP uptime duration(in seconds)"
+    ::= { apRuijieAlarmTrapObjects 54 }
+    
+apApUserNum   OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "STA number on current AP"
+    ::= { apRuijieAlarmTrapObjects 55 }
+    
+apApChannel2   OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "current AP 2.4G channel. Multiple channels are shown as [1,2,3] etc."
+    ::= { apRuijieAlarmTrapObjects 56 }
+    
+apApChannel5   OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "current AP 5.8G channel. Multiple channels are shown as [153,157,161] etc."
+    ::= { apRuijieAlarmTrapObjects 57 }
 
+apSsidName   OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "ssid Name"
+    ::= { apRuijieAlarmTrapObjects 58 }
+    
+apSsidIndex   OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "ssid index in channel, format [channel:index], channel 0 for 2.4G, 1 for 5.8G"
+    ::= { apRuijieAlarmTrapObjects 59 }
+    
+apSsidDot11Auth   OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "ssid dot11 authenticate mode 0:opensystem 1:sharedkey."
+    ::= { apRuijieAlarmTrapObjects 60 }
+    
+apSsidSecurityMode   OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "ssid security mode config 0:none 1:wpa 2:wpa2 3:wapi."
+    ::= { apRuijieAlarmTrapObjects 61 }
+    
+apSsidAuthenMode   OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "dot11 authen mode 0:none 1:PSK 2:Radius 3:WAPICER 4:Web 5:PSK-Web 6:WAPICER-Web 7:WAPIPSK."
+    ::= { apRuijieAlarmTrapObjects 62 }
+
+webAuthTlvCount   OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "WebAuthTlvCount is number of tlv to send."
+    ::= { apRuijieAlarmTrapObjects 63 }
+
+webAuthTlvString   OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "WebAuthTlvString is trap string to  send."
+    ::= { apRuijieAlarmTrapObjects 64 }
+    
 --**************************************************
 --* apRuijieTrapObjects ends * 
 --************************************************** 
+
 apSystemInfoConfigObjects OBJECT IDENTIFIER  ::= { ruijieFitApMibModule 1 }
 apGeneralInfoConfigObjects OBJECT IDENTIFIER  ::= { apSystemInfoConfigObjects 1 }
 apGeneralInfoReadObjects   OBJECT IDENTIFIER  ::= { apSystemInfoConfigObjects 2 }
@@ -1284,7 +1468,14 @@ ApGeneralStatusCFGTableEntry ::=
         apMonitorMode                INTEGER,
         apAssoStatusAPMac						 MacAddress,
         apACHbAssocStatus			  INTEGER,
-        apScanType						INTEGER
+        apScanType						INTEGER,
+		apAssocTimes                 Counter32,
+		apAssocSuccessTimes          Counter32,
+		apAssocFailTimes             Counter32,
+		ap24GSignalStrength          INTEGER,
+		ap5GSignalStrength           INTEGER,
+		apTotalRxBytes               Counter64,
+		apTotalTxBytes               Counter64
     }
     
 apAPName OBJECT-TYPE
@@ -1348,6 +1539,61 @@ apScanType	OBJECT-TYPE
         1:scan working channel 0:scan_all "
     ::= { apGeneralStatusCFGTableEntry 6 }    
     
+apAssocTimes OBJECT-TYPE
+    SYNTAX  Counter32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "AP assoc times"
+    ::= { apGeneralStatusCFGTableEntry 7 }  
+
+apAssocSuccessTimes OBJECT-TYPE
+    SYNTAX  Counter32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "AP assoc success times"
+    ::= { apGeneralStatusCFGTableEntry 8 }  
+	
+apAssocFailTimes OBJECT-TYPE
+    SYNTAX  Counter32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "AP assoc fail times"
+    ::= { apGeneralStatusCFGTableEntry 9 } 
+
+ap24GSignalStrength OBJECT-TYPE
+    SYNTAX  INTEGER 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "AP 2.4g signal strength"
+    ::= { apGeneralStatusCFGTableEntry 10 } 
+
+ap5GSignalStrength OBJECT-TYPE
+    SYNTAX  INTEGER 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "AP 5g signal strength"
+    ::= { apGeneralStatusCFGTableEntry 11 } 
+
+apTotalRxBytes OBJECT-TYPE
+    SYNTAX  Counter64 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "AP total rx bytes"
+    ::= { apGeneralStatusCFGTableEntry 12 } 
+
+apTotalTxBytes OBJECT-TYPE
+    SYNTAX  Counter64 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "AP total tx bytes"
+    ::= { apGeneralStatusCFGTableEntry 13 }  	
 --**************************************************
 --* apGeneralStatusCFGObjects ends * 
 --**************************************************     
@@ -1575,7 +1821,8 @@ ApInterfaceWirelessconfigTableEntry ::=
         apLongRetryThld                   INTEGER,
         apIfWireResponseRssi	          INTEGER,
         apIfWireMaxStationLimit           INTEGER,
-        apIfWireLinkscan                  INTEGER
+        apIfWireLinkscan                  INTEGER,
+		apIfWireRadioChannelutilization	  INTEGER
     }    
     
 apIfWireDescr OBJECT-TYPE
@@ -1928,6 +2175,13 @@ apIfWireLinkscan   OBJECT-TYPE
         "ap radio link scan."
     ::= { apInterfaceWirelessconfigTableEntry 41 } 
 
+apIfWireRadioChannelutilization   OBJECT-TYPE
+    SYNTAX  INTEGER 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap radio channel utilization."
+    ::= { apInterfaceWirelessconfigTableEntry 42 } 
 --**************************************************
 --* apInterfaceWirelsessConfig ends * 
 --**************************************************
@@ -1982,7 +2236,7 @@ apSSIDRadioId  OBJECT-TYPE
     
 apSSIDListName  OBJECT-TYPE
     SYNTAX  DisplayString
-    MAX-ACCESS  read-create
+    MAX-ACCESS  read-only
     STATUS  current
     DESCRIPTION
             "SSID name."
@@ -1991,7 +2245,7 @@ apSSIDListName  OBJECT-TYPE
     
 apListBSSIDAddr    OBJECT-TYPE
   	SYNTAX MacAddress 
-    MAX-ACCESS read-create
+    MAX-ACCESS read-only
     STATUS current
     DESCRIPTION
         "config bssid virtual mac address"
@@ -2289,6 +2543,65 @@ apWAPIIsInstalledCer  OBJECT-TYPE
     DESCRIPTION
         "WAPI has installed Cet ?"
     ::= { apSecurityConfigTableEntry 8 }       
+--**************************************************
+--* apWlanSecurityTable * 
+--**************************************************
+apWlanSecurityTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF apWlanSecurityTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "AP radio wlan security info table."
+    ::={ apSecurityConfigObjects 2 }
+
+apWlanSecurityTableEntry OBJECT-TYPE
+    SYNTAX  apWlanSecurityTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "AP radio wlan security info table."
+    INDEX   { apWlanSecurityAPMac, apWlanSecurityRadioId, apWlanSecurityWlanId }
+    ::= { apWlanSecurityTable 1 }
+
+apWlanSecurityTableEntry ::=
+    SEQUENCE {
+        apWlanSecurityAPMac            MacAddress,
+        apWlanSecurityRadioId          INTEGER,
+        apWlanSecurityWlanId           INTEGER,
+        apWlanSecurityAuthenMode       INTEGER
+}  
+apWlanSecurityAPMac  OBJECT-TYPE
+    SYNTAX MacAddress 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap mac."
+    ::= { apWlanSecurityTableEntry 1 }   
+    
+apWlanSecurityRadioId   OBJECT-TYPE
+    SYNTAX INTEGER 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "radio id ."
+    ::= { apWlanSecurityTableEntry 2 } 
+    
+apWlanSecurityWlanId   OBJECT-TYPE
+    SYNTAX INTEGER 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "wlan id ."
+    ::= { apWlanSecurityTableEntry 3 }  
+    
+apWlanSecurityAuthenMode  OBJECT-TYPE
+    SYNTAX INTEGER 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap wlan authen mode."
+    ::= { apWlanSecurityTableEntry 4 }     
+
 --**************************************************
 --* apSecurityConfig ends * 
 --**************************************************
@@ -2847,13 +3160,15 @@ apStaRadioMode   OBJECT-TYPE
         dot11a(0),
         dot11b(1),
         dot11g(2),
-        dot11n(3)    
+        dot11n(3),
+        dot11ac(4),
+        dot11ax(5)
     }
     MAX-ACCESS  read-only
     STATUS  current
     DESCRIPTION
             "station radio mode 0:dot11a 1:dot11b
-            2:dot11g 3:dot11n"
+            2:dot11g 3:dot11n 4:dot11ac 5:dot11ax"
     ::= { apStationInfoGetTableEntry 4}     
     
 apStaRadioChannel   OBJECT-TYPE
@@ -2977,12 +3292,14 @@ apStaMode  OBJECT-TYPE
           dot11b(2),
           dot11g(4),
           dot11an(8),
-          dot11gn(16)
+          dot11gn(16),
+          dot11ac(32),
+          dot11ax(64)
     }
     MAX-ACCESS  read-only
     STATUS  current
     DESCRIPTION
-            "1:dot11a 2:dot11b 4:dot11g 8:dot11an 16:dot11gn"
+            "1:dot11a 2:dot11b 4:dot11g 8:dot11an 16:dot11gn 32:dot11ac 64:dot11ax"
     ::= { apStationInfoGetTableEntry 16}  
     
 apStaBand  OBJECT-TYPE
@@ -3134,6 +3451,53 @@ apUserOnlineTime   OBJECT-TYPE
 
 --**************************************************
 --* apStationRadiusInfoTable ends * 
+--**************************************************
+
+--**************************************************
+--* apStationInfoJsonTable starts * 
+--**************************************************
+
+apStationInfoJsonTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ApStationInfoJsonEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "ap station json table."
+    ::= { apStationInfoGetObjects 4 }
+
+apStationInfoJsonEntry OBJECT-TYPE
+    SYNTAX  ApStationInfoJsonEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "ap station json entry."
+    INDEX   { apStationInfoJsonMacAddr}
+    ::= { apStationInfoJsonTable 1 }
+
+ApStationInfoJsonEntry ::=
+    SEQUENCE {
+        apStationInfoJsonMacAddr            MacAddress,
+        apStationInfoJsonContent            OCTET STRING
+     }
+         
+apStationInfoJsonMacAddr  OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The STA's mac address."
+    ::= { apStationInfoJsonEntry 1}
+    
+apStationInfoJsonContent OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE (1..1023))
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "This object represents the sta content with json format."
+    ::= { apStationInfoJsonEntry 2}
+
+--**************************************************
+--* apStationInfoJsonTable ends * 
 --**************************************************
 
 --**************************************************
@@ -4702,7 +5066,7 @@ apWidsDeviceMode OBJECT-TYPE
     MAX-ACCESS read-write
     STATUS current
     DESCRIPTION
-        "set device mode for all ap, 0: normal, 1:mornitor, 2: hybrid"
+        "set device mode for all ap, 0: normal, 1: hybrid, 2: mornitor"
     ::= { apWidsInfoObjects 3 }
 	
 apWidsCounterIllegalAp OBJECT-TYPE
@@ -5384,7 +5748,9 @@ apQOSBackgroundStatisticsObjects        OBJECT IDENTIFIER  ::= { apQOSStatistics
 apQOSBestEffortStatisticsObjects        OBJECT IDENTIFIER  ::= { apQOSStatisticsObjects 3 }
 apQOSVoiceStatisticsObjects             OBJECT IDENTIFIER  ::= { apQOSStatisticsObjects 4 }
 apQOSVideoStatisticsObjects             OBJECT IDENTIFIER  ::= { apQOSStatisticsObjects 5 }
-apWIDSRogueApInfoObjects                OBJECT IDENTIFIER  ::= { apStatisticsInfoReadObjects 9 } 
+apWIDSRogueApInfoObjects                OBJECT IDENTIFIER  ::= { apStatisticsInfoReadObjects 9 }
+apStaTransSpeedObjects                	OBJECT IDENTIFIER  ::= { apStatisticsInfoReadObjects 10 }
+apStationAssoRssiObjects                OBJECT IDENTIFIER  ::= { apStatisticsInfoReadObjects 11}
 
 
 apSysCapabilityStatisticsTable OBJECT-TYPE
@@ -5486,7 +5852,8 @@ ApLinkStatisticsTableEntry ::=
 		apAllUserOnlineTime			            	TimeTicks,
 		apRadiusAuthTimes								Counter32,
 		apRadiusAuthSuccTimes                           Counter32,
-		apRadiusAuthFailTimes 					        Counter32
+		apRadiusAuthFailTimes 					        Counter32,
+		apAssocSuccessTimes                             Counter32
    }
 apStationAssocSum   OBJECT-TYPE
     SYNTAX INTEGER 
@@ -5679,7 +6046,15 @@ apRadiusAuthFailTimes    OBJECT-TYPE
     DESCRIPTION
         "Radius Auth Fail Times."
     ::= { apLinkStatisticsTableEntry 24 }	 
-         
+
+apAssocSuccessTimes     OBJECT-TYPE
+    SYNTAX Counter32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Station Assocate Success times."
+    ::= { apLinkStatisticsTableEntry 25 } 
+	
 --****************************************    
 apInterfaceRGMIIStatisticsTable OBJECT-TYPE
     SYNTAX SEQUENCE OF ApInterfaceRGMIIStatisticsTableEntry
@@ -6604,7 +6979,64 @@ apSSIDNewMacRxPkts   OBJECT-TYPE
     DESCRIPTION
         "ssid mac receive correct packets counte."
     ::= { apSSIDStatisticsNewTableEntry 12 }  
-         
+
+--*************************************************   
+apSSIDStatisticsOptimizationTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF ApSSIDStatisticsOptimizationTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "ap SSID Statistics info table."
+    ::={ apSSIDStatisticsObjects 3 }
+
+apSSIDStatisticsOptimizationTableEntry OBJECT-TYPE
+    SYNTAX  ApSSIDStatisticsOptimizationTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "ap SSID Statistics info table."
+    INDEX   { apSSIDStatisticsOptimizationAPMac, apSSIDStatisticsOptimizationRadioId, apSSIDStatisticsOptimizationSSID }
+    ::= { apSSIDStatisticsOptimizationTable 1 }
+
+ApSSIDStatisticsOptimizationTableEntry ::=
+    SEQUENCE {
+        apSSIDStatisticsOptimizationAPMac   MacAddress,
+        apSSIDStatisticsOptimizationRadioId INTEGER,
+        apSSIDStatisticsOptimizationSSID    DisplayString,
+        apSSIDStatisticsOptimizationinfo    OCTET STRING
+    }  
+apSSIDStatisticsOptimizationAPMac  OBJECT-TYPE
+    SYNTAX MacAddress 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap mac."
+    ::= { apSSIDStatisticsOptimizationTableEntry 1 }   
+    
+apSSIDStatisticsOptimizationRadioId   OBJECT-TYPE
+    SYNTAX INTEGER 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "radio id ."
+    ::= { apSSIDStatisticsOptimizationTableEntry 2 } 
+    
+apSSIDStatisticsOptimizationSSID   OBJECT-TYPE
+    SYNTAX DisplayString 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "wlan ssid."
+    ::= { apSSIDStatisticsOptimizationTableEntry 3 }  
+    
+apSSIDStatisticsOptimizationinfo  OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1..1023)) 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "ap ssid info with json format."
+    ::= { apSSIDStatisticsOptimizationTableEntry 4 }   
+
 --**************************************************    
 
 apStationStatisticsTable OBJECT-TYPE
@@ -7336,6 +7768,1007 @@ SYNTAX INTEGER
     DESCRIPTION
         " Rogue Ap RSSI"
     ::= { apWIDSRogueApInfoTableEntry 2 }
+--**************************************************
+--* ap  WIDS Rogue Info get ends * 
+--************************************************** 
+apStaTransSpeedTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF ApStaTransSpeedTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "Ap Sta Trans Speed info."              
+    ::={ apStaTransSpeedObjects 1 }  
+
+ApStaTransSpeedTableEntry OBJECT-TYPE
+    SYNTAX  ApStaTransSpeedTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "Ap Sta Trans Speed table entry."
+    INDEX   { ruijieApMacAddr}
+    ::= { apStaTransSpeedTable 1 }
+	
+ApStaTransSpeedTableEntry ::=
+    SEQUENCE {
+		ruijieApMacAddr					MacAddress,
+		ruijieApMacAddr_len				INTEGER,
+        apStaUplinkTransSpeed1M  		Unsigned32,
+        apStaUplinkTransSpeed2M  		Unsigned32,
+        apStaUplinkTransSpeed5M  		Unsigned32,
+        apStaUplinkTransSpeed11M  		Unsigned32,
+        apStaUplinkTransSpeed6M  		Unsigned32,
+        apStaUplinkTransSpeed9M  		Unsigned32,
+        apStaUplinkTransSpeed12M  		Unsigned32,
+        apStaUplinkTransSpeed18M  		Unsigned32,
+        apStaUplinkTransSpeed24M  		Unsigned32,
+        apStaUplinkTransSpeed36M  		Unsigned32,
+        apStaUplinkTransSpeed48M  		Unsigned32,
+        apStaUplinkTransSpeed54M  		Unsigned32,		
+        apStaDownlinkTransSpeed1M  		Unsigned32,
+        apStaDownlinkTransSpeed2M  		Unsigned32,	
+        apStaDownlinkTransSpeed5M  		Unsigned32,
+        apStaDownlinkTransSpeed11M  	Unsigned32,	
+        apStaDownlinkTransSpeed6M  		Unsigned32,
+        apStaDownlinkTransSpeed9M  		Unsigned32,	
+        apStaDownlinkTransSpeed12M  	Unsigned32,
+        apStaDownlinkTransSpeed18M  	Unsigned32,	
+        apStaDownlinkTransSpeed24M  	Unsigned32,
+        apStaDownlinkTransSpeed36M  	Unsigned32,	
+        apStaDownlinkTransSpeed48M  	Unsigned32,
+        apStaDownlinkTransSpeed54M  	Unsigned32,		
+        apStaUplinkTransSpeedMCS0  		Unsigned32,
+        apStaUplinkTransSpeedMCS1  		Unsigned32,
+        apStaUplinkTransSpeedMCS2  		Unsigned32,
+        apStaUplinkTransSpeedMCS3  		Unsigned32,		
+        apStaUplinkTransSpeedMCS4  		Unsigned32,
+        apStaUplinkTransSpeedMCS5  		Unsigned32,
+        apStaUplinkTransSpeedMCS6  		Unsigned32,
+        apStaUplinkTransSpeedMCS7  		Unsigned32,	
+        apStaUplinkTransSpeedMCS8  		Unsigned32,
+        apStaUplinkTransSpeedMCS9  		Unsigned32,
+        apStaUplinkTransSpeedMCS10  		Unsigned32,
+        apStaUplinkTransSpeedMCS11  		Unsigned32,		
+        apStaUplinkTransSpeedMCS12  		Unsigned32,
+        apStaUplinkTransSpeedMCS13 		Unsigned32,
+        apStaUplinkTransSpeedMCS14  		Unsigned32,
+        apStaUplinkTransSpeedMCS15  		Unsigned32,	
+        apStaUplinkTransSpeedMCS16 		Unsigned32,
+        apStaUplinkTransSpeedMCS17 		Unsigned32,
+        apStaUplinkTransSpeedMCS18 		Unsigned32,
+        apStaUplinkTransSpeedMCS19  		Unsigned32,		
+        apStaUplinkTransSpeedMCS20 		Unsigned32,
+        apStaUplinkTransSpeedMCS21  		Unsigned32,
+        apStaUplinkTransSpeedMCS22 		Unsigned32,
+        apStaUplinkTransSpeedMCS23 		Unsigned32,	
+        apStaUplinkTransSpeedMCS24 		Unsigned32,
+        apStaUplinkTransSpeedMCS25  		Unsigned32,
+        apStaUplinkTransSpeedMCS26  		Unsigned32,
+        apStaUplinkTransSpeedMCS27  		Unsigned32,		
+        apStaUplinkTransSpeedMCS28  		Unsigned32,
+        apStaUplinkTransSpeedMCS29 		Unsigned32,
+        apStaUplinkTransSpeedMCS30  		Unsigned32,
+        apStaUplinkTransSpeedMCS31  		Unsigned32,
+        apStaDownlinkTransSpeedMCS0  		Unsigned32,
+        apStaDownlinkTransSpeedMCS1  		Unsigned32,
+        apStaDownlinkTransSpeedMCS2  		Unsigned32,
+        apStaDownlinkTransSpeedMCS3  		Unsigned32,		
+        apStaDownlinkTransSpeedMCS4  		Unsigned32,
+        apStaDownlinkTransSpeedMCS5  		Unsigned32,
+        apStaDownlinkTransSpeedMCS6  		Unsigned32,
+        apStaDownlinkTransSpeedMCS7  		Unsigned32,	
+        apStaDownlinkTransSpeedMCS8  		Unsigned32,
+        apStaDownlinkTransSpeedMCS9  		Unsigned32,
+        apStaDownlinkTransSpeedMCS10  		Unsigned32,
+        apStaDownlinkTransSpeedMCS11  		Unsigned32,		
+        apStaDownlinkTransSpeedMCS12  		Unsigned32,
+        apStaDownlinkTransSpeedMCS13 		Unsigned32,
+        apStaDownlinkTransSpeedMCS14  		Unsigned32,
+        apStaDownlinkTransSpeedMCS15  		Unsigned32,	
+        apStaDownlinkTransSpeedMCS16 		Unsigned32,
+        apStaDownlinkTransSpeedMCS17 		Unsigned32,
+        apStaDownlinkTransSpeedMCS18 		Unsigned32,
+        apStaDownlinkTransSpeedMCS19  		Unsigned32,		
+        apStaDownlinkTransSpeedMCS20 		Unsigned32,
+        apStaDownlinkTransSpeedMCS21  		Unsigned32,
+        apStaDownlinkTransSpeedMCS22 		Unsigned32,
+        apStaDownlinkTransSpeedMCS23 		Unsigned32,	
+        apStaDownlinkTransSpeedMCS24 		Unsigned32,
+        apStaDownlinkTransSpeedMCS25  		Unsigned32,
+        apStaDownlinkTransSpeedMCS26  		Unsigned32,
+        apStaDownlinkTransSpeedMCS27  		Unsigned32,		
+        apStaDownlinkTransSpeedMCS28  		Unsigned32,
+        apStaDownlinkTransSpeedMCS29 		Unsigned32,
+        apStaDownlinkTransSpeedMCS30  		Unsigned32,
+        apStaDownlinkTransSpeedMCS31  		Unsigned32,				
+     }	
+
+apStaUplinkTransSpeed1M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta uplink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 1 }	
+
+apStaUplinkTransSpeed2M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta uplink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 2 }		
+
+apStaUplinkTransSpeed5M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta uplink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 3 }	
+	
+apStaUplinkTransSpeed11M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta uplink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 4 }			
+	
+apStaUplinkTransSpeed6M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta uplink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 5 }	
+	
+apStaUplinkTransSpeed9M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta uplink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 6 }	
+	
+apStaUplinkTransSpeed12M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta uplink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 7 }	
+	
+apStaUplinkTransSpeed18M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta uplink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 8 }	
+	
+apStaUplinkTransSpeed24M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta uplink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 9 }	
+	
+apStaUplinkTransSpeed36M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta uplink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 10 }	
+	
+apStaUplinkTransSpeed48M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta uplink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 11 }	
+	
+apStaUplinkTransSpeed54M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta uplink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 12 }	
+	
+apStaDownlinkTransSpeed1M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 13 }	
+
+apStaDownlinkTransSpeed2M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 14 }		
+
+apStaDownlinkTransSpeed5M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 15 }	
+	
+apStaDownlinkTransSpeed11M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 16 }			
+	
+apStaDownlinkTransSpeed6M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 17 }	
+	
+apStaDownlinkTransSpeed9M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 18 }	
+	
+apStaDownlinkTransSpeed12M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 19 }	
+	
+apStaDownlinkTransSpeed18M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 20 }	
+	
+apStaDownlinkTransSpeed24M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 21 }	
+	
+apStaDownlinkTransSpeed36M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 22 }	
+	
+apStaDownlinkTransSpeed48M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 23 }	
+	
+apStaDownlinkTransSpeed54M OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed pkt stat."
+    ::= { ApStaTransSpeedTableEntry 24 }
+
+apStaUplinkTransSpeedMCS0 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 25 }	
+	
+apStaUplinkTransSpeedMCS1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 26 }
+	
+apStaUplinkTransSpeedMCS2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 27 }
+	
+apStaUplinkTransSpeedMCS3 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 28 }	
+
+apStaUplinkTransSpeedMCS4 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 29 }	
+	
+apStaUplinkTransSpeedMCS5 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 30 }
+	
+apStaUplinkTransSpeedMCS6 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 31 }
+	
+apStaUplinkTransSpeedMCS7 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 32 }	
+
+apStaUplinkTransSpeedMCS8 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 33 }	
+	
+apStaUplinkTransSpeedMCS9 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 34 }
+	
+apStaUplinkTransSpeedMCS10 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 35 }
+	
+apStaUplinkTransSpeedMCS11 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 36 }	
+
+apStaUplinkTransSpeedMCS12 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 37 }	
+	
+apStaUplinkTransSpeedMCS13 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 38 }
+	
+apStaUplinkTransSpeedMCS14 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 39 }
+	
+apStaUplinkTransSpeedMCS15 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 40 }	
+
+apStaUplinkTransSpeedMCS16 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 41 }	
+	
+apStaUplinkTransSpeedMCS17 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 42 }
+	
+apStaUplinkTransSpeedMCS18 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 43 }
+	
+apStaUplinkTransSpeedMCS19 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 44 }	
+
+
+apStaUplinkTransSpeedMCS20 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 45 }	
+	
+apStaUplinkTransSpeedMCS21 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 46 }
+	
+apStaUplinkTransSpeedMCS22 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 47 }
+	
+apStaUplinkTransSpeedMCS23 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 48 }	
+
+apStaUplinkTransSpeedMCS24 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 49 }	
+	
+apStaUplinkTransSpeedMCS25 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 50 }
+	
+apStaUplinkTransSpeedMCS26 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 51 }
+	
+apStaUplinkTransSpeedMCS27 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 52 }	
+
+
+apStaUplinkTransSpeedMCS28 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 53 }	
+	
+apStaUplinkTransSpeedMCS29 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 54 }
+	
+apStaUplinkTransSpeedMCS30 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 55 }
+	
+apStaUplinkTransSpeedMCS31 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Uplink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 56 }		
+
+apStaDownlinkTransSpeedMCS0 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 57 }	
+	
+apStaDownlinkTransSpeedMCS1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 58 }
+	
+apStaDownlinkTransSpeedMCS2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 59 }
+	
+apStaDownlinkTransSpeedMCS3 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 60 }	
+
+apStaDownlinkTransSpeedMCS4 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 61 }	
+	
+apStaDownlinkTransSpeedMCS5 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 62 }
+	
+apStaDownlinkTransSpeedMCS6 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 63 }
+	
+apStaDownlinkTransSpeedMCS7 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 64 }	
+
+apStaDownlinkTransSpeedMCS8 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 65 }	
+	
+apStaDownlinkTransSpeedMCS9 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 66 }
+	
+apStaDownlinkTransSpeedMCS10 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 67 }
+	
+apStaDownlinkTransSpeedMCS11 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 68 }	
+
+apStaDownlinkTransSpeedMCS12 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 69 }	
+	
+apStaDownlinkTransSpeedMCS13 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 70 }
+	
+apStaDownlinkTransSpeedMCS14 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 71 }
+	
+apStaDownlinkTransSpeedMCS15 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 72 }	
+
+apStaDownlinkTransSpeedMCS16 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 73 }	
+	
+apStaDownlinkTransSpeedMCS17 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 74 }
+	
+apStaDownlinkTransSpeedMCS18 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 75 }
+	
+apStaDownlinkTransSpeedMCS19 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 76 }	
+
+
+apStaDownlinkTransSpeedMCS20 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 77 }	
+	
+apStaDownlinkTransSpeedMCS21 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 78 }
+	
+apStaDownlinkTransSpeedMCS22 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 79 }
+	
+apStaDownlinkTransSpeedMCS23 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 80 }	
+
+apStaDownlinkTransSpeedMCS24 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 81 }	
+	
+apStaDownlinkTransSpeedMCS25 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 82 }
+	
+apStaDownlinkTransSpeedMCS26 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 83 }
+	
+apStaDownlinkTransSpeedMCS27 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 84 }	
+
+
+apStaDownlinkTransSpeedMCS28 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 85 }	
+	
+apStaDownlinkTransSpeedMCS29 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 86 }
+	
+apStaDownlinkTransSpeedMCS30 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 87 }
+	
+apStaDownlinkTransSpeedMCS31 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap sta Downlink transpeed MCS stat."
+    ::= { ApStaTransSpeedTableEntry 88 }
+--**************************************************
+--* Ap Sta Trans Speed info get ends * 
+--************************************************** 	
+
+apStationAssoRssiTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF apStationAssoRssiTableEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "Ap Station Asso Rssi info."              
+    ::={ apStationAssoRssiObjects 1 } 
+
+apStationAssoRssiTableEntry OBJECT-TYPE
+    SYNTAX  apStationAssoRssiTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "ruijie AC MGMT station association rssi entry."
+    INDEX   { ruijieApMacAddr}
+    ::= { apStationAssoRssiTable 1 }
+
+apStationAssoRssiTableEntry ::=
+    SEQUENCE {
+		ruijieApMacAddr					MacAddress,
+		ruijieApMacAddr_len				INTEGER,
+        apStationAssoRxSignalStrength1  Counter32,
+        apStationAssoRxSignalStrength2  Counter32,
+        apStationAssoRxSignalStrength3  Counter32,
+        apStationAssoRxSignalStrength4  Counter32,
+        apStationAssoRxSignalStrength5  Counter32,
+        apStationAssoRxSignalStrength6  Counter32,
+        apStationAssoRxSignalStrength7  Counter32,
+        apStationAssoRxSignalStrength8  Counter32,
+        apStationAssoRxSignalStrength9  Counter32,
+        apStationAssoRxSignalStrength10 Counter32,
+        apStationAssoRxSignalStrength11 Counter32,
+        apStationAssoRxSignalStrength12 Counter32,	
+        apStationAssoRxSignalStrength13 Counter32,
+        apStationAssoRxSignalStrength14 Counter32,
+        apStationAssoRxSignalStrength15 Counter32,			
+     }	
+	 
+apStationAssoRxSignalStrength1 OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap recv sta pkt rssi stat,rssi >-30dBm."
+    ::= { apStationAssoRssiTableEntry 1 }	
+
+apStationAssoRxSignalStrength2 OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap recv sta pkt rssi stat,-35dbm<X<=-30dBm."
+    ::= { apStationAssoRssiTableEntry 2 }
+
+apStationAssoRxSignalStrength3 OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap recv sta pkt rssi stat,-40dbm<X<=-35dBm."
+    ::= { apStationAssoRssiTableEntry 3 }	
+
+apStationAssoRxSignalStrength4 OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap recv sta pkt rssi stat,-45dbm<X<=-40dBm."
+    ::= { apStationAssoRssiTableEntry 4 }	
+
+apStationAssoRxSignalStrength5 OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap recv sta pkt rssi stat,-50dbm<X<=-45dBm."
+    ::= { apStationAssoRssiTableEntry 5 }	
+
+apStationAssoRxSignalStrength6 OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap recv sta pkt rssi stat,-55dbm<X<=-50dBm."
+    ::= { apStationAssoRssiTableEntry 6 }
+
+apStationAssoRxSignalStrength7 OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap recv sta pkt rssi stat,-60dbm<X<=-55dBm."
+    ::= { apStationAssoRssiTableEntry 7 }	
+
+apStationAssoRxSignalStrength8 OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap recv sta pkt rssi stat,-65dbm<X<=-60dBm."
+    ::= { apStationAssoRssiTableEntry 8 }	
+
+apStationAssoRxSignalStrength9 OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap recv sta pkt rssi stat,-70dbm<X<=-65dBm."
+    ::= { apStationAssoRssiTableEntry 9 }
+
+apStationAssoRxSignalStrength10 OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap recv sta pkt rssi stat,-75dbm<X<=-70dBm."
+    ::= { apStationAssoRssiTableEntry 10 }	
+
+apStationAssoRxSignalStrength11 OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap recv sta pkt rssi stat,-80dbm<X<=-75dBm."
+    ::= { apStationAssoRssiTableEntry 11 }	
+
+apStationAssoRxSignalStrength12 OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap recv sta pkt rssi stat,-85dbm<X<=-80dBm."
+    ::= { apStationAssoRssiTableEntry 12 }	
+
+apStationAssoRxSignalStrength13 OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap recv sta pkt rssi stat,-90dbm<X<=-85dBm."
+    ::= { apStationAssoRssiTableEntry 13 }
+
+apStationAssoRxSignalStrength14 OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap recv sta pkt rssi stat,-95dbm<X<=-90dBm."
+    ::= { apStationAssoRssiTableEntry 14 }	
+
+apStationAssoRxSignalStrength15 OBJECT-TYPE
+    SYNTAX      Counter32
+    UNITS       "packets"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "ap recv sta pkt rssi stat,X<=-95dBm."
+    ::= { apStationAssoRssiTableEntry 15 }	    
+	
+--**************************************************
+--* Ap Sta Trans Speed info get ends * 
+--**************************************************
 ------------------------------------------------- 
 -------------------------------------------------                                           
 END

@@ -1,0 +1,140 @@
+-- *****************************************************************
+-- RUIJIE-UPGRADE-MIB.mib:  Ruijie upgrade MIB file
+--
+-- Jan 2018, zhouci
+--
+-- Copyright (c) 2018 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-UPGRADE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        NOTIFICATION-TYPE,
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        Integer32,
+        Unsigned32,
+        Counter64,
+        IpAddress
+                FROM SNMPv2-SMI
+        TruthValue,
+        DisplayString,
+        RowStatus,
+        MacAddress
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        IfIndex,
+        ConfigStatus
+                FROM RUIJIE-TC
+        ruijieMgmt
+                FROM RUIJIE-SMI;
+
+ruijieUpgradeMIB MODULE-IDENTITY
+        LAST-UPDATED "201801020000Z"
+        ORGANIZATION "Ruijie Networks Co.,Ltd."
+        CONTACT-INFO
+                "
+                Tel: 4008-111-000
+                E-mail: service@ruijie.com.cn"
+        DESCRIPTION
+                "This module defines ruijie system upgrade mibs."
+        REVISION      "201801020000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { ruijieMgmt 158}
+
+ruijieUpgradeMIBObjects OBJECT IDENTIFIER ::= { ruijieUpgradeMIB 1 }
+
+ruijieUpgradeMIBGroups OBJECT IDENTIFIER ::= { ruijieUpgradeMIBObjects 1 }
+
+ruijieFileSystemUpgradeDownloadUrl OBJECT-TYPE
+        SYNTAX       DisplayString (SIZE (0..255))
+        MAX-ACCESS   read-write
+        STATUS       current
+        DESCRIPTION
+                "url of upgrade file.
+                eg: 192.168.1.2/rgos.bin"
+        DEFVAL { "" }
+        ::= { ruijieUpgradeMIBGroups 1 }
+
+ruijieFileSystemUpgradeDownloadFlag OBJECT-TYPE
+        SYNTAX       Integer32
+        MAX-ACCESS   read-write
+        STATUS       current
+        DESCRIPTION
+                "upgrade force"
+        DEFVAL { 0 }
+        ::= { ruijieUpgradeMIBGroups 2 }
+
+-- traps define here
+ruijieUpgradeMIBTraps OBJECT IDENTIFIER ::= { ruijieUpgradeMIB 2 }
+
+ruijieUpgradeFailTrap  NOTIFICATION-TYPE
+        OBJECTS   {
+        ruijieSystemCurrtenVersion,
+        ruijieSystemUpgradeFailNo,
+        ruijieSystemUpgradeFailReason,
+        ruijieSystemUpgradeFailVersion
+        }
+        STATUS    current
+        DESCRIPTION
+                "while upgrade fail, then this trap will be sent."
+        ::= { ruijieUpgradeMIBTraps 1 }
+
+ruijieUpgradeFailRecovTrap  NOTIFICATION-TYPE
+        OBJECTS   {
+        ruijieSystemCurrtenVersion,
+        ruijieSystemUpgradeFailNo,
+        ruijieSystemUpgradeFailReason,
+        ruijieSystemUpgradeFailVersion
+        }
+        STATUS    current
+        DESCRIPTION
+                "while upgrade fail recover, then this trap will be sent."
+        ::= { ruijieUpgradeMIBTraps 2 }
+
+-- conformance information
+
+ruijieUpgradeMIBConformance OBJECT IDENTIFIER ::= { ruijieUpgradeMIB 3 }
+ruijieUpgradeMIBCompliances OBJECT IDENTIFIER ::= { ruijieUpgradeMIBConformance 1 }
+
+-- compliance statements
+
+ruijieSystemCurrtenVersion OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The current version of system."
+    ::= { ruijieUpgradeMIBCompliances 1 }
+
+ruijieSystemUpgradeFailNo OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The error number when upgrade failed."
+    ::= { ruijieUpgradeMIBCompliances 2 }
+
+ruijieSystemUpgradeFailReason OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The reason for upgrade failure."
+    ::= { ruijieUpgradeMIBCompliances 3 }
+
+ruijieSystemUpgradeFailVersion OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The version need to upgrade."
+    ::= { ruijieUpgradeMIBCompliances 4 }
+
+END

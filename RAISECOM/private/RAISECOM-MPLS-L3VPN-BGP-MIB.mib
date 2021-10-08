@@ -1,0 +1,402 @@
+-- *****************************************************************
+-- RAISECOM-MPLS-L3VPN-BGP-MIB.mib:  Raisecom Mpls L3vpn Bgp MIB file
+--
+-- November 2002, Wang Meng
+--
+-- Copyright (c) 2011 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RAISECOM-MPLS-L3VPN-BGP-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+   MODULE-IDENTITY,
+   OBJECT-TYPE,
+   Integer32
+      FROM SNMPv2-SMI                                     -- [RFC2578]
+   MODULE-COMPLIANCE, OBJECT-GROUP
+      FROM SNMPv2-CONF                                    -- [RFC2580]
+   RowStatus, StorageType
+      FROM SNMPv2-TC                                      -- [RFC2579]
+   InetAddress, InetAddressType
+      FROM INET-ADDRESS-MIB                               -- [RFC4001]
+   mplsL3VpnVrfName
+      FROM MPLS-L3VPN-STD-MIB
+   bgp4PathAttrIpAddrPrefix,
+   bgp4PathAttrIpAddrPrefixLen,
+   bgp4PathAttrPeer
+      FROM BGP4-MIB
+   ruijieMgmt
+      FROM RAISECOM-SMI;
+
+-- **********************************************************************
+-- * MODULE IDENTITY
+-- **********************************************************************
+ruijiemplsL3VpnNbrMIB MODULE-IDENTITY
+   LAST-UPDATED "201109160000Z"
+   ORGANIZATION "Raisecom Networks Co.,Ltd."
+   CONTACT-INFO
+                "Tel: 4008-111-000
+                E-mail: service@raisecom.com.cn"                  
+   DESCRIPTION
+        "This MIB contains managed object definitions for the
+         neighbors' parameters of the
+         Layer-3 Multiprotocol Label Switching Virtual
+         Private Networks.
+
+        Copyright (C) The Internet Society (2006).  This
+        version of this MIB module is part of RFC4382; see
+        the RFC itself for full legal notices."
+  -- Revision history.
+  REVISION
+      "201109160000Z"
+   DESCRIPTION
+      "Initial version.  Published as RFC 4382."
+   ::= { ruijieMgmt 100 }
+
+-- **********************************************************************
+-- * ruijiemplsL3VpnVrfBgpNbrTable table
+-- **********************************************************************
+ruijiemplsL3VpnVrfBgpNbrTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF RuijiemplsL3VpnVrfBgpNbrEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+       "This table specifies per-interface MPLS L3VPN
+        VRF Table capability and associated information.
+        Entries in this table define VRF routing instances
+        associated with MPLS/VPN interfaces.  Note that
+        multiple interfaces can belong to the same VRF
+        instance.  The collection of all VRF instances
+        comprises an actual VPN."
+    ::= { ruijiemplsL3VpnNbrMIB 1 }
+
+ruijiemplsL3VpnVrfBgpNbrEntry  OBJECT-TYPE
+    SYNTAX        RuijiemplsL3VpnVrfBgpNbrEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+       "An entry in this table is created by an LSR for
+        every VRF capable of supporting MPLS L3VPN.  The
+        indexing provides an ordering of VRFs per-VPN
+        interface."
+    INDEX       { mplsL3VpnVrfName,
+                  ruijiemplsL3VpnVrfBgpNbrAddr}
+    ::= { ruijiemplsL3VpnVrfBgpNbrTable 1 }
+
+RuijiemplsL3VpnVrfBgpNbrEntry ::= SEQUENCE {
+    ruijiemplsL3VpnVrfBgpNbrRole        INTEGER,
+    ruijiemplsL3VpnVrfBgpNbrType        InetAddressType,
+    ruijiemplsL3VpnVrfBgpNbrAddr        InetAddress,
+    ruijiemplsL3VpnVrfBgpNbrRowStatus   RowStatus,
+    ruijiemplsL3VpnVrfBgpNbrStorageType StorageType,
+    ruijiemplsL3VpnVrfBgpNbrRemoteAS    INTEGER
+}
+
+ruijiemplsL3VpnVrfBgpNbrRole OBJECT-TYPE
+          SYNTAX INTEGER { ce(1), pe(2) }
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "This attribute shall specify the role of the bgp
+                neighbor in Layer-3 Multiprotocol Label Switching
+                Virtual Private Networks. "
+           ::= { ruijiemplsL3VpnVrfBgpNbrEntry 1 }
+
+ruijiemplsL3VpnVrfBgpNbrType OBJECT-TYPE
+          SYNTAX InetAddressType
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "This attribute shall specify the address family of the PE's address. "
+           ::= { ruijiemplsL3VpnVrfBgpNbrEntry 2 }
+
+ruijiemplsL3VpnVrfBgpNbrAddr OBJECT-TYPE
+          SYNTAX InetAddress
+          MAX-ACCESS read-write
+          STATUS current
+          DESCRIPTION
+              "This attribute shall specify the address of the PE. "
+           ::= { ruijiemplsL3VpnVrfBgpNbrEntry 3 }
+
+ruijiemplsL3VpnVrfBgpNbrRowStatus OBJECT-TYPE
+          SYNTAX RowStatus
+          MAX-ACCESS read-create
+          STATUS current
+          DESCRIPTION
+              "This attribute is used to change or delete one row of this table. "
+           ::= { ruijiemplsL3VpnVrfBgpNbrEntry 4 }
+
+ruijiemplsL3VpnVrfBgpNbrStorageType OBJECT-TYPE
+          SYNTAX        StorageType
+          MAX-ACCESS    read-only
+          STATUS        current
+          DESCRIPTION
+              "The storage type for this VPN bgp neighbor.
+               Conceptual rows having the value 'permanent'
+               need not allow write access to any columnar
+               objects in the row."
+          REFERENCE
+              "See RFC4382."
+          DEFVAL { volatile }
+          ::= { ruijiemplsL3VpnVrfBgpNbrEntry 5 }
+
+ruijiemplsL3VpnVrfBgpNbrRemoteAS OBJECT-TYPE
+          SYNTAX     INTEGER (0..65535)
+          MAX-ACCESS read-write
+          STATUS     current
+          DESCRIPTION
+                  "The remote autonomous system number."
+          ::= { ruijiemplsL3VpnVrfBgpNbrEntry 6 }
+-- **********************************************************************
+-- * End of ruijiemplsL3VpnVrfBgpNbrTable table
+-- **********************************************************************
+
+-- **********************************************************************
+-- * ruijiemplsL3VpnVrfBgpNbrattr
+-- **********************************************************************
+ruijiemplsL3VpnVrfBgpPAtrTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF RuijiemplsL3VpnVrfBgpPAtrEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+       "This table specifies per-interface MPLS L3VPN
+        VRF Table capability and associated information.
+        Entries in this table define VRF routing instances
+        associated with MPLS/VPN interfaces.  Note that
+        multiple interfaces can belong to the same VRF
+        instance.  The collection of all VRF instances
+        comprises an actual VPN."
+    ::= { ruijiemplsL3VpnNbrMIB 2 }
+
+ruijiemplsL3VpnVrfBgpPAtrEntry  OBJECT-TYPE
+    SYNTAX        RuijiemplsL3VpnVrfBgpPAtrEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+       "An entry in this table is created by an LSR for
+        every VRF capable of supporting MPLS L3VPN.  The
+        indexing provides an ordering of VRFs per-VPN
+        interface."
+    INDEX       { mplsL3VpnVrfName,
+                  bgp4PathAttrIpAddrPrefix,
+                  bgp4PathAttrIpAddrPrefixLen,
+                  bgp4PathAttrPeer }
+    ::= { ruijiemplsL3VpnVrfBgpPAtrTable 1 }
+
+RuijiemplsL3VpnVrfBgpPAtrEntry ::= SEQUENCE {
+    ruijiemplsL3VpnVrfBgpPAtrPeerType         InetAddressType,
+    ruijiemplsL3VpnVrfBgpPAtrIpAddrPfxType    InetAddressType,
+    ruijiemplsL3VpnVrfBgpPAtrOrigin           INTEGER,
+    ruijiemplsL3VpnVrfBgpPAtrASPathSegment    OCTET STRING,
+    ruijiemplsL3VpnVrfBgpPAtrNextHopType      InetAddressType,
+    ruijiemplsL3VpnVrfBgpPAtrNextHop          InetAddress,
+    ruijiemplsL3VpnVrfBgpPAtrMultiExitDisc    Integer32,
+    ruijiemplsL3VpnVrfBgpPAtrLocalPref        Integer32,
+    ruijiemplsL3VpnVrfBgpPAtrAtomicAggregate  INTEGER,
+    ruijiemplsL3VpnVrfBgpPAtrAggregatorAS     Integer32,
+    ruijiemplsL3VpnVrfBgpPAtrAggrAddrType     InetAddressType,
+    ruijiemplsL3VpnVrfBgpPAtrAggregatorAddr   InetAddress,
+    ruijiemplsL3VpnVrfBgpPAtrCalcLocalPref    Integer32,
+    ruijiemplsL3VpnVrfBgpPAtrBest             INTEGER,
+    ruijiemplsL3VpnVrfBgpPAtrUnknown          OCTET STRING
+}
+
+ruijiemplsL3VpnVrfBgpPAtrPeerType OBJECT-TYPE
+          SYNTAX InetAddressType
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "This attribute shall specify the address family of the peer's address. "
+           ::= { ruijiemplsL3VpnVrfBgpPAtrEntry 1 }
+
+ruijiemplsL3VpnVrfBgpPAtrIpAddrPfxType OBJECT-TYPE
+          SYNTAX InetAddressType
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "This attribute shall specify the address family of the address. "
+           ::= { ruijiemplsL3VpnVrfBgpPAtrEntry 2 }
+
+ruijiemplsL3VpnVrfBgpPAtrOrigin OBJECT-TYPE
+          SYNTAX INTEGER { igp(1), egp(2), incomplete(3) }
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "This attribute shall specify the origin of the path. "
+           ::= { ruijiemplsL3VpnVrfBgpPAtrEntry 3 }
+
+ruijiemplsL3VpnVrfBgpPAtrNextHop OBJECT-TYPE
+          SYNTAX InetAddress
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "This attribute shall specify the address of the border router. "
+           ::= { ruijiemplsL3VpnVrfBgpPAtrEntry 4 }
+
+ruijiemplsL3VpnVrfBgpPAtrASPathSegment  OBJECT-TYPE
+          SYNTAX OCTET STRING (SIZE (2..255))
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "This sequence is discription by a trible group
+               <type, length, value>. The length of the type
+               member is one octet. Its possible values are as
+               follow:
+                  AS_SET: unordered set of ASs a route in the
+                          UPDATE message has traversed.
+                  AS_SEQUENCE£ºordered set of ASs a route in the
+                               UPDATE message has traversed.
+               The length of the length member is alse one octet,
+               indicating the count of the as. The value member
+               includes one or more as number and every as number
+               is discriped by a pair of octets, caculated according
+               to the following formula:
+                  first-byte-of-pair = ASNumber / 256;
+                  second-byte-of-pair = ASNumber & 255."
+           ::= { ruijiemplsL3VpnVrfBgpPAtrEntry 5 }
+
+ruijiemplsL3VpnVrfBgpPAtrNextHopType OBJECT-TYPE
+          SYNTAX InetAddressType
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "This attribute shall specify the address family of the border router's
+              address. "
+           ::= { ruijiemplsL3VpnVrfBgpPAtrEntry 6 }
+
+ruijiemplsL3VpnVrfBgpPAtrMultiExitDisc OBJECT-TYPE
+          SYNTAX Integer32 (-1..2147483647)
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "This attribute shall specify the med value of an advertised route.
+              When it is set to -1, it indicates that this attribute is not exsiting. "
+           ::= { ruijiemplsL3VpnVrfBgpPAtrEntry 7 }
+
+ruijiemplsL3VpnVrfBgpPAtrLocalPref OBJECT-TYPE
+          SYNTAX Integer32 (-1..2147483647)
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "The originating BGP4 speaker's degree of preference for an advertised route
+              When it is setto -1, it indicates that this attribute is not exsiting. "
+           ::= { ruijiemplsL3VpnVrfBgpPAtrEntry 8 }
+
+ruijiemplsL3VpnVrfBgpPAtrAtomicAggregate OBJECT-TYPE
+          SYNTAX INTEGER { lessSpecificRrouteNotSelected(1), lessSpecificRouteSelected(2) }
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "The originating BGP4 speaker's aggrating attribute for an advertised route. "
+           ::= { ruijiemplsL3VpnVrfBgpPAtrEntry 9 }
+
+ruijiemplsL3VpnVrfBgpPAtrAggregatorAS OBJECT-TYPE
+          SYNTAX Integer32 (0..65535)
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "The prev BGP4 speaker's as number, who excude the aggregation of the advertised
+              route.  when it is set to 0, it indicates the attribute not exists."
+           ::= { ruijiemplsL3VpnVrfBgpPAtrEntry 10 }
+
+ruijiemplsL3VpnVrfBgpPAtrAggrAddrType OBJECT-TYPE
+          SYNTAX InetAddressType
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "The attribute shall specify the address family of the aggregated address for the
+              advertised route."
+           ::= { ruijiemplsL3VpnVrfBgpPAtrEntry 11 }
+
+ruijiemplsL3VpnVrfBgpPAtrAggregatorAddr OBJECT-TYPE
+          SYNTAX InetAddress
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "The attribute shall specify the address of the prev BGP4 speaker's as number, who
+              excude the aggregation of the advertised route. When it is set to 0, it indicates
+              this attribute not exists. "
+           ::= { ruijiemplsL3VpnVrfBgpPAtrEntry 12 }
+
+ruijiemplsL3VpnVrfBgpPAtrCalcLocalPref OBJECT-TYPE
+          SYNTAX Integer32 (-1..2147483647)
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "The attribute shall specify the degree of preference calculated by the origin
+              BGP4 speaker for an advertised route. When it is set to -1, it indicates this
+              attribute not exists. "
+           ::= { ruijiemplsL3VpnVrfBgpPAtrEntry 13 }
+
+ruijiemplsL3VpnVrfBgpPAtrBest OBJECT-TYPE
+          SYNTAX INTEGER { false(1), true(2) }
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "The attribute shall specify when the advertised route is the best route. "
+           ::= { ruijiemplsL3VpnVrfBgpPAtrEntry 14 }
+
+ruijiemplsL3VpnVrfBgpPAtrUnknown OBJECT-TYPE
+          SYNTAX OCTET STRING (SIZE(0..255))
+          MAX-ACCESS read-only
+          STATUS current
+          DESCRIPTION
+              "The attribute shall specify the unkown attribute of the advertised route.
+               When its length is 0, it indicates that it does not exists. And the
+               context beyond the max length will not be recorded. "
+           ::= { ruijiemplsL3VpnVrfBgpPAtrEntry 15 }
+-- **********************************************************************
+-- * End of ruijiemplsL3VpnVrfBgpPAtrTable table
+-- **********************************************************************
+
+-- Conformance Information **********************************************
+ruijiemplsL3VpnVrfBgpNbrCom OBJECT IDENTIFIER ::= { ruijiemplsL3VpnNbrMIB 3 }
+
+ruijiemplsL3VpnVrfBgpCompliances OBJECT IDENTIFIER ::= { ruijiemplsL3VpnVrfBgpNbrCom 1 }
+ruijiemplsL3VpnVrfBgpGroups      OBJECT IDENTIFIER ::= { ruijiemplsL3VpnVrfBgpNbrCom 2 }
+
+-- Compliance statements
+
+ruijiemplsL3VpnVrfBgpCompliance MODULE-COMPLIANCE
+    STATUS       current
+    DESCRIPTION "The compliance statement for mpls L3VPN BGP neighbors which
+                 implement the MPLS-L3VPN-PRIVATE-MIB.
+                "
+    MODULE       -- this module
+        MANDATORY-GROUPS { ruijiemplsL3VpnVrfBgpGroup }
+    ::= { ruijiemplsL3VpnVrfBgpCompliances 1 }
+
+-- Units of compliance
+ruijiemplsL3VpnVrfBgpGroup OBJECT-GROUP
+    OBJECTS     {
+                  ruijiemplsL3VpnVrfBgpNbrRole,
+                  ruijiemplsL3VpnVrfBgpNbrType,
+                  ruijiemplsL3VpnVrfBgpNbrAddr,
+                  ruijiemplsL3VpnVrfBgpNbrRowStatus,
+                  ruijiemplsL3VpnVrfBgpNbrStorageType,
+                  ruijiemplsL3VpnVrfBgpNbrRemoteAS,
+                  ruijiemplsL3VpnVrfBgpPAtrPeerType,
+                  ruijiemplsL3VpnVrfBgpPAtrIpAddrPfxType,
+                  ruijiemplsL3VpnVrfBgpPAtrOrigin,
+                  ruijiemplsL3VpnVrfBgpPAtrASPathSegment,
+                  ruijiemplsL3VpnVrfBgpPAtrNextHopType,
+                  ruijiemplsL3VpnVrfBgpPAtrNextHop,
+                  ruijiemplsL3VpnVrfBgpPAtrMultiExitDisc,
+                  ruijiemplsL3VpnVrfBgpPAtrLocalPref,
+                  ruijiemplsL3VpnVrfBgpPAtrAtomicAggregate,
+                  ruijiemplsL3VpnVrfBgpPAtrAggregatorAS,
+                  ruijiemplsL3VpnVrfBgpPAtrAggrAddrType,
+                  ruijiemplsL3VpnVrfBgpPAtrAggregatorAddr,
+                  ruijiemplsL3VpnVrfBgpPAtrCalcLocalPref,
+                  ruijiemplsL3VpnVrfBgpPAtrBest,
+                  ruijiemplsL3VpnVrfBgpPAtrUnknown
+                }
+    STATUS       current
+    DESCRIPTION "A collection of objects providing for configuration
+                 of an mpls L3VPN BGP neighbor which implements the
+                 ruijiemplsL3VpnNbrMIB. "
+    ::= { ruijiemplsL3VpnVrfBgpGroups 1 }
+
+END

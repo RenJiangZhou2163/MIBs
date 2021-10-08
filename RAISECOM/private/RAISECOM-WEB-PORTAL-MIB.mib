@@ -1,0 +1,376 @@
+-- *****************************************************************
+-- RAISECOM-WEB-PORTAL-MIB.mib:  Raisecom Web Portal MIB file
+--
+-- Feb 2010, Panshiyong
+--
+-- Copyright (c) 2010 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+
+RAISECOM-WEB-PORTAL-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE
+            FROM SNMPv2-SMI
+    DisplayString,
+    RowStatus
+            FROM SNMPv2-TC
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP,
+    NOTIFICATION-GROUP
+            FROM SNMPv2-CONF
+    ruijieMgmt
+            FROM RAISECOM-SMI;
+
+ruijieWebPortalMIB MODULE-IDENTITY
+    LAST-UPDATED "201002020000Z"
+    ORGANIZATION "Raisecom Networks Co.,Ltd."
+    CONTACT-INFO
+            " 
+            Tel: 4008-111-000 
+
+            E-mail: service@raisecom.com.cn"
+    DESCRIPTION
+            "This module defines web portal mibs."
+    REVISION      "201002020000Z"
+    DESCRIPTION
+            "Initial version of this MIB module."
+    ::= { ruijieMgmt 69 } 
+
+
+--***************** define the web portal root nodes ******************
+ruijieWebPortalMIBObjects       OBJECT IDENTIFIER ::= { ruijieWebPortalMIB 1 }
+ruijieWebPortalGlobalMIBObjects OBJECT IDENTIFIER ::= { ruijieWebPortalMIBObjects 1 }
+ruijieWebPortalLocalMIBObjects  OBJECT IDENTIFIER ::= { ruijieWebPortalMIBObjects 2 }
+
+--********************************************************************
+--                                                                  **
+--                  Global nodes                                    **
+--                                                                  **
+--********************************************************************
+
+-- global web auth type
+ruijieWebPortalGlbWebAuthType OBJECT-TYPE
+    SYNTAX INTEGER {
+                 internal(0),
+                 customized(1),
+                 external(2)   
+           }
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The type of global web authentication:
+             0 - internal,
+             1 - customized,
+             2 - external."
+    DEFVAL { internal }        
+    ::= { ruijieWebPortalGlobalMIBObjects 1 }
+
+-- global method list 
+ruijieWebPortalGlbMethodList OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (1..63)) 
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "A human readable string representing the global authentication method-list."
+    ::= { ruijieWebPortalGlobalMIBObjects 2 }  
+    
+-- global customized page file name
+ruijieWebPortalGlbCustomizedPageName OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (1..130)) 
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "A human readable string representiong the global customized page file name."
+    ::= { ruijieWebPortalGlobalMIBObjects 3 }  
+
+-- global external web portal URL
+ruijieWebPortalGlbExternalWebPortalURL OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (1..130)) 
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "A human readable string representiong the global external 
+             web portal page URL."
+    ::= { ruijieWebPortalGlobalMIBObjects 4 }      
+
+-- global customized logo name
+ruijieWebPortalGlbCustomizedLogoName OBJECT-TYPE
+    SYNTAX  DisplayString(SIZE (1..130))
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "A human readable string representiong the global logo picture 
+             name of the internal web portal."
+    ::= { ruijieWebPortalGlobalMIBObjects 5 }
+
+-- global echo manufacturer logo 
+ruijieWebPortalGlbEchoManufacturerLogo OBJECT-TYPE
+    SYNTAX  INTEGER {
+									 disable(0),
+                   enable(1)               
+               }
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The global flag of display manufacturer logo or not
+             0 - disable,
+             1 - enable."
+    DEFVAL { enable }
+    ::= { ruijieWebPortalGlobalMIBObjects 6 }
+
+-- global welcome message
+ruijieWebPortalGlbWelcomeMsg OBJECT-TYPE
+    SYNTAX OCTET STRING(SIZE (1..2047))
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "A human readable string representing the global welcome message."
+    ::= { ruijieWebPortalGlobalMIBObjects 7 }
+
+-- global web-page title
+ruijieWebPortalGlbWebPageTitle OBJECT-TYPE
+    SYNTAX DisplayString(SIZE (1..130))  
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "A human readable string representing the global web-page title."
+    ::= { ruijieWebPortalGlobalMIBObjects 8 }   
+    
+
+--********************************************************************
+--                                                                  **
+--                  Local nodes                                     **
+--                                                                  **
+--********************************************************************                
+
+ruijieWebPortalAuthTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieWebPortalAuthEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+            "A table of web portal entries."
+    ::= { ruijieWebPortalLocalMIBObjects 1 }
+    
+ruijieWebPortalAuthEntry OBJECT-TYPE
+    SYNTAX RuijieWebPortalAuthEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+            "Define all attributes of the web portal."  
+    INDEX { ruijieWebPortalNetMode,
+            ruijieWebPortalNetID }
+    ::= { ruijieWebPortalAuthTable 1 }
+
+RuijieWebPortalAuthEntry ::= 
+    SEQUENCE {
+        ruijieWebPortalNetMode               INTEGER,             
+        ruijieWebPortalNetID                 INTEGER,
+        ruijieWebPortalWebAuthType           INTEGER,
+        ruijieWebPortalUseGlbConfigFlag      INTEGER,
+		    ruijieWebPortalMetholdList           DisplayString,
+        ruijieWebPortalCustomizedPageName    DisplayString,
+        ruijieWebPortalExtWebPortalURL       DisplayString,
+        ruijieWebPortalCustomizedLogoName    DisplayString,
+        ruijieWebPortalEchoManufacturerLogo  INTEGER,
+        ruijieWebPortalWelcomeMsg            OCTET STRING,
+        ruijieWebPortalWebPageTitle          DisplayString,      
+        ruijieWebPortalEntryStatus           RowStatus         
+    }
+
+ruijieWebPortalNetMode OBJECT-TYPE
+        SYNTAX INTEGER {
+                    wlan(1),
+                    ethernet(2),
+                    vlan(3)
+               }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The net mode of web portal, the value is as fallow:
+             1 - wlan,
+             2 - ethernet,
+             3 - vlan."
+        ::= { ruijieWebPortalAuthEntry  1 }
+
+ruijieWebPortalNetID OBJECT-TYPE
+        SYNTAX INTEGER(1..4095)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The net NO. of web portal."
+        ::= { ruijieWebPortalAuthEntry  2 }
+
+ruijieWebPortalWebAuthType OBJECT-TYPE
+        SYNTAX INTEGER {
+                   internal(0),
+                   customized(1),
+                   external(2)   
+               }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The type of web authentication:
+             0 - internal,
+             1 - customized,
+             2 - external."
+        DEFVAL { internal }    
+        ::= { ruijieWebPortalAuthEntry  3 }
+
+ruijieWebPortalUseGlbConfigFlag OBJECT-TYPE
+        SYNTAX INTEGER {
+                   disable(0),
+                   enable(1)                   
+               }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The flag of use global web authentication configure info or not:
+             0 - disable,
+             1 - enable."
+        DEFVAL { enable }
+        ::= { ruijieWebPortalAuthEntry  4 }
+
+ruijieWebPortalMetholdList OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..64))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "A human readable string representing the AAA authentication methold list 
+             of web portal."
+        ::= { ruijieWebPortalAuthEntry  5 }
+
+ruijieWebPortalCustomizedPageName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..130)) 
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "A human readable string representiong the name of customized 
+             page file name."
+        ::= { ruijieWebPortalAuthEntry  6 }
+
+ruijieWebPortalExtWebPortalURL OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..130))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "A human readable string representiong the URL of 
+             the external web portal page."
+        ::= { ruijieWebPortalAuthEntry  7 }
+
+ruijieWebPortalCustomizedLogoName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..130))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "A human readable string representing the customized logo picture name 
+             of the internal web portal."
+        ::= { ruijieWebPortalAuthEntry  8 }
+
+ruijieWebPortalEchoManufacturerLogo OBJECT-TYPE
+        SYNTAX INTEGER {
+                   disable(0),
+                   enable(1)                   
+               }
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The flag of display the manufacturer logo or not:
+             0 - disable,
+             1 - enable."
+        DEFVAL { enable }
+        ::= { ruijieWebPortalAuthEntry  9 }
+
+ruijieWebPortalWelcomeMsg OBJECT-TYPE
+        SYNTAX OCTET STRING(SIZE (1..2047))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "A human readable string representing the welcome message of 
+             the internal web portal."
+        ::= { ruijieWebPortalAuthEntry  10 }
+
+ruijieWebPortalWebPageTitle OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..130)) 
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "A human readable string representing the web-page title of
+             the internel web portal."
+        ::= { ruijieWebPortalAuthEntry  11 }
+
+ruijieWebPortalEntryStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+            "The status of this conceptual row.
+
+            To create a row in this table, a manager must
+            set this object to either createAndGo(4) or
+            createAndWait(5).
+
+            Until instances of all corresponding columns are
+            appropriately configured, the value of the webPortalEntryStatus
+            corresponding instance of the column is 'notReady'.
+
+            In particular, a newly created row cannot be made
+            active until the corresponding instance of
+            webPortalEntryStatus has been set.
+            "
+        ::= { ruijieWebPortalAuthEntry  12 }
+ 
+
+--*************************** conformance information *****************************************
+ruijieWebPortalMIBConformance OBJECT IDENTIFIER ::= { ruijieWebPortalMIB 2 }
+ruijieWebPortalMIBCompliances OBJECT IDENTIFIER ::= { ruijieWebPortalMIBConformance 1 }
+ruijieWebPortalMIBGroups      OBJECT IDENTIFIER ::= { ruijieWebPortalMIBConformance 2 }
+
+-- compliance statements
+
+ruijieWebPortalMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+            "The compliance statement for entities which implement
+             the Raisecom Web Portal MIB
+            "
+        MODULE  -- this module
+            MANDATORY-GROUPS { ruijieWebPortalMIBGroup }
+        ::= { ruijieWebPortalMIBCompliances 1 }
+        
+        
+-- units of conformance
+
+ruijieWebPortalMIBGroup OBJECT-GROUP
+        OBJECTS {
+            ruijieWebPortalGlbWebAuthType,
+            ruijieWebPortalGlbMethodList,
+            ruijieWebPortalGlbCustomizedPageName,
+            ruijieWebPortalGlbExternalWebPortalURL,            
+            ruijieWebPortalGlbCustomizedLogoName,
+            ruijieWebPortalGlbEchoManufacturerLogo,
+            ruijieWebPortalGlbWelcomeMsg,
+            ruijieWebPortalGlbWebPageTitle,
+            ruijieWebPortalNetMode,             
+            ruijieWebPortalNetID,
+            ruijieWebPortalWebAuthType,
+            ruijieWebPortalUseGlbConfigFlag,
+		        ruijieWebPortalMetholdList,
+            ruijieWebPortalCustomizedPageName,
+            ruijieWebPortalExtWebPortalURL,
+            ruijieWebPortalCustomizedLogoName,
+            ruijieWebPortalEchoManufacturerLogo,
+            ruijieWebPortalWelcomeMsg,
+            ruijieWebPortalWebPageTitle,      
+            ruijieWebPortalEntryStatus         
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing web portal (echo) ability to a
+                 Raisecom agent.
+                "
+        ::= { ruijieWebPortalMIBGroups 1 }        
+        
+END            

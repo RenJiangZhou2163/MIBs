@@ -14,11 +14,14 @@ RUIJIE-ROUTE-MIB DEFINITIONS ::= BEGIN
 IMPORTS
         MODULE-IDENTITY,
         OBJECT-TYPE,
+        NOTIFICATION-TYPE,
         TimeTicks,
         Unsigned32,
         Integer32,
         IpAddress
                 FROM SNMPv2-SMI
+        AddressFamilyNumbers
+                FROM IANA-ADDRESS-FAMILY-NUMBERS-MIB
         TruthValue,
         DisplayString,
         RowStatus,
@@ -31,9 +34,13 @@ IMPORTS
         IfIndex
                 FROM RUIJIE-TC
         EnabledStatus 
-                FROM P-BRIDGE-MIB               
+                FROM P-BRIDGE-MIB
         ruijieMgmt
-                FROM RUIJIE-SMI;
+                FROM RUIJIE-SMI
+        mplsL3VpnVrfPerfCurrNumRoutes
+                FROM MPLS-L3VPN-STD-MIB
+        mplsL3VpnVrfConfMidRteThresh
+                FROM MPLS-L3VPN-STD-MIB;
 
 ruijieRouteMIB MODULE-IDENTITY
         LAST-UPDATED "200203200000Z"
@@ -1551,6 +1558,113 @@ ruijieipCidrRouteMibGroup  OBJECT-GROUP
         STATUS  current
         DESCRIPTION
                 "A collection of objects providing CIDR Route Table."
-        ::= { ruijieRouteMIBGroups 6 }             
-                
+        ::= { ruijieRouteMIBGroups 6 }
+
+-- Notifications
+ruijieRouteTrap  OBJECT IDENTIFIER ::= { ruijieRouteMIB 7 }
+ruijieVrfRouteThresholdExceed NOTIFICATION-TYPE
+    OBJECTS {
+                ruijieRouteVrfName,
+                ruijieAddressFamilyAfi,
+                ruijieRouteLimitNum,
+                ruijieRouteLimitThreshold,
+                ruijieRouteLimitCurrentNum
+            }
+    STATUS          current
+    DESCRIPTION
+        "The ruijieRouteThresholdExceed is generated when the 
+        number of routes in the VPN instance received from the alarm threshold."
+   ::= { ruijieRouteTrap 1 }
+ruijieVrfRouteThresholdClear NOTIFICATION-TYPE
+    OBJECTS {
+                ruijieRouteVrfName,
+                ruijieAddressFamilyAfi,
+                ruijieRouteLimitNum,
+                ruijieRouteLimitThreshold,
+                ruijieRouteLimitCurrentNum
+            }
+    STATUS          current
+    DESCRIPTION
+        "The ruijieVrfRouteThresholdClear is generated when the 
+        number of routes received in the VPN instance decreased 
+        below the alarm threshold."
+   ::= { ruijieRouteTrap 2 }
+ruijieVrfRouteExceed NOTIFICATION-TYPE
+    OBJECTS {
+                ruijieRouteVrfName,
+                ruijieAddressFamilyAfi,
+                ruijieRouteLimitNum,
+                ruijieRouteLimitCurrentNum
+            }
+    STATUS          current
+    DESCRIPTION
+        "The ruijieRouteExceed is generated when the
+        number of routes in the VPN instance reached the 
+        alarm threshould."
+   ::= { ruijieRouteTrap 3 }
+
+ruijieVrfRouteExceedClear NOTIFICATION-TYPE
+    OBJECTS {
+                ruijieRouteVrfName,
+                ruijieAddressFamilyAfi,
+                ruijieRouteLimitNum,
+                ruijieRouteLimitCurrentNum
+            }
+    STATUS          current
+    DESCRIPTION
+        "The ruijieVrfRouteExceedClear is generated when the
+        number of routes received in the VPN instance 
+        decreased below the alarm number."
+   ::= { ruijieRouteTrap 4 }
+
+ruijieRouteVrfName OBJECT-TYPE
+    SYNTAX     DisplayString(SIZE(0..64))
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "VPN instance name."
+    ::= { ruijieRouteTrap 5 }     
+ruijieAddressFamilyAfi OBJECT-TYPE
+    SYNTAX     AddressFamilyNumbers
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The destination IP address family afi."
+    ::= { ruijieRouteTrap 6 }
+
+ruijieRouteLimitNum OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "Route limit."
+    ::= { ruijieRouteTrap 7 }
+ruijieRouteLimitThreshold OBJECT-TYPE
+    SYNTAX     INTEGER(1..100)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "Route limit threshold."
+    ::= { ruijieRouteTrap 8 }    
+
+ruijieRouteLimitCurrentNum OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "Current route number."
+    ::= { ruijieRouteTrap 9 } 
+
+ruijieVrfMplsL3VpnRouteMidClear NOTIFICATION-TYPE
+    OBJECTS {
+                mplsL3VpnVrfPerfCurrNumRoutes,
+                mplsL3VpnVrfConfMidRteThresh
+            }
+    STATUS          current
+    DESCRIPTION
+        "The ruijieVrfMplsL3VpnRouteMidClear is generated when the 
+        number of routes received in the VPN instance decreased 
+        below the alarm threshold."
+   ::= { ruijieRouteTrap 10 }
+
 END

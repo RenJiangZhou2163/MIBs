@@ -1,0 +1,1503 @@
+
+-- *******************************************************************
+-- RAISECOM-DOT11-WIDS-MIB.mib : Raisecom WLAN wids MIB
+--
+-- Oct 2009, kangxiankun
+--
+-- Copyright (c) 2009 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- *******************************************************************
+--
+RAISECOM-DOT11-WIDS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        TruthValue,
+        MacAddress,
+        DisplayString
+                FROM SNMPv2-TC
+        MODULE-IDENTITY,
+        OBJECT-TYPE,
+        TimeTicks,
+        Integer32
+                FROM SNMPv2-SMI
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP
+                FROM SNMPv2-CONF
+        ruijieMgmt
+                FROM RAISECOM-SMI;
+--********************************************************************
+--*  MODULE IDENTITY
+--********************************************************************
+ruijieDot11WIDSMIB    MODULE-IDENTITY
+   LAST-UPDATED    "200904150900Z"
+   ORGANIZATION    "Raisecom Networks Co.,Ltd."
+   CONTACT-INFO
+            "
+            Tel: 4008-111-000
+
+            E-mail: service@raisecom.com.cn"
+    DESCRIPTION
+          "This MIB provides information about WIDS feature.
+
+          GLOSSARY
+
+          Wireless Intrusion Detection Sensor (WIDS)
+          WIDS is designed to be employed in an area that is serviced
+          by an existing wireless network.
+          It aids in the early detection of malicious outsider attacks
+          and intrusions via wireless networks.
+
+          Rogue AP
+          A rogue access point is any Wi-Fi access point connected to
+          your network without authorization.
+          As it is not authorized, if there is any weakness in
+          the AP, the hacker will have chance to compromise your
+          network.
+
+          Rogue Station
+          It is similiar to Rogue AP, while it is a station.
+
+          Monitor AP
+          An AP will scan or listen to the air, and try to detect
+          wireless attack in the network.
+          Some AP products will work only in monitor role, while some
+          AP products could switch between normal AP role (only
+          provide wireless access service)and monitor AP role.
+
+          Ad Hoc Mode
+          Station could work under Ad hoc mode, then they
+          could directly do peer-to-peer communication without
+          other device support."
+
+          REVISION "200904150900Z"
+          DESCRIPTION
+                  "The initial revision of this MIB module."
+          ::= { ruijieMgmt 62 }
+
+ruijieDot11WIDSConfigObjects OBJECT IDENTIFIER       ::= { ruijieDot11WIDSMIB 1 }
+ruijieDot11WIDSDetectObjects OBJECT IDENTIFIER       ::= { ruijieDot11WIDSMIB 2 }
+--ruijieDot11WIDSTraps OBJECT IDENTIFIER       ::= { ruijieDot11WIDSMIB 0 }
+
+--*****************************************************************************
+--*  ruijieDot11WIDSPermitVendorTable Definition
+--*****************************************************************************
+ruijieDot11WIDSPermitVendorTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieDot11WIDSPermitVendorEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table provides the permitted vendor list, and each vendor
+        will be identified by MAC. The legal device should be made by the permitted vendors."
+    ::= { ruijieDot11WIDSConfigObjects 1 }
+
+ruijieDot11WIDSPermitVendorEntry OBJECT-TYPE
+    SYNTAX      RuijieDot11WIDSPermitVendorEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry provides the information of permitted vendor."
+    INDEX { ruijieDot11VendorOUI }
+    ::= { ruijieDot11WIDSPermitVendorTable 1 }
+
+RuijieDot11WIDSPermitVendorEntry ::=
+    SEQUENCE {
+        ruijieDot11VendorOUI                Integer32,
+        ruijieDot11VendorOper               Integer32,
+        ruijieDot11VendorName               MacAddress
+    }
+
+ruijieDot11VendorOUI OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the vendor OUI information of the wireless device."
+    ::= { ruijieDot11WIDSPermitVendorEntry 1 }
+
+ruijieDot11VendorOper OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the operation of vendor list."
+    ::= { ruijieDot11WIDSPermitVendorEntry 2 }
+
+ruijieDot11VendorName OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the vendor mac of the wireless device."
+    ::= { ruijieDot11WIDSPermitVendorEntry 3 }
+
+--*****************************************************************************
+--*  ruijieDot11WIDSPermitSSIDTable Definition
+--*****************************************************************************
+
+ruijieDot11WIDSPermitSSIDTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieDot11WIDSPermitSSIDEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table represents the list of SSID could be permitted in
+        the wireless network."
+    ::= { ruijieDot11WIDSConfigObjects 2 }
+
+ruijieDot11WIDSPermitSSIDEntry OBJECT-TYPE
+    SYNTAX      RuijieDot11WIDSPermitSSIDEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry provides the information of permitted SSID."
+    INDEX { ruijieDot11PermitNum }
+    ::= { ruijieDot11WIDSPermitSSIDTable 1 }
+
+RuijieDot11WIDSPermitSSIDEntry ::=
+    SEQUENCE {
+        ruijieDot11PermitNum              Integer32,
+        ruijieDot11PermitOper             Integer32,
+        ruijieDot11PermitSSID             DisplayString
+    }
+
+ruijieDot11PermitNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the permitted num in the wireless network."
+    ::= { ruijieDot11WIDSPermitSSIDEntry 1 }
+
+ruijieDot11PermitOper OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the operation of ssid list."
+    ::= { ruijieDot11WIDSPermitSSIDEntry 2 }
+
+ruijieDot11PermitSSID OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE (0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the permitted SSID in the wireless network."
+    ::= { ruijieDot11WIDSPermitSSIDEntry 3 }
+
+--*****************************************************************************
+--*  ruijieDot11WIDSDeviceAttackMacaddressListTable Definition
+--*****************************************************************************
+ruijieDot11WIDSDeviceAttackMacaddressListTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieDot11WIDSDeviceAttackMacaddressListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table provides the MAC address list of legal stations"
+    ::= { ruijieDot11WIDSConfigObjects 3 }
+
+ruijieDot11WIDSDeviceAttackMacaddressListEntry OBJECT-TYPE
+    SYNTAX      RuijieDot11WIDSDeviceAttackMacaddressListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the MAC address of legal stations."
+    INDEX { ruijieDot11AttackNum }
+    ::= { ruijieDot11WIDSDeviceAttackMacaddressListTable 1 }
+
+RuijieDot11WIDSDeviceAttackMacaddressListEntry ::=
+    SEQUENCE {
+        ruijieDot11AttackNum              Integer32,
+        ruijieDot11AttackOper             Integer32,
+        ruijieDot11AttackMAC              MacAddress,
+        ruijieDot11AttackInfo             DisplayString
+    }
+
+ruijieDot11AttackNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of station or AP, and WIDS always
+        take it as illegal station or AP."
+    ::= { ruijieDot11WIDSDeviceAttackMacaddressListEntry 1 }
+
+ruijieDot11AttackOper OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the operaton of attack mac address list."
+    ::= { ruijieDot11WIDSDeviceAttackMacaddressListEntry 2 }
+
+ruijieDot11AttackMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the MAC address of illegal stations."
+    ::= { ruijieDot11WIDSDeviceAttackMacaddressListEntry 3 }
+
+ruijieDot11AttackInfo OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (0..255))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Represents the detail of illegal stations."
+    ::= { ruijieDot11WIDSDeviceAttackMacaddressListEntry 4 }
+
+--*****************************************************************************
+--*  ruijieDot11WIDSDevicePermitMacaddressListTable Definition
+--*****************************************************************************
+
+ruijieDot11WIDSDevicePermitMacaddressListTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieDot11WIDSDevicePermitMacaddressListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table provides the MAC address list of stations or APs,
+        and WIDS always take them as legal stations or APs."
+    ::= { ruijieDot11WIDSConfigObjects 4 }
+
+ruijieDot11WIDSDevicePermitMacaddressListEntry OBJECT-TYPE
+    SYNTAX      RuijieDot11WIDSDevicePermitMacaddressListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the MAC address of station or AP,
+        and WIDS always take it as legal station or AP."
+    INDEX { ruijieDot11PermitMACNum }
+    ::= { ruijieDot11WIDSDevicePermitMacaddressListTable 1 }
+
+RuijieDot11WIDSDevicePermitMacaddressListEntry ::=
+    SEQUENCE {
+        ruijieDot11PermitMACNum           Integer32,
+        ruijieDot11PermitMACOper          Integer32,
+        ruijieDot11PermitMACAddr          MacAddress
+    }
+
+ruijieDot11PermitMACNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of station or AP, and WIDS always
+        take it as legal station or AP."
+    ::= { ruijieDot11WIDSDevicePermitMacaddressListEntry 1 }
+
+ruijieDot11PermitMACOper OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the operation for mac address list."
+    ::= { ruijieDot11WIDSDevicePermitMacaddressListEntry 2 }
+
+ruijieDot11PermitMACAddr OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the MAC address of station or AP, and WIDS always
+        take it as legal station or AP."
+    ::= { ruijieDot11WIDSDevicePermitMacaddressListEntry 3 }
+
+-- *****************************************************************************
+-- *  ruijieDot11WIDSDeviceagingDuration Definition
+-- *****************************************************************************
+
+ruijieDot11WIDSDeviceagingDuration OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the scope of device aging duration."
+    ::= { ruijieDot11WIDSConfigObjects 5 }
+
+
+-- *****************************************************************************
+-- *  ruijieDot11WIDSCountermeasuresMode Definition
+-- *****************************************************************************
+
+ruijieDot11WIDSCountermeasuresMode OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents device working countermeasures mode ."
+    ::= { ruijieDot11WIDSConfigObjects 6 }
+
+-- *****************************************************************************
+-- *  ruijieDot11WIDSCountermeasureSet Definition
+-- *****************************************************************************
+
+ruijieDot11WIDSCountermeasureSet OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents enable or disable device countermeasures."
+    ::= { ruijieDot11WIDSConfigObjects 7 }
+
+
+-- *****************************************************************************
+-- *  ruijieDot11WIDSMode Definition
+-- *****************************************************************************
+
+ruijieDot11WIDSModeTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieDot11WIDSModeEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "RuiJie AP device mode"
+    ::={ ruijieDot11WIDSConfigObjects 8 }
+
+ruijieDot11WIDSModeEntry OBJECT-TYPE
+    SYNTAX RuijieDot11WIDSModeEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "AP MAC is the index of this MIB table."
+    INDEX { ruijieDot11WIDSAPID }
+    ::={ ruijieDot11WIDSModeTable 1 }
+
+RuijieDot11WIDSModeEntry ::=
+    SEQUENCE {
+        ruijieDot11WIDSAPID                  Integer32,
+        ruijieDot11WIDSDeviceMode            Integer32
+    }
+
+ruijieDot11WIDSAPID OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "AP ID."
+    ::= { ruijieDot11WIDSModeEntry 1 }
+
+ruijieDot11WIDSDeviceMode OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents WIDS device mode."
+    ::= { ruijieDot11WIDSModeEntry 2 }
+
+--*****************************************************************************
+--*  ruijieDot11WIDSWhitelistMacaddressListTable Definition
+--*****************************************************************************
+
+ruijieDot11WIDSWhitelistMacaddressListTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieDot11WIDSWhitelistMacaddressListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table provides the MAC address list of stations or APs,
+        and WIDS always take them as legal stations or APs."
+    ::= { ruijieDot11WIDSConfigObjects 9 }
+
+ruijieDot11WIDSWhitelistMacaddressListEntry OBJECT-TYPE
+    SYNTAX      RuijieDot11WIDSWhitelistMacaddressListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the MAC address of station or AP,
+        and WIDS always take it as legal station or AP."
+    INDEX { ruijieDot11WhitelistNum }
+    ::= { ruijieDot11WIDSWhitelistMacaddressListTable 1 }
+
+RuijieDot11WIDSWhitelistMacaddressListEntry ::=
+    SEQUENCE {
+        ruijieDot11WhitelistNum              Integer32,
+        ruijieDot11WhitelistOper             Integer32,
+        ruijieDot11WhitelistMAC              MacAddress
+    }
+
+ruijieDot11WhitelistNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the Number of station or AP, and WIDS always
+        take it as legal station or AP."
+    ::= { ruijieDot11WIDSWhitelistMacaddressListEntry 1 }
+
+ruijieDot11WhitelistOper OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the operation for this table."
+    ::= { ruijieDot11WIDSWhitelistMacaddressListEntry 2 }
+
+ruijieDot11WhitelistMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the MAC address of station or AP, and WIDS always
+        take it as legal station or AP."
+    ::= { ruijieDot11WIDSWhitelistMacaddressListEntry 3 }
+
+--*****************************************************************************
+--*  ruijieDot11WIDSStaticblacklistMacaddressListTable Definition
+--*****************************************************************************
+
+ruijieDot11WIDSStaticblackListTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieDot11WIDSStaticblackListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table provides the MAC address list of stations or APs,
+        and WIDS always take them as illegal stations or APs."
+    ::= { ruijieDot11WIDSConfigObjects 10 }
+
+ruijieDot11WIDSStaticblackListEntry OBJECT-TYPE
+    SYNTAX      RuijieDot11WIDSStaticblackListEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the MAC address of station or AP,
+        and WIDS always take it as illegal station or AP."
+    INDEX { ruijieDot11StaticblacklistNum }
+    ::= { ruijieDot11WIDSStaticblackListTable 1 }
+
+RuijieDot11WIDSStaticblackListEntry ::=
+    SEQUENCE {
+        ruijieDot11StaticblacklistNum              Integer32,
+        ruijieDot11StaticblacklistOper             Integer32,
+        ruijieDot11StaticblacklistMAC              MacAddress
+    }
+
+ruijieDot11StaticblacklistNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Represents the number of station or AP, and WIDS always
+        take it as illegal station or AP."
+    ::= { ruijieDot11WIDSStaticblackListEntry 1 }
+
+ruijieDot11StaticblacklistOper OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the operation for this table."
+    ::= { ruijieDot11WIDSStaticblackListEntry 2 }
+
+ruijieDot11StaticblacklistMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the MAC address of station or AP, and WIDS always
+        take it as illegal station or AP."
+    ::= { ruijieDot11WIDSStaticblackListEntry 3 }
+
+
+--*****************************************************************************
+--*  ruijieDot11WIDSDynamicblacklistEnable Definition
+--*****************************************************************************
+
+ruijieDot11WIDSDynamicblacklistEnable OBJECT-TYPE
+    SYNTAX TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents enable or disable devic dynamic blacklist."
+    ::= { ruijieDot11WIDSConfigObjects 11 }
+
+-- *****************************************************************************
+-- *  ruijieDot11WIDSDynamicblacklistLifetime Definition
+-- *****************************************************************************
+
+ruijieDot11WIDSDynamicblacklistLifetime OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents the scope of dynamic blacklist lifetime."
+    ::= { ruijieDot11WIDSConfigObjects 12 }
+
+--*****************************************************************************
+--*  ruijieDot11WIDSAttackDetectionMode Definition
+--*****************************************************************************
+
+ruijieDot11WIDSAttackDetectionMode OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents enable which mode of attack-detection to work."
+    ::= { ruijieDot11WIDSConfigObjects 13 }
+
+--*****************************************************************************
+--*  ruijieDot11WIDSRogueInfo Definition
+--*****************************************************************************
+ruijieDot11WIDSRogueInfoTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieDot11WIDSRogueInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table provides Rogue information."
+    ::= { ruijieDot11WIDSConfigObjects 14 }
+
+ruijieDot11WIDSRogueInfoEntry OBJECT-TYPE
+    SYNTAX      RuijieDot11WIDSRogueInfoEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains vlan list for user-isolation."
+    INDEX { ruijieDot11WIDSRogueInfoNUM, ruijieDot11WIDSRogueInfoTYPE}
+    ::= { ruijieDot11WIDSRogueInfoTable 1 }
+
+RuijieDot11WIDSRogueInfoEntry ::=
+    SEQUENCE {
+        ruijieDot11WIDSRogueInfoNUM       Integer32,
+        ruijieDot11WIDSRogueInfoTYPE      Integer32,
+        ruijieDot11WIDSRogueInfoOper      Integer32,
+        ruijieDot11WIDSRogueInfoMAC       MacAddress,
+        ruijieDot11WIDSRogueInfoString	  DisplayString
+    }
+
+ruijieDot11WIDSRogueInfoNUM OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the number for rogue device."
+    ::= { ruijieDot11WIDSRogueInfoEntry 1 }
+
+ruijieDot11WIDSRogueInfoTYPE OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the type for rogue device ."
+    ::= { ruijieDot11WIDSRogueInfoEntry 2 }
+
+ruijieDot11WIDSRogueInfoOper OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the operation for rogue device ."
+    ::= { ruijieDot11WIDSRogueInfoEntry 3 }
+
+ruijieDot11WIDSRogueInfoMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the mac for rogue device ."
+    ::= { ruijieDot11WIDSRogueInfoEntry 4 }
+
+ruijieDot11WIDSRogueInfoString OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the info for rogue device."
+    ::= { ruijieDot11WIDSRogueInfoEntry 5 }
+
+--*****************************************************************************
+--*  ruijieDot11WIDSUserisolationPermitmaclist Definition
+--*****************************************************************************
+
+ruijieDot11WIDSPermitmaclistEnableTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieDot11WIDSPermitmaclistEnableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table provides vlan Permitmaclist for user-isolation."
+    ::= { ruijieDot11WIDSConfigObjects 15 }
+
+ruijieDot11WIDSPermitmaclistEnableEntry OBJECT-TYPE
+    SYNTAX      RuijieDot11WIDSPermitmaclistEnableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains vlan Permitmaclist for user-isolation."
+    INDEX { ruijieDot11WIDSEnableVlanPermitmaclistNum }
+    ::= { ruijieDot11WIDSPermitmaclistEnableTable 1 }
+
+RuijieDot11WIDSPermitmaclistEnableEntry ::=
+    SEQUENCE {
+        ruijieDot11WIDSEnableVlanPermitmaclistNum  Integer32,
+        ruijieDot11WIDSEnableVlanPermitmaclistOper Integer32,
+        ruijieDot11WIDSEnableVlanPermitmaclist     MacAddress
+    }
+
+ruijieDot11WIDSEnableVlanPermitmaclistNum OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains vlan Permitmaclist number for user-isolation."
+    ::= { ruijieDot11WIDSPermitmaclistEnableEntry 1 }
+
+ruijieDot11WIDSEnableVlanPermitmaclistOper OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains vlan Permitmaclist operation for user-isolation."
+    ::= { ruijieDot11WIDSPermitmaclistEnableEntry 2 }
+
+ruijieDot11WIDSEnableVlanPermitmaclist OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains vlan Permitmaclist for user-isolation."
+    ::= { ruijieDot11WIDSPermitmaclistEnableEntry 3 }
+
+--*****************************************************************************
+--*  ruijieDot11WIDSResetStatistics Definition
+--*****************************************************************************
+
+ruijieDot11WIDSResetStatistics    OBJECT-TYPE
+  SYNTAX                  TruthValue
+  MAX-ACCESS              read-write
+  STATUS                  current
+  DESCRIPTION
+  "This attribute set to clears all the statistics of attack detection information."
+  ::= { ruijieDot11WIDSConfigObjects  18 }
+
+--*****************************************************************************
+--*  ruijieDot11WIDSResetRoguehistoryStatistics Definition
+--*****************************************************************************
+
+ruijieDot11WIDSResetRoguehistoryStatistics    OBJECT-TYPE
+  SYNTAX                  Integer32
+  MAX-ACCESS              read-write
+  STATUS                  current
+  DESCRIPTION
+  "This attribute set to clears all the statistics of rogue information."
+  ::= { ruijieDot11WIDSConfigObjects  19 }
+
+--*****************************************************************************
+--*  ruijieDot11WIDSResethistory Definition
+--*****************************************************************************
+
+ruijieDot11WIDSResethistory    OBJECT-TYPE
+  SYNTAX                  Integer32
+  MAX-ACCESS              read-write
+  STATUS                  current
+  DESCRIPTION
+  "This attribute set to clears the history."
+  ::= { ruijieDot11WIDSConfigObjects  20 }
+
+--*****************************************************************************
+--*  ruijieDot11WIDSResetDynamicBlacklisttable Definition
+--*****************************************************************************
+
+ruijieDot11WIDSResetDynamicBlacklistTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieDot11WIDSResetDynamicBlacklistEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table descrips information about reseting wlan dynamic-blacklist."
+    ::= { ruijieDot11WIDSConfigObjects 21 }
+
+ruijieDot11WIDSResetDynamicBlacklistEntry OBJECT-TYPE
+    SYNTAX      RuijieDot11WIDSResetDynamicBlacklistEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information about reseting wlan dynamic-blacklist."
+    INDEX { ruijieDot11WIDSResetDynamicBlacklistMac }
+    ::= { ruijieDot11WIDSResetDynamicBlacklistTable 1 }
+
+RuijieDot11WIDSResetDynamicBlacklistEntry ::=
+    SEQUENCE {
+        ruijieDot11WIDSResetDynamicBlacklistMac  MacAddress,
+        ruijieDot11WIDSResetDynamicBlacklistType Integer32
+    }
+
+ruijieDot11WIDSResetDynamicBlacklistMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains Macaddress."
+    ::= { ruijieDot11WIDSResetDynamicBlacklistEntry 1 }
+
+ruijieDot11WIDSResetDynamicBlacklistType OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains Macaddress."
+    ::= { ruijieDot11WIDSResetDynamicBlacklistEntry 2 }
+
+
+--*****************************************************************************
+--*  ruijieDot11WIDResetUserisolationStatistics Definition
+--*****************************************************************************
+
+ruijieDot11WIDResetUserisolationStatistics OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents information about which vlanlist to reset user-isolation statistics."
+    ::= { ruijieDot11WIDSConfigObjects 22 }
+
+
+--*****************************************************************************
+--*  ruijieDot11WIDSShowDot11IdsAttacklist Definition
+--*****************************************************************************
+
+ruijieDot11WIDSShowDot11IdsAttacklistTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieDot11WIDSShowDot11IdsAttacklistEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table descrips information about reseting wlan dynamic-blacklist."
+    ::= { ruijieDot11WIDSDetectObjects 1 }
+
+ruijieDot11WIDSShowDot11IdsAttacklistEntry OBJECT-TYPE
+    SYNTAX      RuijieDot11WIDSShowDot11IdsAttacklistEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains information about reseting wlan dynamic-blacklist."
+    INDEX { ruijieDot11WIDSShowDot11IdsAttacklistNum }
+    ::= { ruijieDot11WIDSShowDot11IdsAttacklistTable 1 }
+
+RuijieDot11WIDSShowDot11IdsAttacklistEntry ::=
+    SEQUENCE {
+        ruijieDot11WIDSShowDot11IdsAttacklistNum  INTEGER,
+        ruijieDot11WIDSShowDot11IdsAttacklistOper INTEGER,
+        ruijieDot11WIDSShowDot11IdsAttacklistMac  MacAddress,
+        ruijieDot11WIDSShowDot11IdsAttacklistInfo DisplayString
+    }
+
+ruijieDot11WIDSShowDot11IdsAttacklistNum OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains Macaddress."
+    ::= { ruijieDot11WIDSShowDot11IdsAttacklistEntry 1 }
+
+ruijieDot11WIDSShowDot11IdsAttacklistOper OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains operation."
+    ::= { ruijieDot11WIDSShowDot11IdsAttacklistEntry 2 }
+
+ruijieDot11WIDSShowDot11IdsAttacklistMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains Macaddress."
+    ::= { ruijieDot11WIDSShowDot11IdsAttacklistEntry 3 }
+
+ruijieDot11WIDSShowDot11IdsAttacklistInfo OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+         "Each entry contains info."
+    ::= { ruijieDot11WIDSShowDot11IdsAttacklistEntry 4 }
+
+--*****************************************************************************
+--*  ruijieDot11WIDUserisolation Definition
+--*****************************************************************************
+ruijieDot11WIDUserisolationAC OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents information about user-isolation for AC."
+    ::= { ruijieDot11WIDSConfigObjects 23 }
+
+ruijieDot11WIDUserisolationAP OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Represents information about user-isolation for AP."
+    ::= { ruijieDot11WIDSConfigObjects 24 }
+
+--*****************************************************************************
+--*  ruijieDot11WIDSShowStatics Definition
+--*****************************************************************************
+
+ruijieDot11WIDSShowStaticsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RuijieDot11WIDSShowStaticsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table contains statics."
+    ::= { ruijieDot11WIDSConfigObjects 25 }
+
+ruijieDot11WIDSShowStaticsEntry OBJECT-TYPE
+    SYNTAX      RuijieDot11WIDSShowStaticsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table contains statics."
+    INDEX { ruijieDot11WIDSShowStaticsNum }
+    ::= { ruijieDot11WIDSShowStaticsTable 1 }
+
+RuijieDot11WIDSShowStaticsEntry ::=
+    SEQUENCE {
+        ruijieDot11WIDSShowStaticsNum  INTEGER,
+        ruijieDot11WIDSShowStaticsOper INTEGER,
+        ruijieDot11WIDSShowStaticsMac  MacAddress,
+        ruijieDot11WIDSShowStaticsInfo DisplayString
+    }
+
+ruijieDot11WIDSShowStaticsNum OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains Macaddress."
+    ::= { ruijieDot11WIDSShowStaticsEntry 1 }
+
+ruijieDot11WIDSShowStaticsOper OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains operation."
+    ::= { ruijieDot11WIDSShowStaticsEntry 2 }
+
+ruijieDot11WIDSShowStaticsMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains Macaddress."
+    ::= { ruijieDot11WIDSShowStaticsEntry 3 }
+
+ruijieDot11WIDSShowStaticsInfo OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains info."
+    ::= { ruijieDot11WIDSShowStaticsEntry 4 }
+--********************************************************************
+--*
+--********************************************************************
+ruijieDot11WIDSAssociationFailureTotalTimes  OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The total times the association fails."
+    ::= { ruijieDot11WIDSConfigObjects 26 }
+--********************************************************************
+--*
+--********************************************************************
+
+
+--**************************************************
+--* ruijieDot11WIDSSuspiciousAPInfoTable begins
+--**************************************************
+ruijieDot11WIDSSuspiciousAPInfoTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieDot11WIDSSuspiciousAPInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "The table includes the information of the suspicious ap detected."
+    ::={ ruijieDot11WIDSConfigObjects 27 }
+
+ruijieDot11WIDSSuspiciousAPInfoEntry OBJECT-TYPE
+    SYNTAX RuijieDot11WIDSSuspiciousAPInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "The entry of the ruijieDot11WIDSSuspiciousAPInfoTable table."
+    INDEX { ruijieDot11WIDSSuspiciousAPBSS }
+    ::={ ruijieDot11WIDSSuspiciousAPInfoTable 1 }
+    
+RuijieDot11WIDSSuspiciousAPInfoEntry ::=
+    SEQUENCE {
+        ruijieDot11WIDSSuspiciousAPBSS                  MacAddress,
+        ruijieDot11WIDSSuspiciousAPCount                INTEGER,
+        ruijieDot11WIDSMomentFirstTimeDetectedSusAP     TimeTicks,
+        ruijieDot11WIDSMomentLastTimeDetectedSusAP      TimeTicks,
+        ruijieDot11WIDSSuspiciousAPSSID                 DisplayString,
+        ruijieDot11WIDSSuspiciousAPMaxSignalStrength    INTEGER,
+        ruijieDot11WIDSSuspiciousAPUsingChannel         INTEGER,
+        ruijieDot11WIDSSuspiciousAPFrameEncrption       INTEGER,
+        ruijieDot11WIDSSuspiciousAPNeedsDealingTag      TruthValue,
+        ruijieDot11WIDSSuspiciousAPIgnoredTag           TruthValue
+    }
+
+ruijieDot11WIDSSuspiciousAPBSS OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The BSS MAC of the Suspicious AP."
+    ::= { ruijieDot11WIDSSuspiciousAPInfoEntry 1 }
+
+ruijieDot11WIDSSuspiciousAPCount OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The count of the Suspicious AP."
+    ::= { ruijieDot11WIDSSuspiciousAPInfoEntry 2 }
+
+ruijieDot11WIDSMomentFirstTimeDetectedSusAP OBJECT-TYPE
+    SYNTAX  TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The moment when the AP is detected as the Suspicious AP at the first time."
+    ::= { ruijieDot11WIDSSuspiciousAPInfoEntry 3 }
+
+ruijieDot11WIDSMomentLastTimeDetectedSusAP OBJECT-TYPE
+    SYNTAX  TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The moment when the AP is detected as the Suspicious AP at the last time."
+    ::= { ruijieDot11WIDSSuspiciousAPInfoEntry 4 }
+
+ruijieDot11WIDSSuspiciousAPSSID OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The SSID of the Suspicious AP."
+    ::= { ruijieDot11WIDSSuspiciousAPInfoEntry 5 }
+
+ruijieDot11WIDSSuspiciousAPMaxSignalStrength OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The max signal strength of the Suspicious AP."
+    ::= { ruijieDot11WIDSSuspiciousAPInfoEntry 6 }
+
+ruijieDot11WIDSSuspiciousAPUsingChannel OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The channel the Suspicious AP is in."
+    ::= { ruijieDot11WIDSSuspiciousAPInfoEntry 7 }
+
+ruijieDot11WIDSSuspiciousAPFrameEncrption OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The frame encrption of the Suspicious AP."
+    ::= { ruijieDot11WIDSSuspiciousAPInfoEntry 8 }
+
+ruijieDot11WIDSSuspiciousAPNeedsDealingTag OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The tag telling whether it needs to deal the Suspicious AP."
+    ::= { ruijieDot11WIDSSuspiciousAPInfoEntry 9 }
+
+ruijieDot11WIDSSuspiciousAPIgnoredTag OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The tag telling whether to ignore the Suspicious AP."
+    ::= { ruijieDot11WIDSSuspiciousAPInfoEntry 10 }
+
+--**************************************************
+--* ruijieDot11WIDSSuspiciousAPInfoTable begins
+--**************************************************    
+    
+--**************************************************
+--* ruijieDot11WIDSSuspiciousSTAInfoTable begins
+--**************************************************
+
+ruijieDot11WIDSSuspiciousSTAInfoTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF RuijieDot11WIDSSuspiciousSTAInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "The table includes the information of the suspicious STA detected."
+    ::={ ruijieDot11WIDSConfigObjects 28 }
+
+ruijieDot11WIDSSuspiciousSTAInfoEntry OBJECT-TYPE
+    SYNTAX RuijieDot11WIDSSuspiciousSTAInfoEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "The entry of the ruijieDot11WIDSSuspiciousSTAInfoTable table."
+    INDEX { ruijieDot11WIDSSuspiciousSTAMAC }
+    ::={ ruijieDot11WIDSSuspiciousSTAInfoTable 1 }
+    
+RuijieDot11WIDSSuspiciousSTAInfoEntry ::=
+    SEQUENCE {        
+        ruijieDot11WIDSSuspiciousSTAMAC                 MacAddress,
+        ruijieDot11WIDSAPCountDetectingSuspiciousSTA    INTEGER,
+        ruijieDot11WIDSMomentFirstTimeDetectedSusSTA    TimeTicks,
+        ruijieDot11WIDSMomentLastTimeDetectedSusSTA     TimeTicks,
+        ruijieDot11WIDSBSSIDSuspiciousSTAAccessing      MacAddress,
+        ruijieDot11WIDSSuspiciousSTAMaxSignalStrength   INTEGER,
+        ruijieDot11WIDSSuspiciousSTAUsingChannel        INTEGER,
+        ruijieDot11WIDSSuspiciousSTAWorksInAdhocMode    TruthValue,
+        ruijieDot11WIDSSuspiciousSTANeedsDealingTag     TruthValue,
+        ruijieDot11WIDSSuspiciousSTAIgnoredTag          TruthValue
+    }
+
+ruijieDot11WIDSSuspiciousSTAMAC OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The MAC of the the Suspicious STA."
+    ::= { ruijieDot11WIDSSuspiciousSTAInfoEntry 1 }
+
+ruijieDot11WIDSAPCountDetectingSuspiciousSTA OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The AP count which is detecting the Suspicious STA."
+    ::= { ruijieDot11WIDSSuspiciousSTAInfoEntry 2 }
+
+ruijieDot11WIDSMomentFirstTimeDetectedSusSTA OBJECT-TYPE
+    SYNTAX  TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The moment when the STA is detected as the Suspicious STA at the first time."
+    ::= { ruijieDot11WIDSSuspiciousSTAInfoEntry 3 }
+
+ruijieDot11WIDSMomentLastTimeDetectedSusSTA OBJECT-TYPE
+    SYNTAX  TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The moment when the AP is detected as the Suspicious AP at the last time."
+    ::= { ruijieDot11WIDSSuspiciousSTAInfoEntry 4 }
+
+ruijieDot11WIDSBSSIDSuspiciousSTAAccessing OBJECT-TYPE
+    SYNTAX  MacAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The BSSID which the the Suspicious STA is trying to access."
+    ::= { ruijieDot11WIDSSuspiciousSTAInfoEntry 5 }
+
+ruijieDot11WIDSSuspiciousSTAMaxSignalStrength OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The max signal strength of the Suspicious STA."
+    ::= { ruijieDot11WIDSSuspiciousSTAInfoEntry 6 }
+
+ruijieDot11WIDSSuspiciousSTAUsingChannel OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The channel the Suspicious sta is in."
+    ::= { ruijieDot11WIDSSuspiciousSTAInfoEntry 7 }
+
+ruijieDot11WIDSSuspiciousSTAWorksInAdhocMode OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The tag whether the Suspicious STA is working in the Ad hoc mode."
+    ::= { ruijieDot11WIDSSuspiciousSTAInfoEntry 8 }
+
+
+ruijieDot11WIDSSuspiciousSTANeedsDealingTag OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The tag telling whether it needs to deal the Suspicious STA."
+    ::= { ruijieDot11WIDSSuspiciousSTAInfoEntry 9 }
+
+ruijieDot11WIDSSuspiciousSTAIgnoredTag OBJECT-TYPE
+    SYNTAX  TruthValue
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " The tag telling whether to ignore the Suspicious STA."
+    ::= { ruijieDot11WIDSSuspiciousSTAInfoEntry 10 }
+
+--**************************************************
+--* ruijieDot11WIDSSuspiciousSTAInfoTable ends
+--**************************************************
+
+--*******************************************************************
+--* traps begin here
+--*******************************************************************
+--*************************************************************
+--*************************************************************
+ruijieDot11WIDSTraps OBJECT IDENTIFIER ::= { ruijieDot11WIDSMIB 0}
+ruijieDot11WIDSTrapsObjects OBJECT IDENTIFIER ::= { ruijieDot11WIDSMIB 3 }
+
+ruijieDot11WIDSWirelessUserConnect NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieDot11WIDSSTAMAC,
+        ruijieDot11WIDSAPBSSID,
+        ruijieDot11WIDSInformation,
+        ruijieDot11WIDSextinfo
+    }
+    STATUS  current
+    DESCRIPTION
+            "trap of 802.11 connection, tell the receiver information
+             as follow: STAMAC, BSSID, Information need."
+    ::= { ruijieDot11WIDSTraps 1 }
+    
+ruijieDot11WIDSWirelessUserDisconnect NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieDot11WIDSSTAMAC,
+        ruijieDot11WIDSAPBSSID,
+        ruijieDot11WIDSInformation,
+        ruijieDot11WIDSextinfo
+    }
+    STATUS  current
+    DESCRIPTION
+            "trap of 802.11 disconnection, tell the receiver information
+             as follow: STAMAC, BSSID, Information need."
+    ::= { ruijieDot11WIDSTraps 2 }
+
+ruijieDot11WIDSWirelessUserReauthentication NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieDot11WIDSSTAMAC,
+        ruijieDot11WIDSAPBSSID,
+        ruijieDot11WIDSInformation,
+        ruijieDot11WIDSextinfo
+    }
+    STATUS  current
+    DESCRIPTION
+            "trap of 802.11 re-authentication, tell the receiver information
+             as follow: STAMAC, BSSID, Information need."
+    ::= { ruijieDot11WIDSTraps 3 }
+    
+ruijieDot11WIDSWirelessUserAuthenticationFailure NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieDot11WIDSSTAMAC,
+        ruijieDot11WIDSAPBSSID,
+        ruijieDot11WIDSInformation,
+        ruijieDot11WIDSextinfo
+    }
+    STATUS  current
+    DESCRIPTION
+            "trap of the failure of802.11 authentication, tell the receiver 
+             information as follow: STAMAC, BSSID, Information need."
+    ::= { ruijieDot11WIDSTraps 4 }
+
+ruijieDot11WIDSWirelessUserConnectFailure NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieDot11WIDSSTAMAC,
+        ruijieDot11WIDSAPBSSID,
+        ruijieDot11WIDSInformation,
+        ruijieDot11WIDSextinfo
+    }
+    STATUS  current
+    DESCRIPTION
+            "trap of the failure of 802.11 connection, tell the receiver information
+             as follow: STAMAC, BSSID, Information need."
+    ::= { ruijieDot11WIDSTraps 5 }
+  
+--*************************************************************************
+--*************************************************************************
+ruijieDot11WIDSDevice NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieDot11WIDSDeviceInfoNUM,
+        ruijieDot11WIDSDeviceInfoTYPE,
+        ruijieDot11WIDSDeviceInfoOper,
+        ruijieDot11WIDSDeviceInfoMAC,
+        ruijieDot11WIDSDeviceInfoString
+    }
+    STATUS  current
+    DESCRIPTION
+            "The information of an event of a device, which can be a rogue ap,  a debious ap,
+            a friendly ap, a rogue ad hoc, a debious ad hoc, a friendly ad hoc, a rogue sta,
+            a debious sta, a friendly sta or an attacking device."
+    ::= { ruijieDot11WIDSTraps 6 } 
+    
+ruijieDot11WIDSSuspiciousDeviceTrap NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieDot11WIDSSuspiciousDeviceMac,
+        ruijieDot11WIDSSuspiciousDeviceExtensionInfo
+    }
+    STATUS  current
+    DESCRIPTION
+            " This trap will be sent at once when detecting an suspicious ap or sta."
+    ::= { ruijieDot11WIDSTraps 7 }
+
+ruijieDot11WIDSUnauthorizedSSIDTrap NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieDot11WIDSUnauthorizedSSID,
+        ruijieDot11WIDSSUnauthorizedSSIDExtensionInfo
+    }
+    STATUS  current
+    DESCRIPTION
+            " This trap will be sent at once when detecting an unauthorized SSID
+            which is not in the permitted ssid list."
+    ::= { ruijieDot11WIDSTraps 8 }
+
+ruijieDot11WIDSDetectingAttackTrap NOTIFICATION-TYPE
+    OBJECTS {
+        ruijieDot11WIDSAttackingDeviceMac,
+        ruijieDot11WIDSAttackType,
+        ruijieDot11WIDSAttackExtensionInfo
+    }
+    STATUS  current
+    DESCRIPTION
+            " This trap will be sent at once when detecting an attack, such as flood
+            attack, spoof attack, and so on."
+    ::= { ruijieDot11WIDSTraps 9 }
+
+ruijieDot11WIDSSTAMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "MAC address of the STA."
+    ::= { ruijieDot11WIDSTrapsObjects 1 }
+
+ruijieDot11WIDSAPBSSID OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE (0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "BSSID of AP."
+    ::= { ruijieDot11WIDSTrapsObjects 2 }
+
+ruijieDot11WIDSInformation OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE (0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Information to be commited."
+    ::= { ruijieDot11WIDSTrapsObjects 3 }
+
+ruijieDot11WIDSextinfo OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE (0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Extensive information to be commited."
+    ::= { ruijieDot11WIDSTrapsObjects 4 }
+
+ruijieDot11WIDSDeviceInfoNUM OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the number for rogue device."
+    ::= { ruijieDot11WIDSTrapsObjects 5 }
+
+ruijieDot11WIDSDeviceInfoTYPE OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the type for rogue device ."
+    ::= { ruijieDot11WIDSTrapsObjects 6 }
+
+ruijieDot11WIDSDeviceInfoOper OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the operation for rogue device ."
+    ::= { ruijieDot11WIDSTrapsObjects 7 }
+
+ruijieDot11WIDSDeviceInfoMAC OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the mac for rogue device ."
+    ::= { ruijieDot11WIDSTrapsObjects 8 }
+
+ruijieDot11WIDSDeviceInfoString OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Each entry contains the info for rogue device."
+    ::= { ruijieDot11WIDSTrapsObjects 9 }     
+    
+ruijieDot11WIDSSuspiciousDeviceMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " The macaddress of the suspicious device."
+    ::= { ruijieDot11WIDSTrapsObjects 10 }
+
+ruijieDot11WIDSSuspiciousDeviceExtensionInfo OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " The information left for the future extension."
+    ::= { ruijieDot11WIDSTrapsObjects 11 }
+
+ruijieDot11WIDSUnauthorizedSSID OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " The macaddress of the suspicious device."
+    ::= { ruijieDot11WIDSTrapsObjects 12 }
+
+ruijieDot11WIDSSUnauthorizedSSIDExtensionInfo OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " The information left for the future extension."
+    ::= { ruijieDot11WIDSTrapsObjects 13 }
+
+ruijieDot11WIDSAttackingDeviceMac OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " The macaddress of the suspicious device."
+    ::= { ruijieDot11WIDSTrapsObjects 14 }
+
+ruijieDot11WIDSAttackType OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " The information left for the future extension."
+    ::= { ruijieDot11WIDSTrapsObjects 15 }
+    
+ruijieDot11WIDSAttackExtensionInfo OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        " The information left for the future extension."
+    ::= { ruijieDot11WIDSTrapsObjects 16 }
+
+--*******************************************************************
+--* traps end here
+--*******************************************************************
+
+--********************************************************************
+--*    Compliance statements
+--********************************************************************
+ruijieDot11WIDSMIBConform OBJECT IDENTIFIER ::= { ruijieDot11WIDSMIB 4 }
+
+ruijieDot11WIDSMIBCompliances OBJECT IDENTIFIER ::= { ruijieDot11WIDSMIBConform 1 }
+
+ruijieDot11WIDSMIBGroups      OBJECT IDENTIFIER ::= { ruijieDot11WIDSMIBConform 2 }
+
+ruijieDot11WIDSMIBCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for entities which implement
+        the dot11 wids module of Raisecom Ac device Manager"
+    MODULE
+    MANDATORY-GROUPS {
+        ruijieDot11WIDSMIBGroup
+    }
+    ::= { ruijieDot11WIDSMIBCompliances 1 }
+
+--********************************************************************
+--*    Units of conformance
+--********************************************************************
+
+ruijieDot11WIDSMIBGroup OBJECT-GROUP
+    OBJECTS {
+        ruijieDot11VendorOper,
+        ruijieDot11VendorName,
+        ruijieDot11PermitOper,
+        ruijieDot11PermitSSID,
+        ruijieDot11AttackOper,
+        ruijieDot11AttackMAC,
+        ruijieDot11AttackInfo,
+        ruijieDot11PermitMACOper,
+        ruijieDot11PermitMACAddr,
+        ruijieDot11WIDSDeviceagingDuration,
+        ruijieDot11WIDSCountermeasuresMode,
+        ruijieDot11WIDSCountermeasureSet,
+        ruijieDot11WIDSDeviceMode,
+        ruijieDot11WhitelistOper,
+        ruijieDot11WhitelistMAC,
+        ruijieDot11StaticblacklistOper,
+        ruijieDot11StaticblacklistMAC,
+        ruijieDot11WIDSDynamicblacklistEnable,
+        ruijieDot11WIDSDynamicblacklistLifetime,
+        ruijieDot11WIDSAttackDetectionMode,
+        ruijieDot11WIDSRogueInfoOper,
+        ruijieDot11WIDSRogueInfoMAC,
+        ruijieDot11WIDSRogueInfoString,
+        ruijieDot11WIDSEnableVlanPermitmaclistOper,
+        ruijieDot11WIDSEnableVlanPermitmaclist,
+        ruijieDot11WIDSResetStatistics,
+        ruijieDot11WIDSResetRoguehistoryStatistics,
+        ruijieDot11WIDSResethistory,
+        ruijieDot11WIDSResetDynamicBlacklistType,
+        ruijieDot11WIDResetUserisolationStatistics,
+        ruijieDot11WIDSShowDot11IdsAttacklistOper,
+        ruijieDot11WIDSShowDot11IdsAttacklistMac,
+        ruijieDot11WIDSShowDot11IdsAttacklistInfo,
+        ruijieDot11WIDUserisolationAC,
+        ruijieDot11WIDUserisolationAP,
+        ruijieDot11WIDSShowStaticsOper,
+        ruijieDot11WIDSShowStaticsMac,
+        ruijieDot11WIDSShowStaticsInfo,
+        ruijieDot11WIDSAssociationFailureTotalTimes,
+        ruijieDot11WIDSSuspiciousAPCount,
+        ruijieDot11WIDSMomentFirstTimeDetectedSusAP,
+        ruijieDot11WIDSMomentLastTimeDetectedSusAP,
+        ruijieDot11WIDSSuspiciousAPSSID,
+        ruijieDot11WIDSSuspiciousAPMaxSignalStrength,
+        ruijieDot11WIDSSuspiciousAPUsingChannel,
+        ruijieDot11WIDSSuspiciousAPFrameEncrption,
+        ruijieDot11WIDSSuspiciousAPNeedsDealingTag,
+        ruijieDot11WIDSSuspiciousAPIgnoredTag,
+        ruijieDot11WIDSAPCountDetectingSuspiciousSTA,
+        ruijieDot11WIDSMomentFirstTimeDetectedSusSTA,
+        ruijieDot11WIDSMomentLastTimeDetectedSusSTA,
+        ruijieDot11WIDSBSSIDSuspiciousSTAAccessing,
+        ruijieDot11WIDSSuspiciousSTAMaxSignalStrength,
+        ruijieDot11WIDSSuspiciousSTAUsingChannel,
+        ruijieDot11WIDSSuspiciousSTAWorksInAdhocMode,
+        ruijieDot11WIDSSuspiciousSTANeedsDealingTag,
+        ruijieDot11WIDSSuspiciousSTAIgnoredTag,
+        ruijieDot11WIDSSuspiciousDeviceMac,
+        ruijieDot11WIDSSuspiciousDeviceExtensionInfo,
+        ruijieDot11WIDSUnauthorizedSSID,
+        ruijieDot11WIDSSUnauthorizedSSIDExtensionInfo,
+        ruijieDot11WIDSAttackingDeviceMac,
+        ruijieDot11WIDSAttackType,
+        ruijieDot11WIDSAttackExtensionInfo,        
+        ruijieDot11WIDSSTAMAC,
+        ruijieDot11WIDSAPBSSID,
+        ruijieDot11WIDSInformation,
+        ruijieDot11WIDSextinfo,        
+        ruijieDot11WIDSDeviceInfoNUM,
+        ruijieDot11WIDSDeviceInfoTYPE,
+        ruijieDot11WIDSDeviceInfoOper,
+        ruijieDot11WIDSDeviceInfoMAC,
+        ruijieDot11WIDSDeviceInfoString
+    }
+    STATUS     current
+    DESCRIPTION
+            "This collection of objects represents the
+             dot11 wids private MIB "
+    ::= { ruijieDot11WIDSMIBGroups 1 }
+
+
+
+END

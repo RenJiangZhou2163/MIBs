@@ -1,0 +1,146 @@
+-- *****************************************************************
+-- RAISECOM-DHCP-CLIENT-MIB.mib:  Raisecom DHCP client MIB file
+--
+-- Oct 2015, lushunqin
+--
+-- Copyright (c) 2015 by Raisecom Networks Co.,Ltd.
+-- All rights reserved.
+-- *****************************************************************
+--
+
+RAISECOM-DHCP-CLIENT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, 
+    OBJECT-TYPE,
+    IpAddress,
+    Integer32,
+    Unsigned32
+        FROM SNMPv2-SMI
+
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP
+        FROM SNMPv2-CONF
+
+    TruthValue,
+    MacAddress, 
+    DisplayString,
+    RowStatus
+        FROM SNMPv2-TC
+
+    InterfaceIndex
+        FROM IF-MIB
+
+    VlanIndex
+        FROM Q-BRIDGE-MIB 
+
+    ruijieMgmt
+        FROM RAISECOM-SMI;
+
+--********************************************************************
+--*  MODULE IDENTITY
+--********************************************************************
+
+ruijieDhcpClientMIB    MODULE-IDENTITY
+       LAST-UPDATED    "201502090000Z"
+       ORGANIZATION    "Raisecom Networks Co.,Ltd."
+       CONTACT-INFO  
+                " 
+                Tel: 4008-111-000 
+
+                E-mail: service@raisecom.com.cn"
+
+        DESCRIPTION             
+            "This module defines raisecom DHCP Client mibs."
+        
+        REVISION      "201502090000Z"
+        DESCRIPTION
+                "Initial version of this MIB module. "
+        ::= { ruijieMgmt 135 }
+
+ruijieDhcpClientMIBObjects OBJECT IDENTIFIER 
+    ::= { ruijieDhcpClientMIB 0 }
+	
+ruijieDhcpClientConfig OBJECT IDENTIFIER
+	::= { ruijieDhcpClientMIBObjects 1 }
+	
+	
+
+--*******************************************************************
+--DHCP Client Config :  ip address dhcp on interface
+--*******************************************************************
+
+    ruijieDhcpClientIntfTable OBJECT-TYPE
+         SYNTAX      SEQUENCE OF RuijieDhcpClientIntfEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "A table listing the  ip address dhcp 
+                     on interface configed for DHCP client."
+         ::= { ruijieDhcpClientConfig 2 }
+   
+    ruijieDhcpClientIntfEntry OBJECT-TYPE
+         SYNTAX      RuijieDhcpClientIntfEntry
+         MAX-ACCESS  not-accessible
+         STATUS      current
+         DESCRIPTION
+                     "Ip address dhcp entry configed on interface 
+                 for DHCP client."
+         INDEX       { ruijieDhcpIntfClientIndex }
+         ::= { ruijieDhcpClientIntfTable 1 }
+         
+    RuijieDhcpClientIntfEntry ::= SEQUENCE {
+             ruijieDhcpIntfClientIndex         InterfaceIndex,
+             ruijieDhcpClientIpAddrDhcpStatus  INTEGER
+             }
+
+    ruijieDhcpIntfClientIndex OBJECT-TYPE
+         SYNTAX      InterfaceIndex 
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+                     "Interface DHCP client index."
+         ::= { ruijieDhcpClientIntfEntry 1 }
+
+    ruijieDhcpClientIpAddrDhcpStatus OBJECT-TYPE
+         SYNTAX      INTEGER {
+                     enable(1),
+                     disable(0)
+                     }
+         MAX-ACCESS  read-create
+         STATUS      current
+         DESCRIPTION
+                     "Ip address dhcp entry configed on interface 
+                 for DHCP client. "
+         ::= { ruijieDhcpClientIntfEntry 2 }
+
+		
+ruijieDhcpClientMIBConformance OBJECT IDENTIFIER ::= { ruijieDhcpClientMIB 2 }
+ruijieDhcpClientMIBCompliances OBJECT IDENTIFIER ::= { ruijieDhcpClientMIBConformance 1 }
+ruijieDhcpClientMIBGroups      OBJECT IDENTIFIER ::= { ruijieDhcpClientMIBConformance 2 }
+
+
+-- compliance statements
+
+ruijieDhcpClientMIBCompliance MODULE-COMPLIANCE
+        STATUS  current
+        DESCRIPTION
+                "The compliance statement for entities which implement
+                the Raisecom Dhcp Client MIB"
+        MODULE  -- this module
+                MANDATORY-GROUPS { ruijieDhcpClientIntfConfigGroup
+                }
+        ::= { ruijieDhcpClientMIBCompliances 1 }
+                
+-- units of conformance
+        
+ruijieDhcpClientIntfConfigGroup OBJECT-GROUP
+        OBJECTS {
+             ruijieDhcpClientIpAddrDhcpStatus
+        }
+        STATUS  current
+        DESCRIPTION
+                "A collection of objects providing dhcp client config information."
+        ::= { ruijieDhcpClientMIBGroups 1 } 
+
+END

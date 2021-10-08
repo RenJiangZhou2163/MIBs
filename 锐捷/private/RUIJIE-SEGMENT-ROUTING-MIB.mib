@@ -1,0 +1,194 @@
+-- *****************************************************************
+-- RUIJIE-SEGMENT-ROUTING-MIB.mib:  Ruijie Segment-Routing MIB file for multiple context
+--
+--
+-- November 2019, zhangfengwei
+--
+-- Copyright (c) 2019 by Ruijie Networks Co.,Ltd.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+
+RUIJIE-SEGMENT-ROUTING-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    IpAddress, 
+    Gauge32,
+    Counter64
+            FROM SNMPv2-SMI
+    DisplayString,
+    RowStatus
+            FROM SNMPv2-TC
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP
+            FROM SNMPv2-CONF
+    ruijieMgmt
+            FROM RUIJIE-SMI;
+
+ruijieSegmentRoutingMIB MODULE-IDENTITY
+    LAST-UPDATED "201911280000Z"
+    ORGANIZATION "Ruijie Networks Co.,Ltd."
+    CONTACT-INFO
+            " 
+            Tel: 4008-111-000 
+
+            E-mail: service@ruijie.com.cn"
+    DESCRIPTION
+            "This module defines segment routing mibs."
+    REVISION      "201911280000Z"
+    DESCRIPTION
+            "Initial version of this MIB module."
+    ::= { ruijieMgmt 163 }
+
+ruijieSegmentRoutingMIBObjects OBJECT IDENTIFIER ::= { ruijieSegmentRoutingMIB 1 }
+
+
+-- Segment Routing Segment List Counter table
+  
+ruijieSegmentRoutingCounterTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF RuijieSegmentRoutingCounterEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A table that contains segment list flow counter."
+    ::= { ruijieSegmentRoutingMIBObjects 1 }
+
+ruijieSegmentRoutingCounterEntry OBJECT-TYPE
+    SYNTAX  RuijieSegmentRoutingCounterEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+         "The entry of segment list flow counter table."
+    INDEX   { segmentListID }
+    ::= { ruijieSegmentRoutingCounterTable 1 }
+
+RuijieSegmentRoutingCounterEntry ::=
+    SEQUENCE {
+    		segmentListID							Gauge32,
+        segmentListName           DisplayString,
+        segmentListPkts           Counter64,
+        segmentListOctets         Counter64,
+        segmentListAvgPktsRate    Counter64,
+        segmentListAvgOctetsRate  Counter64,
+        segmentListPeakPktsRate   Counter64,
+        segmentListPeakOctetsRate Counter64,
+        segmentListPeakRateTime   DisplayString
+    }
+
+segmentListID OBJECT-TYPE
+        SYNTAX Gauge32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "segment list id of this entry."
+        ::= { ruijieSegmentRoutingCounterEntry  1 }    
+
+segmentListName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE (1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "segment list name of this entry."
+        ::= { ruijieSegmentRoutingCounterEntry  2 }        
+
+segmentListPkts OBJECT-TYPE
+    SYNTAX  Counter64
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total packets pass through this segment list."
+    ::= { ruijieSegmentRoutingCounterEntry 3 }
+
+segmentListOctets OBJECT-TYPE
+    SYNTAX  Counter64
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Total bytes pass through this segment list."
+    ::= { ruijieSegmentRoutingCounterEntry 4 }
+
+
+segmentListAvgPktsRate OBJECT-TYPE
+    SYNTAX  Counter64
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Average packet in recent counter cycle pass through this segment list."
+    ::= { ruijieSegmentRoutingCounterEntry 5 }
+
+segmentListAvgOctetsRate OBJECT-TYPE
+    SYNTAX  Counter64
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "Average bytes in recent counter cycle pass through this segment list."
+    ::= { ruijieSegmentRoutingCounterEntry 6 }
+       
+segmentListPeakPktsRate OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "Maximun average packets in the counter cycle pass through this segment list."
+   ::= { ruijieSegmentRoutingCounterEntry 7 }        
+
+segmentListPeakOctetsRate OBJECT-TYPE
+    SYNTAX Counter64
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "Maximun average octets in the counter cycle pass through this segment list."
+   ::= { ruijieSegmentRoutingCounterEntry 8 }
+
+segmentListPeakRateTime OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+            "Maximum rate occurrence time for this segment list."
+   ::= { ruijieSegmentRoutingCounterEntry 9 }  
+
+
+-- compliance statements
+         
+ruijieSegmentRoutingMIBConformance OBJECT IDENTIFIER ::= { ruijieSegmentRoutingMIB 3 }
+ruijieSegmentRoutingMIBCompliances OBJECT IDENTIFIER ::= { ruijieSegmentRoutingMIBConformance 1 }
+ruijieSegmentRoutingMIBGroups      OBJECT IDENTIFIER ::= { ruijieSegmentRoutingMIBConformance 2 }
+
+ruijieSegmentRoutingMIBCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "The compliance statement for entities which implement
+            the Segment routing MIB for multiple context"
+    MODULE  -- this module
+            MANDATORY-GROUPS { ruijieSegmentRoutingMIBGroup
+             }
+                   
+    ::= { ruijieSegmentRoutingMIBCompliances 1 }
+            
+-- units of conformance
+
+ruijieSegmentRoutingMIBGroup OBJECT-GROUP
+    OBJECTS {
+    		segmentListID,
+				segmentListName,
+        segmentListPkts,
+        segmentListOctets,
+        segmentListAvgPktsRate,
+        segmentListAvgOctetsRate,
+        segmentListPeakPktsRate,
+        segmentListPeakOctetsRate,
+        segmentListPeakRateTime
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects providing segment routing management and
+            opertion to a My agent."
+    ::= { ruijieSegmentRoutingMIBGroups 1 } 
+
+-- 
+
+END
