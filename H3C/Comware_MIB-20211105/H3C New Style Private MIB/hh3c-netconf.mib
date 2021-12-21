@@ -1,0 +1,127 @@
+-- =================================================================
+-- Copyright (c) 2004-2021 New H3C Tech. Co., Ltd. All rights reserved.
+--
+-- Description: NETCONF mib
+-- Reference:
+-- Version: V1.0
+-- History:
+--  V1.0 Created by zhangfeng
+--      Initial version 2021-07-07
+-- =================================================================
+HH3C-NETCONF-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Integer32
+        FROM SNMPv2-SMI
+    DisplayString
+        FROM SNMPv2-TC
+    InetAddressType, InetAddress
+        FROM INET-ADDRESS-MIB
+    hh3cCommon
+        FROM HH3C-OID-MIB;
+
+hh3cNetconf MODULE-IDENTITY
+    LAST-UPDATED "202107070000Z"
+    ORGANIZATION
+        "New H3C Tech. Co., Ltd."
+    CONTACT-INFO
+        "Platform Team New H3C Tech. Co., Ltd.
+        Hai-Dian District Beijing P.R. China
+        http://www.h3c.com
+        Zip:100085"
+    DESCRIPTION
+        "The MIB module is used for NETCONF connection notification."
+    REVISION    "202107070000Z"
+    DESCRIPTION    "The initial version."
+    ::= { hh3cCommon 206 }
+
+-- ==================================================================
+--
+-- NETCONF trap object
+--
+-- ==================================================================
+hh3cNetconfObjects OBJECT IDENTIFIER ::= { hh3cNetconf 1 }
+
+hh3cNetconfConnObjects OBJECT IDENTIFIER ::= { hh3cNetconfObjects 1 }
+
+hh3cNetconfSessionId OBJECT-TYPE
+    SYNTAX       Integer32(1..2147483647)
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The ID of NETCONF session ."
+    ::= { hh3cNetconfConnObjects 1 }
+
+hh3cNetconfSessionUserName OBJECT-TYPE
+    SYNTAX       DisplayString (SIZE(1..80))
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The user name of NETCONF session."
+    ::= { hh3cNetconfConnObjects 2 }
+
+hh3cNetconfSessionPeerIPAddressType OBJECT-TYPE
+    SYNTAX       InetAddressType
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The peer IP address of NETCONF session."
+    ::= { hh3cNetconfConnObjects 3 }
+
+hh3cNetconfSessionPeerIPAddress OBJECT-TYPE
+    SYNTAX       InetAddress
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The peer IP address of NETCONF session."
+    ::= { hh3cNetconfConnObjects 4 }
+
+hh3cNetconfSessionTerminationReason OBJECT-TYPE
+    SYNTAX              INTEGER
+    {
+        other               (1),
+        closed              (2),
+        linkDown            (3),
+        idleTimeout         (4)
+    }
+    MAX-ACCESS   accessible-for-notify
+    STATUS   current
+    DESCRIPTION
+    "The termination reason of NETCONF session.
+        other(1)        --Other reason
+        closed(2)       --Session was closed
+        linkDown(3)     --Link is down
+        idleTimeout(4)  --Session time out."
+    ::= { hh3cNetconfConnObjects 5 }
+
+hh3cNetconfTrap OBJECT IDENTIFIER ::= { hh3cNetconf 2 }
+
+hh3cNetconfConnTrapPrefix OBJECT IDENTIFIER ::= { hh3cNetconfTrap 0 }
+
+hh3cNetconfServerSessionStart NOTIFICATION-TYPE
+    OBJECTS {
+            hh3cNetconfSessionId,
+            hh3cNetconfSessionUserName,
+            hh3cNetconfSessionPeerIPAddressType,
+            hh3cNetconfSessionPeerIPAddress
+        }
+    STATUS  current
+    DESCRIPTION
+        "The NETCONF server created a session."
+::= { hh3cNetconfConnTrapPrefix 1 }
+
+hh3cNetconfServerSessionEnd NOTIFICATION-TYPE
+    OBJECTS {
+            hh3cNetconfSessionId,
+            hh3cNetconfSessionUserName,
+            hh3cNetconfSessionPeerIPAddressType,
+            hh3cNetconfSessionPeerIPAddress,
+            hh3cNetconfSessionTerminationReason
+        }
+    STATUS  current
+    DESCRIPTION
+        "A NETCONF server session ended."
+::= { hh3cNetconfConnTrapPrefix 2 }
+
+END
