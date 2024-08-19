@@ -1,8 +1,0 @@
-dbLoadRecords("$(TOP)/db/devFug.db","SYS=$(SYS), DEV=HVPS, L=0")
-drvAsynSerialPortConfigure("L0","/dev/ttyS0",0,0,0)
-asynSetOption("L0",-1,"baud","9600")
-asynSetOption("L0",-1,"bits","8")
-asynSetOption("L0",-1,"parity","none")
-asynSetOption("L0",-1,"stop","1")
-asynSetOption("L0",-1,"clocal","Y")
-asynSetOption("L0",-1,"crtscts","N")
