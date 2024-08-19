@@ -1,0 +1,1198 @@
+--  ************************************************
+--  $Id: ZXR10-ETH-MGT.mib 12 2005-07-13 01:01:17Z taowq $
+--
+--  ZXR10-ETH-MGT.mib: ZXR10 ethnet query and  configuration MIB file
+--  
+--  Jun. 2005, Tao wenqiang
+--   
+--  Copyright(c) 2005 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+
+ZXR10-ETH-MGT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, 
+    OBJECT-TYPE, 
+    Integer32,
+    Counter32,
+    Counter64,
+    IpAddress
+        FROM SNMPv2-SMI
+    RowStatus,
+    TimeStamp,
+    DisplayString,
+    PhysAddress,
+    TEXTUAL-CONVENTION                          
+        FROM SNMPv2-TC
+    zxr10interfaces
+        FROM ZXR10-SMI;
+   
+    zxr10EthMgtMIB MODULE-IDENTITY
+    LAST-UPDATED "201510160000Z"
+    ORGANIZATION "ZTE Corporation"
+    CONTACT-INFO
+        "ZTE Corporation 
+         Nanjing Institute of ZTE Corporation
+         
+         No.68 Zijinghua Rd. Yuhuatai District, Nanjing, China
+         
+         Tel: +86-25-52870000"
+    DESCRIPTION
+        "ZXROS v4.6.03 ethnet query and configuration MIB"
+    REVISION  "201510160000Z"
+    DESCRIPTION
+    "Change SYNTAX of the node zxr10EthVlanNo from INTEGER(1..64) to INTEGER(1..4094).
+     Change SYNTAX of the node zxr10EthSupervlanNo from INTEGER(1..64) to INTEGER(1..4096),"
+    REVISION  "201501120000Z"
+    DESCRIPTION
+    "Add zxr10EthRecvPktsOverRun in zxr10EthRecvStatsTable"
+    REVISION "201407220900Z"
+    DESCRIPTION
+     "Add new type port_type_mgmt_eth in data type IfPortType.
+      Change the description of zxr10EthPhyIfTable.
+      Add the description of Zxr10EthPhyIfEntry."
+
+    REVISION "201305290900Z"
+    DESCRIPTION
+     "Add deprecated objects,including zxr10EthSubIfConfigVlanID 
+      and the zxr10EthSubIfConfigEncapType.
+      Del deprecated objects in favour of zxr10EthPhyPortTable,
+      including zxr10EthPhyIfJumbo,zxr10EthPhyMdixOrMdi,zxr10EthPhyIpg,etc.
+      Import SNMP data type:Counter32,TEXTUAL-CONVENTION,
+      IpAddress,TimeStamp,DisplayString and PhysAddress.
+      Delete data type definition:JumboFrame,LanWanProperty.
+      Change SYNTAX INTEGER into Integer32.Correct  enumerated 
+      labels containing hyphen."
+
+    REVISION "200504120000Z"  -- April 12, 2005
+    DESCRIPTION
+       ""
+
+    ::= { zxr10interfaces 2 }
+
+    zxr10EthMgtMIBObjects       OBJECT IDENTIFIER ::= { zxr10EthMgtMIB 1 }   
+    
+    zxr10EthQuery OBJECT IDENTIFIER
+        ::=  { zxr10EthMgtMIBObjects 1 }
+        
+    zxr10EthConfiguration OBJECT IDENTIFIER
+        ::=  { zxr10EthMgtMIBObjects 2 }     
+        
+    zxr10EthStats OBJECT IDENTIFIER
+        ::=  { zxr10EthMgtMIBObjects 3 }  
+        
+    zxr10EthPhyIfNum OBJECT IDENTIFIER
+        ::=  { zxr10EthMgtMIBObjects 4 } 
+                         
+    zxr10EthOneMinutePeakValue OBJECT IDENTIFIER
+       ::=  { zxr10EthMgtMIBObjects 10 }
+   
+    InterfaceIndex ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "d"
+        STATUS       current
+        DESCRIPTION
+            "A unique value, greater than zero, for each interface or
+            interface sub-layer in the managed system.  It is
+            recommended that values are assigned contiguously starting
+            from 1.  The value for each interface sub-layer must remain
+            constant at least from one re-initialization of the entity's
+            network management system to the next re-initialization."
+        SYNTAX       Integer32 (1..2147483647)
+    
+    EthEncapsulationType ::= TEXTUAL-CONVENTION
+        STATUS       current
+        DESCRIPTION
+            "Ethnet encapsulation type such as 802.1Q"
+        SYNTAX    
+            INTEGER {
+                encap_802dot1Q(1),
+                encap_qinq(2),
+                encap_qrange(3),
+                encap_qinqrange(4)
+            }
+   
+    IfSpeedType ::= TEXTUAL-CONVENTION
+        STATUS       current
+        DESCRIPTION
+            "Ethnet encapsulation type such as 802.1Q"
+        SYNTAX    
+            INTEGER {
+                speed_40000mbps(8),
+                speed_100000mbps(7),
+                speed_16000mbps(6), 
+                speed_12000mbps(5),            
+                speed_10mbps(4),           
+                speed_100mbps(3),
+                speed_1000mbps(2),
+                speed_10000mbps(1),
+                speed_auto(0)            
+            }
+                        
+    IfPortType ::= TEXTUAL-CONVENTION
+        STATUS       current
+        DESCRIPTION
+            "Ethnet encapsulation type such as 802.1Q"
+        SYNTAX    
+            INTEGER {           
+                port_type_fei(2),            
+                port_type_olt(3),  
+                port_type_eth_dsl(4),    
+                port_type_gei_epon(138),
+                port_type_gei(131),
+                port_type_gei_x(132), 
+                port_type_wan_x(133),
+                port_type_gei_c(139),
+                port_type_xlgei(140),
+                port_type_gei_c_sl(141),
+                port_type_gei_x_s(227),
+                port_type_gei_c_s(228),
+                port_type_xlgei_s(229),
+                port_type_mgmt_eth(1292)
+                }         
+           
+            
+     IfStatus ::= TEXTUAL-CONVENTION
+        STATUS       current
+        DESCRIPTION
+            "Ethnet encapsulation type such as 802.1Q"
+        SYNTAX    
+            INTEGER {
+                    up(0),
+                    down(1)           
+                    }      
+      
+    PhotoorElec ::= TEXTUAL-CONVENTION
+        STATUS       current
+        DESCRIPTION
+            "Ethnet encapsulation type such as 802.1Q"
+        SYNTAX    
+            INTEGER {
+             photo(0),
+             electricity(1),
+             none(2),
+             hybid(3)          
+            }        
+
+                        
+
+            
+    EthPhyFrameType ::= TEXTUAL-CONVENTION
+        STATUS       current
+        DESCRIPTION
+            "Ethnet encapsulation type such as 802.1Q"
+        SYNTAX    
+            INTEGER {
+               ethernet_II(1)            
+            }
+            
+            
+    EthPhyWorkType ::= TEXTUAL-CONVENTION
+        STATUS       current
+        DESCRIPTION
+            "Ethnet encapsulation type such as 802.1Q"
+        SYNTAX    
+            INTEGER {
+                full_duplex(1),
+                half_duplex(2)               
+            }      
+            
+    EthNegotiationType ::= TEXTUAL-CONVENTION
+        STATUS       current
+        DESCRIPTION
+            "Ethnet encapsulation type such as 802.1Q"
+        SYNTAX    
+            INTEGER {
+               auto(1),
+               no_auto(0)               
+            }                              
+    EthLoopback ::= TEXTUAL-CONVENTION
+        STATUS       current
+        DESCRIPTION
+            "Ethnet loopback"
+        SYNTAX    
+            INTEGER {
+               no_loopback(0),
+               loopback_internal(1),
+               loopback_line(2)               
+            }     
+    EthPhyAvailStatus ::= TEXTUAL-CONVENTION
+        STATUS       current
+        DESCRIPTION
+            "Ethnet physical status"
+        SYNTAX    
+            INTEGER {               
+               online(0),
+               offline(1)            
+            }   
+                  
+    zxr10EthSubIfConfigTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10EthSubIfConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Sub interface cnfigration table"
+        ::= { zxr10EthConfiguration 1 }
+        
+    zxr10EthSubIfConfigEntry  OBJECT-TYPE
+        SYNTAX  Zxr10EthSubIfConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10EthSubIfConfigParentIfIndex,zxr10EthSubIfConfigSubIfName }
+        ::= { zxr10EthSubIfConfigTable 1 }
+
+    Zxr10EthSubIfConfigEntry ::=
+        SEQUENCE {
+            zxr10EthSubIfConfigParentIfIndex
+                Integer32,
+            zxr10EthSubIfConfigParentIfName
+                DisplayString,
+            zxr10EthSubIfConfigSubIfIndex
+                Integer32,                
+            zxr10EthSubIfConfigSubIfName
+                DisplayString,
+            zxr10EthSubIfConfigVlanID
+                Integer32,
+            zxr10EthSubIfConfigEncapType
+                EthEncapsulationType,
+            zxr10EthSubIfConfigRowStatus
+                RowStatus                
+              
+    }
+
+    zxr10EthSubIfConfigParentIfIndex  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Parent interface ifIndex"
+        ::= { zxr10EthSubIfConfigEntry 1 }    
+
+
+    zxr10EthSubIfConfigParentIfName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..32))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            " Parent interface name"
+        ::= { zxr10EthSubIfConfigEntry 2 }          
+
+    zxr10EthSubIfConfigSubIfIndex OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Sub interface ifIndex "
+        ::= { zxr10EthSubIfConfigEntry 3 }          
+
+    zxr10EthSubIfConfigSubIfName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..32))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Sub interface name"
+        ::= { zxr10EthSubIfConfigEntry 4 }           
+
+    zxr10EthSubIfConfigVlanID OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS      deprecated
+        DESCRIPTION
+        "Vlan ID of this sub interface"
+        ::= { zxr10EthSubIfConfigEntry 5 }         
+        
+    zxr10EthSubIfConfigEncapType OBJECT-TYPE
+        SYNTAX   EthEncapsulationType
+        MAX-ACCESS  read-only
+        STATUS      deprecated
+        DESCRIPTION
+        "Ethnet encapsulation type such as 802.1Q"
+        ::= { zxr10EthSubIfConfigEntry 6 }                
+    
+    zxr10EthSubIfConfigRowStatus OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "This object is used to manage creation and deletion of rows
+         in this table.
+
+         zxr10SecondaryIpAddrRowStatus must be set to 'creatAndGo' to create 
+         an entry and set to 'destroy' to delete an entry.
+
+         The value in any column may be modified any time even the
+         value of this entry rowStatus object is 'active'.
+
+         Caution has to be taken before destroying any entry. 
+         Example: Need to change the IP address of an interface,
+         which provides sole network connectivity.
+         This has to be done by destroying the entry and creating
+         a new one. The device would loose network connectivity
+         after the entry is destroyed. In this case, the destroy 
+         of the old entry and the creation on the new entry
+         should be packed in the same PDU."
+         ::= { zxr10EthSubIfConfigEntry 7 }        
+   
+    zxr10EthRecvStatsTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10EthRecvStatsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Ethnet configuration table"
+        ::= { zxr10EthStats 1 }
+        
+    zxr10EthRecvStatsEntry  OBJECT-TYPE
+        SYNTAX  Zxr10EthRecvStatsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10EthPhyIfIndex }
+        ::= { zxr10EthRecvStatsTable 1 }
+
+    Zxr10EthRecvStatsEntry ::=
+        SEQUENCE {
+            zxr10EthRecvStatsIfIndex
+                Integer32,
+            zxr10EthRecvPktsUnder64Octects
+                Counter64,
+            zxr10EthRecvPkts64Octects
+                Counter64,
+            zxr10EthRecvPkts65to127Octects
+                Counter64,
+            zxr10EthRecvPkts128to255Octects
+                Counter64,                
+            zxr10EthRecvPkts255to511Octects
+                Counter64,
+            zxr10EthRecvPkts512to1023Octects
+                Counter64,
+            zxr10EthRecvPkts1024to1518Octects
+                Counter64,
+            zxr10EthRecvPktsOverSize
+                Counter64, 
+            zxr10EthRecvPktsCRCError
+                Counter64, 
+            zxr10EthRecvClearCounts
+                INTEGER,
+            zxr10EthRecvPktsOverRun
+                Counter64                                                                                                                                                           
+    }
+
+    zxr10EthRecvStatsIfIndex  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Ethnet interface ifIndex"
+        ::= { zxr10EthRecvStatsEntry 1 }    
+
+
+    zxr10EthRecvPktsUnder64Octects OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Physical Ethnet interface RecvPktsUnder64Octects"
+        ::= { zxr10EthRecvStatsEntry 2 }          
+
+    zxr10EthRecvPkts64Octects OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Physical Ethnet interface RecvPkts64Octects"
+        ::= { zxr10EthRecvStatsEntry 3 }          
+
+    zxr10EthRecvPkts65to127Octects OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface RecvPkts65to127Octects"
+        ::= { zxr10EthRecvStatsEntry 4 }           
+
+    zxr10EthRecvPkts128to255Octects OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface RecvPkts128to255Octects"
+        ::= { zxr10EthRecvStatsEntry 5 }         
+        
+    zxr10EthRecvPkts255to511Octects OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface RecvPkts255to511Octects"
+        ::= { zxr10EthRecvStatsEntry 6 }       
+
+    zxr10EthRecvPkts512to1023Octects OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface RecvPkts512to1023Octects"
+        ::= { zxr10EthRecvStatsEntry 7 }               
+
+    zxr10EthRecvPkts1024to1518Octects OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface RecvPkts1024to1518Octects"
+        ::= { zxr10EthRecvStatsEntry 8 } 
+        
+    zxr10EthRecvPktsOverSize OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface RecvPktsOverSize"
+        ::= { zxr10EthRecvStatsEntry 9 } 
+        
+    zxr10EthRecvPktsCRCError OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface RecvPktsCRCError"
+        ::= { zxr10EthRecvStatsEntry 10 } 
+       
+    zxr10EthRecvClearCounts OBJECT-TYPE
+        SYNTAX INTEGER{clear(1),notClear(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Default notClear"
+        ::= { zxr10EthRecvStatsEntry 11 }
+        
+    zxr10EthRecvPktsOverRun OBJECT-TYPE
+        SYNTAX      Counter64
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+        "Physical Ethnet interface RecvPktsOverRun"
+        ::= { zxr10EthRecvStatsEntry 12 }
+            
+    zxr10EthOneMinutePeakValueTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10EthOneMinutePeakValueEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Ethnet oneminutepeakvalue table"
+        ::= { zxr10EthOneMinutePeakValue 1 }
+        
+    zxr10EthOneMinutePeakValueEntry  OBJECT-TYPE
+        SYNTAX  Zxr10EthOneMinutePeakValueEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10EthOneMinutePeakValueIfIndex }
+        ::= { zxr10EthOneMinutePeakValueTable 1 }
+
+    Zxr10EthOneMinutePeakValueEntry ::=
+        SEQUENCE {
+            zxr10EthOneMinutePeakValueIfIndex
+                Integer32,
+            zxr10EthOneMinutePeakValueInSingleCast
+                Counter64,
+            zxr10EthOneMinutePeakValueInSingleCastTime
+                DisplayString,
+            zxr10EthOneMinutePeakValueInMultiCast
+                Counter64,
+            zxr10EthOneMinutePeakValueInMultiCastTime
+                DisplayString,
+            zxr10EthOneMinutePeakValueInBroadCast
+                Counter64,
+            zxr10EthOneMinutePeakValueInBroadCastTime
+                DisplayString,
+            zxr10EthOneMinutePeakValueInTotalError
+                Counter64,
+            zxr10EthOneMinutePeakValueInTotalErrorTime
+                DisplayString,
+            zxr10EthOneMinutePeakValueOutSingleCast
+                Counter64,
+            zxr10EthOneMinutePeakValueOutSingleCastTime
+                DisplayString,
+            zxr10EthOneMinutePeakValueOutMultiCast
+                Counter64,
+            zxr10EthOneMinutePeakValueOutMultiCastTime
+                DisplayString,
+            zxr10EthOneMinutePeakValueOutBroadCast
+                Counter64,
+            zxr10EthOneMinutePeakValueOutBroadCastTime
+                DisplayString,
+            zxr10EthOneMinutePeakValueOutTotalError
+                Counter64,
+            zxr10EthOneMinutePeakValueOutTotalErrorTime
+                DisplayString
+    }
+
+    zxr10EthOneMinutePeakValueIfIndex  OBJECT-TYPE
+        SYNTAX Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Ethnet interface ifIndex"
+        ::= { zxr10EthOneMinutePeakValueEntry 1 }    
+
+
+    zxr10EthOneMinutePeakValueInSingleCast OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface OneMinutePeakValueInSingleCast"
+        ::= { zxr10EthOneMinutePeakValueEntry 2 }          
+
+    zxr10EthOneMinutePeakValueInSingleCastTime OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..19))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface OneMinutePeakValueInSingleCastTime"
+        ::= { zxr10EthOneMinutePeakValueEntry 3 }          
+
+    zxr10EthOneMinutePeakValueInMultiCast OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface OneMinutePeakValueInMultiCast"
+        ::= { zxr10EthOneMinutePeakValueEntry 4 }           
+
+    zxr10EthOneMinutePeakValueInMultiCastTime OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..19))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface OneMinutePeakValueInMultiCastTime"
+        ::= { zxr10EthOneMinutePeakValueEntry 5 }         
+        
+    zxr10EthOneMinutePeakValueInBroadCast OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface OneMinutePeakValueInBroadCast"
+        ::= { zxr10EthOneMinutePeakValueEntry 6 }       
+
+    zxr10EthOneMinutePeakValueInBroadCastTime OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..19))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface OneMinutePeakValueInBroadCastTime"
+        ::= { zxr10EthOneMinutePeakValueEntry 7 }               
+
+    zxr10EthOneMinutePeakValueInTotalError OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface OneMinutePeakValueInTotalError"
+        ::= { zxr10EthOneMinutePeakValueEntry 8 } 
+        
+    zxr10EthOneMinutePeakValueInTotalErrorTime OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..19))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface OneMinutePeakValueInTotalErrorTime"
+        ::= { zxr10EthOneMinutePeakValueEntry 9 } 
+        
+    zxr10EthOneMinutePeakValueOutSingleCast OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface OneMinutePeakValueOutSingleCast"
+        ::= { zxr10EthOneMinutePeakValueEntry 10 } 
+       
+    zxr10EthOneMinutePeakValueOutSingleCastTime OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..19))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface OneMinutePeakValueOutSingleCastTime"
+        ::= { zxr10EthOneMinutePeakValueEntry 11 } 
+                
+    zxr10EthOneMinutePeakValueOutMultiCast OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface OneMinutePeakValueOutMultiCast"
+        ::= { zxr10EthOneMinutePeakValueEntry 12 } 
+       
+    zxr10EthOneMinutePeakValueOutMultiCastTime OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..19))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface OneMinutePeakValueOutMultiCastTime"
+        ::= { zxr10EthOneMinutePeakValueEntry 13 } 
+                
+    zxr10EthOneMinutePeakValueOutBroadCast OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface OneMinutePeakValueOutBroadCast"
+        ::= { zxr10EthOneMinutePeakValueEntry 14 } 
+       
+    zxr10EthOneMinutePeakValueOutBroadCastTime OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..19))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface OneMinutePeakValueOutBroadCastTime"
+        ::= { zxr10EthOneMinutePeakValueEntry 15 } 
+                
+    zxr10EthOneMinutePeakValueOutTotalError OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface OneMinutePeakValueOutTotalError"
+        ::= { zxr10EthOneMinutePeakValueEntry 16 } 
+       
+    zxr10EthOneMinutePeakValueOutTotalErrorTime OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..19))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface OneMinutePeakValueOutTotalErrorTime"
+        ::= { zxr10EthOneMinutePeakValueEntry 17 } 
+                
+-- Send stats Table
+       
+    zxr10EthSndStatsTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10EthSndStatsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Ethnet configuration table"
+        ::= { zxr10EthStats 2 }
+        
+    zxr10EthSndStatsEntry  OBJECT-TYPE
+        SYNTAX  Zxr10EthSndStatsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10EthPhyIfIndex }
+        ::= { zxr10EthSndStatsTable 1 }
+
+    Zxr10EthSndStatsEntry ::=
+        SEQUENCE {
+            zxr10EthSndStatsIfIndex
+                Integer32,
+            zxr10EthSndPktsUnder64Octects
+                Counter64,
+            zxr10EthSndPkts64Octects
+                Counter64,
+            zxr10EthSndPkts65to127Octects
+                Counter64,
+            zxr10EthSndPkts128to255Octects
+                Counter64,                
+            zxr10EthSndPkts255to511Octects
+                Counter64,
+            zxr10EthSndPkts512to1023Octects
+                Counter64,
+            zxr10EthSndPkts1024to1518Octects
+                Counter64,
+            zxr10EthSndPktsOverSize
+                Counter64, 
+            zxr10EthSndClearCounts                               
+                INTEGER,
+            zxr10EthSndSCollPks
+                Counter64, 
+            zxr10EthSndMCollPks
+                Counter64, 
+            zxr10EthSndLateCollPks
+                Counter64, 
+            zxr10EthSndXSCollPkts
+                Counter64
+                                                                                                                                                 
+    }
+
+    zxr10EthSndStatsIfIndex  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Ethnet interface ifIndex"
+        ::= { zxr10EthSndStatsEntry 1 }    
+
+
+    zxr10EthSndPktsUnder64Octects OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Physical Ethnet interface SndPktsUnder64Octects"
+        ::= { zxr10EthSndStatsEntry 2 }          
+
+    zxr10EthSndPkts64Octects OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Physical Ethnet interface SndPkts64Octects"
+        ::= { zxr10EthSndStatsEntry 3 }          
+
+    zxr10EthSndPkts65to127Octects OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface SndPkts65to127Octects"
+        ::= { zxr10EthSndStatsEntry 4 }           
+
+    zxr10EthSndPkts128to255Octects OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface SndPkts128to255Octects"
+        ::= { zxr10EthSndStatsEntry 5 }         
+        
+    zxr10EthSndPkts255to511Octects OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface SndPkts255to511Octects"
+        ::= { zxr10EthSndStatsEntry 6 }       
+
+    zxr10EthSndPkts512to1023Octects OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface SndPkts512to1023Octects"
+        ::= { zxr10EthSndStatsEntry 7 }               
+
+    zxr10EthSndPkts1024to1518Octects OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface SndPkts1024to1518Octects"
+        ::= { zxr10EthSndStatsEntry 8 } 
+        
+
+    zxr10EthSndPktsOverSize OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface SndPktsOverSize"
+        ::= { zxr10EthSndStatsEntry 9 } 
+
+    zxr10EthSndClearCounts  OBJECT-TYPE
+        SYNTAX INTEGER{clear(1),notClear(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Default notClear"
+        ::= { zxr10EthSndStatsEntry 10 }   
+
+       
+    zxr10EthSndSCollPks OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        ""
+        ::= { zxr10EthSndStatsEntry 11 } 
+        
+    zxr10EthSndMCollPks OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        ""
+        ::= { zxr10EthSndStatsEntry 12 } 
+        
+    zxr10EthSndLateCollPks OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        ""
+        ::= { zxr10EthSndStatsEntry 13 } 
+        
+   zxr10EthSndXSCollPkts OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        ""
+        ::= { zxr10EthSndStatsEntry 14 } 
+        
+        
+                       
+        
+    zxr10EthLoopBackTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10EthLoopBackEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Ethnet loopback interface table"
+        ::= { zxr10EthConfiguration 4 }
+
+    zxr10EthLoopBackEntry  OBJECT-TYPE
+        SYNTAX  Zxr10EthLoopBackEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10EthLoopBackNo}
+        ::= { zxr10EthLoopBackTable 1 }
+
+    Zxr10EthLoopBackEntry ::=
+        SEQUENCE {
+            zxr10EthLoopBackIfIndex
+                InterfaceIndex,
+            zxr10EthLoopBackIfName
+                DisplayString,
+            zxr10EthLoopBackNo
+                INTEGER,   
+            zxr10EthLoopBackRowStatus
+                RowStatus
+     }
+     
+    zxr10EthLoopBackIfIndex OBJECT-TYPE
+        SYNTAX   InterfaceIndex
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Ethnet loopback interface ifIndex"
+        ::= { zxr10EthLoopBackEntry 1 }      
+
+    zxr10EthLoopBackIfName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..32))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Ethnet loopback interface ifName"
+        ::= { zxr10EthLoopBackEntry 2 }      
+                                       
+    zxr10EthLoopBackNo OBJECT-TYPE
+        SYNTAX   INTEGER(1..64)
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+        "Ethnet loopback interface LoopBackNo"
+        ::= { zxr10EthLoopBackEntry 3 }      
+                                       
+    zxr10EthLoopBackRowStatus OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Ethnet loopback interface RowStatus"
+        ::= { zxr10EthLoopBackEntry 4 }      
+                                       
+-- vlan interface table                                       
+zxr10EthVlanTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10EthVlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Ethnet vlan interface table"
+        ::= { zxr10EthConfiguration 5 }
+
+    zxr10EthVlanEntry  OBJECT-TYPE
+        SYNTAX  Zxr10EthVlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10EthVlanNo}
+        ::= { zxr10EthVlanTable 1 }
+
+    Zxr10EthVlanEntry ::=
+        SEQUENCE {
+            zxr10EthVlanIfIndex
+                InterfaceIndex,
+            zxr10EthVlanIfName
+                DisplayString,
+            zxr10EthVlanNo
+                INTEGER,   
+            zxr10EthVlanRowStatus
+                RowStatus
+     }
+     
+    zxr10EthVlanIfIndex OBJECT-TYPE
+        SYNTAX   InterfaceIndex
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Ethnet vlan interface ifIndex"
+        ::= { zxr10EthVlanEntry 1 }      
+
+    zxr10EthVlanIfName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..32))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Ethnet vlan interface ifName"
+        ::= { zxr10EthVlanEntry 2 }      
+                                       
+    zxr10EthVlanNo OBJECT-TYPE
+        SYNTAX   INTEGER(1..4094)
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+        "Ethnet vlan interface VlanNo"
+        ::= { zxr10EthVlanEntry 3 }      
+                                       
+    zxr10EthVlanRowStatus OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Ethnet vlan interface RowStatus"
+        ::= { zxr10EthVlanEntry 4 } 
+-- Supervlan interface table  
+zxr10EthSupervlanTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10EthSupervlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Ethnet Supervlan interface table"
+        ::= { zxr10EthConfiguration 6 }
+
+    zxr10EthSupervlanEntry  OBJECT-TYPE
+        SYNTAX  Zxr10EthSupervlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10EthSupervlanNo}
+        ::= { zxr10EthSupervlanTable 1 }
+
+    Zxr10EthSupervlanEntry ::=
+        SEQUENCE {
+            zxr10EthSupervlanIfIndex
+                InterfaceIndex,
+            zxr10EthSupervlanIfName
+                DisplayString,
+            zxr10EthSupervlanNo
+                INTEGER,   
+            zxr10EthSupervlanRowStatus
+                RowStatus
+     }
+     
+    zxr10EthSupervlanIfIndex OBJECT-TYPE
+        SYNTAX   InterfaceIndex
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Ethnet Supervlan interface ifIndex"
+        ::= { zxr10EthSupervlanEntry 1 }      
+
+    zxr10EthSupervlanIfName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..32))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Ethnet Supervlan interface ifName"
+        ::= { zxr10EthSupervlanEntry 2 }      
+                                       
+    zxr10EthSupervlanNo OBJECT-TYPE
+        SYNTAX   INTEGER(1..4096)
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+        "Ethnet Supervlan interface SupervlanNo"
+        ::= { zxr10EthSupervlanEntry 3 }      
+                                       
+    zxr10EthSupervlanRowStatus OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Ethnet Supervlan interface RowStatus"
+        ::= { zxr10EthSupervlanEntry 4 } 
+
+-- Ethnet physic interface configuration table
+
+    zxr10EthPhyIfTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10EthPhyIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Ethnet configuration table, including Management Ethernet."
+        ::= { zxr10EthConfiguration 3 }
+        
+    zxr10EthPhyIfEntry  OBJECT-TYPE
+        SYNTAX  Zxr10EthPhyIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing physical properties applicable to 
+             a particular interface(including Management Ethernet)."
+        INDEX  { zxr10EthPhyIfIndex }
+        ::= { zxr10EthPhyIfTable 1 }
+
+    Zxr10EthPhyIfEntry ::=
+        SEQUENCE {
+            zxr10EthPhyIfIndex
+                Integer32,
+            zxr10EthPhyIfName
+               DisplayString,
+            zxr10EthPhyWorkType
+                EthPhyWorkType,                
+            zxr10EthPhyIfSpeed
+                IfSpeedType,
+            zxr10EthPhyIfMTU
+                Integer32,
+            zxr10EthPhyIfPortType
+                IfPortType,
+            zxr10EthPhyPortProperty
+                PhotoorElec,
+            zxr10EthPhyAvailStatus
+                IfStatus,
+            zxr10EthPhyOperStatus
+                IfStatus,
+            zxr10EthPhyIfMacAddr
+                PhysAddress,
+            zxr10EthPhyIfSpeedIndeed
+                Integer32,
+            zxr10EthPhyIfAvailStatusTimeLength
+                TimeStamp,
+            zxr10EthPhyIfAvailStatusSwitchTimes
+                Counter32
+    }
+
+    zxr10EthPhyIfIndex  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Ethnet interface ifIndex"
+        ::= { zxr10EthPhyIfEntry 1 } 
+   
+    zxr10EthPhyIfName  OBJECT-TYPE
+        SYNTAX  DisplayString 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Ethnet interface ifName"
+        ::= { zxr10EthPhyIfEntry 2 }  
+           
+
+
+    zxr10EthPhyWorkType OBJECT-TYPE
+        SYNTAX   EthPhyWorkType
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface WorkType"
+        ::= { zxr10EthPhyIfEntry 5 }           
+
+    zxr10EthPhyIfSpeed OBJECT-TYPE
+        SYNTAX   IfSpeedType
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface ifSpeed"
+        ::= { zxr10EthPhyIfEntry 6 }         
+        
+    zxr10EthPhyIfMTU OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "The MTU is the size of the maximum transmission unit (MTU) that TCP/IP uses for the network interface"
+        ::= { zxr10EthPhyIfEntry 7 }    
+          
+    
+    zxr10EthPhyIfPortType OBJECT-TYPE
+        SYNTAX   IfPortType
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface PortType "
+        ::= { zxr10EthPhyIfEntry 9 } 
+        
+    zxr10EthPhyPortProperty OBJECT-TYPE
+        SYNTAX   PhotoorElec
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface PortProperty "
+        ::= { zxr10EthPhyIfEntry 10 } 
+
+    zxr10EthPhyAvailStatus OBJECT-TYPE
+        SYNTAX   IfStatus
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface AvailStatus "
+        ::= { zxr10EthPhyIfEntry 11 } 
+        
+
+    zxr10EthPhyOperStatus OBJECT-TYPE
+        SYNTAX   IfStatus
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Physical Ethnet interface OperStatus "
+        ::= { zxr10EthPhyIfEntry 12 } 
+        
+
+        
+     zxr10EthPhyIfMacAddr OBJECT-TYPE
+        SYNTAX   PhysAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "MacAddr"
+        ::= { zxr10EthPhyIfEntry 21 }
+
+   zxr10EthPhyIfSpeedIndeed OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "SpeedIndeed"
+        ::= { zxr10EthPhyIfEntry 22 }
+  
+   zxr10EthPhyIfAvailStatusTimeLength OBJECT-TYPE
+        SYNTAX   TimeStamp
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "zxr10EthPhyIfAvailStatusTimeLength"
+        ::= { zxr10EthPhyIfEntry 23 }
+   zxr10EthPhyIfAvailStatusSwitchTimes OBJECT-TYPE
+        SYNTAX   Counter32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "zxr10EthPhyIfAvailStatusSwitchTimes"
+        ::= { zxr10EthPhyIfEntry 24 }
+   
+
+
+   zxr10EthPhyIfTotalNumber OBJECT-TYPE
+       SYNTAX  Integer32
+       MAX-ACCESS  read-only
+       STATUS  current
+       DESCRIPTION
+              "The number of EthPhy interfaces (regardless of
+              their current state) present on this system."
+      ::= { zxr10EthPhyIfNum 1 }
+
+END
+

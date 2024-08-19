@@ -1,0 +1,1345 @@
+--  ******************************************************
+--  $Id: ZXR10-PORT-ACL-MIB.mib 2010-09-25  liulele $
+--
+--  ZXR10-PORT-ACL-MIB: ZXR10 T8000 Port Access List MIB file
+--  
+--  Sep. 2010, liu lele 
+--   
+--  Copyright(c) 2010 by ZTE Corporaton
+--  All rights reservered
+--  ******************************************************
+
+ZXR10-PORTACL-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Integer32, Unsigned32, Counter32, Counter64
+        FROM SNMPv2-SMI
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF
+    DisplayString, MacAddress, TEXTUAL-CONVENTION, RowStatus
+        FROM SNMPv2-TC
+    zxr10
+        FROM ZXR10-SMI;   
+
+    zxr10PortACL MODULE-IDENTITY
+        LAST-UPDATED "201611211400Z"
+        ORGANIZATION "ZTE Corporation"
+        CONTACT-INFO
+            "       Hu Jun
+            Tel:    +86-25-52870000
+            E-Mail: hu.jun11@zte.com.cn "
+        DESCRIPTION
+            "The MIB module to describe the PORT-ACL protocol."
+            
+        REVISION "201611211400Z"
+        DESCRIPTION 
+        "Add new tables:
+          1.zxr10IPv4PortACLMultiTable
+          2.zxr10V4VxlanPortACLMultiTable
+          3.zxr10IPv4VlanACLMultiTable
+          4.zxr10V4VxlanVlanACLMultiTable."
+            
+        REVISION "201603011400Z"
+        DESCRIPTION 
+        "Add new tables:
+          1.zxr10IPv4VxlanPortACLTable
+          2.zxr10VxlanV4DeviceACLTable
+          3.zxr10VxlanV4ACLVxlanTable
+          4.zxr10VxlanV4ACLVlanTable."
+            
+        REVISION "201512161400Z"
+        DESCRIPTION 
+            " Add new tables:
+              1. zxr10IPv4DeviceACLTable
+              2. zxr10IPv6DeviceACLTable
+              3. zxr10LinkDeviceACLTable
+              4. zxr10IPv4MixedDeviceACLTable
+              5. zxr10IPv6MixedDeviceACLTable
+              6. zxr10UsrDefDeviceACLTable"
+        REVISION "201311291400Z"
+        DESCRIPTION 
+            " 1. Modify document to meet the standard format
+              2. Add definition about MODULE-IDENTITY
+              3. Add a new table :zxr10IPv4PortACLlogTable"
+        REVISION "201009250000Z"
+        DESCRIPTION 
+            "add:   zxr10PortACL
+             Initial version of this MIB module."
+        ::= { zxr10AclMIB 2}   
+
+    zxr10AclMIB OBJECT IDENTIFIER  ::= { zxr10 1100}    
+    
+    AclEgressIngress ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            "ingress = 1,egress = 2."
+    SYNTAX       INTEGER{ingress(1),egress(2)}  
+    
+    --- IPv4 Port ACL 
+
+    zxr10IPv4PortACLTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv4PortACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 Port ACL Table"
+        ::= { zxr10PortACL 1 }
+
+    zxr10IPv4PortACLEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IPv4PortACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 Port ACL"
+        INDEX  { zxr10IPv4PortACLIfName,
+                 zxr10IPv4PortACLDirect }
+        ::= { zxr10IPv4PortACLTable 1 }
+        
+    Zxr10IPv4PortACLEntry ::=
+        SEQUENCE {
+            zxr10IPv4PortACLIfName
+                DisplayString,            
+            zxr10IPv4PortACLIfIndex
+                Integer32,
+            zxr10IPv4PortACLDirect
+                INTEGER,
+            zxr10IPv4PortACLACLName
+                DisplayString,
+            zxr10IPv4PortACLRowStatus
+                 RowStatus
+    }    
+           
+    zxr10IPv4PortACLIfName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "fei-        Fast ethernet interface
+   
+             vlan        Vlan interface"
+        ::= { zxr10IPv4PortACLEntry 1 }         
+            
+    zxr10IPv4PortACLIfIndex  OBJECT-TYPE
+        SYNTAX   Integer32(1..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Index of the interface"
+        ::= { zxr10IPv4PortACLEntry 2 }    
+
+    zxr10IPv4PortACLDirect  OBJECT-TYPE
+        SYNTAX   INTEGER{ingress(1),egress(0)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "egress   Filters on outbound packets
+             ingress  Filters on inbound packets"
+        ::= { zxr10IPv4PortACLEntry 3 } 
+            
+    zxr10IPv4PortACLACLName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+             "WORD  Name of an IPv4 access list (1-31 characters)"
+        ::= { zxr10IPv4PortACLEntry 4 }  
+              
+    zxr10IPv4PortACLRowStatus   OBJECT-TYPE  
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+       "createAndGo(4)  Configure IPv4 Port ACL 
+        destroy(6)  Delete IPv4 Port ACL"        
+        ::= { zxr10IPv4PortACLEntry 5 }       
+    
+    
+    --- IPv6 Port ACL 
+
+    zxr10IPv6PortACLTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv6PortACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv6 Port ACL Table"
+        ::= { zxr10PortACL 2 }
+
+    zxr10IPv6PortACLEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IPv6PortACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv6 Port ACL"
+        INDEX  { zxr10IPv6PortACLIfName,
+                 zxr10IPv6PortACLDirect }
+        ::= { zxr10IPv6PortACLTable 1 }
+        
+    Zxr10IPv6PortACLEntry ::=
+        SEQUENCE {
+            zxr10IPv6PortACLIfName
+                DisplayString,            
+            zxr10IPv6PortACLIfIndex
+                Integer32,
+            zxr10IPv6PortACLDirect
+                INTEGER,
+            zxr10IPv6PortACLACLName
+                DisplayString,
+            zxr10IPv6PortACLRowStatus
+                RowStatus
+    }
+    
+           
+    zxr10IPv6PortACLIfName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "fei-        Fast ethernet interface
+   
+             vlan        Vlan interface"
+        ::= { zxr10IPv6PortACLEntry 1 }         
+           
+    zxr10IPv6PortACLIfIndex  OBJECT-TYPE
+        SYNTAX   Integer32(1..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Index of the interface"
+        ::= { zxr10IPv6PortACLEntry 2 }    
+
+    zxr10IPv6PortACLDirect  OBJECT-TYPE
+        SYNTAX   INTEGER{ingress(1),egress(0)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "egress   Filters on outbound packets
+             ingress  Filters on inbound packets"
+        ::= { zxr10IPv6PortACLEntry 3 } 
+            
+    zxr10IPv6PortACLACLName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+             "WORD  Name of an IPv6 access list (1-31 characters)"
+        ::= { zxr10IPv6PortACLEntry 4 }  
+              
+    zxr10IPv6PortACLRowStatus   OBJECT-TYPE  
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+       "createAndGo(4)  Configure IPv6 Port ACL 
+        destroy(6)  Delete IPv6 Port ACL"        
+        ::= { zxr10IPv6PortACLEntry 5 }        
+        
+        
+    --- link Port ACL 
+
+    zxr10LinkPortACLTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10LinkPortACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Link Port ACL Table"
+        ::= { zxr10PortACL 3 }
+
+    zxr10LinkPortACLEntry  OBJECT-TYPE
+        SYNTAX  Zxr10LinkPortACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Link Port ACL"
+        INDEX  { zxr10LinkPortACLIfName,
+                 zxr10LinkPortACLDirect }
+        ::= { zxr10LinkPortACLTable 1 }
+        
+    Zxr10LinkPortACLEntry ::=
+        SEQUENCE {
+            zxr10LinkPortACLIfName
+                DisplayString,
+            zxr10LinkPortACLIfIndex
+                Integer32,
+            zxr10LinkPortACLDirect
+                INTEGER,
+            zxr10LinkPortACLACLName
+                DisplayString,
+            zxr10LinkPortACLRowStatus
+                 RowStatus
+    }    
+           
+    zxr10LinkPortACLIfName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "fei-        Fast ethernet interface
+   
+             vlan        Vlan interface"
+        ::= { zxr10LinkPortACLEntry 1 }         
+            
+    zxr10LinkPortACLIfIndex  OBJECT-TYPE
+        SYNTAX   Integer32(1..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Index of the interface"
+        ::= { zxr10LinkPortACLEntry 2 }    
+
+    zxr10LinkPortACLDirect  OBJECT-TYPE
+        SYNTAX   INTEGER{ingress(1),egress(0)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "egress   Filters on outbound packets
+             ingress  Filters on inbound packets"
+        ::= { zxr10LinkPortACLEntry 3 }
+            
+    zxr10LinkPortACLACLName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+             "WORD  Name of a link access list (1-31 characters)"
+        ::= { zxr10LinkPortACLEntry 4 }  
+              
+    zxr10LinkPortACLRowStatus   OBJECT-TYPE  
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+       "createAndGo(4)  Configure Link Port ACL 
+        destroy(6)  Delete Link Port ACL"        
+        ::= { zxr10LinkPortACLEntry 5 }        
+     
+
+    --- IPv4 Mixed Port ACL 
+
+    zxr10IPv4MixedPortACLTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv4MixedPortACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 Mixed Port ACL Table"
+        ::= { zxr10PortACL 4 }
+
+    zxr10IPv4MixedPortACLEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IPv4MixedPortACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 Mixed Port ACL"
+        INDEX  { zxr10IPv4MixedPortACLIfName,
+                 zxr10IPv4MixedPortACLDirect }
+        ::= { zxr10IPv4MixedPortACLTable 1 }
+        
+    Zxr10IPv4MixedPortACLEntry ::=
+        SEQUENCE {
+            zxr10IPv4MixedPortACLIfName
+                DisplayString,            
+            zxr10IPv4MixedPortACLIfIndex
+                Integer32,
+            zxr10IPv4MixedPortACLDirect
+                INTEGER,
+            zxr10IPv4MixedPortACLACLName
+                DisplayString,
+            zxr10IPv4MixedPortACLRowStatus
+                 RowStatus
+    }    
+           
+    zxr10IPv4MixedPortACLIfName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "fei-        Fast ethernet interface
+   
+             vlan        Vlan interface"
+        ::= { zxr10IPv4MixedPortACLEntry 1 }
+            
+    zxr10IPv4MixedPortACLIfIndex  OBJECT-TYPE
+        SYNTAX   Integer32(1..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Index of the interface"
+        ::= { zxr10IPv4MixedPortACLEntry 2 }
+
+    zxr10IPv4MixedPortACLDirect  OBJECT-TYPE
+        SYNTAX   INTEGER{ingress(1),egress(0)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "egress   Filters on outbound packets
+             ingress  Filters on inbound packets"
+        ::= { zxr10IPv4MixedPortACLEntry 3 }
+
+    zxr10IPv4MixedPortACLACLName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+             "WORD  Name of an IPv4 mixed access list (1-31 characters)"
+        ::= { zxr10IPv4MixedPortACLEntry 4 }
+              
+    zxr10IPv4MixedPortACLRowStatus   OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+       "createAndGo(4)  Configure IPv4 Mixed Port ACL
+        destroy(6)  Delete IPv4 Mixed Port ACL"
+        ::= { zxr10IPv4MixedPortACLEntry 5 }       
+        
+        
+    --- IPv6 Mixed Port ACL
+
+    zxr10IPv6MixedPortACLTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv6MixedPortACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv6 Mixed Port ACL Table"
+        ::= { zxr10PortACL 5 }
+
+    zxr10IPv6MixedPortACLEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IPv6MixedPortACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv6 Mixed Port ACL"
+        INDEX  { zxr10IPv6MixedPortACLIfName,
+                 zxr10IPv6MixedPortACLDirect }
+        ::= { zxr10IPv6MixedPortACLTable 1 }
+        
+    Zxr10IPv6MixedPortACLEntry ::=
+        SEQUENCE {
+            zxr10IPv6MixedPortACLIfName
+                DisplayString,
+            zxr10IPv6MixedPortACLIfIndex
+                Integer32,
+            zxr10IPv6MixedPortACLDirect
+                INTEGER,
+            zxr10IPv6MixedPortACLACLName
+                DisplayString,
+            zxr10IPv6MixedPortACLRowStatus
+                 RowStatus
+    }    
+           
+    zxr10IPv6MixedPortACLIfName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "fei-        Fast ethernet interface
+   
+             vlan        Vlan interface"
+        ::= { zxr10IPv6MixedPortACLEntry 1 }
+            
+    zxr10IPv6MixedPortACLIfIndex  OBJECT-TYPE
+        SYNTAX   Integer32(1..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Index of the interface"
+        ::= { zxr10IPv6MixedPortACLEntry 2 }
+
+    zxr10IPv6MixedPortACLDirect  OBJECT-TYPE
+        SYNTAX   INTEGER{ingress(1),egress(0)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "egress   Filters on outbound packets
+             ingress  Filters on inbound packets"
+        ::= { zxr10IPv6MixedPortACLEntry 3 }
+            
+    zxr10IPv6MixedPortACLACLName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+             "WORD  Name of an IPv6 mixed access list (1-31 characters)"
+        ::= { zxr10IPv6MixedPortACLEntry 4 }
+              
+    zxr10IPv6MixedPortACLRowStatus   OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "createAndGo(4)  Configure IPv6 Mixed Port ACL
+             destroy(6)  Delete IPv6 Mixed Port ACL"
+        ::= { zxr10IPv6MixedPortACLEntry 5 }   
+
+    ---Ipv4 Vxlan port ACL  
+    
+     zxr10IPv4VxlanPortACLTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv4VxlanPortACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 VXLAN access list bind to interface table."
+        ::= { zxr10PortACL 6 }
+
+    zxr10IPv4VxlanPortACLEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IPv4VxlanPortACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 VXLAN Port ACL"
+        INDEX  { zxr10IPv4VxlanPortACLIfName,
+                 zxr10IPv4VxlanPortACLDirect }
+        ::= { zxr10IPv4VxlanPortACLTable 1 }
+        
+    Zxr10IPv4VxlanPortACLEntry ::=
+        SEQUENCE {
+            zxr10IPv4VxlanPortACLIfName       DisplayString,
+            zxr10IPv4VxlanPortACLDirect       AclEgressIngress,
+            zxr10IPv4VxlanPortACLACLName      DisplayString,
+            zxr10IPv4VxlanPortACLRowStatus    RowStatus
+    }    
+           
+    zxr10IPv4VxlanPortACLIfName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Interface name"
+        ::= { zxr10IPv4VxlanPortACLEntry 1 }            
+
+    zxr10IPv4VxlanPortACLDirect  OBJECT-TYPE
+        SYNTAX   AclEgressIngress
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The node have two values:
+             1.egress   Filters on outbound packets(2),
+             2.ingress  Filters on inbound packets(1)."
+        ::= { zxr10IPv4VxlanPortACLEntry 2 }
+            
+    zxr10IPv4VxlanPortACLACLName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+             "Name of an IPv4 VXLAN access list."
+        ::= { zxr10IPv4VxlanPortACLEntry 3 }
+              
+    zxr10IPv4VxlanPortACLRowStatus   OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "createAndGo(4)  Configure IPv4 VXLAN Port ACL,
+             destroy(6)  Delete IPv4 VXLAN Port ACL."
+        ::= { zxr10IPv4VxlanPortACLEntry 100 }   
+        
+   
+    ---Ipv4 port ACL log  
+
+    zxr10IPv4PortACLlogTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv4PortACLlogEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 Port ACL log Table"
+        ::= { zxr10PortACL 7 }
+
+    zxr10IPv4PortACLlogEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IPv4PortACLlogEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 Port ACL log"
+        INDEX  { zxr10IPv4PortACLlogIfName,
+                 zxr10IPv4PortACLlogDirect,
+                 zxr10IPv4PortACLlogACLRuleID }
+        ::= { zxr10IPv4PortACLlogTable 1 }
+        
+    Zxr10IPv4PortACLlogEntry ::=
+        SEQUENCE {
+                    zxr10IPv4PortACLlogIfName            DisplayString,                    
+                    zxr10IPv4PortACLlogDirect            INTEGER,
+                    zxr10IPv4PortACLlogACLRuleID         Unsigned32,
+                    zxr10IPv4PortACLlogIfIndex           Integer32, 
+                    zxr10IPv4PortACLlogACLName           DisplayString,                    
+                    zxr10IPv4PortACLlogACLRuleHits       Counter64
+        }    
+           
+    zxr10IPv4PortACLlogIfName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "fei-        Fast ethernet interface   
+             vlan        Vlan interface"
+        ::= { zxr10IPv4PortACLlogEntry 1 }    
+        
+    zxr10IPv4PortACLlogDirect  OBJECT-TYPE
+        SYNTAX   INTEGER{ingress(1),egress(2)}
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "egress   Filters on outbound packets
+             ingress  Filters on inbound packets"
+        ::= { zxr10IPv4PortACLlogEntry 2 }
+
+    zxr10IPv4PortACLlogACLRuleID  OBJECT-TYPE
+        SYNTAX   Unsigned32(1..2147483644)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "rule
+             <1-2147483644>  (Optional)ID of this rule"
+        ::= { zxr10IPv4PortACLlogEntry 3 }    
+        
+    zxr10IPv4PortACLlogIfIndex  OBJECT-TYPE
+        SYNTAX   Integer32(1..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Index of the interface"
+        ::= { zxr10IPv4PortACLlogEntry 4 }
+            
+    zxr10IPv4PortACLlogACLName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "WORD  Name of an IPv4 access list (1-31 characters)"
+        ::= { zxr10IPv4PortACLlogEntry 5 }
+              
+    zxr10IPv4PortACLlogACLRuleHits  OBJECT-TYPE
+        SYNTAX   Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Rule hits of matching packets on the interface,
+             Maximum(18446744073709551615): invalid log statistics
+             because of lack of counter resources in PM"
+        ::= { zxr10IPv4PortACLlogEntry 6 }
+
+
+--DEVICE APPLY ACL 
+--IPv4
+    zxr10IPv4DeviceACLTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv4DeviceACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 Device ACL Table"
+        ::= { zxr10PortACL 8 }
+
+    zxr10IPv4DeviceACLEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IPv4DeviceACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 Device ACL"
+        INDEX  { zxr10IPv4DeviceACLDirect }
+        ::= { zxr10IPv4DeviceACLTable 1 }
+        
+    Zxr10IPv4DeviceACLEntry ::=
+        SEQUENCE {
+            zxr10IPv4DeviceACLDirect            INTEGER,
+            zxr10IPv4DeviceACLACLName           DisplayString
+    }    
+
+    zxr10IPv4DeviceACLDirect  OBJECT-TYPE
+        SYNTAX   INTEGER(0..1)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "egress   Filters on outbound packets(0)
+             ingress  Filters on inbound packets(1)"
+        ::= { zxr10IPv4DeviceACLEntry 1 } 
+            
+    zxr10IPv4DeviceACLACLName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+             "WORD  Name of an IPv4 access list (1-31 characters)"
+        ::= { zxr10IPv4DeviceACLEntry 2 }  
+  
+--IPv6
+    zxr10IPv6DeviceACLTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv6DeviceACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv6 Device ACL Table"
+        ::= { zxr10PortACL 9 }
+
+    zxr10IPv6DeviceACLEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IPv6DeviceACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv6 Device ACL"
+        INDEX  { zxr10IPv6DeviceACLDirect }
+        ::= { zxr10IPv6DeviceACLTable 1 }
+        
+    Zxr10IPv6DeviceACLEntry ::=
+        SEQUENCE {
+            zxr10IPv6DeviceACLDirect            INTEGER,
+            zxr10IPv6DeviceACLACLName           DisplayString
+    }    
+
+    zxr10IPv6DeviceACLDirect  OBJECT-TYPE
+        SYNTAX   INTEGER(0..1)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "egress   Filters on outbound packets(0)
+             ingress  Filters on inbound packets(1)"
+        ::= { zxr10IPv6DeviceACLEntry 1 } 
+            
+    zxr10IPv6DeviceACLACLName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+             "WORD  Name of an IPv6 access list (1-31 characters)"
+        ::= { zxr10IPv6DeviceACLEntry 2 }  
+
+--Link
+    zxr10LinkDeviceACLTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10LinkDeviceACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Link Device ACL Table"
+        ::= { zxr10PortACL 10 }
+
+    zxr10LinkDeviceACLEntry  OBJECT-TYPE
+        SYNTAX  Zxr10LinkDeviceACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Link Device ACL"
+        INDEX  { zxr10LinkDeviceACLDirect }
+        ::= { zxr10LinkDeviceACLTable 1 }
+        
+    Zxr10LinkDeviceACLEntry ::=
+        SEQUENCE {
+            zxr10LinkDeviceACLDirect            INTEGER,
+            zxr10LinkDeviceACLACLName           DisplayString
+    }    
+
+    zxr10LinkDeviceACLDirect  OBJECT-TYPE
+        SYNTAX   INTEGER(0..1)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "egress   Filters on outbound packets(0)
+             ingress  Filters on inbound packets(1)"
+        ::= { zxr10LinkDeviceACLEntry 1 } 
+            
+    zxr10LinkDeviceACLACLName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+             "WORD  Name of a Link access list (1-31 characters)"
+        ::= { zxr10LinkDeviceACLEntry 2 }  
+
+--IPv4 Mixed
+    zxr10IPv4MixedDeviceACLTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv4MixedDeviceACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 Mixed Device ACL Table"
+        ::= { zxr10PortACL 11 }
+
+    zxr10IPv4MixedDeviceACLEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IPv4MixedDeviceACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 Mixed Device ACL"
+        INDEX  { zxr10IPv4MixedDeviceACLDirect }
+        ::= { zxr10IPv4MixedDeviceACLTable 1 }
+        
+    Zxr10IPv4MixedDeviceACLEntry ::=
+        SEQUENCE {
+            zxr10IPv4MixedDeviceACLDirect            INTEGER,
+            zxr10IPv4MixedDeviceACLACLName           DisplayString
+    }    
+
+    zxr10IPv4MixedDeviceACLDirect  OBJECT-TYPE
+        SYNTAX   INTEGER(0..1)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "egress   Filters on outbound packets(0)
+             ingress  Filters on inbound packets(1)"
+        ::= { zxr10IPv4MixedDeviceACLEntry 1 } 
+            
+    zxr10IPv4MixedDeviceACLACLName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+             "WORD  Name of an IPv4 Mixed access list (1-31 characters)"
+        ::= { zxr10IPv4MixedDeviceACLEntry 2 }  
+
+
+--IPv6 Mixed
+    zxr10IPv6MixedDeviceACLTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv6MixedDeviceACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv6 Mixed Device ACL Table"
+        ::= { zxr10PortACL 12 }
+
+    zxr10IPv6MixedDeviceACLEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IPv6MixedDeviceACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv6 Mixed Device ACL"
+        INDEX  { zxr10IPv6MixedDeviceACLDirect }
+        ::= { zxr10IPv6MixedDeviceACLTable 1 }
+        
+    Zxr10IPv6MixedDeviceACLEntry ::=
+        SEQUENCE {
+            zxr10IPv6MixedDeviceACLDirect            INTEGER,
+            zxr10IPv6MixedDeviceACLACLName           DisplayString
+    }    
+
+    zxr10IPv6MixedDeviceACLDirect  OBJECT-TYPE
+        SYNTAX   INTEGER(0..1)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "egress   Filters on outbound packets(0)
+             ingress  Filters on inbound packets(1)"
+        ::= { zxr10IPv6MixedDeviceACLEntry 1 } 
+            
+    zxr10IPv6MixedDeviceACLACLName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+             "WORD  Name of an IPv6 Mixed access list (1-31 characters)"
+        ::= { zxr10IPv6MixedDeviceACLEntry 2 }  
+
+--User Defined 
+    zxr10UsrDefDeviceACLTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10UsrDefDeviceACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "User Defined Device ACL Table"
+        ::= { zxr10PortACL 13 }
+
+    zxr10UsrDefDeviceACLEntry  OBJECT-TYPE
+        SYNTAX  Zxr10UsrDefDeviceACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "User Defined Device ACL"
+        INDEX  { zxr10UsrDefDeviceACLDirect }
+        ::= { zxr10UsrDefDeviceACLTable 1 }
+        
+    Zxr10UsrDefDeviceACLEntry ::=
+        SEQUENCE {
+            zxr10UsrDefDeviceACLDirect            INTEGER,
+            zxr10UsrDefDeviceACLACLName           DisplayString
+    }    
+
+    zxr10UsrDefDeviceACLDirect  OBJECT-TYPE
+        SYNTAX   INTEGER(0..1)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "egress   Filters on outbound packets(0)
+             ingress  Filters on inbound packets(1)"
+        ::= { zxr10UsrDefDeviceACLEntry 1 } 
+            
+    zxr10UsrDefDeviceACLACLName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+             "WORD  Name of an User Defined access list (1-31 characters)"
+        ::= { zxr10UsrDefDeviceACLEntry 2 }  
+        
+ ---Ipv4 Vxlan acl 
+      zxr10VxlanV4DeviceACLTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10VxlanV4DeviceACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 VXLAN device access list table"
+        ::= { zxr10PortACL 14 }
+
+    zxr10VxlanV4DeviceACLEntry  OBJECT-TYPE
+        SYNTAX  Zxr10VxlanV4DeviceACLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 VXLAN device ACL"
+        INDEX  { zxr10VxlanV4DeviceACLDirect }
+        ::= { zxr10VxlanV4DeviceACLTable 1 }
+        
+    Zxr10VxlanV4DeviceACLEntry ::=
+        SEQUENCE {
+            zxr10VxlanV4DeviceACLDirect            AclEgressIngress,
+            zxr10VxlanV4DeviceACLACLName           DisplayString,
+            zxr10VxlanV4DeviceACLRowStatus         RowStatus 
+    }    
+
+    zxr10VxlanV4DeviceACLDirect  OBJECT-TYPE
+        SYNTAX   AclEgressIngress
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The node have two values:
+             1.egress   Filters on outbound packets(2),
+             2.ingress  Filters on inbound packets(1)."
+        ::= { zxr10VxlanV4DeviceACLEntry 1 } 
+            
+    zxr10VxlanV4DeviceACLACLName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+             "Name of an IPv4 VXLAN access list."
+        ::= { zxr10VxlanV4DeviceACLEntry 2 }  
+        
+    zxr10VxlanV4DeviceACLRowStatus   OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "createAndGo(4)  Configure IPv4 VXLAN ACL device,
+             destroy(6)  Delete IPv4 VXLAN ACL devcie."
+        ::= { zxr10VxlanV4DeviceACLEntry 100 }   
+        
+ ---Vxlan instance bind         
+ 
+---Ipv4 Vxlan acl 
+      zxr10VxlanV4ACLVxlanTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10VxlanV4ACLVxlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 VXLAN access list bind to VXLAN instance table."
+        ::= { zxr10PortACL 15 }
+
+    zxr10VxlanV4ACLVxlanEntry  OBJECT-TYPE
+        SYNTAX  Zxr10VxlanV4ACLVxlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 VXLAN access list bind to VXLAN instance."
+        INDEX  { zxr10VxlanV4ACLVxlanId ,zxr10VxlanV4ACLVxlanDirect}
+        ::= { zxr10VxlanV4ACLVxlanTable 1 }
+        
+    Zxr10VxlanV4ACLVxlanEntry ::=
+        SEQUENCE {
+            zxr10VxlanV4ACLVxlanId                INTEGER,
+            zxr10VxlanV4ACLVxlanDirect            AclEgressIngress,
+            zxr10VxlanV4ACLVxlanACLName           DisplayString,
+            zxr10VxlanV4ACLVxlanRowStatus         RowStatus 
+    } 
+       
+    zxr10VxlanV4ACLVxlanId  OBJECT-TYPE
+      SYNTAX   INTEGER(1..16777215)
+      MAX-ACCESS  not-accessible
+      STATUS  current
+      DESCRIPTION
+          "VXLAN id"
+      ::= { zxr10VxlanV4ACLVxlanEntry 1 } 
+
+    zxr10VxlanV4ACLVxlanDirect  OBJECT-TYPE
+        SYNTAX   AclEgressIngress
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The node have two values:
+             1.egress   Filters on outbound packets(2),
+             2.ingress  Filters on inbound packets(1)."
+        ::= { zxr10VxlanV4ACLVxlanEntry 2 } 
+            
+    zxr10VxlanV4ACLVxlanACLName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+             "Name of an IPv4 VXLAN access list."
+        ::= { zxr10VxlanV4ACLVxlanEntry 3 }  
+        
+    zxr10VxlanV4ACLVxlanRowStatus   OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "createAndGo(4)  Configure IPv4 VXLAN ACL to VXLAN instance,
+             destroy(6)  Delete IPv4 VXLAN ACL from VXLAN instance."
+        ::= { zxr10VxlanV4ACLVxlanEntry 100 }   
+        
+        
+     ---Ipv4 Vxlan ACL  BIND VLAN  
+    
+     zxr10VxlanV4ACLVlanTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10VxlanV4ACLVlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 VXLAN access list bind VLAN instance table."
+        ::= { zxr10PortACL 16 }
+
+    zxr10VxlanV4ACLVlanEntry  OBJECT-TYPE
+        SYNTAX  Zxr10VxlanV4ACLVlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 VXLAN access list bind VLAN instance."
+        INDEX  { zxr10VxlanV4ACLVlanId,
+                 zxr10VxlanV4ACLVlanDirect }
+        ::= { zxr10VxlanV4ACLVlanTable 1 }
+        
+    Zxr10VxlanV4ACLVlanEntry ::=
+        SEQUENCE {
+            zxr10VxlanV4ACLVlanId           INTEGER,
+            zxr10VxlanV4ACLVlanDirect       AclEgressIngress,
+            zxr10VxlanV4ACLVlanACLName      DisplayString,
+            zxr10VxlanV4ACLVlanRowStatus    RowStatus
+    }    
+           
+    zxr10VxlanV4ACLVlanId  OBJECT-TYPE
+        SYNTAX   INTEGER(1..4094)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "VLAN id"
+        ::= { zxr10VxlanV4ACLVlanEntry 1 }            
+
+    zxr10VxlanV4ACLVlanDirect  OBJECT-TYPE
+        SYNTAX   AclEgressIngress
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The node have two values:
+             1.egress   Filters on outbound packets(2),
+             2.ingress  Filters on inbound packets(1)."
+        ::= { zxr10VxlanV4ACLVlanEntry 2 }
+            
+    zxr10VxlanV4ACLVlanACLName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+             "Name of an IPv4 VXLAN access list."
+        ::= { zxr10VxlanV4ACLVlanEntry 3 }
+              
+    zxr10VxlanV4ACLVlanRowStatus   OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "createAndGo(4)  Configure IPv4 VXLAN ACL in vlan instance,
+             destroy(6)  Delete IPv4 VXLAN ACL from vlan instance."
+        ::= { zxr10VxlanV4ACLVlanEntry 100 }
+
+    --- IPv4 Port ACL 
+
+    zxr10IPv4PortACLMultiTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv4PortACLMultiEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Multiple IPv4 access list bind to interface table."
+        ::= { zxr10PortACL 17 }
+
+    zxr10IPv4PortACLMultiEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IPv4PortACLMultiEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 Port ACL."
+        INDEX  { zxr10IPv4PortACLMultiIfName,
+                 zxr10IPv4PortACLMultiDirect,
+                 zxr10IPv4PortACLMultiSequence}
+        ::= { zxr10IPv4PortACLMultiTable 1 }
+        
+    Zxr10IPv4PortACLMultiEntry ::=
+        SEQUENCE {
+            zxr10IPv4PortACLMultiIfName                  DisplayString,            
+            zxr10IPv4PortACLMultiDirect                  AclEgressIngress,
+            zxr10IPv4PortACLMultiSequence                Integer32,
+            zxr10IPv4PortACLMultiACLName                 DisplayString,
+            zxr10IPv4PortACLMultiRowStatus               RowStatus
+    }    
+           
+    zxr10IPv4PortACLMultiIfName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Interface name."
+        ::= { zxr10IPv4PortACLMultiEntry 1 }         
+
+    zxr10IPv4PortACLMultiDirect  OBJECT-TYPE
+        SYNTAX   AclEgressIngress
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The node have two values:
+             1.egress   Filters on outbound packets(2),
+             2.ingress  Filters on inbound packets(1)."
+        ::= { zxr10IPv4PortACLMultiEntry 2 } 
+            
+    zxr10IPv4PortACLMultiSequence  OBJECT-TYPE
+        SYNTAX   Integer32(0..3)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Sequence number."
+        ::= { zxr10IPv4PortACLMultiEntry 3 }    
+
+    zxr10IPv4PortACLMultiACLName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+             "Name of an IPv4 access list."
+        ::= { zxr10IPv4PortACLMultiEntry 4 }  
+              
+    zxr10IPv4PortACLMultiRowStatus   OBJECT-TYPE  
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+       "createAndGo(4)  Configure IPv4 Port ACL 
+        destroy(6)      Delete IPv4 Port ACL."        
+        ::= { zxr10IPv4PortACLMultiEntry 100 }       
+  
+    --- IPv4 VXLAN Port ACL 
+
+    zxr10V4VxlanPortACLMultiTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10V4VxlanPortACLMultiEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Multiple IPv4 access list bind to interface table."
+        ::= { zxr10PortACL 18 }
+
+    zxr10V4VxlanPortACLMultiEntry  OBJECT-TYPE
+        SYNTAX  Zxr10V4VxlanPortACLMultiEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 Port ACL."
+        INDEX  { zxr10V4VxlanPortACLMultiIfName,
+                 zxr10V4VxlanPortACLMultiDirect,
+                 zxr10V4VxlanPortACLMultiSequence}
+        ::= { zxr10V4VxlanPortACLMultiTable 1 }
+        
+    Zxr10V4VxlanPortACLMultiEntry ::=
+        SEQUENCE {
+            zxr10V4VxlanPortACLMultiIfName                  DisplayString,            
+            zxr10V4VxlanPortACLMultiDirect                  AclEgressIngress,
+            zxr10V4VxlanPortACLMultiSequence                Integer32,
+            zxr10V4VxlanPortACLMultiACLName                 DisplayString,
+            zxr10V4VxlanPortACLMultiRowSta                  RowStatus
+    }    
+           
+    zxr10V4VxlanPortACLMultiIfName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Interface name."
+        ::= { zxr10V4VxlanPortACLMultiEntry 1 }         
+
+    zxr10V4VxlanPortACLMultiDirect  OBJECT-TYPE
+        SYNTAX   AclEgressIngress
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The node have two values:
+             1.egress   Filters on outbound packets(2),
+             2.ingress  Filters on inbound packets(1)."
+        ::= { zxr10V4VxlanPortACLMultiEntry 2 } 
+            
+    zxr10V4VxlanPortACLMultiSequence  OBJECT-TYPE
+        SYNTAX   Integer32(0..3)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Sequence number."
+        ::= { zxr10V4VxlanPortACLMultiEntry 3 }    
+
+    zxr10V4VxlanPortACLMultiACLName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+             "Name of an IPv4 VXLAN access list."
+        ::= { zxr10V4VxlanPortACLMultiEntry 4 }  
+              
+    zxr10V4VxlanPortACLMultiRowSta   OBJECT-TYPE  
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+       "createAndGo(4)  Configure IPv4 VXLAN Port ACL 
+        destroy(6)      Delete IPv4 VXLAN Port ACL."        
+        ::= { zxr10V4VxlanPortACLMultiEntry 100 }       
+
+     ---Ipv4 ACL  BIND VLAN  
+    
+     zxr10IPv4VlanACLMultiTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPv4VlanACLMultiEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 access list bind VLAN instance table."
+        ::= { zxr10PortACL 19 }
+
+    zxr10IPv4VlanACLMultiEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IPv4VlanACLMultiEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 access list bind VLAN instance."
+        INDEX  { zxr10IPv4VlanACLMultiId,                 
+                 zxr10IPv4VlanACLMultiDirect,
+                 zxr10IPv4VlanACLMultiSequence}
+        ::= { zxr10IPv4VlanACLMultiTable 1 }
+        
+    Zxr10IPv4VlanACLMultiEntry ::=
+        SEQUENCE {
+            zxr10IPv4VlanACLMultiId           Integer32,
+            zxr10IPv4VlanACLMultiDirect       AclEgressIngress,
+            zxr10IPv4VlanACLMultiSequence     Integer32,
+            zxr10IPv4VlanACLMultiACLName      DisplayString,
+            zxr10IPv4VlanACLMultiRowStatus    RowStatus
+    }    
+           
+    zxr10IPv4VlanACLMultiId  OBJECT-TYPE
+        SYNTAX   Integer32(1..4094)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "VLAN id"
+        ::= { zxr10IPv4VlanACLMultiEntry 1 }            
+
+    zxr10IPv4VlanACLMultiDirect  OBJECT-TYPE
+        SYNTAX   AclEgressIngress
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The node have two values:
+             1.egress   Filters on outbound packets(2),
+             2.ingress  Filters on inbound packets(1)."
+        ::= { zxr10IPv4VlanACLMultiEntry 2 }
+
+    zxr10IPv4VlanACLMultiSequence  OBJECT-TYPE
+        SYNTAX   Integer32(0..3)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Sequence number."
+        ::= { zxr10IPv4VlanACLMultiEntry 3 }
+            
+    zxr10IPv4VlanACLMultiACLName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+             "Name of an IPv4 access list."
+        ::= { zxr10IPv4VlanACLMultiEntry 4 }
+              
+    zxr10IPv4VlanACLMultiRowStatus   OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "createAndGo(4)  Configure IPv4 ACL in vlan instance,
+             destroy(6)      Delete IPv4 ACL from vlan instance."
+        ::= { zxr10IPv4VlanACLMultiEntry 100 }
+
+     ---Ipv4 Vxlan ACL  BIND VLAN  
+    
+     zxr10V4VxlanVlanACLMultiTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10V4VxlanVlanACLMultiEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 VXLAN access list bind VLAN instance table."
+        ::= { zxr10PortACL 20 }
+
+    zxr10V4VxlanVlanACLMultiEntry  OBJECT-TYPE
+        SYNTAX  Zxr10V4VxlanVlanACLMultiEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IPv4 VXLAN access list bind VLAN instance."
+        INDEX  { zxr10V4VxlanVlanACLMultiId,
+                 zxr10V4VxlanVlanACLMultiDirect,
+                 zxr10V4VxlanVlanACLMultiSequence }
+        ::= { zxr10V4VxlanVlanACLMultiTable 1 }
+        
+    Zxr10V4VxlanVlanACLMultiEntry ::=
+        SEQUENCE {
+            zxr10V4VxlanVlanACLMultiId           Integer32,
+            zxr10V4VxlanVlanACLMultiDirect       AclEgressIngress,
+            zxr10V4VxlanVlanACLMultiSequence     Integer32,
+            zxr10V4VxlanVlanACLMultiACLName      DisplayString,
+            zxr10V4VxlanVlanACLMultiRowSta       RowStatus
+    }    
+           
+    zxr10V4VxlanVlanACLMultiId  OBJECT-TYPE
+        SYNTAX   Integer32(1..4094)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "VLAN id"
+        ::= { zxr10V4VxlanVlanACLMultiEntry 1 }            
+
+    zxr10V4VxlanVlanACLMultiDirect  OBJECT-TYPE
+        SYNTAX   AclEgressIngress
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The node have two values:
+             1.egress   Filters on outbound packets(2),
+             2.ingress  Filters on inbound packets(1)."
+        ::= { zxr10V4VxlanVlanACLMultiEntry 2 }
+
+    zxr10V4VxlanVlanACLMultiSequence  OBJECT-TYPE
+        SYNTAX   Integer32(0..3)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Sequence number."
+        ::= { zxr10V4VxlanVlanACLMultiEntry 3 }
+            
+    zxr10V4VxlanVlanACLMultiACLName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+             "Name of an IPv4 VXLAN access list."
+        ::= { zxr10V4VxlanVlanACLMultiEntry 4 }
+              
+    zxr10V4VxlanVlanACLMultiRowSta   OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "createAndGo(4)  Configure IPv4 VXLAN ACL in vlan instance,
+             destroy(6)      Delete IPv4 VXLAN ACL from vlan instance."
+        ::= { zxr10V4VxlanVlanACLMultiEntry 100 }
+
+  
+END 
+              
+                        

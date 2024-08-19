@@ -1,9 +1,9 @@
 -- =================================================================
--- Copyright (C) 2019 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- Copyright (C) 2021 by  HUAWEI TECHNOLOGIES. All rights reserved.
 --
 -- Description: HUAWEI-ETHOAM-MIB
 -- Reference:
--- Version:     V2.39
+-- Version:     V2.43
 -- ==================================================================
 
     HUAWEI-ETHOAM-MIB DEFINITIONS ::= BEGIN
@@ -30,7 +30,7 @@
 
 
         hwEthOamMib MODULE-IDENTITY
-            LAST-UPDATED "201901140000Z"        
+            LAST-UPDATED "202108120000Z"        
             ORGANIZATION
                 "Huawei Technologies Co.,Ltd."
             CONTACT-INFO
@@ -41,9 +41,17 @@
                    Website: http://www.huawei.com
                    Email: support@huawei.com
                  "
+            DESCRIPTION  "V2.43, Motify hwY1731PwTrunkNonSupport and hwY1731PwTrunkNonSupportResumed node for this mib."
+            REVISION     "202108120000Z"   
+            DESCRIPTION  "V2.42, Add hwY1731PwTrunkNonSupport and hwY1731PwTrunkNonSupportResumed node for this mib."
+            REVISION     "202107170000Z"    
             DESCRIPTION
                 "Ethernet OAM MIB"
             -- Revision history
+              REVISION     "202104250000Z"    
+              DESCRIPTION  "V2.41, Modify the value of hwY1731OneDelayInterval and hwY1731TwoDelayInterval."
+              REVISION     "202104210000Z"    
+              DESCRIPTION  "V2.40, Delete comment."
               REVISION     "201901140000Z"    
               DESCRIPTION  "V2.39, Modify the description of hwY1731OneDelayInterval."
               REVISION     "201812210000Z"    
@@ -527,7 +535,6 @@ hwY1731SingleLossStatisticGatherInterval, hwY1731StatisticTrapLogType, hwY1731Te
                 responsibility for each Maintenance Domain.
                 "
             ::= { hwDot1agCfmMdEntry 7 }
-
 
         hwDot1agCfmMdRowStatus OBJECT-TYPE
             SYNTAX RowStatus
@@ -4696,7 +4703,6 @@ hwY1731SingleLossStatisticGatherInterval, hwY1731StatisticTrapLogType, hwY1731Te
             ::= { hwDot3ahEfmManagerEntry 2 }
 
 -- Ethernet OAM EVRRP group
--- add by liujin 64168 2008-9-25
 
       hwDot3ahEvrrpTable OBJECT-TYPE
         SYNTAX      SEQUENCE OF HwDot3ahEvrrpEntry
@@ -5471,6 +5477,20 @@ hwY1731SingleLossStatisticGatherInterval, hwY1731StatisticTrapLogType, hwY1731Te
                 "The Y.1731 statistic value fell below lower limit value of the threshold."
             ::= { hwEthOamTraps 59 }
 
+        hwY1731PwTrunkNonSupport NOTIFICATION-TYPE
+            OBJECTS { hwDot1agCfmMdName, hwDot1agCfmMaName, hwDot1agCfmMepIdentifier}
+            STATUS current
+            DESCRIPTION
+                "This object indicates that Y.1731 PW-side frame loss measurement is not supported on an Eth-Trunk interface configured as the PW's public network-side interface."
+            ::= { hwEthOamTraps 60 }
+
+        hwY1731PwTrunkNonSupportResumed NOTIFICATION-TYPE
+            OBJECTS { hwDot1agCfmMdName, hwDot1agCfmMaName, hwDot1agCfmMepIdentifier}
+            STATUS current
+            DESCRIPTION
+                "This object indicates that The alarm that Y.1731 PW-side frame loss measurement is not supported on an Eth-Trunk interface configured as the PW's public network-side interface is cleared."
+            ::= { hwEthOamTraps 61 }   
+
         hwEthOamConformance OBJECT IDENTIFIER ::= { hwEthOamMib 7 }
 
         hwEthOamCompliances OBJECT IDENTIFIER ::= { hwEthOamConformance 1 }
@@ -5658,7 +5678,8 @@ hwY1731SingleLossStatisticGatherInterval, hwY1731StatisticTrapLogType, hwY1731Te
                             hwDot1agCfmUnexpectedPeriodCleared, hwDot1agCfmUnexpectedMAC, hwDot1agCfmUnexpectedMACCleared, hwDot1agCfmLOC, hwDot1agCfmLOCCleared, hwDot1agCfmExceptionalMACStatus, 
                             hwDot1agCfmExceptionalMACStatusCleared, hwDot1agCfmRDI, hwDot1agCfmRDICleared, hwDot3ahEfmLoopbackFailed, hwY1731AisDefectAlarm, hwY1731AisDefectAlarmRecovery, 
                             hwY1731AisExceedMaxPktNum, hwY1731AisExceedMaxPktNumCleared, hwY1731LckDefect, hwY1731LckDefectCleared, hwY1731Statistic, hwY1731StatisticClear,
-			    hwY1731LckExceedThreshold, hwY1731LckExceedThresholdRecovery, hwY1731TunnelNonSupport, hwY1731TunnelNonSupportResumed}
+                            hwY1731LckExceedThreshold, hwY1731LckExceedThresholdRecovery, hwY1731TunnelNonSupport, hwY1731TunnelNonSupportResumed, hwY1731PwTrunkNonSupport,
+                            hwY1731PwTrunkNonSupportResumed}
             STATUS current
             DESCRIPTION
                 "Objects for the Notifications group.
@@ -6590,10 +6611,7 @@ hwY1731SingleLossStatisticGatherInterval, hwY1731StatisticTrapLogType, hwY1731Te
                 invalid(1),
                 interval1s(2),
                 interval10s(3),
-                interval30s(4),
-		interval60s(5),
-		interval150s(6),
-		interval300s(7)
+                interval30s(4)
                 }
             MAX-ACCESS read-create
             STATUS current
@@ -6606,17 +6624,11 @@ hwY1731SingleLossStatisticGatherInterval, hwY1731StatisticTrapLogType, hwY1731Te
                     1 second
                     10 seconds
                     30 seconds
-		    60 seconds
-		    150 seconds
-		    300 seconds
                 Options:
                 1. invalid(1)    -invalid value.
                 2. interval1s(2)    -1 second.
                 3. interval10s(3)    -10 seconds.
                 4. interval30s(4)    -30 seconds.
-                5. interval60s(5)    -60 seconds.
-                6. interval150s(6)    -150 seconds.
-                7. interval300s(7)    -300 seconds.
                 "
             ::= { hwY1731ConfigEntry 28 }
 
@@ -6716,10 +6728,7 @@ hwY1731SingleLossStatisticGatherInterval, hwY1731StatisticTrapLogType, hwY1731Te
                 invalid(1),
                 interval1s(2),
                 interval10s(3),
-                interval30s(4),
-		interval60s(5),
-		interval150s(6),
-		interval300s(7)
+                interval30s(4)
                 }
             MAX-ACCESS read-create
             STATUS current
@@ -6732,17 +6741,11 @@ hwY1731SingleLossStatisticGatherInterval, hwY1731StatisticTrapLogType, hwY1731Te
                     1 second
                     10 seconds
                     30 seconds
-		    60 seconds
-		    150 seconds
-		    300 seconds
                 Options:
                 1. invalid(1)    -invalid value.
                 2. interval1s(2)    -1 second.
                 3. interval10s(3)    -10 seconds.
                 4. interval30s(4)    -30 seconds.
-		5. interval60s(5)    -60 seconds.
-		6. interval150s(6)   -150 seconds.
-		7. interval300s(7)   -300 seconds.
                 "
             ::= { hwY1731ConfigEntry 37 }
 

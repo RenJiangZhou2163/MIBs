@@ -1,0 +1,88 @@
+program seqled
+
+option +r;
+
+int button1;
+int button2;
+
+int led[4];
+
+assign button1 to "RPI:BTN1";
+assign button2 to "RPI:BTN2";
+assign led[0] to "RPI:LED1";
+assign led[1] to "RPI:LED2";
+assign led[2] to "RPI:LED3";
+assign led[3] to "RPI:LED4";
+
+monitor button1;
+monitor button2;
+
+int i;
+int idx;
+int flg;
+double speed;
+
+ss ssStartLEDSeq
+{
+	state init
+	{
+		when(delay(0.1))
+		{
+			for(i=0; i<4; i++)
+			{
+			  led[i] = 0;
+			  pvPut(led[i]);
+			}
+			
+			idx = 0;
+			flg = 1;
+			speed = 1.0;
+
+			printf("LED OnOff Sequence Start\n");
+		} state stop
+	}
+
+	state stop
+	{
+		when(button1 == 1)
+		{
+		  speed = 1;
+		} state seq1
+	}
+
+	state seq1
+	{
+                when(button1 == 1)
+                {
+
+                } state ready
+
+		when(button2 == 1)
+		{
+		} state stop
+
+		when(delay(speed))
+		{
+			led[idx] = flg;
+			pvPut(led[idx]);
+			idx++;
+			if(idx > 3)
+			{
+			  idx = 0;
+			  flg = !flg;
+			}
+
+		} state seq1
+
+	}
+
+        state ready
+	{
+		when(button1 == 0)
+		{
+                  speed = speed / 2;
+                  if(speed < 0.01) speed = 1;
+
+		} state seq1
+	}
+}

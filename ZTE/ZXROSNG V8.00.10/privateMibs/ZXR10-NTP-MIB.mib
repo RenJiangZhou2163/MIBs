@@ -1,0 +1,1437 @@
+--  ************************************************
+--  $Id: zxr10ntp.mib 8 2008-03-25 12:17:08Z qiujun $
+--
+--  zxr10ntp.mib: ZXR10 NTP MIB file
+--
+--  Mar. 2008, qiujun 154377
+--
+--  Copyright(c) 2008 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+
+   ZXR10-NTP-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+   OBJECT-TYPE,         
+   MODULE-IDENTITY,
+   enterprises,
+   Unsigned32,
+   IpAddress                      FROM SNMPv2-SMI
+   OBJECT-GROUP                   FROM SNMPv2-CONF
+   Ipv6Address                    FROM IPV6-TC
+   DisplayString, RowStatus       FROM SNMPv2-TC
+   zxr10                          FROM ZXR10-SMI;
+          
+   zxr10ntp MODULE-IDENTITY
+            LAST-UPDATED "201710101000Z"
+            ORGANIZATION "ZTE Corporation"
+            CONTACT-INFO 
+                "        qu yanxia
+                Tel:    
+                E-Mail: qu.yanxia@zte.com.cn
+                "  
+            DESCRIPTION
+                "The MIB module to describe the NTP protocol" 
+            REVISION "201710101000Z"
+            DESCRIPTION
+                "modify:add default value for 
+                        zxr10ntpStatus
+                        zxr10ntpPollTime;
+                        set max-access to read-create for
+                        zxr10ntpServerWithDnsCfgTable
+                        zxr10ntpPeerWithDnsCfgTable;
+                 add:   zxr10ntpAclGroupIPv4ServerOnly
+                        zxr10ntpAclGroupIPv6ServerOnly
+                        zxr10ntpAccessControlServerVrf
+                        zxr10ntpAuthKeychain
+                        " 
+            REVISION "201511021000Z"
+            DESCRIPTION
+                "add:   zxr10ntpServerWithDnsCfgTable
+                        zxr10ntpPeerWithDnsCfgTable
+                        zxr10ntpConformance
+                        "       
+            REVISION "201403210900Z"  
+            DESCRIPTION
+                "modify zxr10ntpAuthKeyId
+                        change the minimum keyid from 0 to 1 
+                        "
+            REVISION "201310311000Z"  
+            DESCRIPTION
+                "modify zxr10ntpPollTime
+                        zxr10ntpPoll
+                        zxr10ntpAssocPoll
+                        the max poll-interval change to 17 
+                        "
+            REVISION "201308051000Z"  
+            DESCRIPTION
+                "modify zxr10ntpMaster
+                        zxr10ntpAuthEncryptedKey
+                        zxr10ntpCurSrvRsltLock
+                        "
+            REVISION "201307021000Z"  
+            DESCRIPTION
+                "add zxr10ntpSrcInterface"
+            REVISION "201306251000Z"  
+            DESCRIPTION
+                "modify description of table:
+                        zxr10ntpServerCfgTable
+                        zxr10ntpPeerCfgTable
+                        zxr10ntpBroadcastServerTable
+                        zxr10ntpMulticastClientTable
+                        zxr10ntpMulticastServerTable"
+
+            REVISION "201305271000Z"  
+            DESCRIPTION
+                "modify zxr10ntpCurSrvRsltPriority
+                        zxr10ntpCurSrvRsltIpv4Addr"
+            REVISION "201304181000Z"  
+            DESCRIPTION
+                "modify zxr10ntpIPv4AclName
+                        zxr10ntpIPv6AclName
+                 add index zxr10ntpAssocIfName to table zxr10ntpAssocTable" 
+            REVISION "201304011000Z"
+            DESCRIPTION
+                "add:     zxr10ntpPeerCfgTable
+                          zxr10ntpConfig
+                          zxr10ntpBroadcastClientTable
+                          zxr10ntpBroadcastServerTable
+                          zxr10ntpMulticastClientTable
+                          zxr10ntpMulticastServerTable
+                          zxr10ntpAuthTable
+                          zxr10ntpCurSrvRsltInfo
+                          zxr10ntpAssocTable
+                "
+            ::= { zxr10 110}
+
+    zxr10ntpConfig OBJECT IDENTIFIER ::= { zxr10ntp 13} 
+
+     -- the ntp status information
+    zxr10ntpStatus  OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        disable(0),
+                        enable(1)
+                    }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The NTP status,where 0 means disable and 1 means enable"
+        DEFVAL { disable }
+        ::= { zxr10ntp  1 }
+
+
+    zxr10ntpType OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        unspecified(0),
+                        active(1),
+                        passive(2),
+                        client(3),
+                        server(4),
+                        broadcast(5),
+                        clientAndServer(6)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP type."
+        ::= { zxr10ntp 2 }
+
+    zxr10ntpPollTime OBJECT-TYPE
+        SYNTAX      INTEGER (4..17)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The NTP poll interval time,where the
+            interval argument is specified in seconds as a power 
+            of two.The number is used in a power-of-two 
+            (for example, 6 meaning 2 to the power of 6), 
+            and can be in the range from 4 to 17. 
+            The default value is 6."
+        DEFVAL { 6 }
+        ::= { zxr10ntp 3 }
+
+    zxr10ntpCurrentTime  OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The system current time."
+        ::= { zxr10ntp  4 }
+
+    zxr10ntpSyncStatus  OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        unsynchronized(0),
+                        synchronized(1),
+                        noStatus(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP SynchStatus,where 0 means unsynchronized and 
+            1 means synchronized,2 means ntp disable,have no status"
+        ::= { zxr10ntp  5 }
+
+    zxr10ntpReferenceClock  OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP Reference Clock,where 0 means unsynchronized,
+            Local means as server,IP means synchronized to server"
+        ::= { zxr10ntp  6 }
+
+    zxr10ntpServerInUse  OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP server in use."
+        ::= { zxr10ntp  7}
+
+    zxr10ntpServerInUseVrf  OBJECT-TYPE
+        SYNTAX      DisplayString 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The vrf of the used Server,null means not in vrf"
+        ::= { zxr10ntp  8 } 
+
+    zxr10ntpMasterStratum OBJECT-TYPE
+        SYNTAX      INTEGER (1..15)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The NTP master Stratum can be in the range from 1 to 15."
+        ::= { zxr10ntp 9 }
+
+    -- the ntp configure table
+
+    zxr10ntpServerTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10ntpServerEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table containing NTP server information."
+        ::= { zxr10ntp 10 }
+
+    zxr10ntpServerEntry OBJECT-TYPE
+        SYNTAX      Zxr10ntpServerEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Information about the server of NTP."
+        INDEX   { 
+                    zxr10ntpServerAddress,zxr10ntpServerPriority
+                }
+        ::= { zxr10ntpServerTable 1 }
+
+    Zxr10ntpServerEntry ::=
+        SEQUENCE {
+                  zxr10ntpServerAddress   IpAddress,
+                  zxr10ntpServerPriority  INTEGER,
+                  zxr10ntpServerLock      INTEGER,
+                  zxr10ntpServerVrfName   DisplayString
+        }
+
+    zxr10ntpServerAddress OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP server IP address."
+        ::= { zxr10ntpServerEntry 1 }
+
+    zxr10ntpServerPriority OBJECT-TYPE
+        SYNTAX      INTEGER (1..5)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP server priority,the min number with high priority"
+        ::= { zxr10ntpServerEntry 2 }
+
+    zxr10ntpServerLock OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        unlock(0),
+                        lock(1)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP server lock status.0 means unlock,
+            and 1 means the server is locked"
+        ::= { zxr10ntpServerEntry 3 }
+
+    zxr10ntpServerVrfName OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP server vrf name.Null means 
+            the server is not bounded to the vrf"
+        ::= { zxr10ntpServerEntry 4 }
+              
+
+    -- the ntp server configure table,support get\set\create
+
+    zxr10ntpServerCfgTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10ntpServerCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table containing NTP server information.Setting the
+            priority leaf node results in initializing the other leaf 
+            nodes except the indexs and rowStatus.Suggest the whole 
+            table setting."
+        ::= { zxr10ntp 11 }
+
+    zxr10ntpServerCfgEntry OBJECT-TYPE
+        SYNTAX      Zxr10ntpServerCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Information about the server of NTP. As indexs of the 
+            table,IPv4 and IPv6 can't be set together."
+        INDEX   { 
+                    zxr10ntpServerCfgVrfName, 
+                    zxr10ntpServerCfgMngFlag, 
+                    zxr10ntpServerCfgIpv4Addr, 
+                    zxr10ntpServerCfgIpv6Addr
+                }
+        ::= { zxr10ntpServerCfgTable 1 }
+
+    Zxr10ntpServerCfgEntry ::=
+        SEQUENCE {
+                  zxr10ntpServerCfgVrfName    DisplayString,
+                  zxr10ntpServerCfgMngFlag    Unsigned32,
+                  zxr10ntpServerCfgIpv4Addr   IpAddress,
+                  zxr10ntpServerCfgIpv6Addr   Ipv6Address,
+                  zxr10ntpServerCfgPriority   Unsigned32,
+                  zxr10ntpServerCfgVersion    Unsigned32,
+                  zxr10ntpServerCfgLock       INTEGER,
+                  zxr10ntpServerCfgKey        Unsigned32,
+                  zxr10ntpServerCfgRowStatus  RowStatus
+        }
+
+    zxr10ntpServerCfgVrfName OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP server vrf name.Null means 
+            the server is not bounded to any vrf"
+        ::= { zxr10ntpServerCfgEntry 1 } 
+
+    zxr10ntpServerCfgMngFlag OBJECT-TYPE
+        SYNTAX      Unsigned32(0..1)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "vrf flag of mng,1 means vrf is mng;0 means no mng"
+        ::= { zxr10ntpServerCfgEntry 2 }
+
+    zxr10ntpServerCfgIpv4Addr OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP server IPv4 address."
+        ::= { zxr10ntpServerCfgEntry 3 }
+
+    zxr10ntpServerCfgIpv6Addr OBJECT-TYPE
+        SYNTAX      Ipv6Address
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP server IPv6 address."
+        ::= { zxr10ntpServerCfgEntry 4 }
+
+    zxr10ntpServerCfgPriority OBJECT-TYPE
+        SYNTAX      Unsigned32(1..5)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The NTP server priority,the min number with high priority"
+        ::= { zxr10ntpServerCfgEntry 5 }
+
+    zxr10ntpServerCfgVersion OBJECT-TYPE
+        SYNTAX      Unsigned32(1..4)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP version number, it can be in the range from 1 
+            to 4. The default value is 3 for ipv4,
+            but it only be 4 for ipv6"
+        ::= { zxr10ntpServerCfgEntry 6 }
+
+    zxr10ntpServerCfgLock OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        unlock(0),
+                        lock(1)
+                    }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP server lock status.0 means unlock,
+            and 1 means the server is locked"
+        ::= { zxr10ntpServerCfgEntry 7 }
+
+    zxr10ntpServerCfgKey OBJECT-TYPE
+        SYNTAX      Unsigned32(0..4294967295)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP authentication key."
+        ::= { zxr10ntpServerCfgEntry 8 }
+
+    zxr10ntpServerCfgRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "create or delete ntp server"
+        ::= { zxr10ntpServerCfgEntry 9 } 
+
+    -- the ntp peer configure table,support get\set\create
+
+    zxr10ntpPeerCfgTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10ntpPeerCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table containing NTP peer information.Setting the 
+            priority leaf node results in initializing the other leaf
+            nodes except the indexs and rowStatus.Suggest the whole 
+            table setting."
+        ::= { zxr10ntp 12 }
+
+    zxr10ntpPeerCfgEntry OBJECT-TYPE
+        SYNTAX      Zxr10ntpPeerCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Information about the peer of NTP.As indexs of the 
+            table,IPv4 and IPv6 can't be set together."
+        INDEX   { 
+                zxr10ntpPeerCfgVrfName, 
+                zxr10ntpPeerCfgMngFlag, 
+                zxr10ntpPeerCfgIpv4Addr, 
+                zxr10ntpPeerCfgIpv6Addr
+        }
+        ::= { zxr10ntpPeerCfgTable 1 }
+
+    Zxr10ntpPeerCfgEntry ::=
+        SEQUENCE {
+                  zxr10ntpPeerCfgVrfName        OCTET STRING,
+                  zxr10ntpPeerCfgMngFlag        Unsigned32,
+                  zxr10ntpPeerCfgIpv4Addr       IpAddress,
+                  zxr10ntpPeerCfgIpv6Addr       Ipv6Address,
+                  zxr10ntpPeerCfgPriority       Unsigned32,
+                  zxr10ntpPeerCfgVersion        Unsigned32,
+                  zxr10ntpPeerCfgKey            Unsigned32,
+                  zxr10ntpPeerCfgRowStatus      RowStatus
+        }
+
+    zxr10ntpPeerCfgVrfName OBJECT-TYPE
+        SYNTAX      OCTET STRING
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP peer vrf name.No null means 
+             the peer is bounded to any vrf"
+        ::= { zxr10ntpPeerCfgEntry 1 } 
+
+    zxr10ntpPeerCfgMngFlag OBJECT-TYPE
+        SYNTAX      Unsigned32(0..1)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "mng flag,1 means vrf is mng;0 means no mng"
+        ::= { zxr10ntpPeerCfgEntry 2 }  
+
+    zxr10ntpPeerCfgIpv4Addr OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP peer IPv4 address."
+        ::= { zxr10ntpPeerCfgEntry 3 }
+
+    zxr10ntpPeerCfgIpv6Addr OBJECT-TYPE
+        SYNTAX      Ipv6Address
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP peer IPv6 address."
+        ::= { zxr10ntpPeerCfgEntry 4 }
+
+    zxr10ntpPeerCfgPriority OBJECT-TYPE
+        SYNTAX      Unsigned32(1..5)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP peer priority,the min number with high priority"
+        ::= { zxr10ntpPeerCfgEntry 5 }
+
+    zxr10ntpPeerCfgVersion OBJECT-TYPE
+        SYNTAX      Unsigned32(1..4)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP version number, it can be in the range from 1 
+            to 4. The default value is 3 for ipv4,
+            but it only be 4 for ipv6"
+        DEFVAL   {3}
+        ::= { zxr10ntpPeerCfgEntry 6 }
+
+
+    zxr10ntpPeerCfgKey OBJECT-TYPE
+        SYNTAX      Unsigned32(0..4294967295)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP authentication key"
+        ::= { zxr10ntpPeerCfgEntry 7 }
+
+    zxr10ntpPeerCfgRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "create or delete ntp peer"
+        ::= { zxr10ntpPeerCfgEntry 8 }    
+              
+    -- the ntp server with dns configure table,support get
+
+    zxr10ntpServerWithDnsCfgTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10ntpServerWithDnsCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table containing NTP server information.Setting the 
+            priority leaf node results in initializing the other leaf 
+            nodes except the indexs and rowStatus.Suggest the whole 
+            table setting."
+        ::= { zxr10ntp 21 }
+
+    zxr10ntpServerWithDnsCfgEntry OBJECT-TYPE
+        SYNTAX      Zxr10ntpServerWithDnsCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Information about the DNS server of NTP."
+        INDEX   { 
+                zxr10ntpServerWithDnsCfgVrfName, 
+                zxr10ntpServerWithDnsCfgMngFlag, 
+                zxr10ntpServerWithDnsCfgDnsName
+        }
+        ::= { zxr10ntpServerWithDnsCfgTable 1 }
+
+    Zxr10ntpServerWithDnsCfgEntry ::=
+        SEQUENCE {
+                  zxr10ntpServerWithDnsCfgVrfName      DisplayString,
+                  zxr10ntpServerWithDnsCfgMngFlag      Unsigned32,
+                  zxr10ntpServerWithDnsCfgDnsName      DisplayString,
+                  zxr10ntpServerWithDnsCfgPriority     Unsigned32,
+                  zxr10ntpServerWithDnsCfgVersion      Unsigned32,
+                  zxr10ntpServerWithDnsCfgLock         INTEGER,
+                  zxr10ntpServerWithDnsCfgKey          Unsigned32,
+                  zxr10ntpServerWDnsCfgRowStatus       RowStatus
+        }
+
+    zxr10ntpServerWithDnsCfgVrfName OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP server vrf name.Null means 
+            the server is not bounded to any vrf"
+        ::= { zxr10ntpServerWithDnsCfgEntry 1 } 
+
+    zxr10ntpServerWithDnsCfgMngFlag OBJECT-TYPE
+        SYNTAX      Unsigned32(0..1)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "vrf flag of mng,1 means vrf is mng;0 means no mng"
+        ::= { zxr10ntpServerWithDnsCfgEntry 2 }
+
+    zxr10ntpServerWithDnsCfgDnsName OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP server DNS name."
+        ::= { zxr10ntpServerWithDnsCfgEntry 3 } 
+
+    zxr10ntpServerWithDnsCfgPriority OBJECT-TYPE
+        SYNTAX      Unsigned32(1..5)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP server priority,the min number with high priority"
+        ::= { zxr10ntpServerWithDnsCfgEntry 4 }
+
+    zxr10ntpServerWithDnsCfgVersion OBJECT-TYPE
+        SYNTAX      Unsigned32(1..4)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP version number, it can be in the range from 1 
+            to 4. The default value is 3 for ipv4,
+            but it only be 4 for ipv6"
+        ::= { zxr10ntpServerWithDnsCfgEntry 5}
+
+    zxr10ntpServerWithDnsCfgLock OBJECT-TYPE
+        SYNTAX      INTEGER {
+                            lock(1),
+                            unlock(2)
+                    }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP server lock status. 2 means unlock,
+            and 1 means the server is locked"
+        ::= { zxr10ntpServerWithDnsCfgEntry 6 }
+
+    zxr10ntpServerWithDnsCfgKey OBJECT-TYPE
+        SYNTAX      Unsigned32(0..4294967295)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP authentication key."
+        ::= { zxr10ntpServerWithDnsCfgEntry 7 }
+
+    zxr10ntpServerWDnsCfgRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "create or delete ntp server with dns"
+        ::= { zxr10ntpServerWithDnsCfgEntry 100 } 
+
+    -- the ntp peer with dns configure table,support get
+
+    zxr10ntpPeerWithDnsCfgTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10ntpPeerWithDnsCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table containing NTP peer information.Setting the 
+            priority leaf node results in initializing the other leaf
+            nodes except the indexs and rowStatus.Suggest the whole 
+            table setting."
+        ::= { zxr10ntp 22 }
+
+    zxr10ntpPeerWithDnsCfgEntry OBJECT-TYPE
+        SYNTAX      Zxr10ntpPeerWithDnsCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Information about the DNS peer of NTP."
+        INDEX   { 
+                zxr10ntpPeerWithDnsCfgVrfName, 
+                zxr10ntpPeerWithDnsCfgMngFlag, 
+                zxr10ntpPeerWithDnsCfgDnsName
+        }
+        ::= { zxr10ntpPeerWithDnsCfgTable 1 }
+
+    Zxr10ntpPeerWithDnsCfgEntry ::=
+        SEQUENCE {
+                 zxr10ntpPeerWithDnsCfgVrfName       OCTET STRING,
+                  zxr10ntpPeerWithDnsCfgMngFlag      Unsigned32,
+                  zxr10ntpPeerWithDnsCfgDnsName      DisplayString,
+                  zxr10ntpPeerWithDnsCfgPriority     Unsigned32,
+                  zxr10ntpPeerWithDnsCfgVersion      Unsigned32,
+                  zxr10ntpPeerWithDnsCfgKey          Unsigned32,
+                  zxr10ntpPeerWithDnsCfgRowStatus    RowStatus
+        }
+
+    zxr10ntpPeerWithDnsCfgVrfName OBJECT-TYPE
+        SYNTAX      OCTET STRING
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP peer vrf name.No null means 
+             the peer is bounded to any vrf"
+        ::= { zxr10ntpPeerWithDnsCfgEntry 1 } 
+
+    zxr10ntpPeerWithDnsCfgMngFlag OBJECT-TYPE
+        SYNTAX      Unsigned32(0..1)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "mng flag,1 means vrf is mng;0 means no mng"
+        ::= { zxr10ntpPeerWithDnsCfgEntry 2 }  
+
+    zxr10ntpPeerWithDnsCfgDnsName OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP peer Dns name.No "
+        ::= { zxr10ntpPeerWithDnsCfgEntry 3 } 
+
+    zxr10ntpPeerWithDnsCfgPriority OBJECT-TYPE
+        SYNTAX      Unsigned32(1..5)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP peer priority,the min number with high priority"
+        ::= { zxr10ntpPeerWithDnsCfgEntry 4 }
+
+    zxr10ntpPeerWithDnsCfgVersion OBJECT-TYPE
+        SYNTAX      Unsigned32(1..4)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP version number, it can be in the range from 1 
+            to 4. The default value is 3 for ipv4,
+            but it only be 4 for ipv6"
+        DEFVAL   {3}
+        ::= { zxr10ntpPeerWithDnsCfgEntry 5 }
+
+    zxr10ntpPeerWithDnsCfgKey OBJECT-TYPE
+        SYNTAX      Unsigned32(0..4294967295)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP authentication key"
+        ::= { zxr10ntpPeerWithDnsCfgEntry 6 }
+
+    zxr10ntpPeerWithDnsCfgRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "create or delete ntp peer with dns"
+        ::= { zxr10ntpPeerWithDnsCfgEntry 100 } 
+
+    --ntp global config
+    zxr10ntpAuthenticate  OBJECT-TYPE
+        SYNTAX      INTEGER {
+                            enable(1),
+                            disable(2)
+                    }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The NTP Authentication enable/disable."
+        ::= { zxr10ntpConfig  1 }
+
+    zxr10ntpIPv4AclName  OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..31))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The NTP IPv4 access-group,acl name.Null means invalid"
+        ::= { zxr10ntpConfig  2 }
+
+    zxr10ntpIPv6AclName  OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..31))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The NTP IPv6 access-group,acl name.Null means invalid"
+        ::= { zxr10ntpConfig  3 }
+
+    zxr10ntpSrcIPv4Address  OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The NTP IPv4 source address.Source IP and source 
+            interface can't be configured together"
+        ::= { zxr10ntpConfig  4}
+
+    zxr10ntpSrcIPv6Address  OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..52))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The NTP IPv6 source address.Source IP and source 
+            interface can't be configured together"
+        ::= { zxr10ntpConfig  5}
+
+    zxr10ntpBroadcastDelay  OBJECT-TYPE
+        SYNTAX      INTEGER(0..999999)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The NTP estimated round-trip delay in microseconds."
+        ::= { zxr10ntpConfig  6 }
+
+    -- add for global attribution base on mim at 2013.3.1 
+
+    zxr10ntpEnable OBJECT-TYPE
+        SYNTAX      INTEGER {
+                            enable(1),
+                            disable(2)
+                    }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The NTP enable/disable."
+        ::= { zxr10ntpConfig 7}  
+
+    zxr10ntpMaster OBJECT-TYPE
+        SYNTAX      INTEGER(0..15)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The NTP stratum value."
+        ::= { zxr10ntpConfig 8}
+
+    zxr10ntpPoll OBJECT-TYPE
+        SYNTAX      INTEGER(4..17)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The NTP poll interval."
+        DEFVAL {6}
+        ::= { zxr10ntpConfig 9}
+
+    zxr10ntpSrcInterface OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..31))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The NTP source interface.The L2 interface does not support. 
+            Source IP and source interface can't be configured together" 
+        ::= { zxr10ntpConfig 10}
+
+    zxr10ntpAclGroupIPv4ServerOnly  OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..31))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The NTP IPv4 server-only access-group,acl name."
+        ::= { zxr10ntpConfig  11 }  
+
+    zxr10ntpAclGroupIPv6ServerOnly  OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..31))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The NTP access-control,acl name."
+        ::= { zxr10ntpConfig  12 }  
+
+    zxr10ntpAccessControlServerVrf  OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE(0..32))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The NTP server access-control,Vrf name."
+        ::= { zxr10ntpConfig  13 } 
+    -- end of add at 2013.3.1
+ 
+    -- the ntp broadcast client table
+
+    zxr10ntpBroadcastClientTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10ntpBroadcastClientEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table containing NTP broadcast Client information."
+        ::= { zxr10ntp 14 }
+
+    zxr10ntpBroadcastClientEntry  OBJECT-TYPE
+        SYNTAX      Zxr10ntpBroadcastClientEntry 
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of entries of ntp broadcast client information."
+        INDEX  { zxr10ntpBroadcastClientIfName }
+        ::= { zxr10ntpBroadcastClientTable 1 }
+
+    Zxr10ntpBroadcastClientEntry ::=
+        SEQUENCE {  
+                  zxr10ntpBroadcastClientIfName         OCTET STRING,
+                  zxr10ntpBroadcastClientRowStatus      RowStatus
+        }
+
+    zxr10ntpBroadcastClientIfName OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE (1..31))
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP broadcast client interface name."
+        ::= { zxr10ntpBroadcastClientEntry 1 }
+
+    zxr10ntpBroadcastClientRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "active(1) destroy(6)."
+        REFERENCE
+            "See definition of RowStatus in RFC 2579, 'Textual
+            Conventions for SMIv2.'"
+        ::= { zxr10ntpBroadcastClientEntry 2 }
+
+    -- end for broadcast client table
+
+    -- start the ntp broadcast server table
+
+    zxr10ntpBroadcastServerTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10ntpBroadcastServerEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table containing NTP broadcast Server information.
+            Setting some leaf nodes results in initializing the other 
+            leaf nodes except the indexs and rowStatus.Suggest the
+            whole table setting."
+        ::= { zxr10ntp 15}
+
+    zxr10ntpBroadcastServerEntry         OBJECT-TYPE
+        SYNTAX      Zxr10ntpBroadcastServerEntry 
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of entries of ntp broadcast Server information."
+        INDEX  { zxr10ntpBroadcastServerIfName }
+        ::= { zxr10ntpBroadcastServerTable 1 }
+
+    Zxr10ntpBroadcastServerEntry ::=
+        SEQUENCE {  
+                 zxr10ntpBroadcastServerIfName       OCTET STRING,
+                 zxr10ntpBroadcastServerVersion      INTEGER,
+                 zxr10ntpBroadcastServerKey          Unsigned32,
+                 zxr10ntpBroadcastServerRowStatus    RowStatus
+        }
+
+    zxr10ntpBroadcastServerIfName OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE (1..31))
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP broadcast server interface name."
+        ::= { zxr10ntpBroadcastServerEntry 1 }
+
+    zxr10ntpBroadcastServerVersion  OBJECT-TYPE
+        SYNTAX      INTEGER (1..4)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP breadcast server version number."
+        ::= { zxr10ntpBroadcastServerEntry  2 }
+
+    zxr10ntpBroadcastServerKey  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..4294967295)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP breadcast server key id,0 means invalid."
+        ::= { zxr10ntpBroadcastServerEntry  3 }
+
+    zxr10ntpBroadcastServerRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "active(1) destroy(6)."
+        REFERENCE
+            "See definition of RowStatus in RFC 2579, 'Textual
+            Conventions for SMIv2.'"
+        ::= { zxr10ntpBroadcastServerEntry 4}
+    -- end for broadcast server table
+
+    -- the ntp multicast client table
+
+    zxr10ntpMulticastClientTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10ntpMulticastClientEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table containing NTP multicast Client information."
+        ::= { zxr10ntp 16 }
+
+    zxr10ntpMulticastClientEntry OBJECT-TYPE
+        SYNTAX      Zxr10ntpMulticastClientEntry 
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of entries of ntp multicast client information.
+            As indexs of the table,IPv4 and IPv6 can't be set together."
+        INDEX  { 
+               zxr10ntpMulticastClientIfName,
+               zxr10ntpMulticastClientIpv4Addr,
+               zxr10ntpMulticastClientIpv6Addr
+        }
+        ::= { zxr10ntpMulticastClientTable 1 }
+
+    Zxr10ntpMulticastClientEntry ::=
+        SEQUENCE {  
+                 zxr10ntpMulticastClientIfName      OCTET STRING,
+                 zxr10ntpMulticastClientIpv4Addr    IpAddress,
+                 zxr10ntpMulticastClientIpv6Addr    Ipv6Address,
+                 zxr10ntpMulticastClientRowStatus   RowStatus
+        }
+
+    zxr10ntpMulticastClientIfName OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE (1..31))
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP multicast client interface name."
+        ::= { zxr10ntpMulticastClientEntry 1 }
+
+    zxr10ntpMulticastClientIpv4Addr OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP multicast client IPv4 address."
+        ::= { zxr10ntpMulticastClientEntry 2 }
+
+    zxr10ntpMulticastClientIpv6Addr OBJECT-TYPE
+        SYNTAX      Ipv6Address
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP multicast client IPv6 address."
+        ::= { zxr10ntpMulticastClientEntry 3}
+
+    zxr10ntpMulticastClientRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "active(1) create(4) destroy(6)."
+        REFERENCE
+            "See definition of RowStatus in RFC 2579, 'Textual
+            Conventions for SMIv2.'"
+        ::= { zxr10ntpMulticastClientEntry 4 }
+    -- end for multicast client table
+
+    -- start the ntp multicast server table
+
+    zxr10ntpMulticastServerTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10ntpMulticastServerEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table containing NTP multicast Server information.
+            Setting some leaf nodes results in initializing the other 
+            leaf nodes except the indexs and rowStatus.Suggest the 
+            whole table setting."
+        ::= { zxr10ntp 17 }
+
+    zxr10ntpMulticastServerEntry OBJECT-TYPE
+        SYNTAX      Zxr10ntpMulticastServerEntry 
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A list of entries of ntp multicast Server information.As indexs 
+            of the table,IPv4 and IPv6 can't be set together."
+        INDEX  {
+               zxr10ntpMulticastServerIfName,
+               zxr10ntpMulticastServerIpv4Addr,
+               zxr10ntpMulticastServerIpv6Addr 
+        }
+        ::= { zxr10ntpMulticastServerTable 1 }
+
+    Zxr10ntpMulticastServerEntry ::=
+        SEQUENCE {
+                  zxr10ntpMulticastServerIfName       OCTET STRING,
+                  zxr10ntpMulticastServerIpv4Addr     IpAddress,
+                  zxr10ntpMulticastServerIpv6Addr     Ipv6Address,
+                  zxr10ntpMulticastServerVersion      INTEGER,
+                  zxr10ntpMulticastServerKey          Unsigned32,
+                  zxr10ntpMulticastServerTTL          INTEGER ,
+                  zxr10ntpMulticastServerRowStatus    RowStatus
+        }
+
+    zxr10ntpMulticastServerIfName OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE (1..31))
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP multicast server interface name."
+        ::= { zxr10ntpMulticastServerEntry 1 }
+
+    zxr10ntpMulticastServerIpv4Addr OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP multicast client IPv4 address."
+        ::= { zxr10ntpMulticastServerEntry 2 }
+
+    zxr10ntpMulticastServerIpv6Addr OBJECT-TYPE
+        SYNTAX      Ipv6Address
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP multicast client IPv6 address."
+        ::= { zxr10ntpMulticastServerEntry 3 }
+
+    zxr10ntpMulticastServerVersion  OBJECT-TYPE
+        SYNTAX      INTEGER (1..4)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP server version number."
+        DEFVAL   {3}
+        ::= { zxr10ntpMulticastServerEntry  4 }
+
+    zxr10ntpMulticastServerKey  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..4294967295)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP server key id,0 means invalid."
+        ::= { zxr10ntpMulticastServerEntry  5 }
+
+    zxr10ntpMulticastServerTTL  OBJECT-TYPE
+        SYNTAX      INTEGER(0..255)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP multicast server ttl,
+             0 means not need to set ttl option."
+        ::= { zxr10ntpMulticastServerEntry  6}
+
+    zxr10ntpMulticastServerRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "active(1) destroy(6)."
+        REFERENCE
+            "See definition of RowStatus in RFC 2579, 'Textual
+            Conventions for SMIv2.'"
+        ::= { zxr10ntpMulticastServerEntry 7 }  
+
+    -- end for multicast server table
+
+    -- the ntp authentication table
+
+    zxr10ntpAuthTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10ntpAuthEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table containing NTP Authentication information."
+        ::= { zxr10ntp 18}
+
+    zxr10ntpAuthEntry OBJECT-TYPE
+        SYNTAX      Zxr10ntpAuthEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Information about the Authentication of NTP."
+        INDEX   { 
+                zxr10ntpAuthKeyId
+        }
+        ::= { zxr10ntpAuthTable 1 }
+
+    Zxr10ntpAuthEntry ::=
+        SEQUENCE {
+                  zxr10ntpAuthKeyId             Unsigned32,
+                  zxr10ntpAuthKey               OCTET STRING,
+                  zxr10ntpAuthEncryptedKey      OCTET STRING,
+                  zxr10ntpAuthTrusted           INTEGER,
+                  zxr10ntpAuthRowStatus         RowStatus,
+                  zxr10ntpAuthKeychain          OCTET STRING
+        }
+
+    zxr10ntpAuthKeyId OBJECT-TYPE
+        SYNTAX      Unsigned32(1..4294967295)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP authentication key id,max 255 record."
+        ::= { zxr10ntpAuthEntry 1 }
+
+    zxr10ntpAuthKey OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE (0..16))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP authentication key"
+        ::= { zxr10ntpAuthEntry 2 }
+
+    zxr10ntpAuthEncryptedKey OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE (0..24))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP encrypted authentication key must have 24 characters."
+        ::= { zxr10ntpAuthEntry 3 } 
+
+    zxr10ntpAuthTrusted OBJECT-TYPE
+        SYNTAX      INTEGER {
+                            yes(1),
+                            no(2)
+                    }
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The NTP authentication key is trusted or not"
+        ::= { zxr10ntpAuthEntry 4 }
+
+    zxr10ntpAuthRowStatus OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "create or delete ntp authication config"
+        ::= { zxr10ntpAuthEntry 5 }
+
+    zxr10ntpAuthKeychain OBJECT-TYPE
+        SYNTAX      OCTET STRING(SIZE (0..31))
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The NTP authentication keychain"
+        ::= { zxr10ntpAuthEntry 6 }  
+
+    --end for ntp authentication table
+
+    -- add for current server base on mim at 2013.3.1 
+    zxr10ntpCurSrvRsltInfo OBJECT IDENTIFIER ::= { zxr10ntp 19 }
+
+    zxr10ntpCurSrvRsltVrfName OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE (0..32))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP server vrf name.Null means 
+            the server is not bounded to the vrf"
+        ::= { zxr10ntpCurSrvRsltInfo 1 } 
+
+    zxr10ntpCurSrvRsltIpv4Addr OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP server IPv4 address,127.0.0.1 
+             means reference is LOCAL."
+        ::= { zxr10ntpCurSrvRsltInfo 2 }
+
+    zxr10ntpCurSrvRsltIpv6Addr OBJECT-TYPE
+        SYNTAX      Ipv6Address
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP server IPv6 address."
+        ::= { zxr10ntpCurSrvRsltInfo 3 }
+
+    zxr10ntpCurSrvRsltPriority OBJECT-TYPE
+        SYNTAX      Unsigned32(0..6)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP server priority,the min number with high
+            priority.The value of 0 is invalid value."
+        ::= { zxr10ntpCurSrvRsltInfo 4 }
+
+    zxr10ntpCurSrvRsltLock OBJECT-TYPE
+        SYNTAX      INTEGER {
+                            lock(1),
+                            unlock(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP server lock status 2 means unlock,
+            and 1 means the server is locked"
+        ::= { zxr10ntpCurSrvRsltInfo 5 }
+
+    -- end of add for current server at 2013.3.1 
+
+    -- add for current association mim at 2013.3.6
+    zxr10ntpAssocTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10ntpAssocEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table containing NTP association information."
+        ::= { zxr10ntp 20}
+
+    zxr10ntpAssocEntry OBJECT-TYPE
+        SYNTAX  Zxr10ntpAssocEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Information about the associations of NTP."
+        INDEX   { 
+                zxr10ntpAssocSrcAddr,zxr10ntpAssocDstAddr,
+                zxr10ntpAssocVrfName,zxr10ntpAssocMode,
+                zxr10ntpAssocIfName
+        }
+        ::= { zxr10ntpAssocTable 1 }
+
+    Zxr10ntpAssocEntry ::=
+        SEQUENCE {
+                  zxr10ntpAssocSrcAddr        OCTET STRING,
+                  zxr10ntpAssocDstAddr        OCTET STRING,
+                  zxr10ntpAssocVrfName        OCTET STRING,
+                  zxr10ntpAssocMode           INTEGER,
+                  zxr10ntpAssocIfName         OCTET STRING,
+                  zxr10ntpAssocPeerFlag       INTEGER,
+                  zxr10ntpAssocKey            Unsigned32,
+                  zxr10ntpAssocVersion        INTEGER,
+                  zxr10ntpAssocLock           INTEGER,
+                  zxr10ntpAssocPoll           INTEGER,
+                  zxr10ntpAssocStratum        Unsigned32,
+                  zxr10ntpAssocPriority       INTEGER,
+                  zxr10ntpAssocReach          Unsigned32,
+                  zxr10ntpAssocDelay          OCTET STRING,
+                  zxr10ntpAssocOffset         OCTET STRING,
+                  zxr10ntpAssocInUse          INTEGER
+        }
+
+    zxr10ntpAssocSrcAddr OBJECT-TYPE
+        SYNTAX      OCTET STRING
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP association source address."
+        ::= { zxr10ntpAssocEntry 1 }
+
+    zxr10ntpAssocDstAddr OBJECT-TYPE
+        SYNTAX      OCTET STRING
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP association dest address."
+        ::= { zxr10ntpAssocEntry 2 }
+
+    zxr10ntpAssocVrfName OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE (0..32))
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP association vrf name.Null means 
+            the association is not bounded to the vrf"
+        ::= { zxr10ntpAssocEntry 3 }
+
+    zxr10ntpAssocMode OBJECT-TYPE
+        SYNTAX      INTEGER {
+                          active(1),
+                          passive(2),
+                          client(3),
+                          server(4),
+                          broadcast(5),
+                          broadcastclient(6),
+                          unspecified(7)
+                    }
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP association mode"
+        ::= { zxr10ntpAssocEntry 4 }
+
+    zxr10ntpAssocIfName OBJECT-TYPE
+        SYNTAX      OCTET STRING
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The NTP association interface name."
+        ::= { zxr10ntpAssocEntry 5 }
+
+    zxr10ntpAssocPeerFlag OBJECT-TYPE
+        SYNTAX      INTEGER {
+                            ephemeral(1),
+                            persistent(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP association is persistent or ephemeral"
+        ::= { zxr10ntpAssocEntry 6 }
+
+    zxr10ntpAssocKey OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP association key number"
+        ::= { zxr10ntpAssocEntry 7 }
+
+    zxr10ntpAssocVersion OBJECT-TYPE
+        SYNTAX      INTEGER (1..4)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP association version"
+        DEFVAL   {3}
+        ::= { zxr10ntpAssocEntry 8 }
+
+    zxr10ntpAssocLock OBJECT-TYPE
+        SYNTAX      INTEGER {
+                            lock(1),
+                            unlock(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP association is or not lock"
+        ::= { zxr10ntpAssocEntry 9 }
+
+    zxr10ntpAssocPoll OBJECT-TYPE
+        SYNTAX      INTEGER (4..17)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP association poll interval"
+        ::= { zxr10ntpAssocEntry 10 }
+
+    zxr10ntpAssocStratum OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..16)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP association stratum"
+        ::= { zxr10ntpAssocEntry 11 }
+
+    zxr10ntpAssocPriority OBJECT-TYPE
+        SYNTAX      INTEGER (1..6)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP association priority"
+        ::= { zxr10ntpAssocEntry 12 }
+
+    zxr10ntpAssocReach OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..255) 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP association reach"
+        ::= { zxr10ntpAssocEntry 13 }
+
+    zxr10ntpAssocDelay OBJECT-TYPE
+        SYNTAX      OCTET STRING      
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP association delay"
+        ::= { zxr10ntpAssocEntry 14 }
+
+    zxr10ntpAssocOffset OBJECT-TYPE
+        SYNTAX      OCTET STRING 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The NTP association offset"
+        ::= { zxr10ntpAssocEntry 15 }
+
+    zxr10ntpAssocInUse OBJECT-TYPE
+        SYNTAX      INTEGER {
+                            yes(1),
+                            no(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The NTP association is or not the best source in use"
+        ::= { zxr10ntpAssocEntry 16 }
+    -- end of add for current association at 2013.3.6    
+         
+    -- end added by songlingling for ntp mib
+
+     END

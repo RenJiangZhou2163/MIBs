@@ -1,0 +1,1458 @@
+XEROX-SYS-ADMIN-MIB DEFINITIONS ::= BEGIN
+--  Module: System Administration MIB
+--  Author: Ira McDonald, Rob Sklut
+--  File    61sysadm.mib
+--  Date:   28 April 2000 - Version 4.00.int
+
+IMPORTS
+--  MODULE-IDENTITY, OBJECT-TYPE,
+--      OBJECT-IDENTITY,
+--      NOTIFICATION-TYPE,
+--      Integer32
+--          FROM SNMPv2-SMI             -  IETF RFC 1442/1902/2578
+--  RowStatus, DateAndTime
+--          FROM SNMPv2-TC              -  IETF RFC 1443/1903/2579
+--  MODULE-COMPLIANCE, OBJECT-GROUP
+--          FROM SNMPv2-CONF            -  IETF RFC 1444/1904/2580
+--  ProductID
+--          FROM HOST-RESOURCES-MIB     -  IETF RFC 1514/2790
+    ProductID
+        FROM    HOST-RESOURCES-MIB
+--  xeroxCommonMIB
+--          FROM XEROX-COMMON-MIB
+    xeroxCommonMIB
+        FROM    XEROX-COMMON-MIB
+--  Ordinal32, Cardinal32,
+--      XcmGlobalUniqueID,
+--      XcmFixedLocaleDisplayString,
+--      XcmGenSNMPv2ErrorStatus,
+--      XcmGenOptionValueSyntax,
+--      xcmGenZeroDotZero
+--          FROM XEROX-GENERAL-TC
+    Ordinal32,
+    Cardinal32,
+    XcmGlobalUniqueID,
+    XcmFixedLocaleDisplayString,
+    XcmGenSNMPv2ErrorStatus,
+    XcmGenOptionValueSyntax
+        FROM    XEROX-GENERAL-TC
+--  XcmSysAdminGroupSupport,
+--      XcmSysAdminRequestData,
+--      XcmSysAdminRequestErrorString,
+--      XcmSysAdminParameterOperation
+--          FROM XEROX-SYS-ADMIN-TC/
+    XcmSysAdminGroupSupport,
+    XcmSysAdminRequestData,
+    XcmSysAdminRequestErrorString,
+    XcmSysAdminParameterOperation
+        FROM    XEROX-SYS-ADMIN-TC
+    OBJECT-TYPE
+        FROM    RFC-1212
+    TRAP-TYPE
+        FROM    RFC-1215
+    ;
+
+xcmSysAdminMIB OBJECT IDENTIFIER
+--  LAST-UPDATED "0004280000Z" -  28 April 2000
+--  ORGANIZATION "Xerox Corporation - XCMI Working Group"
+--  CONTACT-INFO
+--      "           XCMI Editors
+--      Email:      xcmieditors@cp10.es.xerox.com
+--
+--      - 
+--      -  BEGIN XEROX PRIVATE DATA
+--      - 
+--                  Ira McDonald
+--      Postal:     High North Inc
+--                  221 Ridge Ave
+--                  Grand Marais, MI  49839
+--      Voice:      906-494-2434 or 906-494-2697
+--      Email:      imcdonal@sdsp.mc.xerox.com
+--
+--                  Rob Sklut
+--      Postal:     Xerox Corporation
+--                  200 Cross Keys Office Park
+--                  Rochester, NY  14623
+--      Voice:      716-425-6601
+--      Email:      Robert_Sklut@.mc.xerox.com
+--      - 
+--      -  ENDOF XEROX PRIVATE DATA
+--      - 
+--      "
+--  DESCRIPTION
+--      "Version:   4.00.int
+--
+--      The MIB module for performing POSIX system admin of jobs and
+--      other system objects in network accessible host systems.
+--
+--      See:    Document Printing Application - Part 1: Abstract Service
+--              (ISO 10175-1 / Final Text, March 1996).
+--      See:    POSIX System Administration - Part 4: Print Interfaces
+--              (IEEE 1387.4 / Draft 8, October 1994).
+--      See:    OSI Reference Model - Part 1:  Basic Reference Model
+--              (CCITT X.200:1992 | ISO 7498-1:1992).
+--
+--      Copyright (C) 2000 Xerox Corporation. All Rights Reserved."
+    ::= { xeroxCommonMIB 70 }
+
+--mSysAdminZeroDummy OBJECT IDENTIFIER ::= { xcmGenZeroDotZero 70 }
+
+--
+--          System Admin MIB
+--
+
+--.ts 'System Admin General Group (Mandatory)'
+--          System Admin General Group (Mandatory)
+--
+--          Implementation of this group is mandatory for all systems.
+
+--          Usage:  General counters and summary information for ease of
+--                  use of the overall System Admin MIB.
+--
+--          Note:   The ONLY valid row in the 'xcmSysAdminGeneralTable'
+--                  shall ALWAYS have an 'xcmSysAdminGeneralIndex' of
+--                  one ('1').
+
+xcmSysAdminGeneral  OBJECT IDENTIFIER ::= { xcmSysAdminMIB 3 }
+
+xcmSysAdminGeneralTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSysAdminGeneralEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of general counters and information for ease of use of
+        the System Admin MIB on this host system.
+
+        Usage:  The ONLY valid row in the 'xcmSysAdminGeneralTable'
+        shall ALWAYS have an 'xcmSysAdminGeneralIndex' of one ('1')."
+    ::= { xcmSysAdminGeneral 2 }
+
+xcmSysAdminGeneralEntry OBJECT-TYPE
+    SYNTAX      XcmSysAdminGeneralEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry of general counters and information for ease of use of
+        the System Admin MIB on this host system.
+
+        Usage:  The ONLY valid row in the 'xcmSysAdminGeneralTable'
+        shall ALWAYS have an 'xcmSysAdminGeneralIndex' of one ('1')."
+    INDEX       { xcmSysAdminGeneralIndex }
+    ::= { xcmSysAdminGeneralTable 1 }
+
+XcmSysAdminGeneralEntry ::= SEQUENCE {
+        --  System Admin General Info   
+        xcmSysAdminGeneralIndex         Ordinal32, 
+        xcmSysAdminGeneralRowStatus     INTEGER, 
+        xcmSysAdminGeneralVersionID     ProductID, 
+        xcmSysAdminGeneralVersionDate   OCTET STRING, 
+        xcmSysAdminGeneralGroupSupport  XcmSysAdminGroupSupport, 
+        xcmSysAdminGeneralCreateSupport XcmSysAdminGroupSupport, 
+        xcmSysAdminGeneralUpdateSupport XcmSysAdminGroupSupport, 
+        xcmSysAdminGeneralEventLast     Cardinal32, 
+        xcmSysAdminGeneralRequestLast   Cardinal32 
+        }                               
+
+--
+--          System Admin General Info
+--
+
+xcmSysAdminGeneralIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSysAdminGeneralTable'.
+
+        Usage:  The ONLY valid row in the 'xcmSysAdminGeneralTable'
+        shall ALWAYS have an 'xcmSysAdminGeneralIndex' of one ('1')."
+    ::= { xcmSysAdminGeneralEntry 1 }
+
+xcmSysAdminGeneralRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to display status of the ONLY valid
+        conceptual row in the 'xcmSysAdminGeneralTable'.
+
+        Usage:  'xcmSysAdminGeneralRowStatus' is 'read-only' because
+        the ONLY valid conceptual row shall NOT be deleted."
+    ::= { xcmSysAdminGeneralEntry 2 }
+
+xcmSysAdminGeneralVersionID OBJECT-TYPE
+    SYNTAX      ProductID
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The software product ID of the SNMP sub-agent which implements
+        the XCMI System Admin MIB on this host system.
+
+        Usage:  This object shall specify the software product ID of an
+        SNMP sub-agent (possibly also found in a conceptual row in the
+        'hrSWRunTable' and/or 'hrSWInstalledTable' in the IETF HR MIB).
+        This object shall NOT specify a particular release of the XCMI
+        System Admin MIB, or the whole host system product.
+
+        Note:   Contrast with 'sysObjectID' for the whole SNMP agent in
+        the IETF MIB-II (RFC 1213) and 'hrDeviceID' for the whole device
+        (or whole product, in the case of 'xcmHrDevice...') in the IETF
+        Host Resources MIB (RFC 2790)."
+    REFERENCE
+        "See:   'hrSW[Installed|Run]ID' in the Software Installed and
+                Software Running groups of the IETF HR MIB (RFC 2790)."
+--  DEFVAL      { xcmGenZeroDotZero }   -  no sub-agent version ID
+    ::= { xcmSysAdminGeneralEntry 3 }
+
+xcmSysAdminGeneralVersionDate OBJECT-TYPE
+--  SYNTAX      DateAndTime
+    SYNTAX      OCTET STRING
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The software build date of the SNMP sub-agent which implements
+        the XCMI System Admin MIB on this host system.
+
+        Usage:  This object shall specify the BUILD date of the SNMP
+        sub-agent software (not available elsewhere in IETF/XCMI MIBs).
+        This object shall NOT specify the INSTALL date of the SNMP
+        sub-agent software on this host system, nor the RESET date.
+
+        Note:   Contrast with 'hrSWInstalledDate' in the Software
+        Installed group of the IETF Host Resources MIB (RFC 2790), and
+        'xcmHrDevInfoResetDate' in the Device Info group of the XCMI
+        Host Resources Extensions MIB."
+    REFERENCE
+        "See:   'hrSW[Installed|Run]ID' in the Software Installed and
+                Software Running groups of the IETF HR MIB (RFC 2790)."
+--  DEFVAL      { '0000000000000000'H } -  no sub-agent version date
+    ::= { xcmSysAdminGeneralEntry 4 }
+
+xcmSysAdminGeneralGroupSupport OBJECT-TYPE
+    SYNTAX      XcmSysAdminGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The terse conformance statement of ALL mandatory, conditionally
+        mandatory, and optional System Admin MIB object groups which are
+        supported by this management agent implementation (ie, version)
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for System Admin MIB object groups."
+--  DEFVAL      { 45 }                  -  mandatory groups supported
+    ::= { xcmSysAdminGeneralEntry 5 }
+
+xcmSysAdminGeneralCreateSupport OBJECT-TYPE
+    SYNTAX      XcmSysAdminGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The terse conformance statement of ALL mandatory, conditionally
+        mandatory, and optional XCMI System Admin MIB groups
+        supported for dynamic row creation (via '...RowStatus')
+        by this management agent implementation (ie, version)
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for XCMI System Admin MIB groups."
+--  DEFVAL      { 0 }                   -  no dynamic row create groups
+    ::= { xcmSysAdminGeneralEntry 6 }
+
+xcmSysAdminGeneralUpdateSupport OBJECT-TYPE
+    SYNTAX      XcmSysAdminGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The terse conformance statement of ALL mandatory, conditionally
+        mandatory, and optional XCMI System Admin MIB groups
+        supported for existing row update (via SNMP Set-Request PDUs)
+        by this management agent implementation (ie, version)
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for XCMI System Admin MIB groups."
+--  DEFVAL      { 0 }                   -  no existing row update groups
+    ::= { xcmSysAdminGeneralEntry 7 }
+
+xcmSysAdminGeneralEventLast OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The last entry index (regardless of its current state) in
+        the 'xcmSysAdminEventTable' of this System Admin MIB,
+        on this host system.
+
+        Usage:  The last entry index explicitly bounds the valid range
+        of 'xcmSysAdminEventIndex'."
+--  DEFVAL      { 0 }                   -  no event entries
+    ::= { xcmSysAdminGeneralEntry 8 }
+
+xcmSysAdminGeneralRequestLast OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The last entry index (regardless of its current state) in
+        the 'xcmSysAdminRequestTable' of this System Admin MIB,
+        on this host system.
+
+        Usage:  The last entry index explicitly bounds the valid range
+        of 'xcmSysAdminRequestIndex'.
+
+        Usage:  Conforming management stations shall ALWAYS read ('Get')
+        the value of this object and add one, to determine the next free
+        'slot', before creating a new 'xcmSysAdminRequestEntry'.
+
+        Usage:  Conforming management agents shall ALWAYS enforce the
+        rule that 'xcmSysAdminRequestEntry' rows shall ALWAYS be
+        created sequentially (see above)."
+--  DEFVAL      { 0 }                   -  no request entries
+    ::= { xcmSysAdminGeneralEntry 9 }
+
+--.ts 'System Admin Event Group (Cond Mandatory)'
+--          System Admin Event Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support system admin event logs
+--          and optional for all other systems.
+
+xcmSysAdminEvent    OBJECT IDENTIFIER ::= { xcmSysAdminMIB 4 }
+
+xcmSysAdminEventTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSysAdminEventEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of the system events which have been recorded
+        (logged) on this host system."
+    ::= { xcmSysAdminEvent 2 }
+
+xcmSysAdminEventEntry OBJECT-TYPE
+    SYNTAX      XcmSysAdminEventEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a system event which has been recorded
+        (logged) on this host system."
+    INDEX       { xcmSysAdminEventIndex }
+    ::= { xcmSysAdminEventTable 1 }
+
+XcmSysAdminEventEntry ::= SEQUENCE {
+        --  System Admin Event Info     
+        xcmSysAdminEventIndex           Ordinal32, 
+        xcmSysAdminEventRowStatus       INTEGER, 
+        xcmSysAdminEventCode            INTEGER, 
+        xcmSysAdminEventString          XcmFixedLocaleDisplayString, 
+        xcmSysAdminEventReferenceOID    OBJECT IDENTIFIER, 
+        xcmSysAdminEventDate            OCTET STRING 
+        }                               
+
+--
+--          System Admin Event Info
+--
+
+xcmSysAdminEventIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSysAdminEventTable'."
+    ::= { xcmSysAdminEventEntry 1 }
+
+xcmSysAdminEventRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create (management agent) and delete
+        (management station or management agent) individual conceptual
+        rows in the 'xcmSysAdminEventTable'.
+
+        Usage:  Conforming implementations need NOT support dynamic row
+        deletion (via 'destroy')."
+    ::= { xcmSysAdminEventEntry 2 }
+
+xcmSysAdminEventCode OBJECT-TYPE
+--  SYNTAX      Integer32
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Encoded type code of the system event which is
+        recorded in this conceptual row in the 'xcmSysAdminEventTable'."
+--  DEFVAL      { 0 }                   -  no event type code
+    ::= { xcmSysAdminEventEntry 3 }
+
+xcmSysAdminEventString OBJECT-TYPE
+    SYNTAX      XcmFixedLocaleDisplayString (SIZE (0..255))
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Human-readable type string of the system event which is
+        recorded in this conceptual row in the 'xcmSysAdminEventTable'."
+--  DEFVAL      { ''H }                 -  no event type string
+    ::= { xcmSysAdminEventEntry 4 }
+
+xcmSysAdminEventReferenceOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "An (optional) unambiguous system object reference
+        (which MAY include instance suffix information),
+        used by system administrators and end users to qualify
+        this system event.
+
+        Usage:  Since this system object reference is specified
+        as an object identifier, it may be taken from any IETF, Xerox,
+        third- party, or product-specific MIB, or it may simply be any
+        IETF SMIv2-style 'autonomous type'."
+--  DEFVAL      { xcmGenZeroDotZero }   -  no event object reference
+    ::= { xcmSysAdminEventEntry 5 }
+
+xcmSysAdminEventDate OBJECT-TYPE
+--  SYNTAX      DateAndTime
+    SYNTAX      OCTET STRING
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The time stamp for the system event which is
+        recorded in this conceptual row in the 'xcmSysAdminEventTable'.
+
+        Usage:  Conforming management agents shall ALWAYS return
+        meaningful values for this object, UNLESS their host system does
+        NOT have a source of time, in which case the following 'DEFVAL'
+        shall ALWAYS be returned."
+--  DEFVAL      { '0000000000000000'H } -  no event time stamp
+    ::= { xcmSysAdminEventEntry 6 }
+
+--.ts 'System Admin Event Definition'
+xcmSysAdminEventV1EventOID OBJECT IDENTIFIER
+--  STATUS      current
+--  DESCRIPTION
+--      "The value of the enterprise-specific OID in an SNMPv1 trap sent
+--      for a system event recorded in the 'xcmSysAdminEventTable'.
+--      See SNMPv2 trap definition 'xcmSysAdminEventV2Event'
+--      below for 'special semantics'."
+    ::= { xcmSysAdminEvent 1 }
+
+xcmSysAdminEventV2EventPrefix
+    OBJECT IDENTIFIER ::= { xcmSysAdminEventV1EventOID 0 }
+
+xcmSysAdminEventV1Event TRAP-TYPE
+    ENTERPRISE  xcmSysAdminEventV1EventOID
+    VARIABLES   
+    {
+        xcmSysAdminEventIndex,
+        xcmSysAdminEventCode,
+        xcmSysAdminEventString,
+        xcmSysAdminEventReferenceOID,
+        xcmSysAdminEventDate
+    }
+--  STATUS      current
+--  DESCRIPTION
+--      "This trap is sent whenever a system event is added to the
+--      'xcmSysAdminEventTable'."
+    ::= 1
+
+--  Note that the SNMPv2 to SNMPv1 translation rules dictate that the
+--  preceding structure will result in SNMPv1 traps of the following
+--  form:
+--
+--  xcmSysAdminEventV1Event TRAP-TYPE
+--      ENTERPRISE  xcmSysAdminEventV1EventOID
+--      VARIABLES   {
+--          xcmSysAdminEventIndex,
+--          xcmSysAdminEventCode,
+--          xcmSysAdminEventString,
+--          xcmSysAdminEventDate
+--      }
+--      DESCRIPTION
+--          "This trap is sent whenever a system event is added to the
+--          'xcmSysAdminEventTable'.
+--          See SNMPv2 trap definition 'xcmSysAdminEventV2Event'
+--          above for 'special semantics'."
+--      ::= 1
+
+--
+--.ts 'System Admin Request Group (Mandatory)'
+--          System Admin Request Group (Mandatory)
+--
+--          Implementation of this group is mandatory for all systems
+
+--          Usage:  Primary table in the System Admin MIB, used to
+--                  setup and invoke all system admin requests.
+--
+--          Note:   Each new valid system admin request in the
+--                  'xcmSysAdminRequestTable' shall ALWAYS have an
+--                  'xcmSysAdminRequestIndex' with a higher value than
+--                  ANY previous request.
+
+xcmSysAdminRequest  OBJECT IDENTIFIER ::= { xcmSysAdminMIB 5 }
+
+xcmSysAdminRequestTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSysAdminRequestEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table containing system admin requests for control
+        of jobs and other system objects on this host system."
+    ::= { xcmSysAdminRequest 2 }
+
+xcmSysAdminRequestEntry OBJECT-TYPE
+    SYNTAX      XcmSysAdminRequestEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry containing system admin requests for control
+        of jobs and other system objects on this host system."
+    INDEX       { xcmSysAdminRequestIndex }
+    ::= { xcmSysAdminRequestTable 1 }
+
+XcmSysAdminRequestEntry ::= SEQUENCE {
+        --  System Admin Request Info   
+        xcmSysAdminRequestIndex         Ordinal32, 
+        xcmSysAdminRequestRowStatus     INTEGER, 
+        xcmSysAdminRequestID            XcmGlobalUniqueID, 
+        xcmSysAdminRequestTimeout       Cardinal32, 
+        xcmSysAdminRequestOperationOID  OBJECT IDENTIFIER, 
+        xcmSysAdminRequestData          XcmSysAdminRequestData, 
+        xcmSysAdminRequestLocale        Cardinal32, 
+        xcmSysAdminRequestArgumentLast  Cardinal32, 
+        xcmSysAdminRequestFilterLast    Cardinal32, 
+        xcmSysAdminRequestResponseLast  Cardinal32, 
+        xcmSysAdminRequestErrorStatus   XcmGenSNMPv2ErrorStatus, 
+        xcmSysAdminRequestErrorString   XcmSysAdminRequestErrorString, 
+        xcmSysAdminRequestErrorArgument Cardinal32, 
+        xcmSysAdminRequestErrorFilter   Cardinal32 
+        }                               
+
+--
+--          System Admin Request Info
+--
+
+xcmSysAdminRequestIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in 'xcmSysAdminRequestTable'."
+    ::= { xcmSysAdminRequestEntry 1 }
+
+xcmSysAdminRequestRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and destroy individual conceptual
+        rows in 'xcmSysAdminRequestTable'.
+
+        This object has the following semantics:
+
+      * 'active' - indicates request-in-progress (all necessary request
+        arguments have been specified by remote system or by default).
+      * 'notInService' - indicates request-completed (final state of row
+        after all processing successfully or unsuccessfully completed).
+      * 'notReady' - indicates additional objects must be specified by
+        remote system (immediate state after an initial SNMP SetRequest
+        PDU containing 'createAndWait' command which is successful).
+      * 'createAndGo' - indicates all necessary request arguments are
+        supplied in single SNMP SetRequest PDU (yields immediate state
+        of 'active', if all argument validation is successful, or an
+        SNMP SetResponse PDU with an appropriate 'ErrorStatus' and row
+        creation with an immediate state of 'notInService', if any
+        argument validation fails).
+      * 'createAndWait' - indicates additional request arguments will
+        be supplied in (one or more) subsequent SNMP SetRequest PDUs
+        (yields immediate state of 'notReady', if all argument
+        validation is successful, or an SNMP SetResponsePDU with an
+        appropriate 'ErrorStatus' and row creation with an immediate
+        state of 'notInService', if any argument validation fails).
+      * 'destroy' - yields immediate deletion of specified row, if valid
+        request ID (row index) is specified, or an SNMP SetResponse PDU
+        with an appropriate 'ErrorStatus', otherwise.
+
+        Note that the one case in which 'createAndGo' or 'createAndWait'
+        do not yield row creation is the case where an invalid request
+        ID (row index) is specified in the SNMP SetRequest PDU - in this
+        case, an SNMP SetResponse PDU with an appropriate 'ErrorStatus'
+        is generated and no row creation is performed.
+
+        Before this object may take a value of 'active' (either due to a
+        Set of 'createAndGo', or a Set of 'createAndWait' later followed
+        by a Set of 'active'), the following columnar object must be set
+        to a meaningful value by the remote system (ie, end user, system
+        operator, or system adminstrator):
+
+            xcmSysAdminRequestOperationOID
+
+        Additional columnar objects MAY need to be set to meaningful
+        values for specific values of 'xcmSysAdminRequestOperationOID'."
+    ::= { xcmSysAdminRequestEntry 2 }
+
+xcmSysAdminRequestID OBJECT-TYPE
+    SYNTAX      XcmGlobalUniqueID (SIZE (0..128))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The system admin request identifier which uniquely
+        identifies this conceptual row in 'xcmSysAdminRequestTable',
+        although it is NOT an INDEX of this table.
+
+        Usage:  This system admin request identifier (when combined
+        with the value of 'xcmSysAdminRequestIndex') ensures that this
+        system admin request is permanently unique
+        (across system resets) on this host system."
+    ::= { xcmSysAdminRequestEntry 3 }
+
+xcmSysAdminRequestTimeout OBJECT-TYPE
+    SYNTAX      Cardinal32
+--  UNITS       "seconds"
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The system admin request timeout (in seconds) applicable to the
+        request in this conceptual row in 'xcmSysAdminRequestTable',
+        or zero if infinite.
+
+        Usage:  Conforming management agents shall ALWAYS enforce any
+        non-zero (bounded) timeout specified by the request initiator
+        (ie, management station or management agent) and shall ALWAYS
+        ensure that the system admin request is terminated (including
+        any appropriate event to the request initiator)."
+--  DEFVAL      { 0 }                   -  no request timeout (infinite)
+    ::= { xcmSysAdminRequestEntry 4 }
+
+xcmSysAdminRequestOperationOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The system admin request operation OID specified for
+        this conceptual row in 'xcmSysAdminRequestTable'."
+--  DEFVAL      { xcmGenZeroDotZero }   -  no request operation OID
+    ::= { xcmSysAdminRequestEntry 5 }
+
+xcmSysAdminRequestData OBJECT-TYPE
+    SYNTAX      XcmSysAdminRequestData
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The system admin request data (if any) specified for
+        this conceptual row in 'xcmSysAdminRequestTable'."
+    REFERENCE
+        "See:   Security Config, Account, and User groups in
+                XCMI Security MIB.
+        See:    Section 6.6 'Security in DPA' (pages 38 to 39) of
+                DPA (ISO 10175-1 / Final Text, March 1996)."
+--  DEFVAL      { ''H }                 -  no request data
+    ::= { xcmSysAdminRequestEntry 6 }
+
+xcmSysAdminRequestLocale OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The system admin request localization specified for
+        this conceptual row in 'xcmSysAdminRequestTable',
+        used by system administrators and end users to specify
+        the current localization for all request parameter strings
+        in 'xcmSysAdmin[Argument|Filter]Table' entries.
+
+        Usage:  This object shall ALSO apply to system admin response
+        strings in 'xcmSysAdminResponseTable' entries.
+
+        Usage:  For system admin request parameter strings (in arguments
+        and filters) and ALSO for system admin response strings, where
+        POSIX-style localization (territory, language, character set) is
+        applicable, this object shall ALWAYS contain either a suitable
+        value for 'xcmGenLocalizationIndex' from the XCMI General MIB,
+        or zero to indicate 'no locale specified'."
+    REFERENCE
+        "See:   'xcmGenLocalizationTable' in XCMI General MIB."
+--  DEFVAL      { 0 }                   -  no request localization
+    ::= { xcmSysAdminRequestEntry 7 }
+
+xcmSysAdminRequestArgumentLast OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The last entry index (regardless of its current state) in
+        the 'xcmSysAdminArgumentTable' of this System Admin MIB,
+        for this value of 'xcmSysAdminRequestIndex',
+        on this host system.
+
+        Usage:  The last entry index explicitly bounds the valid range
+        of 'xcmSysAdminArgumentIndex',
+        for this value of 'xcmSysAdminRequestIndex'.
+
+        Usage:  Conforming management stations shall ALWAYS read ('Get')
+        the value of this object and add one, to determine the next free
+        'slot', before creating a new 'xcmSysAdminArgumentEntry'.
+
+        Usage:  Conforming management agents shall ALWAYS enforce the
+        rule that 'xcmSysAdminArgumentEntry' rows shall ALWAYS be
+        created sequentially (see above),
+        for this value of 'xcmSysAdminRequestIndex'."
+--  DEFVAL      { 0 }                   -  no request arguments
+    ::= { xcmSysAdminRequestEntry 8 }
+
+xcmSysAdminRequestFilterLast OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The last entry index (regardless of its current state) in
+        the 'xcmSysAdminFilterTable' of this System Admin MIB,
+        for this value of 'xcmSysAdminRequestIndex',
+        on this host system.
+
+        Usage:  The last entry index explicitly bounds the valid range
+        of 'xcmSysAdminFilterIndex',
+        for this value of 'xcmSysAdminRequestIndex'.
+
+        Usage:  Conforming management stations shall ALWAYS read ('Get')
+        the value of this object and add one, to determine the next free
+        'slot', before creating a new 'xcmSysAdminFilterEntry'.
+
+        Usage:  Conforming management agents shall ALWAYS enforce the
+        rule that 'xcmSysAdminFilterEntry' rows shall ALWAYS be
+        created sequentially (see above),
+        for this value of 'xcmSysAdminRequestIndex'."
+--  DEFVAL      { 0 }                   -  no request filters
+    ::= { xcmSysAdminRequestEntry 9 }
+
+xcmSysAdminRequestResponseLast OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The last entry index (regardless of its current state) in
+        the 'xcmSysAdminResponseTable' of this System Admin MIB,
+        for this value of 'xcmSysAdminRequestIndex',
+        on this host system.
+
+        Usage:  The last entry index explicitly bounds the valid range
+        of 'xcmSysAdminResponseIndex',
+        for this value of 'xcmSysAdminRequestIndex'.
+
+        Usage:  Conforming management stations shall ALWAYS read ('Get')
+        the value of this object, to determine the last valid index for
+        a 'xcmSysAdminResponseEntry',
+        for this value of 'xcmSysAdminRequestIndex'."
+--  DEFVAL      { 0 }                   -  no response entries
+    ::= { xcmSysAdminRequestEntry 10 }
+
+xcmSysAdminRequestErrorStatus OBJECT-TYPE
+    SYNTAX      XcmGenSNMPv2ErrorStatus
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The system admin request error status associated with
+        this conceptual row in 'xcmSysAdminRequestTable'.
+
+        Usage:  Conforming management agents shall ALWAYS set this
+        object to the value of the request error status when
+        a system admin request operation is 'accepted', ie, when
+        'xcmSysAdminRequestRowStatus' is set to 'active' by the
+        request initiator (ie, management station or management agent).
+
+        Usage:  Conforming management agents shall ALWAYS set this
+        object to the value of the request completion status when
+        a system admin request operation is 'completed', ie, when
+        'xcmSysAdminRequestRowStatus' is set to 'notInService' by the
+        request performer (ie, management agent)."
+--  DEFVAL      { noError }             -  no request error status
+    ::= { xcmSysAdminRequestEntry 11 }
+
+xcmSysAdminRequestErrorString OBJECT-TYPE
+    SYNTAX      XcmSysAdminRequestErrorString
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The system admin request error string associated with
+        this conceptual row in 'xcmSysAdminRequestTable'."
+--  DEFVAL      { ''H }                 -  no request error string
+    ::= { xcmSysAdminRequestEntry 12 }
+
+xcmSysAdminRequestErrorArgument OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The system admin request error argument index associated with
+        this conceptual row in 'xcmSysAdminRequestTable'
+        (ie, the value of 'xcmSysAdminArgumentIndex' for the request
+        argument in error, or zero if no error was detected during
+        validation or processing of this request)."
+--  DEFVAL      { 0 }                   -  no request error in arguments
+    ::= { xcmSysAdminRequestEntry 13 }
+
+xcmSysAdminRequestErrorFilter OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The system admin request error filter index associated with
+        this conceptual row in 'xcmSysAdminRequestTable'
+        (ie, the value of 'xcmSysAdminFilterIndex' for the request
+        filter in error, or zero if no error was detected during
+        validation or processing of this request)."
+--  DEFVAL      { 0 }                   -  no request error in filters
+    ::= { xcmSysAdminRequestEntry 14 }
+
+--.ts 'System Admin Request Event Definition'
+xcmSysAdminRequestV1EventOID OBJECT IDENTIFIER
+--  STATUS      current
+--  DESCRIPTION
+--      "The value of the enterprise-specific OID in an SNMPv1 trap sent
+--      when 'xcmSysAdminRequestRowStatus' changes to 'notInService.
+--      See SNMPv2 trap definition 'xcmSysAdminRequestV2Event'
+--      below for 'special semantics'."
+    ::= { xcmSysAdminRequest 1 }
+
+xcmSysAdminRequestV2EventPrefix
+    OBJECT IDENTIFIER ::= { xcmSysAdminRequestV1EventOID 0 }
+
+xcmSysAdminRequestV1Event TRAP-TYPE
+    ENTERPRISE  xcmSysAdminRequestV1EventOID
+    VARIABLES   
+    {
+        xcmSysAdminRequestIndex,
+        xcmSysAdminRequestErrorStatus
+    }
+--  STATUS      current
+--  DESCRIPTION
+--      "This trap is sent when 'xcmSysAdminRequestRowStatus'
+--      changes to 'notInService'.
+--
+--      Note:   The variable-bindings of this trap have been chosen to
+--      specify a complete management operation result while keeping
+--      trap messages reasonably concise (generally a few hundred octets
+--      at most).
+--
+--      This notification has the following special semantics:
+--
+--          o   The request's 'xcmSysAdminRequestIndex' field
+--              value shall ALWAYS be appended to this trap object ID,
+--              as a BER binary OID suffix.
+--
+--      This trap OID qualifier allows system management/monitoring
+--      applications to limit the alerts they receive to ones generated
+--      by requests of interest."
+    ::= 1
+
+--  Note that the SNMPv2 to SNMPv1 translation rules dictate that the
+--  preceding structure will result in SNMPv1 traps of the following
+--  form:
+--
+--  xcmSysAdminRequestV1Event TRAP-TYPE
+--      ENTERPRISE  xcmSysAdminRequestV1EventOID
+--      VARIABLES   {
+--          xcmSysAdminRequestIndex,
+--          xcmSysAdminRequestErrorStatus
+--      }
+--      DESCRIPTION
+--          "This trap is sent when 'xcmSysAdminRequestRowStatus'
+--          changes to 'notInService'.
+--          See SNMPv2 trap definition 'xcmSysAdminRequestV2Event'
+--          above for 'special semantics'."
+--      ::= 1
+
+--
+--.ts 'System Admin Argument Group (Mandatory)'
+--          System Admin Argument Group (Mandatory)
+--
+--          Implementation of this group is mandatory for all systems
+
+--          Usage:  Secondary table in the System Admin MIB, used to
+--                  setup all system admin arguments for requests.
+--
+--          Usage:  Conforming management stations shall ALWAYS create
+--                  system admin arguments in strict sequential order,
+--                  WITHOUT any 'holes' in 'xcmSysAdminArgumentIndex'.
+
+xcmSysAdminArgument OBJECT IDENTIFIER ::= { xcmSysAdminMIB 6 }
+
+xcmSysAdminArgumentTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSysAdminArgumentEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table containing system admin arguments for control
+        of jobs and other system objects on this host system."
+    ::= { xcmSysAdminArgument 2 }
+
+xcmSysAdminArgumentEntry OBJECT-TYPE
+    SYNTAX      XcmSysAdminArgumentEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry containing system admin arguments for control
+        of jobs and other system objects on this host system."
+    INDEX       { xcmSysAdminRequestIndex, xcmSysAdminArgumentIndex }
+    ::= { xcmSysAdminArgumentTable 1 }
+
+XcmSysAdminArgumentEntry ::= SEQUENCE {
+        --  System Admin Argument Info  
+        xcmSysAdminArgumentIndex        Ordinal32, 
+        xcmSysAdminArgumentRowStatus    INTEGER, 
+        xcmSysAdminArgumentTypeOID      OBJECT IDENTIFIER, 
+        xcmSysAdminArgumentSyntax       XcmGenOptionValueSyntax, 
+        xcmSysAdminArgumentInteger      INTEGER, 
+        xcmSysAdminArgumentOID          OBJECT IDENTIFIER, 
+        xcmSysAdminArgumentString       OCTET STRING, 
+        xcmSysAdminArgumentOperation    XcmSysAdminParameterOperation, 
+        xcmSysAdminArgumentErrorStatus  XcmGenSNMPv2ErrorStatus 
+        }                               
+
+--
+--          System Admin Argument Info
+--
+
+xcmSysAdminArgumentIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in 'xcmSysAdminArgumentTable'."
+    ::= { xcmSysAdminArgumentEntry 1 }
+
+xcmSysAdminArgumentRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and destroy individual conceptual
+        rows in 'xcmSysAdminArgumentTable'.
+
+        Usage:  Conforming implementations need NOT support 'partial'
+        dynamic row creation (via 'createAndWait', and later 'active')
+        but may choose to only support 'complete' dynamic row creation
+        (via 'createAndGo').
+
+        Usage:  Conforming implementations need NOT support dynamic row
+        deletion (via 'destroy')."
+    ::= { xcmSysAdminArgumentEntry 2 }
+
+xcmSysAdminArgumentTypeOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "An unambiguous system admin argument type object identifier,
+        used by system administrators and end users to identify
+        this system admin argument.
+
+        Usage:  Since this system admin argument type is specified
+        as an object identifier, it may be taken from any IETF, Xerox,
+        third- party, or product-specific MIB, or it may simply be any
+        IETF SMIv2-style 'autonomous type'.
+
+        Usage:  An optional 'special syntax' is defined for accessing
+        the individual elements of multi-valued attributes (eg, defined
+        in DPA, ISO/IEC 10175) - since multi-valued attributes are NOT
+        permitted by the IETF SNMPv1/v2 SMI standards (RFC 1155/2578).
+        'xcmSysAdmin[Argument|Filter|Response]TypeOID' MAY be specified
+        as follows:
+
+            attributeOID.attributeInstanceID.attributeElementID
+
+        where 'attributeElementID' is the (actual or arbitrary) ordinal
+        position of a given element in the (ordered or unordered) set of
+        attribute values.
+
+        Usage:  Conforming implementations which do NOT support the
+        above 'special syntax' (ie, ones which ONLY support the simpler
+        'xcmSysAdmin[Argument|Filter|Response]TypeOID' specification in
+        the 'attributeOID.attributeInstanceID' form) shall ALWAYS access
+        the FIRST element in a given multi-valued attribute for each
+        Get (List) and Set (Modify) operation."
+    REFERENCE
+        "See:   'xcmSysAdmin[Filter|Response]TypeOID'"
+--  DEFVAL      { xcmGenZeroDotZero }   -  no argument type
+    ::= { xcmSysAdminArgumentEntry 3 }
+
+xcmSysAdminArgumentSyntax OBJECT-TYPE
+    SYNTAX      XcmGenOptionValueSyntax
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A system admin argument value syntax,
+        used by system administrators and end users to specify
+        the correct value syntax for this system admin argument.
+
+        Usage:  This system admin argument value syntax is used to
+        select which of the following three objects shall be used to
+        contain the value of this system admin argument."
+--  DEFVAL      { unknown }             -  unknown argument value syntax
+    ::= { xcmSysAdminArgumentEntry 4 }
+
+xcmSysAdminArgumentInteger OBJECT-TYPE
+--  SYNTAX      Integer32
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A system admin argument value integer,
+        used by system administrators and end users to specify
+        the current value for a system admin argument
+        with a base value syntax of 'INTEGER'."
+    REFERENCE
+        "See:   'xcmSysAdminArgument[Syntax|TypeOID]'"
+--  DEFVAL      { 0 }                   -  no argument value integer
+    ::= { xcmSysAdminArgumentEntry 5 }
+
+xcmSysAdminArgumentOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A system admin argument value OID (object identifier),
+        used by system administrators and end users to specify
+        the current value for a system admin argument
+        with a base value syntax of 'OBJECT IDENTIFIER'."
+    REFERENCE
+        "See:   'xcmSysAdminArgument[Syntax|TypeOID]'"
+--  DEFVAL      { xcmGenZeroDotZero }   -  no argument value OID
+    ::= { xcmSysAdminArgumentEntry 6 }
+
+xcmSysAdminArgumentString OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A system admin argument value string,
+        used by system administrators and end users to specify
+        the current value for a system admin argument
+        with a base value syntax of 'OCTET STRING'."
+    REFERENCE
+        "See:   'xcmSysAdminArgument[Syntax|TypeOID]'"
+--  DEFVAL      { ''H }                 -  no argument value string
+    ::= { xcmSysAdminArgumentEntry 7 }
+
+xcmSysAdminArgumentOperation OBJECT-TYPE
+    SYNTAX      XcmSysAdminParameterOperation
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A system admin argument operation,
+        used by system administrators and end users to specify
+        the correct operation for this system admin argument.
+
+        Usage:  Assignments (for writes of parameters) shall ALWAYS be
+        performed with the 'assign...' operators.  Assignments may take
+        the '<parameter> <assignOperator> <expression>' form.
+
+        Usage:  Expressions (for writes and filters) shall always be
+        be formed from the 'punctuate...', 'numeric...', 'logical...',
+        and 'compare...' operators.  Expressions shall ALWAYS be
+        specified in 'natural language' order, eg, '(a + b) / (c - 1)'.
+        Precedence shall ALWAYS be fully specified with appropriate use
+        of parentheses (ie, conforming implementations need NOT support
+        precedence evaluation for operators)."
+--  DEFVAL      { unknown }             -  no argument operation
+    ::= { xcmSysAdminArgumentEntry 8 }
+
+xcmSysAdminArgumentErrorStatus OBJECT-TYPE
+    SYNTAX      XcmGenSNMPv2ErrorStatus
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The system admin request argument error status associated with
+        this conceptual row in 'xcmSysAdminArgumentTable'.
+
+        Usage:  Conforming management agents shall ALWAYS set this
+        object to the value of the argument error status when
+        a system admin request operation is 'accepted', ie, when
+        'xcmSysAdminRequestRowStatus' is set to 'active' by the
+        request initiator (ie, management station or management agent).
+
+        Usage:  Conforming management agents shall ALWAYS set this
+        object to the value of the argument completion status when
+        a system admin request operation is 'completed', ie, when
+        'xcmSysAdminRequestRowStatus' is set to 'notInService' by the
+        request performer (ie, management agent)."
+--  DEFVAL      { noError }             -  no argument error status
+    ::= { xcmSysAdminArgumentEntry 9 }
+
+--
+--.ts 'System Admin Filter Group (Cond Mandatory)'
+--          System Admin Filter Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which implement system admin filters
+--          and optional for all other systems.
+
+--          Usage:  Secondary table in the System Admin MIB, used to
+--                  setup all system admin filters for requests.
+--
+--          Usage:  Conforming management stations shall ALWAYS create
+--                  system admin filters in strict sequential order,
+--                  WITHOUT any 'holes' in 'xcmSysAdminFilterIndex'.
+
+xcmSysAdminFilter   OBJECT IDENTIFIER ::= { xcmSysAdminMIB 7 }
+
+xcmSysAdminFilterTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSysAdminFilterEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table containing system admin filters for control
+        of jobs and other system objects on this host system."
+    ::= { xcmSysAdminFilter 2 }
+
+xcmSysAdminFilterEntry OBJECT-TYPE
+    SYNTAX      XcmSysAdminFilterEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry containing system admin filters for control
+        of jobs and other system objects on this host system."
+    INDEX       { xcmSysAdminRequestIndex, xcmSysAdminFilterIndex }
+    ::= { xcmSysAdminFilterTable 1 }
+
+XcmSysAdminFilterEntry ::= SEQUENCE {
+        --  System Admin Filter Info    
+        xcmSysAdminFilterIndex          Ordinal32, 
+        xcmSysAdminFilterRowStatus      INTEGER, 
+        xcmSysAdminFilterTypeOID        OBJECT IDENTIFIER, 
+        xcmSysAdminFilterSyntax         XcmGenOptionValueSyntax, 
+        xcmSysAdminFilterInteger        INTEGER, 
+        xcmSysAdminFilterOID            OBJECT IDENTIFIER, 
+        xcmSysAdminFilterString         OCTET STRING, 
+        xcmSysAdminFilterOperation      XcmSysAdminParameterOperation, 
+        xcmSysAdminFilterErrorStatus    XcmGenSNMPv2ErrorStatus 
+        }                               
+
+--
+--          System Admin Filter Info
+--
+
+xcmSysAdminFilterIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in 'xcmSysAdminFilterTable'."
+    ::= { xcmSysAdminFilterEntry 1 }
+
+xcmSysAdminFilterRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and destroy individual conceptual
+        rows in 'xcmSysAdminFilterTable'.
+
+        Usage:  Conforming implementations need NOT support 'partial'
+        dynamic row creation (via 'createAndWait', and later 'active')
+        but may choose to only support 'complete' dynamic row creation
+        (via 'createAndGo').
+
+        Usage:  Conforming implementations need NOT support dynamic row
+        deletion (via 'destroy')."
+    ::= { xcmSysAdminFilterEntry 2 }
+
+xcmSysAdminFilterTypeOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "An unambiguous system admin filter type object identifier,
+        used by system administrators and end users to identify
+        this system admin filter.
+
+        Usage:  Since this system admin filter type is specified
+        as an object identifier, it may be taken from any IETF, Xerox,
+        third- party, or product-specific MIB, or it may simply be any
+        IETF SMIv2-style 'autonomous type'.
+
+        Usage:  See 'xcmSysAdminArgumentTypeOID' for details of the
+        optional 'special syntax' for accessing individual elements of
+        multi-valued attributes (eg, defined in DPA, ISO/IEC 10175)."
+    REFERENCE
+        "See:   'xcmSysAdmin[Argument|Response]TypeOID'"
+--  DEFVAL      { xcmGenZeroDotZero }   -  no filter type
+    ::= { xcmSysAdminFilterEntry 3 }
+
+xcmSysAdminFilterSyntax OBJECT-TYPE
+    SYNTAX      XcmGenOptionValueSyntax
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A system admin filter value syntax,
+        used by system administrators and end users to specify
+        the correct value syntax for this system admin filter.
+
+        Usage:  This system admin filter value syntax is used to
+        select which of the following three objects shall be used to
+        contain the value of this system admin filter."
+--  DEFVAL      { unknown }             -  unknown filter value syntax
+    ::= { xcmSysAdminFilterEntry 4 }
+
+xcmSysAdminFilterInteger OBJECT-TYPE
+--  SYNTAX      Integer32
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A system admin filter value integer,
+        used by system administrators and end users to specify
+        the current value for a system admin filter
+        with a base value syntax of 'INTEGER'."
+    REFERENCE
+        "See:   'xcmSysAdminFilter[Syntax|TypeOID]'"
+--  DEFVAL      { 0 }                   -  no filter value integer
+    ::= { xcmSysAdminFilterEntry 5 }
+
+xcmSysAdminFilterOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A system admin filter value OID (object identifier),
+        used by system administrators and end users to specify
+        the current value for a system admin filter
+        with a base value syntax of 'OBJECT IDENTIFIER'."
+    REFERENCE
+        "See:   'xcmSysAdminFilter[Syntax|TypeOID]'"
+--  DEFVAL      { xcmGenZeroDotZero }   -  no filter value OID
+    ::= { xcmSysAdminFilterEntry 6 }
+
+xcmSysAdminFilterString OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A system admin filter value string,
+        used by system administrators and end users to specify
+        the current value for a system admin filter
+        with a base value syntax of 'OCTET STRING'."
+    REFERENCE
+        "See:   'xcmSysAdminFilter[Syntax|TypeOID]'"
+--  DEFVAL      { ''H }                 -  no filter value string
+    ::= { xcmSysAdminFilterEntry 7 }
+
+xcmSysAdminFilterOperation OBJECT-TYPE
+    SYNTAX      XcmSysAdminParameterOperation
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A system admin filter operation,
+        used by system administrators and end users to specify
+        the correct operation for this system admin filter.
+
+        Usage:  Expressions (for filters of parameters) shall always be
+        be formed from the 'punctuate...', 'numeric...', 'logical...',
+        and 'compare...' operators.  Expressions shall ALWAYS be
+        specified in 'natural language' order, eg, '(a + b) / (c - 1)'.
+        Precedence shall ALWAYS be fully specified with appropriate use
+        of parentheses (ie, conforming implementations need NOT support
+        precedence evaluation for operators)."
+--  DEFVAL      { unknown }             -  no filter operation
+    ::= { xcmSysAdminFilterEntry 8 }
+
+xcmSysAdminFilterErrorStatus OBJECT-TYPE
+    SYNTAX      XcmGenSNMPv2ErrorStatus
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The system admin request filter error status associated with
+        this conceptual row in 'xcmSysAdminFilterTable'.
+
+        Usage:  Conforming management agents shall ALWAYS set this
+        object to the value of the filter error status when
+        a system admin request operation is 'accepted', ie, when
+        'xcmSysAdminRequestRowStatus' is set to 'active' by the
+        request initiator (ie, management station or management agent).
+
+        Usage:  Conforming management agents shall ALWAYS set this
+        object to the value of the filter completion status when
+        a system admin request operation is 'completed', ie, when
+        'xcmSysAdminRequestRowStatus' is set to 'notInService' by the
+        request performer (ie, management agent)."
+--  DEFVAL      { noError }             -  no filter error status
+    ::= { xcmSysAdminFilterEntry 9 }
+
+--
+--.ts 'System Admin Response Group (Mandatory)'
+--          System Admin Response Group (Mandatory)
+--
+--          Implementation of this group is mandatory for all systems
+
+--          Usage:  Secondary table in the System Admin MIB, used to
+--                  return all system admin responses for requests.
+--
+--          Usage:  Conforming management agents shall ALWAYS return all
+--                  system admin responses in strict sequential order,
+--                  WITHOUT any 'holes' in 'xcmSysAdminResponseIndex'.
+
+xcmSysAdminResponse OBJECT IDENTIFIER ::= { xcmSysAdminMIB 8 }
+
+xcmSysAdminResponseTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSysAdminResponseEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table containing system admin responses for control
+        of jobs and other system objects on this host system."
+    ::= { xcmSysAdminResponse 2 }
+
+xcmSysAdminResponseEntry OBJECT-TYPE
+    SYNTAX      XcmSysAdminResponseEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry containing system admin responses for control
+        of jobs and other system objects on this host system."
+    INDEX       { xcmSysAdminRequestIndex, xcmSysAdminResponseIndex }
+    ::= { xcmSysAdminResponseTable 1 }
+
+XcmSysAdminResponseEntry ::= SEQUENCE {
+        --  System Admin Response Info  
+        xcmSysAdminResponseIndex        Ordinal32, 
+        xcmSysAdminResponseRowStatus    INTEGER, 
+        xcmSysAdminResponseTypeOID      OBJECT IDENTIFIER, 
+        xcmSysAdminResponseSyntax       XcmGenOptionValueSyntax, 
+        xcmSysAdminResponseInteger      INTEGER, 
+        xcmSysAdminResponseOID          OBJECT IDENTIFIER, 
+        xcmSysAdminResponseString       OCTET STRING 
+        }                               
+
+--
+--          System Admin Response Info
+--
+
+xcmSysAdminResponseIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in 'xcmSysAdminResponseTable'."
+    ::= { xcmSysAdminResponseEntry 1 }
+
+xcmSysAdminResponseRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create (management agent) and delete
+        (management station or management agent) individual conceptual
+        rows in 'xcmSysAdminResponseTable'.
+
+        Usage:  Conforming implementations need NOT support dynamic row
+        deletion (via 'destroy')."
+    ::= { xcmSysAdminResponseEntry 2 }
+
+xcmSysAdminResponseTypeOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "An unambiguous system admin response type object identifier,
+        used by conforming management agents to identify
+        this system admin response.
+
+        Usage:  Since this system admin response type is specified
+        as an object identifier, it may be taken from any IETF, Xerox,
+        third- party, or product-specific MIB, or it may simply be any
+        IETF SMIv2-style 'autonomous type'.
+
+        Usage:  See 'xcmSysAdminArgumentTypeOID' for details of the
+        optional 'special syntax' for accessing individual elements of
+        multi-valued attributes (eg, defined in DPA, ISO/IEC 10175)."
+    REFERENCE
+        "See:   'xcmSysAdmin[Argument|Filter]TypeOID'"
+--  DEFVAL      { xcmGenZeroDotZero }   -  no response type
+    ::= { xcmSysAdminResponseEntry 3 }
+
+xcmSysAdminResponseSyntax OBJECT-TYPE
+    SYNTAX      XcmGenOptionValueSyntax
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A system admin response value syntax,
+        used by conforming management agents to specify
+        the correct value syntax for this system admin response.
+
+        Usage:  This system admin response value syntax is used to
+        select which of the following three objects shall be used to
+        contain the value of this system admin response."
+--  DEFVAL      { unknown }             -  unknown response value syntax
+    ::= { xcmSysAdminResponseEntry 4 }
+
+xcmSysAdminResponseInteger OBJECT-TYPE
+--  SYNTAX      Integer32
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A system admin response value integer,
+        used by conforming management agents to specify
+        the current value for a system admin response
+        with a base value syntax of 'INTEGER'."
+    REFERENCE
+        "See:   'xcmSysAdminResponse[Syntax|TypeOID]'"
+--  DEFVAL      { 0 }                   -  no response value integer
+    ::= { xcmSysAdminResponseEntry 5 }
+
+xcmSysAdminResponseOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A system admin response value OID (object identifier),
+        used by conforming management agents to specify
+        the current value for a system admin response
+        with a base value syntax of 'OBJECT IDENTIFIER'."
+    REFERENCE
+        "See:   'xcmSysAdminResponse[Syntax|TypeOID]'"
+--  DEFVAL      { xcmGenZeroDotZero }   -  no response value OID
+    ::= { xcmSysAdminResponseEntry 6 }
+
+xcmSysAdminResponseString OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..255))
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A system admin response value string,
+        used by conforming management agents to specify
+        the current value for a system admin response
+        with a base value syntax of 'OCTET STRING'."
+    REFERENCE
+        "See:   'xcmSysAdminResponse[Syntax|TypeOID]'"
+--  DEFVAL      { ''H }                 -  no response value string
+    ::= { xcmSysAdminResponseEntry 7 }
+
+--.ts 'System Admin MIB Conformance Macros'
+--
+--          System Admin MIB Conformance Information
+--
+--          With Mandatory and Optional Conformance Groups
+
+xcmSysAdminMIBConformance
+    OBJECT IDENTIFIER ::= { xcmSysAdminMIB 2 }
+xcmSysAdminMIBGroups
+    OBJECT IDENTIFIER ::= { xcmSysAdminMIBConformance 2 }
+
+--
+--          Compliance Statement
+--
+
+END

@@ -1,0 +1,609 @@
+ZXR10-LSP-MAN-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE, IpAddress,
+        Integer32, Unsigned32, NOTIFICATION-TYPE, enterprises
+                FROM SNMPv2-SMI
+        DisplayString
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE, OBJECT-GROUP
+                FROM SNMPv2-CONF
+        zxr10RosngMIB
+                FROM ZXR10-SMI;
+
+    zxr10LspManMIB   MODULE-IDENTITY
+        LAST-UPDATED  "201810232000Z"
+        ORGANIZATION  "ZTE Corporation."
+        CONTACT-INFO  "Mao Lihua              
+                      Tel:    +86-25-5287xxxx           
+                      E-Mail: mao.lihua@zte.com.cn "
+        DESCRIPTION   
+            "This MIB module provides commonly used textual conventions for 
+        lsp manager. "
+        -- Revision History
+        REVISION     "201810232000Z"    --2018/10/23 20:00
+        DESCRIPTION  "Add IPv4 label forward table." 
+
+        REVISION      "201304241000Z"
+        DESCRIPTION   "Add zxr10LspInstDestFlag node to zxr10LspInstTable"
+        REVISION      "201303211000Z"
+        DESCRIPTION   "Initial version"
+        ::= { zxr10RosngMIB 401 }
+
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.1
+    zxr10LspManGlobalObjects OBJECT IDENTIFIER ::= { zxr10LspManMIB 1 }
+    -- 1.3.6.1.4.1.3902.3.6000.401.2
+    zxr10LspManObjects OBJECT IDENTIFIER ::= { zxr10LspManMIB 2 }
+    -- 1.3.6.1.4.1.3902.3.6000.401.3
+    zxr10LspManTraps OBJECT IDENTIFIER ::= { zxr10LspManMIB 3 }
+    -- 1.3.6.1.4.1.3902.3.6000.401.4
+    zxr10LspManConformance OBJECT IDENTIFIER ::= { zxr10LspManMIB 4 }
+
+    --=============================
+    --1. zxr10LspManGlobalObjects 
+    --=============================
+    -- 1.3.6.1.4.1.3902.3.6000.401.1.1
+    zxr10LspManGrEnable OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+        disable(1),
+        enable(2)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " The config of gr service status for PSS module.
+            1: means Gr of PSS module is disable.
+            2: means Gr of PSS module is enable."
+        ::= { zxr10LspManGlobalObjects 1 }
+
+
+    -- =============================
+    --2. zxr10LspManObjects
+    -- =============================
+    -- =============================
+    --2.1. zxr10LspmFwdTable
+    -- =============================
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.1
+    zxr10LspmFwdTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF Zxr10LspmFwdEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A tabel of label forward information."
+        ::= { zxr10LspManObjects 1 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.1.1
+    zxr10LspmFwdEntry OBJECT-TYPE
+        SYNTAX Zxr10LspmFwdEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry to label forward table."
+        INDEX { zxr10LspmFwdDestAddr, zxr10LspmFwdDestMask, 
+                zxr10LspmFwdOutsegTag }
+        ::= { zxr10LspmFwdTable 1 }
+
+    Zxr10LspmFwdEntry ::=
+        SEQUENCE { 
+            zxr10LspmFwdDestAddr
+                IpAddress,
+            zxr10LspmFwdDestMask
+                Integer32,
+            zxr10LspmFwdOutsegTag
+                Integer32,
+            zxr10LspmFwdNextHop
+                IpAddress,
+            zxr10LspmFwdOutIfName
+                DisplayString,
+            zxr10LspmFwdInLabel
+                Unsigned32,
+            zxr10LspmFwdOutLabel
+                Unsigned32,
+            zxr10LspmFwdSpecialFlag
+                INTEGER
+        }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.1.1.1
+    zxr10LspmFwdDestAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The destination IP address of this route. An entry with a value 
+        of 0.0.0.0 is considered a default route.  Multiple routes to a single
+        destination can appear in the table, but access to such multiple 
+        entries is dependent on the table-access mechanisms defined by the 
+        network management protocol in use."
+        ::= { zxr10LspmFwdEntry 1 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.1.1.2
+    zxr10LspmFwdDestMask OBJECT-TYPE
+        SYNTAX Integer32 (0..32)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Indicate the mask to be logical-ANDed with the destination address
+        before being compared to the value in the ipRouteDest field.  For those
+        systems that do not support arbitrary subnet masks, an agent constructs
+        the value of the ipRouteMask by determining whether the value of the 
+        correspondent ipRouteDest field belong to a class-A, B, or C network, 
+        and then using one of:
+
+            mask           network
+            8              class-A
+            16             class-B
+            24             class-C
+
+            If the value of the ipRouteDest is 0 (a default route), then the 
+        mask value is also 0.  It should be noted that all IP routing 
+        subsystems implicitly use this mechanism."
+        ::= { zxr10LspmFwdEntry 2 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.1.1.3
+    zxr10LspmFwdOutsegTag OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "This value is used to distinguish out segment who have the same 
+        Dest and Mask.In other words, it's a speical id for out segment with 
+        the same destination IP address."
+        ::= { zxr10LspmFwdEntry 3 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.1.1.4
+    zxr10LspmFwdNextHop OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The IP address of the next hop of this route.(In the case of a
+        route bound to an interface which is realized via a broadcast media, 
+        the value of this field is the agent's IP address on that interface.)"
+        ::= { zxr10LspmFwdEntry 4 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.1.1.5
+    zxr10LspmFwdOutIfName OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The interface name which uniquely identifies the local interface
+        through which the next hop of this route should be reached.  The
+        interface identified by a particular value of this index is the same
+        interface as identified by the same value of ifIndex."
+        ::= { zxr10LspmFwdEntry 5 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.1.1.6
+    zxr10LspmFwdInLabel OBJECT-TYPE
+        SYNTAX Unsigned32 (16..1048575)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The incoming label of this LSP."
+        ::= { zxr10LspmFwdEntry 6 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.1.1.7
+    zxr10LspmFwdOutLabel OBJECT-TYPE
+    SYNTAX Unsigned32 (0..1048575)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The outgoing label of this LSP."
+    ::= { zxr10LspmFwdEntry 7 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.1.1.8
+    zxr10LspmFwdSpecialFlag OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+        master(1),
+        slave(2),
+        loadshare(3),
+        none(4)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This flag indicate the link info about this IP address.
+            1: means it's an master entry,at the sametime,indicate the master
+        link under fast-re-route application.
+            2: means it's a slave entry under fast-re-route application.
+            3: means it's a loadshare entry.  
+            4: means none of the above."
+        ::= { zxr10LspmFwdEntry 8 }
+
+    -- =============================
+    --2.2. zxr10LspInstTable
+    -- =============================
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.2
+    zxr10LspInstTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF Zxr10LspInstEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A tabel of static LSP instance config."
+        ::= { zxr10LspManObjects 2 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.2.1
+    zxr10LspInstEntry OBJECT-TYPE
+        SYNTAX Zxr10LspInstEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry to static LSP instance table."
+        INDEX { zxr10LspInstName }
+        ::= { zxr10LspInstTable 1 }
+
+    Zxr10LspInstEntry ::=
+        SEQUENCE {
+            zxr10LspInstName
+                DisplayString,
+            zxr10LspInstInLabel
+                Unsigned32,
+            zxr10LspInstDestAddr
+                IpAddress,
+            zxr10LspInstDestMask
+                IpAddress,
+            zxr10LspInstForceFlag
+                INTEGER,
+            zxr10LspInstDestFlag
+                INTEGER
+        }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.2.1.1
+    zxr10LspInstName OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "Static LSP instance name, which is key of instance."
+        ::= { zxr10LspInstEntry 1 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.2.1.2
+    zxr10LspInstInLabel OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The incoming label of this Staic LSP instance, label range is
+        static label range."
+        ::= { zxr10LspInstEntry 2 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.2.1.3
+    zxr10LspInstDestAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "IPv4 address, which is the static LSP instance binding to."
+        ::= { zxr10LspInstEntry 3 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.2.1.4
+    zxr10LspInstDestMask OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "IPv4 mask, which is the static LSP instance binding to."
+        ::= { zxr10LspInstEntry 4 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.2.1.5
+    zxr10LspInstForceFlag OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+        disable(1),
+        enable(2)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This flag indicate whether force to advertise incoming label to 
+        upstream.
+            1: means it's not forcing to advertise in-label to upstream.
+            2: means it's forcing to advertise in-label to upstream."
+        ::= { zxr10LspInstEntry 5 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.2.1.6
+    zxr10LspInstDestFlag OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+        no(1),
+        yes(2)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This flag indicate whether bind FEC to the static LSP instance.
+            1: means FEC is not binding to the static LSP instance.
+            2: means FEC is binding to the static LSP instance."
+        ::= { zxr10LspInstEntry 6 }
+
+    -- =============================
+    --2.3. zxr10LspOutsegTable
+    -- =============================
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.3
+    zxr10LspOutsegTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF Zxr10LspOutsegEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A tabel of static LSP outsegment config."
+        ::= { zxr10LspManObjects 3 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.3.1
+    zxr10LspOutsegEntry OBJECT-TYPE
+        SYNTAX Zxr10LspOutsegEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry to static LSP outsegment table."
+        INDEX { zxr10LspOutsegInstName, zxr10LspOutsegIfName, 
+                zxr10LspOutsegNexthop }
+        ::= { zxr10LspOutsegTable 1 }
+
+    Zxr10LspOutsegEntry ::=
+        SEQUENCE { 
+            zxr10LspOutsegInstName
+                DisplayString,
+            zxr10LspOutsegIfName
+                DisplayString,
+            zxr10LspOutsegNexthop
+                IpAddress,
+            zxr10LspOutsegLabel
+                Unsigned32,
+            zxr10LspOutsegForceFlag
+                INTEGER
+        }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.3.1.1
+    zxr10LspOutsegInstName OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The name of static LSP instance, which the out segment belong to."
+        ::= { zxr10LspOutsegEntry 1 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.3.1.2
+    zxr10LspOutsegIfName OBJECT-TYPE
+        SYNTAX DisplayString
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The interface name which uniquely identifies the local interface
+        through which the next hop of this out segment should be reached. ."
+        ::= { zxr10LspOutsegEntry 2 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.3.1.3
+    zxr10LspOutsegNexthop OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The IP address of the next hop of this out segment."
+        ::= { zxr10LspOutsegEntry 3 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.3.1.4
+    zxr10LspOutsegLabel OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "The outgoing label of this Staic LSP instance.."
+        ::= { zxr10LspOutsegEntry 4 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.3.1.5
+    zxr10LspOutsegForceFlag OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+        disable(1),
+        enable(2)
+        }
+
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This flag indicate whether force to use configured label as 
+        out-label.
+            1: means it's not forcing to use configured label as out-label.
+            2: means it's forcing to use configured label as out-label."
+        ::= { zxr10LspOutsegEntry 5 }
+
+    -- =============================
+    --2.4. zxr10LspmIPv4LabelFwdTable
+    -- =============================
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.4
+    zxr10LspmIPv4LabelFwdTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF Zxr10LspmIPv4LabelFwdEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "A tabel of label forward information."
+        ::= { zxr10LspManObjects 4 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.4.1
+    zxr10LspmIPv4LabelFwdEntry OBJECT-TYPE
+        SYNTAX Zxr10LspmIPv4LabelFwdEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "An entry to IPv4 label forward table."
+        INDEX { zxr10LspmIPv4LabelFwdInLabel, zxr10LspmIPv4LabelFwdNhIndex }
+        ::= { zxr10LspmIPv4LabelFwdTable 1 }
+
+    Zxr10LspmIPv4LabelFwdEntry ::=
+        SEQUENCE { 
+            zxr10LspmIPv4LabelFwdInLabel
+                Unsigned32,
+            zxr10LspmIPv4LabelFwdNhIndex
+                Unsigned32,
+            zxr10LspmIPv4LabelFwdDestAddr
+                IpAddress,
+            zxr10LspmIPv4LabelFwdMaskLength
+                Unsigned32,
+            zxr10LspmIPv4LabelFwdVrfName
+                DisplayString,
+            zxr10LspmIPv4LabelFwdNextHop
+                IpAddress,
+            zxr10LspmIPv4LabelFwdOutIfName
+                DisplayString,
+            zxr10LspmIPv4LabelFwdNhVrfName
+                DisplayString,
+            zxr10LspmIPv4LabelFwdOutLabel1
+                Unsigned32,
+            zxr10LspmIPv4LabelFwdOutLabel2
+                Unsigned32,
+            zxr10LspmIPv4LabelFwdOutLabel3
+                Unsigned32,
+            zxr10LspmIPv4LabelFwdOutLabel4
+                Unsigned32,
+            zxr10LspmIPv4LabelFwdOutLabel5
+                Unsigned32,
+            zxr10LspmIPv4LabelFwdSpecialFlag
+                INTEGER,
+            zxr10LspmIPv4LabelFwdOriNextHop
+                IpAddress
+        }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.4.1.1
+    zxr10LspmIPv4LabelFwdInLabel OBJECT-TYPE
+        SYNTAX Unsigned32 (16..1048575)
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION
+            "The incoming label of this LSP."
+        ::= { zxr10LspmIPv4LabelFwdEntry 1 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.4.1.2
+    zxr10LspmIPv4LabelFwdNhIndex OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION   "The index of nexthop."
+        ::= { zxr10LspmIPv4LabelFwdEntry 2 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.4.1.3
+    zxr10LspmIPv4LabelFwdDestAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION   "The destination IP address of this LSP."
+        ::= { zxr10LspmIPv4LabelFwdEntry 3 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.4.1.4
+    zxr10LspmIPv4LabelFwdMaskLength OBJECT-TYPE
+        SYNTAX Unsigned32 (0..32)
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION   "The length of the LSP's mask."
+        ::= { zxr10LspmIPv4LabelFwdEntry 4 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.4.1.5
+    zxr10LspmIPv4LabelFwdVrfName OBJECT-TYPE
+        SYNTAX        DisplayString(SIZE(0..32))
+        MAX-ACCESS read-only
+        STATUS        current
+        DESCRIPTION   "VRF name of the LSP."
+        ::= { zxr10LspmIPv4LabelFwdEntry 5 }  
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.4.1.6
+    zxr10LspmIPv4LabelFwdNextHop OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION   "The nexthop IP address of this LSP."
+        ::= { zxr10LspmIPv4LabelFwdEntry 6 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.4.1.7
+    zxr10LspmIPv4LabelFwdOutIfName OBJECT-TYPE
+        SYNTAX DisplayString(SIZE(0..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION   "The out interface name of the LSP."
+        ::= { zxr10LspmIPv4LabelFwdEntry 7 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.4.1.8
+    zxr10LspmIPv4LabelFwdNhVrfName OBJECT-TYPE
+        SYNTAX        DisplayString(SIZE(0..32))
+        MAX-ACCESS read-only
+        STATUS        current
+        DESCRIPTION   "the nexthop VRF name of the LSP."
+        ::= { zxr10LspmIPv4LabelFwdEntry 8 }  
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.4.1.9
+    zxr10LspmIPv4LabelFwdOutLabel1 OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The first outgoing label of this LSP."
+    ::= { zxr10LspmIPv4LabelFwdEntry 9 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.4.1.10
+    zxr10LspmIPv4LabelFwdOutLabel2 OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The second outgoing label of this LSP."
+    ::= { zxr10LspmIPv4LabelFwdEntry 10 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.4.1.11
+    zxr10LspmIPv4LabelFwdOutLabel3 OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The third outgoing label of this LSP."
+    ::= { zxr10LspmIPv4LabelFwdEntry 11 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.4.1.12
+    zxr10LspmIPv4LabelFwdOutLabel4 OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The forth outgoing label of this LSP."
+    ::= { zxr10LspmIPv4LabelFwdEntry 12 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.4.1.13
+    zxr10LspmIPv4LabelFwdOutLabel5 OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The fifth outgoing label of this LSP."
+    ::= { zxr10LspmIPv4LabelFwdEntry 13 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.4.1.14
+    zxr10LspmIPv4LabelFwdSpecialFlag OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+        master(1),
+        slave(2),
+        none(3)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "This flag indicate the link info about this IP address.
+            1: means it's an master entry,at the sametime,indicate the master
+        link under fast-re-route application.
+            2: means it's a slave entry under fast-re-route application.
+            3: means none of the above."
+        ::= { zxr10LspmIPv4LabelFwdEntry 14 }
+
+    -- 1.3.6.1.4.1.3902.3.6000.401.2.4.1.15
+    zxr10LspmIPv4LabelFwdOriNextHop OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION   "The original nexthop IP address of this LSP."
+        ::= { zxr10LspmIPv4LabelFwdEntry 15 }
+
+END
+
+--
+-- ZXROSNG-LSP-MAN-MIB.mib
+--

@@ -1,9 +1,9 @@
 --=================================================================
--- Copyright (C) 2018 by HUAWEI TECHNOLOGIES. All rights reserved
+-- Copyright (C) 2020 by HUAWEI TECHNOLOGIES. All rights reserved
 -- 
 -- Description:HUAWEI MACSEC MIB
 -- Reference:
--- Version: V1.03
+-- Version: V1.04
 -- History:
 --    wangkun 00280787 initial    03/10/2016
 -- =================================================================
@@ -20,7 +20,7 @@
 	
 	
 		hwMACsec MODULE-IDENTITY 
-			LAST-UPDATED "201804231622Z"		-- 4/23, 2018
+			LAST-UPDATED "202011232003Z"		-- 11/23, 2020
 			ORGANIZATION 
 				"Huawei Technologies Co.,Ltd."
 			CONTACT-INFO 
@@ -32,10 +32,13 @@
 				Email: support@huawei.com"
 			DESCRIPTION 
 				"This MIB describes objects used for MACsec."  
+			REVISION  "202011232003Z"
+															   DESCRIPTION 
+				                                                                 "Add NOTIFICATION-TYPE of hwMACsecIfName, hwMACsecFailReason,hwMACsecFailNotify."
 
 			REVISION  "201804231622Z"
 															   DESCRIPTION 
-				                                                                 "Add NOTIFICATION-TYPE of hwMACsecPortCipherPeer, hwMACsecPortCipher,hwCipherSwitchFailAlarm,hwMACsecCipherSwitchReason, hwMACsecCipherSwitchFailReason"
+				                                                                 "Add NOTIFICATION-TYPE of hwMACsecPortCipherPeer, hwMACsecPortCipher,hwCipherSwitchFailAlarm,hwMACsecCipherSwitchReason, hwMACsecCipherSwitchFailReason."
 
 			REVISION  "201711031622Z"
 															   DESCRIPTION 
@@ -95,6 +98,10 @@
 				hwMACsecPortCipherPeer
 					OCTET STRING,
 				hwMACsecPortCipher
+					OCTET STRING,
+				hwMACsecIfName
+					OCTET STRING,
+				hwMACsecFailReason
 					OCTET STRING
 			 }
 
@@ -168,7 +175,24 @@
 			DESCRIPTION
 				"The configed Cipher Suite of this port."
 			::= { hwMACsecPortCfgEntry 7 }
-		
+
+		-- 1.3.6.1.4.1.2011.5.25.347.1.1.1.8
+		hwMACsecIfName OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS accessible-for-notify 
+			STATUS current
+			DESCRIPTION
+				"The interface name."
+			::= { hwMACsecPortCfgEntry 8 }
+
+		-- 1.3.6.1.4.1.2011.5.25.347.1.1.1.9
+		hwMACsecFailReason OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS accessible-for-notify 
+			STATUS current
+			DESCRIPTION
+				"The reason that MACsec failed to run on an interface."
+			::= { hwMACsecPortCfgEntry 9 }
 		
 		--
 		-- 1.3.6.1.4.1.2011.5.25.347.1.2
@@ -302,6 +326,14 @@
 			DESCRIPTION 
 				"Failed to switch the cipher suite."
 			::= { hwMACsecTraps 5 }
+			
+		-- 1.3.6.1.4.1.2011.5.25.347.2.6
+		hwMACsecFailNotify NOTIFICATION-TYPE
+			OBJECTS { hwMACsecIfName, hwMACsecFailReason }
+			STATUS current
+			DESCRIPTION 
+				"Failed to run on an interface."
+			::= { hwMACsecTraps 6 }
 
 		-- 1.3.6.1.4.1.2011.5.25.347.3
 		hwMACsecConformance OBJECT IDENTIFIER ::= { hwMACsec 3 }
@@ -326,7 +358,7 @@
 		
 		-- 1.3.6.1.4.1.2011.5.25.347.3.1.2
 		hwMACsecTrapGroup NOTIFICATION-GROUP
-			NOTIFICATIONS { hwCKNSwitchFailAlarm,hwCipherSwitchFailAlarm }
+			NOTIFICATIONS { hwCKNSwitchFailAlarm,hwMacsecRcvRspTimeout,hwMacsecRcvRspTimeoutResume,hwCipherSwitchFailAlarm,hwMACsecFailNotify }
 			STATUS current
 			DESCRIPTION 
 				"The MACsec module's Notification group."

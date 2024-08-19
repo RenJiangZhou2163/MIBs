@@ -1,0 +1,269 @@
+--  ************************************************
+--  $Id: ZXR10-TUNNEL-GROUP-MIB.mib 12 2012-06-10 16:10:23Z wangchuanming$
+--
+--  ZXR10-TUNNEL-GROUP-MIB.mib: ZXR10 ethnet query and  configuration MIB file
+--  
+--  June. 2012, wangchuanming
+--   
+--  Copyright(c) 2010 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************          
+  
+ 
+ZXR10-TUNNEL-GROUP-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+       MODULE-IDENTITY, OBJECT-TYPE,Unsigned32,enterprises  
+                    FROM SNMPv2-SMI 
+       TEXTUAL-CONVENTION FROM SNMPv2-TC;                             
+                                               
+    zxr10TunnelGroupMIB MODULE-IDENTITY
+    LAST-UPDATED "201607251600Z"  --2016-07-25 16:00
+    ORGANIZATION "ZTE Corporation"
+    CONTACT-INFO
+        "ZTE Corporation 
+         Nanjing Institute of ZTE Corporation
+         
+         No.68 Zijinghua Rd. Yuhuatai District, Nanjing, China
+         
+         Tel: +86-25-52870000"
+
+    DESCRIPTION
+        "ZXROS v4.6.03 ethnet query and configuration MIB"
+
+    REVISION "201607251600Z"
+    DESCRIPTION
+       "Expand the maxmum value of zxTunnelGroupStatusTGID from 32768 to 4294967295."
+
+    REVISION "201403061000Z"  --2014-03-06 10:00
+    DESCRIPTION
+              "Modify the description of self define type.
+               Modify the description of leaf nodes."        
+        
+    REVISION "201310221000Z"  --2013-10-22 10:00
+    DESCRIPTION
+       "modify: ProtectType
+                ProtectDirection
+                ProtectReceiver
+                SwitchStrategy
+                TunnelState
+                SwitchFlag               
+                zxTunnelGroupID"
+   
+    REVISION "201206100000Z"  -- June 1, 2010
+    DESCRIPTION
+       "The Mib for Tunnel Protection"
+        ::= { zxr10RosngMIB 133}  
+        
+    zte OBJECT IDENTIFIER ::={enterprises 3902}
+    zxr10 OBJECT IDENTIFIER ::={zte 3}
+     
+   zxr10RosngMIB OBJECT IDENTIFIER ::= { zxr10 6000}
+    
+ -- self define type 
+ProtectType ::= TEXTUAL-CONVENTION      
+                STATUS      current
+                DESCRIPTION
+                    "protection type of tunnel group."
+                SYNTAX      INTEGER {
+                                         unknown(0),
+                                         oneByOne(1),
+                                         onePlusOne(2),
+                                         ring(3)
+                                     }
+                                    
+ProtectDirection ::= TEXTUAL-CONVENTION      
+                     STATUS      current
+                     DESCRIPTION
+                         "protection switching type of tunnel group."
+                     SYNTAX      INTEGER {
+                                              unknown(0),
+                                              unidirectional(1),
+                                              bidirectional(2)
+                                          }
+
+ProtectReceiver ::= TEXTUAL-CONVENTION      
+                     STATUS      current
+                     DESCRIPTION
+                         "protection receiving type of tunnel group."
+                     SYNTAX      INTEGER {
+                                                unknown(0),
+                                                selective(1),
+                                                merging(2)
+                                          }              
+                    
+SwitchStrategy ::= TEXTUAL-CONVENTION      
+                   STATUS      current
+                   DESCRIPTION
+                       "switch strategy of tunnel group."
+                   SYNTAX      INTEGER {
+                                            unknown(0),
+                                            aps(1)
+                                        }                    
+TunnelState ::= TEXTUAL-CONVENTION      
+                STATUS      current
+                DESCRIPTION
+                     "state of working tunnel and protection tunnel."
+                SYNTAX      INTEGER {
+                                        ok(0),
+                                        sf(1),
+                                        sd(2)
+                                     }
+                                                            
+SwitchFlag ::=  TEXTUAL-CONVENTION      
+                STATUS      current
+                DESCRIPTION
+                     "switch state of tunnel group."
+                SYNTAX      INTEGER {
+                                        unknown(0),
+                                        switch(1),
+                                        unSwitch(2)
+                                     }
+                                                                          
+ -- Posnet physic interface configuration table
+ 
+    zxTunnelGroupConfigTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTunnelGroupConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Posnet configuration table"
+        ::= { zxr10TunnelGroupMIB 2}
+        
+    zxTunnelGroupConfigEntry  OBJECT-TYPE
+        SYNTAX  ZxTunnelGroupConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxTunnelGroupID }
+        ::= { zxTunnelGroupConfigTable 1 }
+        
+    ZxTunnelGroupConfigEntry ::=
+        SEQUENCE {
+            zxTunnelGroupID                     Unsigned32, 
+            zxTunnelGroupProtectType            ProtectType,
+            zxTunnelGroupProtectDirection       ProtectDirection,
+            zxTunnelGroupProtectReceiver        ProtectReceiver,
+            zxTunnelGroupWorkTunnel             Unsigned32,
+            zxTunnelGroupBackupTunnel           Unsigned32,
+            zxTunnelGroupSwitchStrategy         SwitchStrategy
+    }
+    
+    zxTunnelGroupID  OBJECT-TYPE
+        SYNTAX      Unsigned32(1..32768) 
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "ID of the tunnel group,
+             it's maximum value depends on the performance parameter"
+        ::= { zxTunnelGroupConfigEntry 1 } 
+        
+     zxTunnelGroupProtectType  OBJECT-TYPE
+        SYNTAX      ProtectType 
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "Protection type of the tunnel group"
+        ::= { zxTunnelGroupConfigEntry 2 }   
+        
+     zxTunnelGroupProtectDirection  OBJECT-TYPE
+        SYNTAX      ProtectDirection 
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "Protection switching type of the tunnel group"
+        ::= { zxTunnelGroupConfigEntry 3 }   
+        
+     zxTunnelGroupProtectReceiver  OBJECT-TYPE
+        SYNTAX      ProtectReceiver 
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "Protection receiving type of the tunnel group"
+        ::= { zxTunnelGroupConfigEntry 4 }   
+        
+     zxTunnelGroupWorkTunnel  OBJECT-TYPE
+        SYNTAX      Unsigned32(1..131072) 
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "ID of the working tunnel"
+        ::= { zxTunnelGroupConfigEntry 5 } 
+        
+     zxTunnelGroupBackupTunnel  OBJECT-TYPE
+        SYNTAX      Unsigned32(1..131072) 
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "ID of the protection tunnel"
+        ::= { zxTunnelGroupConfigEntry 6 } 
+        
+     zxTunnelGroupSwitchStrategy  OBJECT-TYPE
+        SYNTAX      SwitchStrategy 
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "Switch strategy of the tunnel group"
+        ::= { zxTunnelGroupConfigEntry 7 }
+         
+-- define tunnel group status table 
+    zxTunnelGroupStatusTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTunnelGroupStatusEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Posnet configuration table"
+        ::= { zxr10TunnelGroupMIB 3}
+        
+    zxTunnelGroupStatusEntry  OBJECT-TYPE
+        SYNTAX  ZxTunnelGroupStatusEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxTunnelGroupID }
+        ::= { zxTunnelGroupStatusTable 1 }
+        
+    ZxTunnelGroupStatusEntry ::=
+        SEQUENCE {
+            zxTunnelGroupStatusTGID                  Unsigned32, 
+            zxTunnelGroupStatusWorkTunnelState       TunnelState,
+            zxTunnelGroupStatusBackupTunnelState     TunnelState,
+            zxTunnelGroupStatusSwitchFlag            SwitchFlag
+    }
+    
+    zxTunnelGroupStatusTGID  OBJECT-TYPE
+        SYNTAX      Unsigned32(1..4294967295) 
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "ID of the tunnel group"
+        ::= { zxTunnelGroupStatusEntry 1 } 
+        
+     zxTunnelGroupStatusWorkTunnelState  OBJECT-TYPE
+        SYNTAX      TunnelState 
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "State of the working tunnel"
+        ::= { zxTunnelGroupStatusEntry 2 }   
+        
+     zxTunnelGroupStatusBackupTunnelState  OBJECT-TYPE
+        SYNTAX      TunnelState 
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "State of the protection tunnel"
+        ::= { zxTunnelGroupStatusEntry 3 }   
+        
+     zxTunnelGroupStatusSwitchFlag  OBJECT-TYPE
+        SYNTAX      SwitchFlag 
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "Switch state of the tunnel group"
+        ::= { zxTunnelGroupStatusEntry 4 } 
+        
+ END

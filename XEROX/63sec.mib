@@ -1,0 +1,4618 @@
+XEROX-SECURITY-MIB DEFINITIONS ::= BEGIN
+--  Module: MIB
+--  Author: Ira McDonald, Rob Sklut, and Rob Westfall
+--  File:   63sec.mib
+--  Date:   28 April 2000 - Version 4.00.int
+
+IMPORTS
+--  MODULE-IDENTITY, OBJECT-TYPE,
+--      NOTIFICATION-TYPE,
+--      OBJECT-IDENTITY,
+--      Integer32, Counter32
+--          FROM SNMPv2-SMI             -  IETF RFC 1442/1902/2578
+--  RowStatus, TruthValue,
+--      DateAndTime
+--          FROM SNMPv2-TC              -  IETF RFC 1443/1903/2579
+--  MODULE-COMPLIANCE, OBJECT-GROUP
+--          FROM SNMPv2-CONF            -  IETF RFC 1444/1904/2580
+--  ProductID
+--          FROM HOST-RESOURCES-MIB     -  IETF RFC 1514/2790
+    ProductID
+        FROM    HOST-RESOURCES-MIB
+--  xeroxCommonMIB
+--          FROM XEROX-COMMON-MIB
+    xeroxCommonMIB
+        FROM    XEROX-COMMON-MIB
+--  Ordinal32, Cardinal32,
+--      XcmFixedLocaleDisplayString,
+--      XcmGenLogFullPolicy,
+--      XcmGenSNMPv2ErrorStatus,
+--      xcmGenZeroDotZero,
+--      XcmGlobalUniqueID
+--          FROM XEROX-GENERAL-TC
+    Ordinal32,
+    Cardinal32,
+    XcmFixedLocaleDisplayString,
+    XcmGenLogFullPolicy,
+    XcmGenSNMPv2ErrorStatus,
+    XcmGlobalUniqueID
+        FROM    XEROX-GENERAL-TC
+--  XcmHrDevDetailUnitClass,
+--      XcmHrDevTrafficUnit
+--          FROM XEROX-HOST-RESOURCES-EXT-TC
+    XcmHrDevDetailUnitClass,
+    XcmHrDevTrafficUnit
+        FROM    XEROX-HOST-RESOURCES-EXT-TC
+--  XcmSvcMonServiceDetailClass,
+--      XcmSvcMonServiceDetailType
+--          FROM XEROX-SERVICE-MONITORING-TC
+    XcmSvcMonServiceDetailClass,
+    XcmSvcMonServiceDetailType
+        FROM    XEROX-SERVICE-MONITORING-TC
+--  XcmSecAuditSupport,
+--      XcmSecFacilitySupport,
+--      XcmSecFeatureSupport,
+--      XcmSecGroupSupport,
+--      XcmSecSecuritySupport,
+--      XcmSecAccountScope,
+--      XcmSecConfigMgmtOperation,
+--      XcmSecConfigMgmtData,
+--      XcmSecEventTypeCode,
+--      XcmSecFindIntegerKeyType,
+--      XcmSecFindOIDKeyType,
+--      XcmSecFindStringKeyType,
+--      XcmSecGuestJobPolicy,
+--      XcmSecKeyProtocolType,
+--      XcmSecKeyScope,
+--      XcmSecPosixRights,
+--      XcmSecPosixVerbs,
+--      XcmSecSessionRequestOperation,
+--      XcmSecSessionRequestData,
+--      XcmSecUserRole,
+--      XcmSecUserSkill
+--          FROM XEROX-SECURITY-TC/
+    XcmSecAuditSupport,
+    XcmSecFacilitySupport,
+    XcmSecFeatureSupport,
+    XcmSecGroupSupport,
+    XcmSecSecuritySupport,
+    XcmSecAccountScope,
+    XcmSecConfigMgmtOperation,
+    XcmSecConfigMgmtData,
+    XcmSecEventTypeCode,
+    XcmSecFindIntegerKeyType,
+    XcmSecFindOIDKeyType,
+    XcmSecFindStringKeyType,
+    XcmSecGuestJobPolicy,
+    XcmSecKeyProtocolType,
+    XcmSecKeyScope,
+    XcmSecPosixRights,
+    XcmSecPosixVerbs,
+    XcmSecSessionRequestOperation,
+    XcmSecSessionRequestData,
+    XcmSecUserRole,
+    XcmSecUserSkill
+        FROM    XEROX-SECURITY-TC
+    Counter
+        FROM    RFC1155-SMI
+    OBJECT-TYPE
+        FROM    RFC-1212
+    TRAP-TYPE
+        FROM    RFC-1215
+    ;
+
+xcmSecMIB OBJECT IDENTIFIER
+--  LAST-UPDATED "0004280000Z" -  28 April 2000
+--  ORGANIZATION "Xerox Corporation - XCMI Working Group"
+--  CONTACT-INFO
+--      "           XCMI Editors
+--      Email:      xcmieditors@cp10.es.xerox.com
+--
+--      - 
+--      -  BEGIN XEROX PRIVATE DATA
+--      - 
+--                  Ira McDonald
+--      Postal:     High North Inc
+--                  221 Ridge Ave
+--                  Grand Marais, MI  49839
+--      Voice:      906-494-2434 or 906-494-2697
+--      Email:      imcdonal@sdsp.mc.xerox.com
+--
+--                  Rob Sklut
+--      Postal:     Xerox Corporation, MS 801-36D
+--                  1350 Jefferson Rd
+--                  Rochester, NY  14623
+--      Voice:      716-427-5706
+--      Email:      Robert_Sklut@.mc.xerox.com
+--
+--                  Robert Westfall
+--      Postal:     Xerox Corporation, MS 834-03E
+--                  300 Canalview Blvd
+--                  Rochester, NY  14623
+--      Voice:      716-231-0976
+--      Email:      robert_westfall@mc.xerox.com
+--      - 
+--      -  ENDOF XEROX PRIVATE DATA
+--      - 
+--      "
+--  DESCRIPTION
+--      "Version:   4.00.int
+--
+--      The MIB module for basic configuration and active management
+--      of security information for network accessible host systems,
+--      including authentication, authorization, and accounting.
+--
+--      See:    OSI Reference Model - Part 4:  Systems Management
+--              (CCITT X.700:1992 | ISO 7498-4:1992).
+--      See:    OSI Reference Model - Part 2:  Security Architecture
+--              (CCITT X.800:1992 | ISO 7498-2:1992).
+--
+--      Copyright (C) 2000 Xerox Corporation. All Rights Reserved."
+    ::= { xeroxCommonMIB 72 }
+
+--mSecZeroDummy OBJECT IDENTIFIER ::= { xcmGenZeroDotZero 72 }
+
+--
+--          Security MIB
+--
+
+--.ts 'General Group (Mandatory)'
+--          General Group (Mandatory)
+--
+--          Implementation of this group is mandatory for all systems.
+
+--          Usage:  General counters and summary information for ease of
+--                  use of the overall Security MIB.
+--
+--          Note:   The ONLY valid row in the 'xcmSecGeneralTable' shall
+--                  ALWAYS have an 'xcmSecGeneralIndex' of one ('1').
+
+xcmSecGeneral           OBJECT IDENTIFIER ::= { xcmSecMIB 3 }
+
+xcmSecGeneralTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecGeneralEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of general counters and information for ease of use of
+        the Security MIB on this host system."
+    ::= { xcmSecGeneral 2 }
+
+xcmSecGeneralEntry OBJECT-TYPE
+    SYNTAX      XcmSecGeneralEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry of general counters and information for ease of use of
+        the Security MIB on this host system.
+
+        Usage:  The ONLY valid row in the 'xcmSecGeneralTable' shall
+        ALWAYS have an 'xcmSecGeneralIndex' of one ('1')."
+    INDEX       { xcmSecGeneralIndex }
+    ::= { xcmSecGeneralTable 1 }
+
+XcmSecGeneralEntry ::= SEQUENCE {
+        --  General Info                
+        xcmSecGeneralIndex              Ordinal32, 
+        xcmSecGeneralRowStatus          INTEGER, 
+        xcmSecGeneralVersionID          ProductID, 
+        xcmSecGeneralVersionDate        OCTET STRING, 
+        --  General Capabilities Support Info 
+        xcmSecGeneralAuditSupport       XcmSecAuditSupport, 
+        xcmSecGeneralFacilitySupport    XcmSecFacilitySupport, 
+        xcmSecGeneralFeatureSupport     XcmSecFeatureSupport, 
+        xcmSecGeneralGroupSupport       XcmSecGroupSupport, 
+        xcmSecGeneralGroupCreateSupport XcmSecGroupSupport, 
+        xcmSecGeneralGroupUpdateSupport XcmSecGroupSupport, 
+        xcmSecGeneralSecuritySupport    XcmSecSecuritySupport, 
+        xcmSecGeneralPosixRightsSupport XcmSecPosixRights, 
+        xcmSecGeneralPosixVerbsSupport  XcmSecPosixVerbs 
+        }                               
+
+xcmSecGeneralIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecGeneralTable'.
+
+        Usage:  The ONLY valid row in the 'xcmSecGeneralTable' shall
+        ALWAYS have an 'xcmSecGeneralIndex' of one ('1')."
+    ::= { xcmSecGeneralEntry 1 }
+
+xcmSecGeneralRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to report status of this single conceptual
+        row in the 'xcmSecGeneralTable'."
+    ::= { xcmSecGeneralEntry 2 }
+
+xcmSecGeneralVersionID OBJECT-TYPE
+    SYNTAX      ProductID
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The software product ID of the SNMP sub-agent which implements
+        the XCMI Security MIB on this host system.
+
+        Usage:  This object shall specify the software product ID of an
+        SNMP sub-agent (possibly also found in a conceptual row in the
+        'hrSWRunTable' and/or 'hrSWInstalledTable' in the IETF HR MIB).
+        This object shall NOT specify a particular release of the XCMI
+        Security MIB, or the whole host system product.
+
+        Note:   Contrast with 'sysObjectID' for the whole SNMP agent in
+        the IETF MIB-II (RFC 1213) and 'hrDeviceID' for the whole device
+        (or whole product, in the case of 'xcmHrDevice...') in the IETF
+        Host Resources MIB (RFC 2790)."
+    REFERENCE
+        "See:   'hrSW[Installed|Run]ID' in the Software Installed and
+                Software Running groups of the IETF HR MIB (RFC 2790)."
+--  DEFVAL      { xcmGenZeroDotZero }   -  no sub-agent version ID
+    ::= { xcmSecGeneralEntry 3 }
+
+xcmSecGeneralVersionDate OBJECT-TYPE
+--  SYNTAX      DateAndTime
+    SYNTAX      OCTET STRING
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The software build date of the SNMP sub-agent which implements
+        the XCMI Security MIB on this host system.
+
+        Usage:  This object shall specify the BUILD date of the SNMP
+        sub-agent software (not available elsewhere in IETF/XCMI MIBs).
+        This object shall NOT specify the INSTALL date of the SNMP
+        sub-agent software on this host system, nor the RESET date.
+
+        Note:   Contrast with 'hrSWInstalledDate' in the Software
+        Installed group of the IETF Host Resources MIB (RFC 2790), and
+        'xcmHrDevInfoResetDate' in the Device Info group of the XCMI
+        Host Resources Extensions MIB."
+    REFERENCE
+        "See:   'hrSW[Installed|Run]ID' in the Software Installed and
+                Software Running groups of the IETF HR MIB (RFC 2790)."
+--  DEFVAL      { '0000000000000000'H } -  no sub-agent version date
+    ::= { xcmSecGeneralEntry 4 }
+
+xcmSecGeneralAuditSupport OBJECT-TYPE
+    SYNTAX      XcmSecAuditSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse conformance statement of security 'audit' methods
+        supported (known) by this management agent implementation 
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for security 'audit' methods."
+--  DEFVAL      { 0 }                   -  no audit methods supported
+    ::= { xcmSecGeneralEntry 5 }
+
+xcmSecGeneralFacilitySupport OBJECT-TYPE
+    SYNTAX      XcmSecFacilitySupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse conformance statement of secure session 'facilities'
+        supported (known) by this management agent implementation 
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for secure session 'facilities'."
+--  DEFVAL      { 0 }                   -  no facilities supported
+    ::= { xcmSecGeneralEntry 6 }
+
+xcmSecGeneralFeatureSupport OBJECT-TYPE
+    SYNTAX      XcmSecFeatureSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse conformance statement of Security MIB 'features'
+        supported (known) by this management agent implementation 
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for Security MIB 'features'."
+--  DEFVAL      { 0 }                   -  no features supported
+    ::= { xcmSecGeneralEntry 7 }
+
+xcmSecGeneralGroupSupport OBJECT-TYPE
+    SYNTAX      XcmSecGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse conformance statement of Security MIB object groups
+        supported (known) by this management agent implementation 
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for Security MIB object groups."
+--  DEFVAL      { 7 }                   -  mandatory groups supported
+    ::= { xcmSecGeneralEntry 8 }
+
+xcmSecGeneralGroupCreateSupport OBJECT-TYPE
+    SYNTAX      XcmSecGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse conformance statement of Security MIB object groups
+        supported for dynamic row creation (via '...RowStatus')
+        by this management agent implementation (ie, version)
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for Security MIB object groups."
+--  DEFVAL      { 0 }                   -  no dynamic row create groups
+    ::= { xcmSecGeneralEntry 9 }
+
+xcmSecGeneralGroupUpdateSupport OBJECT-TYPE
+    SYNTAX      XcmSecGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse conformance statement of Security MIB object groups
+        supported for existing row update (via SNMP Set-Request PDUs)
+        by this management agent implementation (ie, version)
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for Security MIB object groups."
+--  DEFVAL      { 0 }                   -  no existing row update groups
+    ::= { xcmSecGeneralEntry 10 }
+
+xcmSecGeneralSecuritySupport OBJECT-TYPE
+    SYNTAX      XcmSecSecuritySupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse conformance statement of security 'AAA' methods
+        supported (known) by this management agent implementation 
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for security 'AAA' methods."
+--  DEFVAL      { 0 }                   -  no AAA methods supported
+    ::= { xcmSecGeneralEntry 11 }
+
+xcmSecGeneralPosixRightsSupport OBJECT-TYPE
+    SYNTAX      XcmSecPosixRights
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse conformance statement of POSIX.1/2 access permissions
+        supported (known) by this management agent implementation 
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for POSIX.1/2 access permissions."
+--  DEFVAL      { 0 }                   -  no POSIX rights supported
+    ::= { xcmSecGeneralEntry 12 }
+
+xcmSecGeneralPosixVerbsSupport OBJECT-TYPE
+    SYNTAX      XcmSecPosixVerbs
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse conformance statement of POSIX.3 system management verbs
+        supported (known) by this management agent implementation 
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for POSIX.3 system management verbs."
+--  DEFVAL      { 0 }                   -  no POSIX verbs supported
+    ::= { xcmSecGeneralEntry 13 }
+
+--.ts 'Account Group (Cond Mandatory)'
+--          Account Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support account-based security
+--          and optional for all other systems.
+
+--          Usage:  Accounts may be:  'private', 'shared', or 'public'
+--                  scope/ and associated with one or more 'private
+--                  policies' (ie, service access/limit objects).
+--                  Accounts (according to their scope) may be
+--                  associated with:  zero or one users (for 'private'
+--                  accounts)/ zero, one, or more users (for 'shared'
+--                  accounts)/ or all users (for 'public' accounts).
+--                  If a given host system does NOT choose to support
+--                  users, then accounts may still choose to support
+--                  'private', 'shared', or 'public' scope and employ
+--                  their own imbedded authentication control objects.
+--
+--          Note:   The account 'number' object is not included, because
+--                  the account 'index' object shall ALWAYS be the value
+--                  of the associated system account 'number' (which
+--                  directly prevents creation of 'duplicate' account
+--                  numbers).
+
+xcmSecAccount           OBJECT IDENTIFIER ::= { xcmSecMIB 4 }
+
+xcmSecAccountTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecAccountEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of the accounts configured on this host system."
+    ::= { xcmSecAccount 2 }
+
+xcmSecAccountEntry OBJECT-TYPE
+    SYNTAX      XcmSecAccountEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for an account configured on this host system."
+    INDEX       { xcmSecAccountIndex }
+    ::= { xcmSecAccountTable 1 }
+
+XcmSecAccountEntry ::= SEQUENCE {
+        --  Account Info                
+        xcmSecAccountIndex              Ordinal32, 
+        xcmSecAccountRowStatus          INTEGER, 
+        xcmSecAccountName               XcmFixedLocaleDisplayString, 
+        xcmSecAccountRole               XcmSecUserRole, 
+        xcmSecAccountSkill              XcmSecUserSkill, 
+        xcmSecAccountScope              XcmSecAccountScope, 
+        xcmSecAccountPassword           OCTET STRING, 
+        xcmSecAccountPasscode           OCTET STRING, 
+        xcmSecAccountTeamIndex          Cardinal32, 
+        xcmSecAccountUserIndex          Cardinal32, 
+        xcmSecAccountMgmtOperation      XcmSecConfigMgmtOperation, 
+        xcmSecAccountMgmtData           XcmSecConfigMgmtData, 
+        xcmSecAccountMgmtStatus         XcmGenSNMPv2ErrorStatus, 
+        xcmSecAccountMgmtInProgress     INTEGER 
+        }                               
+
+xcmSecAccountIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecAccountTable'."
+    ::= { xcmSecAccountEntry 1 }
+
+xcmSecAccountRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmSecAccountTable'."
+    ::= { xcmSecAccountEntry 2 }
+
+xcmSecAccountName OBJECT-TYPE
+    SYNTAX      XcmFixedLocaleDisplayString (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A human-readable name, used by system administrators
+        and end users to identify this account for systems management.
+
+        Usage:  This name shall ALWAYS be the one normally used in a
+        command shell for control of this account (if present).
+
+        Usage:  Conforming implementations need NOT ensure that each
+        'xcmSecAccountEntry' has a non-empty (on the managed system)
+        'xcmSecAccountName' (ie, account names support is optional), but
+        a given 'xcmSecAccountName' shall ALWAYS be found via the same
+        value of 'xcmSecAccountIndex' on the same managed system
+        (ie, account names shall ALWAYS be persistent)."
+--  DEFVAL      { ''H }                 -  no account name
+    ::= { xcmSecAccountEntry 3 }
+
+xcmSecAccountRole OBJECT-TYPE
+    SYNTAX      XcmSecUserRole
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A specific user role for this account.
+
+        Usage:  This object may (optionally) be used to specify a user
+        role to be inherently associated with this account.
+
+        Usage:  The special roles 'any...' shall NOT be specified in
+        'xcmSec[Account|User]Role', or 'xcmSec...OwnerRole' objects, but
+        MAY be specified in 'xcmSecConfigAccessRole' and
+        MAY be specified in 'xcmSecConfigViewOwnerRole'
+        to grant broad privileges in a terse manner.
+
+        Usage:  The role 'alien' (invalid) user shall NOT be specified
+        in 'xcmSec[Account|User]Role'.  Requests and jobs submitted to a
+        management agent with invalid user/account identification data
+        shall be labelled as 'alien' - they shall ALWAYS be handled via
+        the current value of 'xcmSecConfigAlienJobPolicy' (or the
+        current value of 'xcmSecServiceAlienJobPolicy', if specified)
+        - if 'alien' jobs are accepted, they shall ALWAYS be assigned
+        to a selected 'guest' user or account - with inheritance of all
+        of its configured capabilities and permissions, for all aspects
+        of authentication, authorization, accounting (and audit trail)."
+--  DEFVAL      { user }                -  default user role
+    ::= { xcmSecAccountEntry 4 }
+
+xcmSecAccountSkill OBJECT-TYPE
+    SYNTAX      XcmSecUserSkill
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A specific user skill for this account.
+
+        Usage:  This object may (optionally) be used to specify a user
+        skill to be inherently associated with this account.
+
+        Usage:  Conforming implementations need NOT support non-trivial
+        implementations of 'xcmSecAccountSkill' (values other than 1)."
+--  DEFVAL      { 1 }                   -  default user skill
+    ::= { xcmSecAccountEntry 5 }
+
+xcmSecAccountScope OBJECT-TYPE
+    SYNTAX      XcmSecAccountScope
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A description of the relative 'scope' of an account (ie, the
+        realm of accessibility of the account).  Used to show whether
+        one user, one or more teams of users, all authenticated users,
+        or guest (ie, anonymous) users have access to the account.
+
+        Usage:  A given account shall always have EXACTLY one scope.
+        A given user may have access to one or more account scopes."
+--  DEFVAL      { 4 }                   -  'world' scope
+    ::= { xcmSecAccountEntry 6 }
+
+xcmSecAccountPassword OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A protected password used by system administrators
+        and end users to authenticate their access to this account.
+
+        Note:   Conforming implementations shall NOT send passwords in
+        cleartext form 'over-the-wire' (even if only 'weak' protection
+        algorithms are used).  There is NO actual security achieved when
+        cleartext passwords are transferred 'over-the-wire'.
+
+        Usage:  Passwords may be set by remote management stations, via
+        secure management sessions, as follows:
+        1)  Management station chooses (or receives out-of-band) new
+            cleartext password for a given role (end user, system
+            operator, or system administrator)/
+        2)  Management station protects new password by 'over-the-wire'
+            algorithm and performs a 'Set' with this protected value/
+        3)  Management agent receives 'Set' PDU and 'clears' password
+            from 'over-the-wire' form into cleartext value/
+        4)  Management agent protects new password by 'local-system'
+            algorithm and completes 'Set' into the local MIB object/
+        5)  Management agent returns 'SetResponse' PDU with result of
+            'noError'/
+        6)  If and ONLY if, management station knows the 'local-system'
+            algorithm, then management station may independently verify
+            result of original 'Set' with a 'Get'."
+    REFERENCE
+        "See:   'xcmSecUserPassword'"
+--  DEFVAL      { ''H }                 -  no password
+    ::= { xcmSecAccountEntry 7 }
+
+xcmSecAccountPasscode OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A protected passcode used by system administrators
+        and end users to authenticate their access to this account.
+
+        Note:   Conforming implementations shall NOT send passcodes in
+        cleartext form 'over-the-wire' (even if only 'weak' protection
+        algorithms are used).  There is NO actual security achieved when
+        cleartext passcodes are transferred 'over-the-wire'.
+
+        Usage:  Passcodes shall ALWAYS be purely numeric (as opposed to
+        passwords, which may contain arbitrary characters and therefore
+        be difficult or impossible to enter at the Local User Interface
+        of a network accessible host system).
+
+        Usage:  Passcodes shall ALWAYS contain four or more digits and
+        the first (high-order) passcode digit shall ALWAYS be non-zero,
+        to prevent use of trivial (and therefore insecure) passcodes.
+
+        Usage:  A passcode, for example, might specify a so-called
+        'Personal Identification Number' (PIN), as commonly used for
+        banking automated teller machines (ATMs)."
+    REFERENCE
+        "See:   'xcmSecUserPasscode'"
+--  DEFVAL      { ''H }                 -  no passcode
+    ::= { xcmSecAccountEntry 8 }
+
+xcmSecAccountTeamIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmSecTeamIndex' corresponding to the ONLY
+        associated conceptual row in the 'xcmSecTeamTable',
+        or zero if this account does NOT require such information."
+--  DEFVAL      { 0 }                   -  no team
+    ::= { xcmSecAccountEntry 9 }
+
+xcmSecAccountUserIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmSecUserIndex' corresponding to the ONLY
+        associated conceptual row in the 'xcmSecUserTable',
+        or zero if this account does NOT require such information."
+--  DEFVAL      { 0 }                   -  no user
+    ::= { xcmSecAccountEntry 10 }
+
+xcmSecAccountMgmtOperation OBJECT-TYPE
+    SYNTAX      XcmSecConfigMgmtOperation
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The most recent security management operation specified for
+        this conceptual row in the 'xcmSecAccountTable'."
+    REFERENCE
+        "See:   Section 4 'Print Utilities' (pages 71 to 212) of
+                POSIX Sys Admin (IEEE 1387.4 / Draft 8, October 1994)."
+--  DEFVAL      { unknown }             -  no security mgmt operation
+    ::= { xcmSecAccountEntry 11 }
+
+xcmSecAccountMgmtData OBJECT-TYPE
+    SYNTAX      XcmSecConfigMgmtData (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The most recent security management data specified for
+        this conceptual row in the 'xcmSecAccountTable'."
+    REFERENCE
+        "See:   Section 4 'Print Utilities' (pages 71 to 212) of
+                POSIX Sys Admin (IEEE 1387.4 / Draft 8, October 1994)."
+--  DEFVAL      { ''H }                 -  no security mgmt data
+    ::= { xcmSecAccountEntry 12 }
+
+xcmSecAccountMgmtStatus OBJECT-TYPE
+    SYNTAX      XcmGenSNMPv2ErrorStatus
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The most recent security management error status returned via
+        this conceptual row in 'xcmSecAccountTable'.
+
+        Usage:  Conforming management agents shall ALWAYS set this
+        object to the value returned in an SNMP Set-Response PDU when
+        a security management operation is 'accepted', ie, when
+        'xcmSecAccountMgmtInProgress' goes from 'false' to 'true'.
+
+        Usage:  Conforming management agents shall ALWAYS set this
+        object to the value of the completion status of the (possibly
+        deferred) security management operation, when
+        'xcmSecAccountMgmtInProgress' goes from 'true' to 'false'."
+    REFERENCE
+        "See:   'xcmSecAccountMgmt[Operation|Data|InProgress]'"
+--  DEFVAL      { noError }             -  no security mgmt error status
+    ::= { xcmSecAccountEntry 13 }
+
+xcmSecAccountMgmtInProgress OBJECT-TYPE
+--  SYNTAX      TruthValue
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The security management in progress status associated with
+        this conceptual row in 'xcmSecAccountMgmtTable'."
+    REFERENCE
+        "See:   'xcmSecAccountMgmt[Operation|Data|Status]'"
+--  DEFVAL      { false }               -  no security mgmt in progress
+    ::= { xcmSecAccountEntry 14 }
+
+--.ts 'Account Mgmt Event Definition'
+xcmSecAccountMgmtV1EventOID OBJECT IDENTIFIER
+--  STATUS      current
+--  DESCRIPTION
+--      "The value of the enterprise-specific OID in an SNMPv1 trap sent
+--      whenever an 'xcmSecAccountMgmtOperation' completes.
+--      See SNMPv2 trap definition 'xcmSecAccountMgmtV2Event'
+--      below for 'special semantics'."
+    ::= { xcmSecAccount 1 }
+
+xcmSecAccountMgmtV2EventPrefix
+    OBJECT IDENTIFIER ::= { xcmSecAccountMgmtV1EventOID 0 }
+
+xcmSecAccountMgmtV1Event TRAP-TYPE
+    ENTERPRISE  xcmSecAccountMgmtV1EventOID
+    VARIABLES   
+    {
+        xcmSecAccountIndex,
+        xcmSecAccountMgmtOperation,
+        xcmSecAccountMgmtStatus
+    }
+--  STATUS      current
+--  DESCRIPTION
+--      "This trap is sent whenever an 'XcmSecAccountMgmtOperation'
+--      completes, ie, when 'xcmSecAccountMgmtStatus' becomes a
+--      completed operation status and 'XcmSecAccountMgmtInProgress'
+--      goes from 'true' to 'false'.
+--
+--      Note:   The variable-bindings of this trap have been chosen to
+--      specify a complete management operation result while keeping
+--      trap messages reasonably concise (generally a few hundred octets
+--      at most).
+--
+--      This notification has the following special semantics:
+--
+--          o   The account's 'xcmSecAccountIndex' field
+--              value shall ALWAYS be appended to this trap object ID,
+--              as a BER binary OID suffix.
+--
+--      This trap OID qualifier allows security management/monitoring
+--      applications to limit the alerts they receive to ones generated 
+--      by requests they have submitted."
+    ::= 1
+
+--  Note that the SNMPv2 to SNMPv1 translation rules dictate that the
+--  preceding structure will result in SNMPv1 traps of the following
+--  form:
+--
+--  xcmSecAccountMgmtV1Event TRAP-TYPE
+--      ENTERPRISE  xcmSecAccountMgmtV1EventOID
+--      VARIABLES   {
+--          xcmSecAccountIndex,
+--          xcmSecAccountMgmtOperation,
+--          xcmSecAccountMgmtStatus
+--      }
+--      DESCRIPTION
+--          "This trap is sent when an 'XcmSecAccountMgmtOperation'
+--          completes.
+--          See SNMPv2 trap definition 'xcmSecAccountMgmtV2Event'
+--          above for 'special semantics'."
+--      ::= 1
+
+--.ts 'Account Ext Group (Cond Mandatory)'
+--          Account Ext Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support account-based security
+--          extensions and optional for all other systems.
+--
+--          Note:   Systems implementing the 'xcmSecAccountExtGroup'
+--                  shall ALWAYS implement the 'xcmSecAccountGroup'.
+
+xcmSecAccountExt        OBJECT IDENTIFIER ::= { xcmSecMIB 5 }
+
+xcmSecAccountExtTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecAccountExtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A 'sparse' table which augments 'xcmSecAccountTable'
+        with additional useful account info objects
+        for accounts configured on this host system."
+    ::= { xcmSecAccountExt 2 }
+
+xcmSecAccountExtEntry OBJECT-TYPE
+    SYNTAX      XcmSecAccountExtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A 'sparse' entry which augments 'xcmSecAccountEntry'
+        with additional useful account info objects
+        for an account configured on this host system."
+    INDEX       { xcmSecAccountIndex }
+    ::= { xcmSecAccountExtTable 1 }
+
+XcmSecAccountExtEntry ::= SEQUENCE {
+        --  Account Ext Info            
+        xcmSecAccountAlias              XcmFixedLocaleDisplayString, 
+        xcmSecAccountDescription        XcmFixedLocaleDisplayString, 
+        xcmSecAccountLoginDate          OCTET STRING, 
+        xcmSecAccountLogoutDate         OCTET STRING, 
+        xcmSecAccountTeamLinkIndex      Cardinal32, 
+        xcmSecAccountUserLinkIndex      Cardinal32 
+        }                               
+
+xcmSecAccountAlias OBJECT-TYPE
+    SYNTAX      XcmFixedLocaleDisplayString (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A human-readable alias, used by system administrators
+        and end users to identify this account.
+
+        Usage:  This alias MAY be the one alternately used in a
+        command shell for control of this account (if present).
+
+        Usage:  Conforming implementations need NOT ensure that each
+        'xcmSecAccountEntry' has a non-empty (on the managed system)
+        'xcmSecAccountAlias' (ie, account aliases support is optional)."
+--  DEFVAL      { ''H }                 -  no account alias
+    ::= { xcmSecAccountExtEntry 1 }
+
+xcmSecAccountDescription OBJECT-TYPE
+    SYNTAX      XcmFixedLocaleDisplayString (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A human-readable description of this conceptual row
+        in the 'xcmSecAccountTable'."
+--  DEFVAL      { ''H }                 -  no account description
+    ::= { xcmSecAccountExtEntry 2 }
+
+xcmSecAccountLoginDate OBJECT-TYPE
+--  SYNTAX      DateAndTime
+    SYNTAX      OCTET STRING
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The date and time of this account's last login."
+--  DEFVAL      { '0000000000000000'H } -  no account login date
+    ::= { xcmSecAccountExtEntry 3 }
+
+xcmSecAccountLogoutDate OBJECT-TYPE
+--  SYNTAX      DateAndTime
+    SYNTAX      OCTET STRING
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The date and time of this account's last or next logout."
+--  DEFVAL      { '0000000000000000'H } -  no account logout date
+    ::= { xcmSecAccountExtEntry 4 }
+
+xcmSecAccountTeamLinkIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmSecLinkIndex' corresponding to the first
+        associated conceptual row in the 'xcmSecLinkTable' for teams,
+        or zero if this account does NOT require such information."
+--  DEFVAL      { 0 }                   -  no team 'link set'
+    ::= { xcmSecAccountExtEntry 5 }
+
+xcmSecAccountUserLinkIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmSecLinkIndex' corresponding to the first
+        associated conceptual row in the 'xcmSecLinkTable' for users,
+        or zero if this account does NOT require such information."
+--  DEFVAL      { 0 }                   -  no user 'link set'
+    ::= { xcmSecAccountExtEntry 6 }
+
+--.ts 'Config Group (Mandatory)'
+--          Config Group (Mandatory)
+--
+--          Implementation of this group is mandatory for all systems.
+--
+--          Note:   The ONLY valid row in the 'xcmSecConfigTable' shall
+--                  ALWAYS have an 'xcmSecConfigIndex' of one ('1').
+
+xcmSecConfig            OBJECT IDENTIFIER ::= { xcmSecMIB 6 }
+
+xcmSecConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecConfigEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of the security configuration currently in force
+        on this host system."
+    ::= { xcmSecConfig 2 }
+
+xcmSecConfigEntry OBJECT-TYPE
+    SYNTAX      XcmSecConfigEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry of the security configuration currently in force
+        on this host system.
+
+        Usage:  The ONLY valid row in the 'xcmSecConfigTable' shall
+        ALWAYS have an 'xcmSecConfigIndex' of one ('1')."
+    INDEX       { xcmSecConfigIndex }
+    ::= { xcmSecConfigTable 1 }
+
+XcmSecConfigEntry ::= SEQUENCE {
+        --  Config Info                 
+        xcmSecConfigIndex               Ordinal32, 
+        xcmSecConfigRowStatus           INTEGER, 
+        --  Config Capabilities Ready Info 
+        xcmSecConfigAuditReady          XcmSecAuditSupport, 
+        xcmSecConfigFacilityReady       XcmSecFacilitySupport, 
+        xcmSecConfigFeatureReady        XcmSecFeatureSupport, 
+        xcmSecConfigGroupReady          XcmSecGroupSupport, 
+        xcmSecConfigSecurityReady       XcmSecSecuritySupport, 
+        --  Config Password Size Info   
+        xcmSecConfigPasswordMinSize     Cardinal32, 
+        xcmSecConfigPasswordMaxSize     Cardinal32, 
+        xcmSecConfigPasscodeMinSize     Cardinal32, 
+        xcmSecConfigPasscodeMaxSize     Cardinal32, 
+        --  Config Guest/Alien Job and Log Full Policies Info 
+        xcmSecConfigGuestJobPolicy      XcmSecGuestJobPolicy, 
+        xcmSecConfigAlienJobPolicy      XcmSecGuestJobPolicy, 
+        xcmSecConfigEventLogFullPolicy  XcmGenLogFullPolicy, 
+        xcmSecConfigJobLogFullPolicy    XcmGenLogFullPolicy, 
+        xcmSecConfigReqLogFullPolicy    XcmGenLogFullPolicy, 
+        --  Config Owner Info           
+        xcmSecConfigOwnerRole           XcmSecUserRole, 
+        xcmSecConfigOwnerSkill          XcmSecUserSkill, 
+        xcmSecConfigOwnerVerbs          XcmSecPosixVerbs, 
+        --  Config Mgmt Info            
+        xcmSecConfigMgmtOperation       XcmSecConfigMgmtOperation, 
+        xcmSecConfigMgmtData            XcmSecConfigMgmtData, 
+        xcmSecConfigMgmtStatus          XcmGenSNMPv2ErrorStatus, 
+        xcmSecConfigMgmtInProgress      INTEGER 
+        }                               
+
+xcmSecConfigIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecConfigTable'.
+
+        Usage:  The ONLY valid row in the 'xcmSecConfigTable' shall
+        ALWAYS have an 'xcmSecConfigIndex' of one ('1')."
+    ::= { xcmSecConfigEntry 1 }
+
+xcmSecConfigRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to control status of this conceptual row
+        in the 'xcmSecConfigTable'."
+    ::= { xcmSecConfigEntry 2 }
+
+xcmSecConfigAuditReady OBJECT-TYPE
+    SYNTAX      XcmSecAuditSupport
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse configuration statement of security 'audit' methods
+        ready (enabled) on this management agent implementation 
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for security 'audit' methods."
+--  DEFVAL      { 0 }                   -  no audit methods ready
+    ::= { xcmSecConfigEntry 3 }
+
+xcmSecConfigFacilityReady OBJECT-TYPE
+    SYNTAX      XcmSecFacilitySupport
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse configuration statement of secure session 'facilities'
+        ready (enabled) on this management agent implementation 
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for secure session 'facilities'."
+--  DEFVAL      { 0 }                   -  no facilities ready
+    ::= { xcmSecConfigEntry 4 }
+
+xcmSecConfigFeatureReady OBJECT-TYPE
+    SYNTAX      XcmSecFeatureSupport
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse configuration statement of Security MIB 'features'
+        ready (enabled) on this management agent implementation 
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for Security MIB 'features'."
+--  DEFVAL      { 0 }                   -  no features ready
+    ::= { xcmSecConfigEntry 5 }
+
+xcmSecConfigGroupReady OBJECT-TYPE
+    SYNTAX      XcmSecGroupSupport
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse configuration statement of Security MIB object groups
+        ready (enabled) on this management agent implementation 
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for Security MIB object groups."
+--  DEFVAL      { 7 }                   -  mandatory groups supported
+    ::= { xcmSecConfigEntry 6 }
+
+xcmSecConfigSecurityReady OBJECT-TYPE
+    SYNTAX      XcmSecSecuritySupport
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse configuration statement of security 'AAA' methods
+        ready (enabled) on this management agent implementation
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for security 'AAA' methods."
+--  DEFVAL      { 0 }                   -  no AAA methods ready
+    ::= { xcmSecConfigEntry 7 }
+
+xcmSecConfigPasswordMinSize OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The minimum CLEARTEXT characters in a valid password on
+        this managed system.  Note, for multi-octet (wide) code sets
+        this is NOT equal to the minimum CLEARTEXT octets required.
+
+        Usage:  Conforming implementations shall ALWAYS honor this
+        object, when '[account|user]AuthenticateByPassword' is set
+        in 'xcmSecConfigSecurityReady'."
+--  DEFVAL      { 8 }                   -  minimum password characters
+    ::= { xcmSecConfigEntry 8 }
+
+xcmSecConfigPasswordMaxSize OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The maximum CLEARTEXT characters in a valid password on
+        this managed system.  Note that, for multi-octet character sets,
+        this is NOT equal to the maximum CLEARTEXT octets required.
+
+        Usage:  Conforming implementations shall ALWAYS honor this
+        object, when '[account|user]AuthenticateByPassword' is set
+        in 'xcmSecConfigSecurityReady'."
+--  DEFVAL      { 32 }                  -  maximum password characters
+    ::= { xcmSecConfigEntry 9 }
+
+xcmSecConfigPasscodeMinSize OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The minimum CLEARTEXT characters in a valid passcode on
+        this managed system.  Note, for multi-octet (wide) code sets
+        this is NOT equal to the minimum CLEARTEXT octets required.
+
+        Usage:  Conforming implementations shall ALWAYS honor this
+        object, when '[account|user]AuthenticateByPasscode' is set
+        in 'xcmSecConfigSecurityReady'."
+--  DEFVAL      { 4 }                   -  minimum passcode characters
+    ::= { xcmSecConfigEntry 10 }
+
+xcmSecConfigPasscodeMaxSize OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The maximum CLEARTEXT characters in a valid passcode on
+        this managed system.  Note that, for multi-octet character sets,
+        this is NOT equal to the maximum CLEARTEXT octets required.
+
+        Usage:  Conforming implementations shall ALWAYS honor this
+        object, when '[account|user]AuthenticateByPasscode' is set
+        in 'xcmSecConfigSecurityReady'."
+--  DEFVAL      { 16 }                  -  maximum passcode characters
+    ::= { xcmSecConfigEntry 11 }
+
+xcmSecConfigGuestJobPolicy OBJECT-TYPE
+    SYNTAX      XcmSecGuestJobPolicy
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The current policy for jobs submitted with 'guest' (empty)
+        user/account identification info on this host system."
+    REFERENCE
+        "See:   'deviceGuestJobPolicy' in 'XcmHrDevDetailType'
+                in XCMI Host Resources Ext TC."
+--  DEFVAL      { unknown }             -  no guest job policy
+    ::= { xcmSecConfigEntry 12 }
+
+xcmSecConfigAlienJobPolicy OBJECT-TYPE
+    SYNTAX      XcmSecGuestJobPolicy
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The current policy for jobs submitted with 'alien' (invalid)
+        user/account identification info on this host system."
+    REFERENCE
+        "See:   'deviceAlienJobPolicy' in 'XcmHrDevDetailType'
+                in XCMI Host Resources Ext TC."
+--  DEFVAL      { unknown }             -  no alien job policy
+    ::= { xcmSecConfigEntry 13 }
+
+xcmSecConfigEventLogFullPolicy OBJECT-TYPE
+    SYNTAX      XcmGenLogFullPolicy
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The current policy for handling event log 'full'
+        (in MIBs, in shared RAM, on disk, etc), on this host system."
+    REFERENCE
+        "See:   'deviceEventLogFullPolicy' in 'XcmHrDevDetailType'
+                in XCMI Host Resources Ext TC."
+--  DEFVAL      { enableServiceAndFlushOldest }
+    ::= { xcmSecConfigEntry 14 }
+
+xcmSecConfigJobLogFullPolicy OBJECT-TYPE
+    SYNTAX      XcmGenLogFullPolicy
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The current policy for handling job log 'full'
+        (in MIBs, in shared RAM, on disk, etc), on this host system."
+    REFERENCE
+        "See:   'deviceJobLogFullPolicy' in 'XcmHrDevDetailType'
+                in XCMI Host Resources Ext TC."
+--  DEFVAL      { enableServiceAndFlushOldest }
+    ::= { xcmSecConfigEntry 15 }
+
+xcmSecConfigReqLogFullPolicy OBJECT-TYPE
+    SYNTAX      XcmGenLogFullPolicy
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The current policy for handling request log 'full'
+        (in MIBs, in shared RAM, on disk, etc), on this host system."
+    REFERENCE
+        "See:   'deviceReqLogFullPolicy' in 'XcmHrDevDetailType'
+                in XCMI Host Resources Ext TC."
+--  DEFVAL      { enableServiceAndFlushOldest }
+    ::= { xcmSecConfigEntry 16 }
+
+xcmSecConfigOwnerRole OBJECT-TYPE
+    SYNTAX      XcmSecUserRole
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The user role of an authorized human 'owner' who is associated
+        with this conceptual row in the 'xcmSecConfigTable'.
+
+        Usage:  The special roles 'any...' shall NOT be specified in
+        'xcmSec[Account|User]Role', or 'xcmSec...OwnerRole' objects, but
+        MAY be specified in 'xcmSecConfigAccessRole' and
+        MAY be specified in 'xcmSecConfigViewOwnerRole'
+        to grant broad privileges in a terse manner."
+--  DEFVAL      { systemAdministrator } -  default 'owner' user role
+    ::= { xcmSecConfigEntry 17 }
+
+xcmSecConfigOwnerSkill OBJECT-TYPE
+    SYNTAX      XcmSecUserSkill
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The user skill of an authorized human 'owner' who is associated
+        with this conceptual row in the 'xcmSecConfigTable'."
+--  DEFVAL      { 1 }                   -  default 'owner' user skill
+    ::= { xcmSecConfigEntry 18 }
+
+xcmSecConfigOwnerVerbs OBJECT-TYPE
+    SYNTAX      XcmSecPosixVerbs
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The set of POSIX.3 system management verbs ready (enabled)
+        for use by an authenticated human 'owner' who is associated
+        with this conceptual row in the 'xcmSecConfigTable',
+        and who matches/exceeds 'xcmSecConfigOwner[Role|Skill]'."
+    REFERENCE
+        "See:   'XcmSecPosixVerbs' for standard POSIX.3 system
+                management verbs in the companion Security TC.
+        See:    POSIX System Administration - Part 4: Print Interfaces
+                (IEEE 1387.4 / Draft 8, October 1994).
+        See:    Document Printing Application - Part 1: Abstract Service
+                (ISO/IEC 10175-1 / Final Text, March 1996)."
+--  DEFVAL      { 0 }                   -  no 'owner' POSIX verbs
+    ::= { xcmSecConfigEntry 19 }
+
+xcmSecConfigMgmtOperation OBJECT-TYPE
+    SYNTAX      XcmSecConfigMgmtOperation
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The most recent security management operation specified for
+        this conceptual row in the 'xcmSecConfigTable'."
+    REFERENCE
+        "See:   Section 4 'Print Utilities' (pages 71 to 212) of
+                POSIX Sys Admin (IEEE 1387.4 / Draft 8, October 1994)."
+--  DEFVAL      { unknown }             -  no security mgmt operation
+    ::= { xcmSecConfigEntry 20 }
+
+xcmSecConfigMgmtData OBJECT-TYPE
+    SYNTAX      XcmSecConfigMgmtData (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The most recent security management data specified for
+        this conceptual row in the 'xcmSecConfigTable'."
+    REFERENCE
+        "See:   Section 4 'Print Utilities' (pages 71 to 212) of
+                POSIX Sys Admin (IEEE 1387.4 / Draft 8, October 1994)."
+--  DEFVAL      { ''H }                 -  no security mgmt data
+    ::= { xcmSecConfigEntry 21 }
+
+xcmSecConfigMgmtStatus OBJECT-TYPE
+    SYNTAX      XcmGenSNMPv2ErrorStatus
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The most recent security management error status returned via
+        this conceptual row in 'xcmSecConfigTable'.
+
+        Usage:  Conforming management agents shall ALWAYS set this
+        object to the value returned in an SNMP Set-Response PDU when
+        a security management operation is 'accepted', ie, when
+        'xcmSecConfigMgmtInProgress' goes from 'false' to 'true'.
+
+        Usage:  Conforming management agents shall ALWAYS set this
+        object to the value of the completion status of the (possibly
+        deferred) security management operation, when
+        'xcmSecConfigMgmtInProgress' goes from 'true' to 'false'."
+    REFERENCE
+        "See:   'xcmSecUserMgmt[Operation|Data|InProgress]'"
+--  DEFVAL      { noError }             -  no security mgmt error status
+    ::= { xcmSecConfigEntry 22 }
+
+xcmSecConfigMgmtInProgress OBJECT-TYPE
+--  SYNTAX      TruthValue
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The security management in progress status associated with
+        this conceptual row in 'xcmSecConfigTable'."
+    REFERENCE
+        "See:   'xcmSecConfigMgmt[Operation|Data|Status]'"
+--  DEFVAL      { false }               -  no security mgmt in progress
+    ::= { xcmSecConfigEntry 23 }
+
+--.ts 'Config Mgmt Event Definition'
+xcmSecConfigMgmtV1EventOID OBJECT IDENTIFIER
+--  STATUS      current
+--  DESCRIPTION
+--      "The value of the enterprise-specific OID in an SNMPv1 trap sent
+--      whenever an 'xcmSecConfigMgmtOperation' completes.
+--      See SNMPv2 trap definition 'xcmSecConfigMgmtV2Event'
+--      below for 'special semantics'."
+    ::= { xcmSecConfig 1 }
+
+xcmSecConfigMgmtV2EventPrefix
+    OBJECT IDENTIFIER ::= { xcmSecConfigMgmtV1EventOID 0 }
+
+xcmSecConfigMgmtV1Event TRAP-TYPE
+    ENTERPRISE  xcmSecConfigMgmtV1EventOID
+    VARIABLES   
+    {
+        xcmSecConfigIndex,
+        xcmSecConfigMgmtOperation,
+        xcmSecConfigMgmtStatus
+    }
+--  STATUS      current
+--  DESCRIPTION
+--      "This trap is sent whenever an 'XcmSecConfigMgmtOperation'
+--      completes, ie, when 'xcmSecConfigMgmtStatus' becomes a
+--      completed operation status and 'XcmSecConfigMgmtInProgress'
+--      goes from 'true' to 'false'.
+--
+--      Note:   The variable-bindings of this trap have been chosen to
+--      specify a complete management operation result while keeping
+--      trap messages reasonably concise (generally a few hundred octets
+--      at most)."
+    ::= 1
+
+--  Note that the SNMPv2 to SNMPv1 translation rules dictate that the
+--  preceding structure will result in SNMPv1 traps of the following
+--  form:
+--
+--  xcmSecConfigMgmtV1Event TRAP-TYPE
+--      ENTERPRISE  xcmSecConfigMgmtV1EventOID
+--      VARIABLES   {
+--          xcmSecConfigIndex,
+--          xcmSecConfigMgmtOperation,
+--          xcmSecConfigMgmtStatus
+--      }
+--      DESCRIPTION
+--          "This trap is sent when an 'XcmSecConfigMgmtOperation'
+--          completes.
+--          See SNMPv2 trap definition 'xcmSecConfigMgmtV2Event'
+--          above for 'special semantics'."
+--      ::= 1
+
+--.ts 'Config Access Group (Mandatory)'
+--          Config Access Group (Mandatory)
+--
+--          Implementation of this group is mandatory for all systems.
+
+xcmSecConfigAccess      OBJECT IDENTIFIER ::= { xcmSecMIB 7 }
+
+xcmSecConfigAccessTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecConfigAccessEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An table for the secure configuration of
+        system-, view-, service-, or policy-level user access rights
+        (sorted by user role and user skill) on this host system."
+    ::= { xcmSecConfigAccess 2 }
+
+xcmSecConfigAccessEntry OBJECT-TYPE
+    SYNTAX      XcmSecConfigAccessEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for the secure configuration of
+        system-, view-, service-, or policy-level user access rights
+        (sorted by user role and user skill) on this host system.
+
+        Usage:  Conforming management agents shall ALWAYS ensure that
+        an 'xcmSecConfigAccessEntry' which is subordinate to an
+        'xcmSecPolicyEntry', which is ALWAYS subordinate to an
+        'xcmSec[Account|User]Entry' (ie, a 'private policy'), shall have
+        'xcmSecConfigAccess[Role|Skill]' EXACTLY equal to the ultimate
+        parent 'xcmSec[Account|User][Role|Skill]' value, to prevent any
+        inadvertent 'priority inversion' of access rights."
+    INDEX       { xcmSecConfigAccessParentType,
+                  xcmSecConfigAccessParentIndex,
+                  xcmSecConfigAccessRole,
+                  xcmSecConfigAccessSkill }
+    ::= { xcmSecConfigAccessTable 1 }
+
+XcmSecConfigAccessEntry ::= SEQUENCE {
+        --  Config Access Info          
+        xcmSecConfigAccessParentType    XcmSecGroupSupport, 
+        xcmSecConfigAccessParentIndex   Ordinal32, 
+        xcmSecConfigAccessRole          XcmSecUserRole, 
+        xcmSecConfigAccessSkill         XcmSecUserSkill, 
+        xcmSecConfigAccessRowStatus     INTEGER, 
+        xcmSecConfigAccessPosixVerbs    XcmSecPosixVerbs, 
+        xcmSecConfigAccessExcludeMode   INTEGER 
+        }                               
+
+xcmSecConfigAccessParentType OBJECT-TYPE
+    SYNTAX      XcmSecGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The type of the 'parent' entry which is associated
+        with this access rights entry in the 'xcmSecConfigAccessTable',
+        ie, the 'xcmSec[Config|ConfigView|Policy|Service]Entry'.
+
+        Usage:  Only ONE 'XcmSecGroupSupport' bit shall be set."
+    ::= { xcmSecConfigAccessEntry 1 }
+
+xcmSecConfigAccessParentIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The index of the 'parent' entry which is associated
+        with this access rights entry in the 'xcmSecConfigAccessTable',
+        ie, the 'xcmSec[Config|ConfigView|Policy|Service]Entry'."
+    ::= { xcmSecConfigAccessEntry 2 }
+
+xcmSecConfigAccessRole OBJECT-TYPE
+    SYNTAX      XcmSecUserRole
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The user role which is associated
+        with this access rights entry in the 'xcmSecConfigAccessTable'.
+
+        Usage:  The special roles 'any...' shall NOT be specified in
+        'xcmSec[Account|User]Role', or 'xcmSec...OwnerRole' objects, but
+        MAY be specified in 'xcmSecConfigAccessRole' and
+        MAY be specified in 'xcmSecConfigViewOwnerRole'
+        to grant broad privileges in a terse manner."
+    ::= { xcmSecConfigAccessEntry 3 }
+
+xcmSecConfigAccessSkill OBJECT-TYPE
+    SYNTAX      XcmSecUserSkill
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The user skill which is associated
+        with this access rights entry in the 'xcmSecConfigAccessTable'."
+    ::= { xcmSecConfigAccessEntry 4 }
+
+xcmSecConfigAccessRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmSecConfigAccessTable'."
+    ::= { xcmSecConfigAccessEntry 5 }
+
+xcmSecConfigAccessPosixVerbs OBJECT-TYPE
+    SYNTAX      XcmSecPosixVerbs
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The set of POSIX.3 system management verbs ready (enabled)
+        for a given managed, protected, and (optionally) audit trailed
+        system, view, service, or policy and any of its associated jobs,
+        for a user (with the above user role and user skill)."
+    REFERENCE
+        "See:   'XcmSecPosixVerbs' for standard POSIX.3 system
+                management verbs in the companion Security TC.
+        See:    POSIX System Administration - Part 4: Print Interfaces
+                (IEEE 1387.4 / Draft 8, October 1994).
+        See:    Document Printing Application - Part 1: Abstract Service
+                (ISO/IEC 10175-1 / Final Text, March 1996)."
+--  DEFVAL      { 0 }                   -  no 'owner' POSIX verbs
+    ::= { xcmSecConfigAccessEntry 6 }
+
+xcmSecConfigAccessExcludeMode OBJECT-TYPE
+--  SYNTAX      TruthValue
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The choice of exclude (reject) or include (accept) mode
+        for the service type which is constrained by this conceptual
+        row in the 'xcmSecConfigAccessTable'.
+
+        Usage:
+      * 'true' - indicates exclude (reject) mode should be applied.
+      * 'false'  indicates include (accept) mode should be applied."
+--  DEFVAL      { false }               -  no exclude (ie, include mode)
+    ::= { xcmSecConfigAccessEntry 7 }
+
+--.ts 'Config Protocol Group (Cond Mandatory)'
+--          Config Protocol Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support active configuration of
+--          management protocols and optional for all other systems.
+
+xcmSecConfigProtocol   OBJECT IDENTIFIER ::= { xcmSecMIB 8 }
+
+xcmSecConfigProtocolTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecConfigProtocolEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An table of the management protocols currently configured
+        on this host system."
+    ::= { xcmSecConfigProtocol 2 }
+
+xcmSecConfigProtocolEntry OBJECT-TYPE
+    SYNTAX      XcmSecConfigProtocolEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a management protocol currently configured
+        on this host system."
+    INDEX       { xcmSecConfigProtocolParentType,
+                  xcmSecConfigProtocolParentIndex,
+                  xcmSecConfigProtocolIndex }
+    ::= { xcmSecConfigProtocolTable 1 }
+
+XcmSecConfigProtocolEntry ::= SEQUENCE {
+        --  Config Protocol Info        
+        xcmSecConfigProtocolParentType  XcmSecGroupSupport, 
+        xcmSecConfigProtocolParentIndex Ordinal32, 
+        xcmSecConfigProtocolIndex       Ordinal32, 
+        xcmSecConfigProtocolRowStatus   INTEGER, 
+        xcmSecConfigProtocolPosixVerbs  XcmSecPosixVerbs, 
+        xcmSecConfigProtocolMethodOID   OBJECT IDENTIFIER 
+        }                               
+
+xcmSecConfigProtocolParentType OBJECT-TYPE
+    SYNTAX      XcmSecGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The type of the 'parent' entry which is associated
+        with this entry in the 'xcmSecConfigProtocolTable',
+        ie, the 'xcmSec[Config|Service]Entry'.
+
+        Usage:  Only ONE 'XcmSecGroupSupport' bit shall be set."
+    ::= { xcmSecConfigProtocolEntry 1 }
+
+xcmSecConfigProtocolParentIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The index of the 'parent' entry which is associated
+        with this entry in the 'xcmSecConfigProtocolTable',
+        ie, the 'xcmSec[Config|Service]Entry'."
+    ::= { xcmSecConfigProtocolEntry 2 }
+
+xcmSecConfigProtocolIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecConfigProtocolTable'.
+
+        Usage:  Conforming implementations shall ALWAYS ensure that this
+        index object is unique WITHOUT consideration of the high-order
+        indices (ie, parent type and parent index)."
+    ::= { xcmSecConfigProtocolEntry 3 }
+
+xcmSecConfigProtocolRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmSecConfigProtocolTable'."
+    ::= { xcmSecConfigProtocolEntry 4 }
+
+xcmSecConfigProtocolPosixVerbs OBJECT-TYPE
+    SYNTAX      XcmSecPosixVerbs
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The set of POSIX.3 system management verbs ready (enabled)
+        for this management protocol on this host system."
+    REFERENCE
+        "See:   'XcmSecPosixVerbs' for standard POSIX.3 system
+                management verbs in the companion Security TC.
+        See:    POSIX System Administration - Part 4: Print Interfaces
+                (IEEE 1387.4 / Draft 8, October 1994).
+        See:    Document Printing Application - Part 1: Abstract Service
+                (ISO/IEC 10175-1 / Final Text, March 1996)."
+--  DEFVAL      { 0 }                   -  no protocol POSIX verbs
+    ::= { xcmSecConfigProtocolEntry 5 }
+
+xcmSecConfigProtocolMethodOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The object identifier of:
+        1)  A transaction interface object group (in some MIB) which
+            contains '...Operation', '...Data', and '...Status' objects
+            for a management interface configured on this host system/
+            <OR>
+        2)  An application protocol (in XCMI Comms Config TC) for any
+            other management interface configured on this host system.
+
+        Usage:  For example,  using 'xcmSecConfigProtocol' is VALID,
+        but using 'xcmSecConfigProtocolTable' is INVALID/ and also
+        'xcmCONetwarePServer' is VALID, but 'xcmCONetware' is INVALID."
+    ::= { xcmSecConfigProtocolEntry 6 }
+
+--.ts 'Config View Group (Cond Mandatory)'
+--          Config View Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support active configuration of
+--          secure views and optional for all other systems.
+
+xcmSecConfigView        OBJECT IDENTIFIER ::= { xcmSecMIB 9 }
+
+xcmSecConfigViewTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecConfigViewEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of secure view configurations currently in force
+        on this host system."
+    ::= { xcmSecConfigView 2 }
+
+xcmSecConfigViewEntry OBJECT-TYPE
+    SYNTAX      XcmSecConfigViewEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for an secure view configuration currently in force
+        on this host system."
+    INDEX       { xcmSecConfigViewIndex }
+    ::= { xcmSecConfigViewTable 1 }
+
+XcmSecConfigViewEntry ::= SEQUENCE {
+        --  Config View Info            
+        xcmSecConfigViewIndex           Ordinal32, 
+        xcmSecConfigViewRowStatus       INTEGER, 
+        xcmSecConfigViewObjectSubtree   OBJECT IDENTIFIER, 
+        xcmSecConfigViewObjectLevels    Cardinal32, 
+        xcmSecConfigViewExcludeMode     INTEGER, 
+        --  Config View Capabilities Ready Info 
+        xcmSecConfigViewAuditReady      XcmSecAuditSupport, 
+        xcmSecConfigViewSecurityReady   XcmSecSecuritySupport, 
+        --  Config View Owner Info      
+        xcmSecConfigViewOwnerRole       XcmSecUserRole, 
+        xcmSecConfigViewOwnerSkill      XcmSecUserSkill, 
+        xcmSecConfigViewOwnerVerbs      XcmSecPosixVerbs 
+        }                               
+
+xcmSecConfigViewIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecConfigViewTable'."
+    ::= { xcmSecConfigViewEntry 1 }
+
+xcmSecConfigViewRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmSecConfigViewTable'."
+    ::= { xcmSecConfigViewEntry 2 }
+
+xcmSecConfigViewObjectSubtree OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The object subtree which is within the scope of this secure
+        view and which therefore shall be subject to all the 'audit' and
+        'AAA' methods specified in this conceptual row in the
+        'xcmSecConfigViewTable'.
+
+        Usage:  This object shall be used to specify the subtree base
+        to be within the scope of this secure view."
+--  DEFVAL      { xcmGenZeroDotZero }   -  no subtree
+    ::= { xcmSecConfigViewEntry 3 }
+
+xcmSecConfigViewObjectLevels OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The object levels which shall be subject to the 'audit' and
+        'AAA' methods specified in this conceptual row in the
+        'xcmSecConfigViewTable', or zero for infinite levels of scope.
+
+        Usage:  This object shall be used to specify the number of OID
+        arcs down from the value in 'xcmSecConfigViewObjectSubtree'
+        to be within the scope of this secure view."
+--  DEFVAL      { 0 }                   -  infinite levels of scope
+    ::= { xcmSecConfigViewEntry 4 }
+
+xcmSecConfigViewExcludeMode OBJECT-TYPE
+--  SYNTAX      TruthValue
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The choice of exclude (reject) or include (accept) mode
+        for the object subtree which is constrained by this conceptual
+        row in the 'xcmSecConfigViewTable'.
+
+        Usage:
+      * 'true' - indicates exclude (reject) mode should be applied.
+      * 'false'  indicates include (accept) mode should be applied."
+--  DEFVAL      { false }               -  no exclude (ie, include mode)
+    ::= { xcmSecConfigViewEntry 5 }
+
+xcmSecConfigViewAuditReady OBJECT-TYPE
+    SYNTAX      XcmSecAuditSupport
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse configuration statement of security 'audit' methods
+        ready (enabled) on this management agent implementation
+        for this secure view."
+--  DEFVAL      { 0 }                   -  no audit methods ready
+    ::= { xcmSecConfigViewEntry 6 }
+
+xcmSecConfigViewSecurityReady OBJECT-TYPE
+    SYNTAX      XcmSecSecuritySupport
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse configuration statement of security 'AAA' methods
+        ready (enabled) on this management agent implementation
+        for this secure view."
+--  DEFVAL      { 0 }                   -  no AAA methods ready
+    ::= { xcmSecConfigViewEntry 7 }
+
+xcmSecConfigViewOwnerRole OBJECT-TYPE
+    SYNTAX      XcmSecUserRole
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The user role of an authorized human 'owner' who is associated
+        with this conceptual row in the 'xcmSecConfigViewTable'.
+
+        Usage:  The special roles 'any...' shall NOT be specified in
+        'xcmSec[Account|User]Role', or 'xcmSec...OwnerRole' objects, but
+        MAY be specified in 'xcmSecConfigAccessRole' and
+        MAY be specified in 'xcmSecConfigViewOwnerRole'
+        to grant broad privileges in a terse manner."
+--  DEFVAL      { systemAdministrator } -  default 'owner' user role
+    ::= { xcmSecConfigViewEntry 8 }
+
+xcmSecConfigViewOwnerSkill OBJECT-TYPE
+    SYNTAX      XcmSecUserSkill
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The user skill of an authorized human 'owner' who is associated
+        with this conceptual row in the 'xcmSecConfigViewTable'."
+--  DEFVAL      { 1 }                   -  default 'owner' user skill
+    ::= { xcmSecConfigViewEntry 9 }
+
+xcmSecConfigViewOwnerVerbs OBJECT-TYPE
+    SYNTAX      XcmSecPosixVerbs
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The set of POSIX.3 system management verbs ready (enabled)
+        for use by an authenticated human 'owner' who is associated
+        with this conceptual row in the 'xcmSecConfigViewTable',
+        and who matches/exceeds 'xcmSecConfigViewOwner[Role|Skill]'."
+    REFERENCE
+        "See:   'XcmSecPosixVerbs' for standard POSIX.3 system
+                management verbs in the companion Security TC.
+        See:    POSIX System Administration - Part 4: Print Interfaces
+                (IEEE 1387.4 / Draft 8, October 1994).
+        See:    Document Printing Application - Part 1: Abstract Service
+                (ISO/IEC 10175-1 / Final Text, March 1996)."
+--  DEFVAL      { 0 }                   -  no 'owner' POSIX verbs
+    ::= { xcmSecConfigViewEntry 10 }
+
+--.ts 'Event Group (Cond Mandatory)'
+--          Event Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support security event logs
+--          and optional for all other systems.
+
+xcmSecEvent             OBJECT IDENTIFIER ::= { xcmSecMIB 10 }
+
+xcmSecEventTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecEventEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of the security events which have been recorded
+        (logged) on this host system."
+    ::= { xcmSecEvent 2 }
+
+xcmSecEventEntry OBJECT-TYPE
+    SYNTAX      XcmSecEventEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a security event which has been recorded
+        (logged) on this host system."
+    INDEX       { xcmSecEventIndex }
+    ::= { xcmSecEventTable 1 }
+
+XcmSecEventEntry ::= SEQUENCE {
+        --  Event Info                  
+        xcmSecEventIndex                Ordinal32, 
+        xcmSecEventRowStatus            INTEGER, 
+        xcmSecEventTypeCode             XcmSecEventTypeCode, 
+        xcmSecEventTypeString           XcmFixedLocaleDisplayString, 
+        xcmSecEventSessionIndex         Cardinal32, 
+        xcmSecEventSessionID            XcmGlobalUniqueID, 
+        xcmSecEventTokenIndex           Cardinal32, 
+        xcmSecEventAccountIndex         Cardinal32, 
+        xcmSecEventUserIndex            Cardinal32, 
+        xcmSecEventDate                 OCTET STRING 
+        }                               
+
+xcmSecEventIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecEventTable'."
+    ::= { xcmSecEventEntry 1 }
+
+xcmSecEventRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create (management agent) and delete
+        (management station or management agent) individual conceptual
+        rows in the 'xcmSecEventTable'.
+
+        Usage:  Conforming implementations need NOT support dynamic row
+        deletion (via 'destroy')."
+    ::= { xcmSecEventEntry 2 }
+
+xcmSecEventTypeCode OBJECT-TYPE
+    SYNTAX      XcmSecEventTypeCode
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The (numeric) type code of the security event which is
+        recorded in this conceptual row in the 'xcmSecEventTable'."
+--  DEFVAL      { unknown }             -  no security event type code
+    ::= { xcmSecEventEntry 3 }
+
+xcmSecEventTypeString OBJECT-TYPE
+    SYNTAX      XcmFixedLocaleDisplayString (SIZE (0..255))
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The (alpha) type string of the security event which is
+        recorded in this conceptual row in the 'xcmSecEventTable'."
+--  DEFVAL      { ''H }                 -  no security event type string
+    ::= { xcmSecEventEntry 4 }
+
+xcmSecEventSessionIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The 'xcmSecSessionIndex' for the security event which is
+        recorded in this conceptual row in the 'xcmSecEventTable',
+        or zero, if this security event occurred outside the context of
+        a secure admin session."
+--  DEFVAL      { 0 }                   -  no session index
+    ::= { xcmSecEventEntry 5 }
+
+xcmSecEventSessionID OBJECT-TYPE
+    SYNTAX      XcmGlobalUniqueID (SIZE (0..255))
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The 'xcmSecSessionID' for the security event which is
+        recorded in this conceptual row in the 'xcmSecEventTable',
+        or null, if this security event occurred outside the context of
+        a secure admin session."
+--  DEFVAL      { ''H }                 -  no session ID
+    ::= { xcmSecEventEntry 6 }
+
+xcmSecEventTokenIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The 'xcmSecTokenIndex' for the security event which is
+        recorded in this conceptual row in the 'xcmSecEventTable',
+        or zero, if this security event occurred outside the context of
+        a secure admin session."
+--  DEFVAL      { 0 }                   -  no token index
+    ::= { xcmSecEventEntry 7 }
+
+xcmSecEventAccountIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The 'xcmSecAccountIndex' for the security event which is
+        recorded in this conceptual row in the 'xcmSecEventTable',
+        or zero, if this security event occurred outside the context of
+        an identified account."
+--  DEFVAL      { 0 }                   -  no account index
+    ::= { xcmSecEventEntry 8 }
+
+xcmSecEventUserIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The 'xcmSecUserIndex' for the security event which is
+        recorded in this conceptual row in the 'xcmSecEventTable',
+        or zero, if this security event occurred outside the context of
+        an identified user."
+--  DEFVAL      { 0 }                   -  no user index
+    ::= { xcmSecEventEntry 9 }
+
+xcmSecEventDate OBJECT-TYPE
+--  SYNTAX      DateAndTime
+    SYNTAX      OCTET STRING
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The time stamp for the security event which is
+        recorded in this conceptual row in the 'xcmSecEventTable'."
+--  DEFVAL      { '0000000000000000'H } -  no time stamp
+    ::= { xcmSecEventEntry 10 }
+
+--.ts 'Security Event Definition'
+xcmSecEventV1EventOID OBJECT IDENTIFIER
+--  STATUS      current
+--  DESCRIPTION
+--      "The value of the enterprise-specific OID in an SNMPv1 trap sent
+--      for a security event recorded in the 'xcmSecEventTable'.
+--      See SNMPv2 trap definition 'xcmSecEventV2Event'
+--      below for 'special semantics'."
+    ::= { xcmSecEvent 1 }
+
+xcmSecEventV2EventPrefix
+    OBJECT IDENTIFIER ::= { xcmSecEventV1EventOID 0 }
+
+xcmSecEventV1Event TRAP-TYPE
+    ENTERPRISE  xcmSecEventV1EventOID
+    VARIABLES   
+    {
+        xcmSecEventIndex,
+        xcmSecEventTypeCode,
+        xcmSecEventTypeString,
+        xcmSecEventDate
+    }
+--  STATUS      current
+--  DESCRIPTION
+--      "This trap is sent whenever a security event is added to the
+--      'xcmSecEventTable'."
+    ::= 1
+
+--  Note that the SNMPv2 to SNMPv1 translation rules dictate that the
+--  preceding structure will result in SNMPv1 traps of the following
+--  form:
+--
+--  xcmSecEventV1Event TRAP-TYPE
+--      ENTERPRISE  xcmSecEventV1EventOID
+--      VARIABLES   {
+--          xcmSecEventIndex,
+--          xcmSecEventTypeCode,
+--          xcmSecEventTypeString,
+--          xcmSecEventDate
+--      }
+--      DESCRIPTION
+--          "This trap is sent whenever a security event is added to the
+--          'xcmSecEventTable'.
+--          See SNMPv2 trap definition 'xcmSecEventV2Event'
+--          above for 'special semantics'."
+--      ::= 1
+
+--.ts 'Find Integer Group (Cond Mandatory)'
+--          Find Integer Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support table lookups by integer
+--          key value and optional for all other systems.
+
+xcmSecFindInteger       OBJECT IDENTIFIER ::= { xcmSecMIB 11 }
+
+xcmSecFindIntegerTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecFindIntegerEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of pointers for table lookups by integer key value
+        on this host system."
+    ::= { xcmSecFindInteger 2 }
+
+xcmSecFindIntegerEntry OBJECT-TYPE
+    SYNTAX      XcmSecFindIntegerEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry of pointers for a table lookup by integer key value
+        on this host system."
+    INDEX       { xcmSecFindIntegerKeyType,
+                  xcmSecFindIntegerKeyValue,
+                  xcmSecFindIntegerMatchIndex }
+    ::= { xcmSecFindIntegerTable 1 }
+
+XcmSecFindIntegerEntry ::= SEQUENCE {
+        --  Find Integer Info           
+        xcmSecFindIntegerKeyType        XcmSecFindIntegerKeyType, 
+        xcmSecFindIntegerKeyValue       Ordinal32, 
+        xcmSecFindIntegerMatchIndex     Ordinal32 
+        }                               
+
+xcmSecFindIntegerKeyType OBJECT-TYPE
+    SYNTAX      XcmSecFindIntegerKeyType
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The specific integer key type used to identify this
+        conceptual row in the 'xcmSecFindIntegerTable'."
+    ::= { xcmSecFindIntegerEntry 1 }
+
+xcmSecFindIntegerKeyValue OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The specific integer key value used to identify this
+        conceptual row in the 'xcmSecFindIntegerTable'."
+    ::= { xcmSecFindIntegerEntry 2 }
+
+xcmSecFindIntegerMatchIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The specific match result index used to identify this
+        conceptual row in the 'xcmSecFindIntegerTable'
+        (and to point to a row in a table of accounts, users, etc)."
+    ::= { xcmSecFindIntegerEntry 3 }
+
+--.ts 'Find OID Group (Cond Mandatory)'
+--          Find OID Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support table lookups by OID
+--          key value and optional for all other systems.
+
+xcmSecFindOID           OBJECT IDENTIFIER ::= { xcmSecMIB 12 }
+
+xcmSecFindOIDTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecFindOIDEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of pointers for table lookups by OID key value
+        on this host system."
+    ::= { xcmSecFindOID 2 }
+
+xcmSecFindOIDEntry OBJECT-TYPE
+    SYNTAX      XcmSecFindOIDEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry of pointers for a table lookup by OID key value
+        on this host system."
+    INDEX       { xcmSecFindOIDKeyType,
+                  xcmSecFindOIDKeyValue,
+                  xcmSecFindOIDMatchIndex }
+    ::= { xcmSecFindOIDTable 1 }
+
+XcmSecFindOIDEntry ::= SEQUENCE {
+        --  Find OID Info               
+        xcmSecFindOIDKeyType            XcmSecFindOIDKeyType, 
+        xcmSecFindOIDKeyValue           OBJECT IDENTIFIER, 
+        xcmSecFindOIDMatchIndex         Ordinal32 
+        }                               
+
+xcmSecFindOIDKeyType OBJECT-TYPE
+    SYNTAX      XcmSecFindOIDKeyType
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The specific OID key type used to identify this
+        conceptual row in the 'xcmSecFindOIDTable'."
+    ::= { xcmSecFindOIDEntry 1 }
+
+xcmSecFindOIDKeyValue OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The specific OID key value used to identify this
+        conceptual row in the 'xcmSecFindOIDTable'."
+    ::= { xcmSecFindOIDEntry 2 }
+
+xcmSecFindOIDMatchIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The specific match result index used to identify this
+        conceptual row in the 'xcmSecFindOIDTable'
+        (and to point to a row in a table of accounts, users, etc)."
+    ::= { xcmSecFindOIDEntry 3 }
+
+--.ts 'Find Parent Group (Cond Mandatory)'
+--          Find Parent Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support table lookups
+--          of parent type and index via child type and (simple) index
+--          and optional for all other systems.
+
+xcmSecFindParent        OBJECT IDENTIFIER ::= { xcmSecMIB 13 }
+
+xcmSecFindParentTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecFindParentEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of pointers for table lookups of parent type/index
+        via child type/index on this host system."
+    ::= { xcmSecFindParent 2 }
+
+xcmSecFindParentEntry OBJECT-TYPE
+    SYNTAX      XcmSecFindParentEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry of pointers for a table lookup of parent type/index
+        via child type/index on this host system."
+    INDEX       { xcmSecFindParentChildType,
+                  xcmSecFindParentChildIndex,
+                  xcmSecFindParentMatchType,
+                  xcmSecFindParentMatchIndex }
+    ::= { xcmSecFindParentTable 1 }
+
+XcmSecFindParentEntry ::= SEQUENCE {
+        --  Find Parent Info            
+        xcmSecFindParentChildType       XcmSecGroupSupport, 
+        xcmSecFindParentChildIndex      Ordinal32, 
+        xcmSecFindParentMatchType       XcmSecGroupSupport, 
+        xcmSecFindParentMatchIndex      Ordinal32 
+        }                               
+
+xcmSecFindParentChildType OBJECT-TYPE
+    SYNTAX      XcmSecGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The specific child entry type used to identify this
+        conceptual row in the 'xcmSecFindParentTable'.
+
+        Usage:  Only ONE 'XcmSecGroupSupport' bit shall be set."
+    ::= { xcmSecFindParentEntry 1 }
+
+xcmSecFindParentChildIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The specific child entry index used to identify this
+        conceptual row in the 'xcmSecFindParentTable'."
+    ::= { xcmSecFindParentEntry 2 }
+
+xcmSecFindParentMatchType OBJECT-TYPE
+    SYNTAX      XcmSecGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The specific match result parent type used to identify this
+        conceptual row in the 'xcmSecFindParentTable'
+        (and to point to a row in a table of accounts, users, etc).
+
+        Usage:  Only ONE 'XcmSecGroupSupport' bit shall be set."
+    ::= { xcmSecFindParentEntry 3 }
+
+xcmSecFindParentMatchIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The specific match result parent index used to identify this
+        conceptual row in the 'xcmSecFindParentTable'
+        (and to point to a row in a table of accounts, users, etc)."
+    ::= { xcmSecFindParentEntry 4 }
+
+--.ts 'Find String Group (Cond Mandatory)'
+--          Find String Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support table lookups by string
+--          key value and optional for all other systems.
+
+xcmSecFindString        OBJECT IDENTIFIER ::= { xcmSecMIB 14 }
+
+xcmSecFindStringTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecFindStringEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of pointers for table lookups by string key value
+        on this host system."
+    ::= { xcmSecFindString 2 }
+
+xcmSecFindStringEntry OBJECT-TYPE
+    SYNTAX      XcmSecFindStringEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry of pointers for a table lookup by string key value
+        on this host system."
+    INDEX       { xcmSecFindStringKeyType,
+                  xcmSecFindStringKeyValue,
+                  xcmSecFindStringMatchIndex }
+    ::= { xcmSecFindStringTable 1 }
+
+XcmSecFindStringEntry ::= SEQUENCE {
+        --  Find String Info            
+        xcmSecFindStringKeyType         XcmSecFindStringKeyType, 
+        xcmSecFindStringKeyValue        OCTET STRING, 
+        xcmSecFindStringMatchIndex      Ordinal32 
+        }                               
+
+xcmSecFindStringKeyType OBJECT-TYPE
+    SYNTAX      XcmSecFindStringKeyType
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The specific string key type used to identify this
+        conceptual row in the 'xcmSecFindStringTable'."
+    ::= { xcmSecFindStringEntry 1 }
+
+xcmSecFindStringKeyValue OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..64))
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The specific string key value used to identify this
+        conceptual row in the 'xcmSecFindStringTable'.
+
+        Usage:  The maximum length of this string key value is limited
+        by practical SNMP management agent considerations, ie, 'partial'
+        matches may occur for very long lookup strings."
+    ::= { xcmSecFindStringEntry 2 }
+
+xcmSecFindStringMatchIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The specific match result index used to identify this
+        conceptual row in the 'xcmSecFindStringTable'
+        (and to point to a row in a table of accounts, users, etc)."
+    ::= { xcmSecFindStringEntry 3 }
+
+--.ts 'Key Group (Cond Mandatory)'
+--          Key Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support security key datastores
+--          and optional for all other systems.
+
+xcmSecKey               OBJECT IDENTIFIER ::= { xcmSecMIB 15 }
+
+xcmSecKeyTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecKeyEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of the security keys configured on this host system.
+
+        Usage:  Special semantics apply to 'xcmSecKeyTable'.  One object
+        ('xcmSecKeyRowStatus') is 'write-only/write-many' (may be used
+        for later delete of a conceptual row).  ALL other objects in
+        this table are 'write-only/write-once' (ie, they shall ONLY be
+        writeable at create time of a given conceptual row).
+
+        Usage:  An (authorized) conforming management station shall
+        ALWAYS be able to ensure the success of a row create in the
+        'xcmSecKeyTable' (even if the SNMP Response was undelivered),
+        by attempting to WRITE 'active(1)' into 'xcmSecKeyRowStatus'.
+        If this (dummy) write succeeds, then row creation was in fact
+        successful."
+    ::= { xcmSecKey 2 }
+
+xcmSecKeyEntry OBJECT-TYPE
+    SYNTAX      XcmSecKeyEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a security key configured on this host system."
+    INDEX       { xcmSecKeyParentType,
+                  xcmSecKeyParentIndex,
+                  xcmSecKeyIndex }
+    ::= { xcmSecKeyTable 1 }
+
+XcmSecKeyEntry ::= SEQUENCE {
+        --  Key Info                    
+        xcmSecKeyParentType             XcmSecGroupSupport, 
+        xcmSecKeyParentIndex            Ordinal32, 
+        xcmSecKeyIndex                  Ordinal32, 
+        xcmSecKeyRowStatus              INTEGER, 
+        xcmSecKeyProtocolType           XcmSecKeyProtocolType, 
+        xcmSecKeyScope                  XcmSecKeyScope, 
+        xcmSecKeyString                 OCTET STRING 
+        }                               
+
+xcmSecKeyParentType OBJECT-TYPE
+    SYNTAX      XcmSecGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The type of the 'parent' entry which is associated
+        with this security key entry in the 'xcmSecKeyTable',
+        ie, the 'xcmSec[Config|Account|User]Entry'.
+
+        Usage:  Only ONE 'XcmSecGroupSupport' bit shall be set."
+    ::= { xcmSecKeyEntry 1 }
+
+xcmSecKeyParentIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The index of the 'parent' entry which is associated
+        with this security key entry in the 'xcmSecKeyTable',
+        ie, the 'xcmSec[Config|Account|User]Entry'."
+    ::= { xcmSecKeyEntry 2 }
+
+xcmSecKeyIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecKeyTable'.
+
+        Usage:  Conforming implementations shall ALWAYS ensure that this
+        index object is unique WITHOUT consideration of the high-order
+        indices (ie, parent type and parent index)."
+    REFERENCE
+        "See:   'XcmSecFindIntegerKeyType' textual convention, using
+                'highestKeyIndex' in the companion Security TC."
+    ::= { xcmSecKeyEntry 3 }
+
+xcmSecKeyRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmSecKeyTable'.
+
+        Usage:  An (authorized) conforming management station shall
+        ALWAYS be able to ensure the success of a row create in the
+        'xcmSecKeyTable' (even if the SNMP Response was undelivered),
+        by attempting to WRITE 'active(1)' into 'xcmSecKeyRowStatus'.
+        If this (dummy) write succeeds, then row creation was in fact
+        successful.
+
+        Usage:  Conforming implementations shall ALWAYS permit
+        multiple Sets ('write-many') to this object."
+    ::= { xcmSecKeyEntry 4 }
+
+xcmSecKeyProtocolType OBJECT-TYPE
+    SYNTAX      XcmSecKeyProtocolType
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The type of security protocol which is currently associated
+        with this security key (conceptual row in the 'xcmSecKeyTable').
+
+        Usage:  Conforming implementations shall ALWAYS return 'unknown'
+        on receipt of an SNMP Get (ie, read) for this object.
+        Conforming implementations shall permit a single Set (ie, 'write
+        once') to this object, at create time for this conceptual row."
+--  DEFVAL      { unknown }             -  no security protocol type
+    ::= { xcmSecKeyEntry 5 }
+
+xcmSecKeyScope OBJECT-TYPE
+    SYNTAX      XcmSecKeyScope
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A description of the relative 'scope' of this security key (ie,
+        the realm of accessibility of the key).
+
+        Usage:  A given key MAY have restricted scope (eg, 'shared
+        session' or 'private session').
+
+        Usage:  Conforming implementations shall ALWAYS return zero '0'
+        on receipt of an SNMP Get (ie, read) for this object.
+        Conforming implementations shall permit a single Set (ie, 'write
+        once') to this object, at create time for this conceptual row."
+--  DEFVAL      { 0 }                   -  no security key scope
+    ::= { xcmSecKeyEntry 6 }
+
+xcmSecKeyString OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The security protocol key value which is currently associated
+        with this conceptual row in the 'xcmSecKeyTable'.
+
+        Usage:  Conforming implementations shall ALWAYS return a null
+        string on receipt of an SNMP Get (ie, read) for this object.
+        Conforming implementations shall permit a single Set (ie, 'write
+        once') to this object, at create time for this conceptual row."
+--  DEFVAL      { ''H }                 -  no security key value
+    ::= { xcmSecKeyEntry 7 }
+
+--.ts 'Link Group (Cond Mandatory)'
+--          Link Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support security 'link sets'
+--          and optional for all other systems.
+
+--          Usage:  'Link sets' are used to associate EXACTLY one
+--                  'source' entry (ie, account, team, or user) with
+--                  one or more 'target' entries (ie, account, team,
+--                  or user) of a DIFFERENT type.
+--
+--          Note:   Valid link 'source' and 'target' types are shown in
+--                  the table below:
+--
+--                                 T A R G E T
+--            |=======|===================================|
+--          S |       |   Account     Team        User    |
+--          O |=======|===================================|
+--          U |Account|                 X           X     |
+--          R |Team   |     X                       X     |
+--          C |User   |     X           X                 |
+--          E |=======|===================================|
+
+xcmSecLink              OBJECT IDENTIFIER ::= { xcmSecMIB 16 }
+
+xcmSecLinkTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecLinkEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of the 'links' configured on this host system."
+    ::= { xcmSecLink 2 }
+
+xcmSecLinkEntry OBJECT-TYPE
+    SYNTAX      XcmSecLinkEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a 'link' configured on this host system."
+    INDEX       { xcmSecLinkIndex }
+    ::= { xcmSecLinkTable 1 }
+
+XcmSecLinkEntry ::= SEQUENCE {
+        --  Link Info                   
+        xcmSecLinkIndex                 Ordinal32, 
+        xcmSecLinkRowStatus             INTEGER, 
+        --  Link Source Info            
+        xcmSecLinkSourceEntryType       XcmSecGroupSupport, 
+        xcmSecLinkSourceEntryIndex      Cardinal32, 
+        --  Link Target Info            
+        xcmSecLinkTargetEntryType       XcmSecGroupSupport, 
+        xcmSecLinkTargetEntryIndex      Cardinal32, 
+        --  Link Cross References       
+        xcmSecLinkNextIndex             Cardinal32, 
+        xcmSecLinkPreviousIndex         Cardinal32 
+        }                               
+
+xcmSecLinkIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecLinkTable'."
+    ::= { xcmSecLinkEntry 1 }
+
+xcmSecLinkRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmSecLinkTable'."
+    ::= { xcmSecLinkEntry 2 }
+
+xcmSecLinkSourceEntryType OBJECT-TYPE
+    SYNTAX      XcmSecGroupSupport
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The type of the 'source' entry which is associated
+        with this conceptual row in the 'xcmSecLinkTable'.
+
+        Usage:  A 'source' entry MAY be associated with one or more
+        'target' entrys via a 'link set' (ie, a set of conceptual rows
+        in the 'xcmSecLinkTable' which are 'chained' together).
+
+        Usage:  Only ONE 'XcmSecGroupSupport' bit shall be set."
+--  DEFVAL      { 0 }                   -  no 'source' type
+    ::= { xcmSecLinkEntry 3 }
+
+xcmSecLinkSourceEntryIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The index of the 'source' entry which is associated
+        with this conceptual row in the 'xcmSecLinkTable'
+        (ie, the value of 'xcmSec[Account|User|Team]Index')."
+--  DEFVAL      { 0 }                   -  no 'source' entry
+    ::= { xcmSecLinkEntry 4 }
+
+xcmSecLinkTargetEntryType OBJECT-TYPE
+    SYNTAX      XcmSecGroupSupport
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The type of the 'target' entry which is associated
+        with this conceptual row in the 'xcmSecLinkTable'.
+
+        Usage:  A 'source' entry MAY be associated with one or more
+        'target' entrys via a 'link set' (ie, a set of conceptual rows
+        in the 'xcmSecLinkTable' which are 'chained' together).
+
+        Usage:  Only ONE 'XcmSecGroupSupport' bit shall be set."
+--  DEFVAL      { 0 }                   -  no 'target' type
+    ::= { xcmSecLinkEntry 7 }
+
+xcmSecLinkTargetEntryIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The index of the 'target' entry which is associated
+        with this conceptual row in the 'xcmSecLinkTable'
+        (ie, the value of 'xcmSec[Account|Policy|Team|User]Index')."
+--  DEFVAL      { 0 }                   -  no 'target' entry
+    ::= { xcmSecLinkEntry 8 }
+
+xcmSecLinkNextIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmSecLinkIndex' corresponding to the next
+        conceptual row in the 'xcmSecLinkTable', or zero if this is the
+        last associated conceptual row in a given 'link set'."
+--  DEFVAL      { 0 }                   -  no next link
+    ::= { xcmSecLinkEntry 12 }
+
+xcmSecLinkPreviousIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmSecLinkIndex' corresponding to the previous
+        conceptual row in the 'xcmSecLinkTable', or zero if this is the
+        first associated conceptual row in a given 'link set'."
+--  DEFVAL      { 0 }                   -  no previous link
+    ::= { xcmSecLinkEntry 13 }
+
+--.ts 'Policy Group (Cond Mandatory)'
+--          Policy Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support security 'private
+--          policies' for individual accounts and/or individual users
+--          and optional for all other systems.
+
+--          Usage:  A policy ALWAYS has an associated service.
+--                  A policy MAY also have an associated set of
+--                  system and job usage limits.
+--                  A policy MAY also have an associated set of
+--                  system usage counters.
+--
+--          Note:   A policy shall be subordinate to EXACTLY one parent
+--                  object (account, team, or individual user).
+
+xcmSecPolicy            OBJECT IDENTIFIER ::= { xcmSecMIB 17 }
+
+xcmSecPolicyTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecPolicyEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of the policies configured on this host system."
+    ::= { xcmSecPolicy 2 }
+
+xcmSecPolicyEntry OBJECT-TYPE
+    SYNTAX      XcmSecPolicyEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a policy configured on this host system."
+    INDEX       { xcmSecPolicyParentType,
+                  xcmSecPolicyParentIndex,
+                  xcmSecPolicyIndex }
+    ::= { xcmSecPolicyTable 1 }
+
+XcmSecPolicyEntry ::= SEQUENCE {
+        --  Policy Info                 
+        xcmSecPolicyParentType          XcmSecGroupSupport, 
+        xcmSecPolicyParentIndex         Ordinal32, 
+        xcmSecPolicyIndex               Ordinal32, 
+        xcmSecPolicyRowStatus           INTEGER, 
+        xcmSecPolicyServiceTypeOID      OBJECT IDENTIFIER 
+        }                               
+
+xcmSecPolicyParentType OBJECT-TYPE
+    SYNTAX      XcmSecGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The type of the 'parent' entry which is associated
+        with this conceptual row in the 'xcmSecPolicyTable'.
+
+        Usage:  Only ONE 'XcmSecGroupSupport' bit shall be set."
+    ::= { xcmSecPolicyEntry 1 }
+
+xcmSecPolicyParentIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The index of the 'parent' entry which is associated
+        with this conceptual row in the 'xcmSecPolicyTable'.
+
+        Usage:  If the 'owner' is a user which is a user defaults
+        entry for a team, then the true 'owner' is the team itself (and
+        is found via the 'xcmSecUserTeamIndex' of the user defaults
+        entry)."
+    ::= { xcmSecPolicyEntry 2 }
+
+xcmSecPolicyIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecPolicyTable'.
+
+        Usage:  Conforming implementations shall ALWAYS ensure that this
+        index object is unique WITHOUT consideration of the high-order
+        indices (ie, parent type and parent index)."
+    REFERENCE
+        "See:   'XcmSecFindIntegerKeyType' textual convention, using
+                'highestPolicyIndex' in the companion Security TC."
+    ::= { xcmSecPolicyEntry 3 }
+
+xcmSecPolicyRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmSecPolicyTable'."
+    ::= { xcmSecPolicyEntry 4 }
+
+xcmSecPolicyServiceTypeOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A service type object identifier for this 'private policy'.
+
+        Usage:  For user services (which instantiate 'jobs'), service
+        type OIDs shall ALWAYS be taken from the XCMI Job Monitoring TC
+        'xcmJobService...' series (used for 'XcmJMJobServiceTypeOID' and
+        'xcmJobServiceType' in the Job General Basic group).
+
+        Usage:  For system admin/operator and technician services (which
+        MAY not instantiate 'jobs'), service type OIDs MAY be taken
+        from the XCMI System Admin TC 'xcmSASvc...' series, and/or
+        from the XCMI Host Resources Ext TC 'xcmHrAdmin...' series."
+--  DEFVAL      { xcmGenZeroDotZero }   -  no service type
+    ::= { xcmSecPolicyEntry 5 }
+
+--.ts 'Policy Limit Group (Cond Mandatory)'
+--          Policy Limit Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support policy usage limits
+--          (with system level and optional job level usage limits)
+--          and optional for all other systems.
+--  
+--          Note:   Systems implementing the 'xcmSecPolicyLimitGroup'
+--                  shall ALWAYS implement the 'xcmSecPolicyGroup'.
+
+--          Usage:  A usage limit ALWAYS has an associated 'private
+--                  policy' and a set of system usage limits.
+
+xcmSecPolicyLimit       OBJECT IDENTIFIER ::= { xcmSecMIB 18 }
+
+xcmSecPolicyLimitTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecPolicyLimitEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of the policy limits configured on this host system."
+    ::= { xcmSecPolicyLimit 2 }
+
+xcmSecPolicyLimitEntry OBJECT-TYPE
+    SYNTAX      XcmSecPolicyLimitEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a policy limit configured on this host system."
+    INDEX       { xcmSecPolicyIndex,
+                  xcmSecPolicyLimitSystemUnit }
+    ::= { xcmSecPolicyLimitTable 1 }
+
+XcmSecPolicyLimitEntry ::= SEQUENCE {
+        --  Policy Limit Info           
+        xcmSecPolicyLimitSystemUnit     XcmHrDevTrafficUnit, 
+        xcmSecPolicyLimitRowStatus      INTEGER, 
+        xcmSecPolicyLimitSystemValue    INTEGER, 
+        xcmSecPolicyLimitJobValue       INTEGER 
+        }                               
+
+xcmSecPolicyLimitSystemUnit OBJECT-TYPE
+    SYNTAX      XcmHrDevTrafficUnit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecPolicyLimitTable'.
+
+        The measurement units of the following system- and job-level
+        usage limits."
+    ::= { xcmSecPolicyLimitEntry 1 }
+
+xcmSecPolicyLimitRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmSecPolicyLimitTable'."
+    ::= { xcmSecPolicyLimitEntry 2 }
+
+xcmSecPolicyLimitSystemValue OBJECT-TYPE
+--  SYNTAX      Integer32
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A system usage limit for this policy usage limit.
+
+        Usage:  A positive integer specifies a system usage limit/
+        zero specifies 'noUse'/ minus one (-1) specifies 'infiniteUse'/
+        any other negative integer shall ALWAYS be treated as equal to
+        minus one (-1), ie, a specification of 'infiniteUse'."
+--  DEFVAL      { 0 }                   -  no system usage
+    ::= { xcmSecPolicyLimitEntry 3 }
+
+xcmSecPolicyLimitJobValue OBJECT-TYPE
+--  SYNTAX      Integer32
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A job usage limit for this policy usage limit.
+
+        Usage:  A positive integer specifies a job usage limit/
+        zero specifies 'noUse'/ minus one (-1) specifies 'infiniteUse'/
+        any other negative integer shall ALWAYS be treated as equal to
+        minus one (-1), ie, a specification of 'infiniteUse'."
+--  DEFVAL      { 0 }                   -  no job usage
+    ::= { xcmSecPolicyLimitEntry 4 }
+
+--.ts 'Policy Usage Group (Cond Mandatory)'
+--          Policy Usage Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support policy usage records
+--          (with system level but NOT job level usage counters)
+--          and optional for all other systems.
+--  
+--          Note:   Systems implementing the 'xcmSecPolicyUsageGroup'
+--                  shall ALWAYS implement the 'xcmSecPolicyGroup'.
+
+--          Usage:  A usage record ALWAYS has an associated 'private
+--                  policy' and a set of system usage counters.
+
+xcmSecPolicyUsage       OBJECT IDENTIFIER ::= { xcmSecMIB 19 }
+
+xcmSecPolicyUsageTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecPolicyUsageEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of policy usage recorded on this host system."
+    ::= { xcmSecPolicyUsage 2 }
+
+xcmSecPolicyUsageEntry OBJECT-TYPE
+    SYNTAX      XcmSecPolicyUsageEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for policy usage recorded on this host system."
+    INDEX       { xcmSecPolicyIndex,
+                  xcmSecPolicyUsageSystemUnit }
+    ::= { xcmSecPolicyUsageTable 1 }
+
+XcmSecPolicyUsageEntry ::= SEQUENCE {
+        --  Policy Usage Info           
+        xcmSecPolicyUsageSystemUnit     XcmHrDevTrafficUnit, 
+        xcmSecPolicyUsageRowStatus      INTEGER, 
+        xcmSecPolicyUsageSystemValue    Counter 
+        }                               
+
+xcmSecPolicyUsageSystemUnit OBJECT-TYPE
+    SYNTAX      XcmHrDevTrafficUnit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecPolicyUsageTable'.
+
+        The measurement units of the following system-level
+        usage counter."
+    ::= { xcmSecPolicyUsageEntry 1 }
+
+xcmSecPolicyUsageRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmSecPolicyUsageTable'."
+    ::= { xcmSecPolicyUsageEntry 2 }
+
+xcmSecPolicyUsageSystemValue OBJECT-TYPE
+--  SYNTAX      Counter32
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A system usage counter for this policy usage record.
+
+        Usage:  A positive integer specifies a system usage counter/
+        zero specifies 'noUse' or 'unknownUse'.
+
+        Usage:  Although no default value ('DEFVAL' clause) is permitted
+        (by IETF SMIv2) for this counter, conforming host systems shall
+        ALWAYS zero this counter upon conceptual row creation."
+    ::= { xcmSecPolicyUsageEntry 3 }
+
+--.ts 'Policy Verb Group (Cond Mandatory)'
+--          Policy Verb Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support 'private policies'
+--          with attached verb lists and optional for all other systems.
+--  
+--          Note:   Systems implementing the 'xcmSecPolicyVerbGroup'
+--                  shall ALWAYS implement the 'xcmSecPolicyGroup'.
+
+--          Usage:  A policy verb list ALWAYS grants access from a given
+--                  user role and service type (with support for
+--                  qualification by an optional user skill) to a given
+--                  verb (supported by that particular service type).
+
+xcmSecPolicyVerb        OBJECT IDENTIFIER ::= { xcmSecMIB 20 }
+
+xcmSecPolicyVerbTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecPolicyVerbEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of the policy verbs configured on this host system."
+    ::= { xcmSecPolicyVerb 2 }
+
+xcmSecPolicyVerbEntry OBJECT-TYPE
+    SYNTAX      XcmSecPolicyVerbEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a policy verb configured on this host system."
+    INDEX       { xcmSecPolicyIndex,
+                  xcmSecPolicyVerbIndex }
+    ::= { xcmSecPolicyVerbTable 1 }
+
+XcmSecPolicyVerbEntry ::= SEQUENCE {
+        --  Policy Info                 
+        xcmSecPolicyVerbIndex           Ordinal32, 
+        xcmSecPolicyVerbRowStatus       INTEGER, 
+        xcmSecPolicyVerbTypeOID         OBJECT IDENTIFIER, 
+        xcmSecPolicyVerbConciseMode     INTEGER, 
+        xcmSecPolicyVerbExcludeMode     INTEGER 
+        }                               
+
+xcmSecPolicyVerbIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecPolicyVerbTable'."
+    ::= { xcmSecPolicyVerbEntry 1 }
+
+xcmSecPolicyVerbRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmSecPolicyVerbTable'."
+    ::= { xcmSecPolicyVerbEntry 2 }
+
+xcmSecPolicyVerbTypeOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A verb type object identifier for this policy verb
+        list (permitted to the user role, user skill, and service type
+        or instance of the parent policy).
+
+        Usage:  For user, technician, and system services,
+        verb type OIDs MAY be taken
+        from the XCMI System Admin TC 'xcmSysAdmin...' series, and/or
+        from the XCMI Host Resources Ext TC 'xcmHrAdmin...' series."
+    ::= { xcmSecPolicyVerbEntry 3 }
+
+xcmSecPolicyVerbConciseMode OBJECT-TYPE
+--  SYNTAX      TruthValue
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The choice of concise (brief) or verbose (long) interface
+        for the verb type which is specified in this conceptual
+        row in the 'xcmSecPolicyVerbTable'.
+
+        Usage:
+      * 'true' - indicates a concise (brief) interface should be used.
+      * 'false' - indicates a verbose (long) interface should be used."
+    REFERENCE
+        "See:   'xcmSysAdminRequested[Brief|Verbose]' arguments in
+                XCMI System Admin TC.
+        See:    Section 3.1.6.5 'requested-attributes' in
+                POSIX System Administration - Part 4: Print Interfaces
+                (IEEE 1387.4 / Draft 8, October 1994)."
+--  DEFVAL      { false }               -  no concise (ie, verbose mode)
+    ::= { xcmSecPolicyVerbEntry 4 }
+
+xcmSecPolicyVerbExcludeMode OBJECT-TYPE
+--  SYNTAX      TruthValue
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The choice of exclude (reject) or include (accept) mode
+        for the verb type which is specified in this conceptual
+        row in the 'xcmSecPolicyVerbTable'.
+
+        Usage:
+      * 'true' - indicates exclude (reject) mode should be applied.
+      * 'false'  indicates include (accept) mode should be applied."
+--  DEFVAL      { false }               -  no exclude (ie, include mode)
+    ::= { xcmSecPolicyVerbEntry 5 }
+
+--.ts 'Profile Group (Cond Mandatory)'
+--          Profile Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support profiles (preferences)
+--          and optional for all other systems.
+--
+--          Note:   Systems implementing the 'xcmSecProfileGroup' shall
+--                  ALWAYS implement the 'xcmSecProfileDetailGroup'.
+
+--          Usage:  A profile ALWAYS has an associated parent.
+--
+--          Note:   A profile may be subordinate to EXACTLY one parent
+--                  object (config, account, policy, service, or user)
+
+xcmSecProfile           OBJECT IDENTIFIER ::= { xcmSecMIB 21 }
+
+xcmSecProfileTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecProfileEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "Protocol-independent, application-independent, preference lists
+        tailored for systems, services, accounts, users, or policies.
+        May have associated details in 'xcmSecProfileDetailTable'."
+    ::= { xcmSecProfile 2 }
+
+xcmSecProfileEntry OBJECT-TYPE
+    SYNTAX      XcmSecProfileEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "Protocol-independent, application-independent, preference list
+        tailored for one system, service, account, user, or policy.
+        May have associated details in 'xcmSecProfileDetailTable'."
+    INDEX       { xcmSecProfileParentType,
+                  xcmSecProfileParentIndex,
+                  xcmSecProfileIndex }
+    ::= { xcmSecProfileTable 1 }
+
+XcmSecProfileEntry ::= SEQUENCE {
+        --  Profile Info                
+        xcmSecProfileParentType         XcmSecGroupSupport, 
+        xcmSecProfileParentIndex        Ordinal32, 
+        xcmSecProfileIndex              Ordinal32, 
+        xcmSecProfileRowStatus          INTEGER 
+        }                               
+
+xcmSecProfileParentType OBJECT-TYPE
+    SYNTAX      XcmSecGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The type of the 'parent' entry which is associated
+        with this conceptual row in the 'xcmSecProfileTable'.
+
+        Usage:  Only ONE 'XcmSecGroupSupport' bit shall be set."
+    ::= { xcmSecProfileEntry 1 }
+
+xcmSecProfileParentIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The index of the 'parent' entry which is associated
+        with this conceptual row in the 'xcmSecProfileTable'.
+
+        Usage:  If the 'owner' is a user which is a user defaults
+        entry for a team, then the true 'owner' is the team itself (and
+        is found via the 'xcmSecUserTeamIndex' of the user defaults
+        entry)."
+    ::= { xcmSecProfileEntry 2 }
+
+xcmSecProfileIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecProfileTable'.
+
+        Usage:  Conforming implementations shall ALWAYS ensure that this
+        index object is unique WITHOUT consideration of the high-order
+        indices (ie, parent type and parent index)."
+    REFERENCE
+        "See:   'XcmSecFindIntegerKeyType' textual convention, using
+                'highestProfileIndex' in the companion Security TC."
+    ::= { xcmSecProfileEntry 3 }
+
+xcmSecProfileRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmSecProfileTable'."
+    ::= { xcmSecProfileEntry 4 }
+
+--.ts 'Profile Detail Group (Cond Mandatory)'
+--          Profile Detail Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support profiles (preferences)
+--          and optional for all other systems.
+--
+--          Note:   Systems implementing the 'xcmSecProfileDetailGroup'
+--                  shall ALWAYS implement the 'xcmSecProfileGroup'.
+
+--          Usage:  A profile detail ALWAYS has a parent profile.
+
+xcmSecProfileDetail     OBJECT IDENTIFIER ::= { xcmSecMIB 22 }
+
+xcmSecProfileDetailTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecProfileDetailEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A 'sparse' table containing profile detail information for
+        installed and (possibly) active profiles on this host system,
+        augmenting the basic entries in the 'xcmSecProfileTable'
+        of the XCMI Security MIB.
+
+        Usage:  UNLIKE the 'xcmGenOptionTable' in the XCMI General MIB
+        (which is a unique exception), this table of 'dictionary-based'
+        profile details is used with DIRECT create/update operations."
+    ::= { xcmSecProfileDetail 2 }
+
+xcmSecProfileDetailEntry OBJECT-TYPE
+    SYNTAX      XcmSecProfileDetailEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A 'sparse' entry containing profile detail information for
+        an installed and (possibly) active profile on this host system,
+        augmenting a basic entry in the 'xcmSecProfileTable'
+        of the XCMI Security MIB."
+    INDEX       { xcmSecProfileIndex,
+                  xcmSecProfileDetailClass,
+                  xcmSecProfileDetailType,
+                  xcmSecProfileDetailIndex }
+    ::= { xcmSecProfileDetailTable 1 }
+
+XcmSecProfileDetailEntry ::= SEQUENCE {
+        --  Profile Detail Info         
+        xcmSecProfileDetailClass        XcmSvcMonServiceDetailClass, 
+        xcmSecProfileDetailType         XcmSvcMonServiceDetailType, 
+        xcmSecProfileDetailIndex        Ordinal32, 
+        xcmSecProfileDetailRowStatus    INTEGER, 
+        xcmSecProfileDetailUnitClass    XcmHrDevDetailUnitClass, 
+        xcmSecProfileDetailUnit         Cardinal32, 
+        xcmSecProfileDetailInteger      INTEGER, 
+        xcmSecProfileDetailOID          OBJECT IDENTIFIER, 
+        xcmSecProfileDetailString       OCTET STRING 
+        }                               
+
+xcmSecProfileDetailClass OBJECT-TYPE
+    SYNTAX      XcmSvcMonServiceDetailClass
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A profile detail class,
+        used by system administrators and end users to specify
+        the correct class for this profile detail."
+    ::= { xcmSecProfileDetailEntry 1 }
+
+xcmSecProfileDetailType OBJECT-TYPE
+    SYNTAX      XcmSvcMonServiceDetailType
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A profile detail type,
+        used by system administrators and end users to specify
+        the correct type for this profile detail."
+    ::= { xcmSecProfileDetailEntry 2 }
+
+xcmSecProfileDetailIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecProfileDetailTable', OR a common
+        value shared across a set of related conceptual rows (with
+        different values of 'xcmSecProfileDetailType'.
+
+        Usage:  For profile detail types which are single-valued, this
+        index shall be used to correlate related single-valued details.
+
+        Usage:  For profile detail types which are multi-valued, this
+        index shall be used to enumerate lists of multi-valued details."
+    ::= { xcmSecProfileDetailEntry 3 }
+
+xcmSecProfileDetailRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmSecProfileDetailTable'."
+    ::= { xcmSecProfileDetailEntry 4 }
+
+xcmSecProfileDetailUnitClass OBJECT-TYPE
+    SYNTAX      XcmHrDevDetailUnitClass
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The value unit class of the detail information specified
+        in this conceptual row in the 'xcmSecProfileDetailTable'.
+
+        Usage:  Used to select a textual convention for specifying the
+        value unit of this profile detail.
+
+        Usage:  The 'xcmSecProfileDetail[UnitClass|Class]' objects
+        are used to specify the value syntax AND the value unit of the
+        'xcmSecProfileDetail[Integer|OID|String]' value objects."
+    REFERENCE
+        "See:   'xcmSecProfileDetailUnit'"
+--  DEFVAL      { unknown }             -  no detail value unit class
+    ::= { xcmSecProfileDetailEntry 5 }
+
+xcmSecProfileDetailUnit OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The value unit of the detail information specified
+        in this conceptual row in the 'xcmSecProfileDetailTable'.
+
+        Usage:  Used to select an enumerated choice from a textual
+        convention to specify the value unit of this profile detail.
+
+        Usage:  The 'xcmSecProfileDetail[UnitClass|Class]' objects
+        are used to specify the value syntax AND the value unit of the
+        'xcmSecProfileDetail[Integer|OID|String]' value objects."
+    REFERENCE
+        "See:   'xcmSecProfileDetailUnitClass'"
+--  DEFVAL      { 0 }                   -  no detail value unit
+    ::= { xcmSecProfileDetailEntry 6 }
+
+xcmSecProfileDetailInteger OBJECT-TYPE
+--  SYNTAX      Integer32
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A profile detail value integer,
+        used by system administrators and end users to specify
+        the current value for a profile detail
+        with a base value syntax of 'INTEGER'."
+    REFERENCE
+        "See:   'xcmSecProfileDetailOID' and
+                'xcmSecProfileDetailString'
+        See:    'xcmSecProfileDetailUnitClass' and
+                'xcmSecProfileDetailUnit' for syntax of detail value"
+--  DEFVAL      { 0 }                   -  no detail value integer
+    ::= { xcmSecProfileDetailEntry 7 }
+
+xcmSecProfileDetailOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A profile detail value OID (object identifier),
+        used by system administrators and end users to specify
+        the current value for a profile detail
+        with a base value syntax of 'OBJECT IDENTIFIER'."
+    REFERENCE
+        "See:   'xcmSecProfileDetailInteger' and
+                'xcmSecProfileDetailString'
+        See:    'xcmSecProfileDetailUnitClass' and
+                'xcmSecProfileDetailUnit' for syntax of detail value"
+--  DEFVAL      { xcmGenZeroDotZero }   -  no detail value OID
+    ::= { xcmSecProfileDetailEntry 8 }
+
+xcmSecProfileDetailString OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A profile detail value string,
+        used by system administrators and end users to specify
+        the current value for a profile detail
+        with a base value syntax of 'OCTET STRING'."
+    REFERENCE
+        "See:   'xcmSecProfileDetailInteger' and
+                'xcmSecProfileDetailOID'
+        See:    'xcmSecProfileDetailUnitClass' and
+                'xcmSecProfileDetailUnit' for syntax of detail value"
+--  DEFVAL      { ''H }                 -  no detail value string
+    ::= { xcmSecProfileDetailEntry 9 }
+
+--.ts 'Service Group (Cond Mandatory)'
+--          Service Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support secure services
+--          and optional for all other systems.
+
+xcmSecService           OBJECT IDENTIFIER ::= { xcmSecMIB 23 }
+
+xcmSecServiceTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecServiceEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of the secure system and/or end user services currently
+        configured on this host system."
+    ::= { xcmSecService 2 }
+
+xcmSecServiceEntry OBJECT-TYPE
+    SYNTAX      XcmSecServiceEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a secure system and/or end user service currently
+        configured on this host system."
+    INDEX       { xcmSecServiceIndex }
+    ::= { xcmSecServiceTable 1 }
+
+XcmSecServiceEntry ::= SEQUENCE {
+        -- Service Info                 
+        xcmSecServiceIndex              Ordinal32, 
+        xcmSecServiceRowStatus          INTEGER, 
+        xcmSecServiceTypeOID            OBJECT IDENTIFIER, 
+        --  Service Capabilities Ready Info 
+        xcmSecServiceAuditReady         XcmSecAuditSupport, 
+        xcmSecServiceSecurityReady      XcmSecSecuritySupport, 
+        --  Service Guest/Alien Job and Log Full Policies Info 
+        xcmSecServiceGuestJobPolicy     XcmSecGuestJobPolicy, 
+        xcmSecServiceAlienJobPolicy     XcmSecGuestJobPolicy, 
+        xcmSecServiceEventLogFullPolicy XcmGenLogFullPolicy, 
+        xcmSecServiceJobLogFullPolicy   XcmGenLogFullPolicy, 
+        xcmSecServiceReqLogFullPolicy   XcmGenLogFullPolicy, 
+        --  Service Owner Info          
+        xcmSecServiceOwnerRole          XcmSecUserRole, 
+        xcmSecServiceOwnerSkill         XcmSecUserSkill, 
+        xcmSecServiceOwnerVerbs         XcmSecPosixVerbs 
+        }                               
+
+xcmSecServiceIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecServiceTable'.
+
+        Usage:  Conforming management stations and management agents
+        shall ALWAYS ensure that 'xcmSecServiceIndex' is equal to
+        'xcmSvcMonServiceIndex' for the same service (if the XCMI
+        Service Monitoring MIB is also implemented).
+
+        Usage:  This object shall ALWAYS be permanent (ie, preserved
+        across all hardware resets)."
+    ::= { xcmSecServiceEntry 1 }
+
+xcmSecServiceRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmSecServiceTable'."
+    ::= { xcmSecServiceEntry 2 }
+
+xcmSecServiceTypeOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A service type object identifier for this secure service.
+
+        Usage:  For user services (which instantiate 'jobs'), service
+        type OIDs shall ALWAYS be taken from the XCMI Job Monitoring TC
+        'xcmJobService...' series (used for 'XcmJMJobServiceTypeOID' and
+        'xcmJobServiceType' in the Job General Basic group).
+
+        Usage:  For system admin/operator and technician services (which
+        MAY not instantiate 'jobs'), service type OIDs MAY be taken
+        from the XCMI System Admin TC 'xcmSASvc...' series, and/or
+        from the XCMI Host Resources Ext TC 'xcmHrAdmin...' series."
+--  DEFVAL      { xcmGenZeroDotZero }   -  no 'service' type
+    ::= { xcmSecServiceEntry 3 }
+
+xcmSecServiceAuditReady OBJECT-TYPE
+    SYNTAX      XcmSecAuditSupport
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse configuration statement of security 'audit' methods
+        ready (enabled) on this management agent implementation
+        for this secure service."
+--  DEFVAL      { 0 }                   -  no audit methods ready
+    ::= { xcmSecServiceEntry 4 }
+
+xcmSecServiceSecurityReady OBJECT-TYPE
+    SYNTAX      XcmSecSecuritySupport
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Terse configuration statement of security 'AAA' methods
+        ready (enabled) on this management agent implementation
+        for this secure service."
+--  DEFVAL      { 0 }                   -  no AAA methods ready
+    ::= { xcmSecServiceEntry 5 }
+
+xcmSecServiceGuestJobPolicy OBJECT-TYPE
+    SYNTAX      XcmSecGuestJobPolicy
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The current policy for jobs submitted with 'guest' (empty)
+        user/account identification info to this secure service."
+    REFERENCE
+        "See:   'deviceGuestJobPolicy' in 'XcmHrDevDetailType'
+                in XCMI Host Resources Ext TC."
+--  DEFVAL      { unknown }             -  no guest job policy
+    ::= { xcmSecServiceEntry 6 }
+
+xcmSecServiceAlienJobPolicy OBJECT-TYPE
+    SYNTAX      XcmSecGuestJobPolicy
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The current policy for jobs submitted with 'alien' (invalid)
+        user/account identification info to this secure service."
+    REFERENCE
+        "See:   'deviceAlienJobPolicy' in 'XcmHrDevDetailType'
+                in XCMI Host Resources Ext TC."
+--  DEFVAL      { unknown }             -  no alien job policy
+    ::= { xcmSecServiceEntry 7 }
+
+xcmSecServiceEventLogFullPolicy OBJECT-TYPE
+    SYNTAX      XcmGenLogFullPolicy
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The current policy for handling event log 'full'
+        (in MIBs, in shared RAM, on disk, etc), on this secure service."
+    REFERENCE
+        "See:   'deviceEventLogFullPolicy' in 'XcmHrDevDetailType'
+                in XCMI Host Resources Ext TC."
+--  DEFVAL      { enableServiceAndFlushOldest }
+    ::= { xcmSecServiceEntry 8 }
+
+xcmSecServiceJobLogFullPolicy OBJECT-TYPE
+    SYNTAX      XcmGenLogFullPolicy
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The current policy for handling job log 'full'
+        (in MIBs, in shared RAM, on disk, etc), on this secure service."
+    REFERENCE
+        "See:   'deviceJobLogFullPolicy' in 'XcmHrDevDetailType'
+                in XCMI Host Resources Ext TC."
+--  DEFVAL      { enableServiceAndFlushOldest }
+    ::= { xcmSecServiceEntry 9 }
+
+xcmSecServiceReqLogFullPolicy OBJECT-TYPE
+    SYNTAX      XcmGenLogFullPolicy
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The current policy for handling request log 'full'
+        (in MIBs, in shared RAM, on disk, etc), on this secure service."
+    REFERENCE
+        "See:   'deviceReqLogFullPolicy' in 'XcmHrDevDetailType'
+                in XCMI Host Resources Ext TC."
+--  DEFVAL      { enableServiceAndFlushOldest }
+    ::= { xcmSecServiceEntry 10 }
+
+xcmSecServiceOwnerRole OBJECT-TYPE
+    SYNTAX      XcmSecUserRole
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The user role of an authorized human 'owner' who is associated
+        with this conceptual row in the 'xcmSecServiceTable'.
+
+        Usage:  The special roles 'any...' shall NOT be specified in
+        'xcmSec[Account|User]Role', or 'xcmSec...OwnerRole' objects, but
+        MAY be specified in 'xcmSecConfigAccessRole' and
+        MAY be specified in 'xcmSecConfigViewOwnerRole'
+        to grant broad privileges in a terse manner."
+--  DEFVAL      { systemAdministrator } -  default 'owner' user role
+    ::= { xcmSecServiceEntry 11 }
+
+xcmSecServiceOwnerSkill OBJECT-TYPE
+    SYNTAX      XcmSecUserSkill
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The user skill of an authorized human 'owner' who is associated
+        with this conceptual row in the 'xcmSecServiceTable'."
+--  DEFVAL      { 1 }                   -  default 'owner' user skill
+    ::= { xcmSecServiceEntry 12 }
+
+xcmSecServiceOwnerVerbs OBJECT-TYPE
+    SYNTAX      XcmSecPosixVerbs
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The set of POSIX.3 system management verbs ready (enabled)
+        for use by an authenticated human 'owner' who is associated
+        with this conceptual row in the 'xcmSecServiceTable',
+        and who matches/exceeds 'xcmSecServiceOwner[Role|Skill]'."
+    REFERENCE
+        "See:   'XcmSecPosixVerbs' for standard POSIX.3 system
+                management verbs in the companion Security TC.
+        See:    POSIX System Administration - Part 4: Print Interfaces
+                (IEEE 1387.4 / Draft 8, October 1994).
+        See:    Document Printing Application - Part 1: Abstract Service
+                (ISO/IEC 10175-1 / Final Text, March 1996)."
+--  DEFVAL      { 0 }                   -  no 'owner' POSIX verbs
+    ::= { xcmSecServiceEntry 13 }
+
+--.ts 'Session Group (Cond Mandatory)'
+--          Session Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support secure admin sessions
+--          and optional for all other systems.
+
+--          Usage:  Security session requests are used to create,
+--                  delete, and manage secure admin sessions
+--                  on a managed host system.
+--
+--          Usage:  A secure admin session is employed to
+--                  perform reliable and ordered secure admin
+--                  operations on a managed host system.
+--
+--          Note:   An XCMI conforming management agent NEED NOT support
+--                  multiple concurrent secure admin sessions
+--                  but MAY elect to do so.
+
+xcmSecSession           OBJECT IDENTIFIER ::= { xcmSecMIB 24 }
+
+xcmSecSessionTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecSessionEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of the secure admin sessions currently or
+        previously active on this host system."
+    ::= { xcmSecSession 2 }
+
+xcmSecSessionEntry OBJECT-TYPE
+    SYNTAX      XcmSecSessionEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a secure admin session currently or
+        previously active on this host system."
+    INDEX       { xcmSecSessionIndex }
+    ::= { xcmSecSessionTable 1 }
+
+XcmSecSessionEntry ::= SEQUENCE {
+        --  Session Info                
+        xcmSecSessionIndex              Ordinal32, 
+        xcmSecSessionRowStatus          INTEGER, 
+        xcmSecSessionID                 XcmGlobalUniqueID, 
+        --  Session Request Info        
+        xcmSecSessionRequestOperation   XcmSecSessionRequestOperation, 
+        xcmSecSessionRequestData        XcmSecSessionRequestData, 
+        xcmSecSessionRequestErrorStatus XcmGenSNMPv2ErrorStatus, 
+        xcmSecSessionRequestFacilities  XcmSecFacilitySupport, 
+        xcmSecSessionGrantedFacilities  XcmSecFacilitySupport 
+        }                               
+
+xcmSecSessionIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecSessionTable'."
+    ::= { xcmSecSessionEntry 1 }
+
+xcmSecSessionRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmSecSessionTable'."
+    ::= { xcmSecSessionEntry 2 }
+
+xcmSecSessionID OBJECT-TYPE
+    SYNTAX      XcmGlobalUniqueID (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The secure admin session identifier which uniquely
+        identifies this conceptual row in 'xcmSecSessionTable',
+        although it is NOT an INDEX of this table.
+
+        Usage:  This secure admin session identifier (when combined
+        with the value of 'xcmSecSessionIndex') ensures that this
+        secure admin session is permanently unique
+        (across system resets) on this host system."
+    ::= { xcmSecSessionEntry 3 }
+
+xcmSecSessionRequestOperation OBJECT-TYPE
+    SYNTAX      XcmSecSessionRequestOperation
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A write of this object by an (authorized) management station
+        invokes a secure admin session request.
+        A read of this object by an (authorized) management station
+        returns the most recent secure admin session request."
+    REFERENCE
+        "See:   'dot5Commands' in the IEEE 802.5 Protocol group of
+                IETF Token Ring MIB (RFC 1748).
+        See:    'hrDeviceStatus' in the Device group of
+                IETF Host Resources MIB (RFC 2790).
+        See:    'XcmSecSessionRequestOperation' textual convention in
+                XCMI Security TC.
+        See:    'XcmSysAdminRequestOperation' in the Request group of
+                XCMI System Admin TC.
+        See:    'xcmSecSessionRequest[Data|ErrorStatus]'"
+--  DEFVAL      { unknown }             -  no session request operation
+    ::= { xcmSecSessionEntry 4 }
+
+xcmSecSessionRequestData OBJECT-TYPE
+    SYNTAX      XcmSecSessionRequestData
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A write of this object by an (authorized) management station
+        conveys secure admin session request data.
+        A read of this object by an (authorized) management station
+        returns the last secure admin session request data."
+    REFERENCE
+        "See:   'xcmSecSessionRequest[Operation|ErrorStatus]'"
+--  DEFVAL      { ''H }                 -  no session request data
+    ::= { xcmSecSessionEntry 5 }
+
+xcmSecSessionRequestErrorStatus OBJECT-TYPE
+    SYNTAX      XcmGenSNMPv2ErrorStatus
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The secure admin session request error status associated with
+        this conceptual row in 'xcmSecSessionRequestTable'."
+    REFERENCE
+        "See:   'xcmSecSessionRequest[Operation|Data]'"
+--  DEFVAL      { noError }             -  no session request error
+    ::= { xcmSecSessionEntry 6 }
+
+xcmSecSessionRequestFacilities OBJECT-TYPE
+    SYNTAX      XcmSecFacilitySupport
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A write of this object specifies the requested 'facilities'
+        (ie, optional capabilities) for a 'secSession[Create|Manage]'
+        secure admin session request."
+    REFERENCE
+        "See:   'xcmSecSessionGrantedFacilities'"
+--  DEFVAL      { 0 }                   -  no session request facilities
+    ::= { xcmSecSessionEntry 7 }
+
+xcmSecSessionGrantedFacilities OBJECT-TYPE
+    SYNTAX      XcmSecFacilitySupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A read of this object returns the actually granted 'facilities'
+        (ie, optional capabilities) for a 'secSession[Create|Manage]'
+        previous secure admin session request."
+    REFERENCE
+        "See:   'xcmSecSessionRequestFacilities'"
+--  DEFVAL      { 0 }                   -  no session granted facilities
+    ::= { xcmSecSessionEntry 9 }
+
+--.ts 'Session Ext Group (Cond Mandatory)'
+--          Session Ext Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support secure admin session
+--          extensions and optional for all other systems.
+--
+--          Note:   Systems implementing the 'xcmSecSessionExtGroup'
+--                  shall ALWAYS implement the 'xcmSecSessionGroup'.
+
+xcmSecSessionExt        OBJECT IDENTIFIER ::= { xcmSecMIB 25 }
+
+xcmSecSessionExtTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecSessionExtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table which augments 'xcmSecSessionTable'
+        with additional useful session info objects
+        for currently or previously active
+        sessions on this host system."
+    ::= { xcmSecSessionExt 2 }
+
+xcmSecSessionExtEntry OBJECT-TYPE
+    SYNTAX      XcmSecSessionExtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry which augments 'xcmSecSessionEntry'
+        with additional useful session info objects
+        for a currently or previously active
+        session on this host system."
+    INDEX       { xcmSecSessionIndex }
+    ::= { xcmSecSessionExtTable 1 }
+
+XcmSecSessionExtEntry ::= SEQUENCE {
+        --  Session Ext Statistics Info 
+        xcmSecSessionCopyCount          Counter, 
+        xcmSecSessionCreateCount        Counter, 
+        xcmSecSessionDeleteCount        Counter, 
+        xcmSecSessionListCount          Counter, 
+        xcmSecSessionModifyCount        Counter, 
+        xcmSecSessionResetCount         Counter 
+        }                               
+
+xcmSecSessionCopyCount OBJECT-TYPE
+--  SYNTAX      Counter32
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The count of objects which were copied, during this secure
+        admin session."
+    ::= { xcmSecSessionExtEntry 1 }
+
+xcmSecSessionCreateCount OBJECT-TYPE
+--  SYNTAX      Counter32
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The count of objects which were created, during this secure
+        admin session."
+    ::= { xcmSecSessionExtEntry 2 }
+
+xcmSecSessionDeleteCount OBJECT-TYPE
+--  SYNTAX      Counter32
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The count of objects which were deleted, during this secure
+        admin session."
+    ::= { xcmSecSessionExtEntry 3 }
+
+xcmSecSessionListCount OBJECT-TYPE
+--  SYNTAX      Counter32
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The count of objects which were listed, during this secure
+        admin session."
+    ::= { xcmSecSessionExtEntry 4 }
+
+xcmSecSessionModifyCount OBJECT-TYPE
+--  SYNTAX      Counter32
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The count of objects which were modified, during this secure
+        admin session."
+    ::= { xcmSecSessionExtEntry 5 }
+
+xcmSecSessionResetCount OBJECT-TYPE
+--  SYNTAX      Counter32
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The count of objects which were reset, during this secure
+        admin session."
+    ::= { xcmSecSessionExtEntry 6 }
+
+--.ts 'Team Group (Cond Mandatory)'
+--          Team Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support user-based security as
+--          well as user workgroups, and optional for all other systems.
+--  
+--          Note:   Systems implementing the 'xcmSecTeamGroup'
+--                  shall ALWAYS implement the 'xcmSecUserGroup'.
+
+--          Usage:  A team of users may 'share' access to zero, one, or
+--                  more accounts with 'shared' scope.
+--                  Team 'role', 'password', 'passcode', 'directory',
+--                  and 'directoryPath' objects may supply 'shared'
+--                  (ie, default) values for users on a given team.
+
+xcmSecTeam              OBJECT IDENTIFIER ::= { xcmSecMIB 26 }
+
+xcmSecTeamTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecTeamEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of the teams (groups) configured on this host system."
+    ::= { xcmSecTeam 2 }
+
+xcmSecTeamEntry OBJECT-TYPE
+    SYNTAX      XcmSecTeamEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a team (group) configured on this host system."
+    INDEX       { xcmSecTeamIndex }
+    ::= { xcmSecTeamTable 1 }
+
+XcmSecTeamEntry ::= SEQUENCE {
+        --  Team Info                   
+        xcmSecTeamIndex                 Ordinal32, 
+        xcmSecTeamRowStatus             INTEGER, 
+        xcmSecTeamUserDefaultsIndex     Cardinal32 
+        }                               
+
+xcmSecTeamIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecTeamTable'."
+    ::= { xcmSecTeamEntry 1 }
+
+xcmSecTeamRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmSecTeamTable'."
+    ::= { xcmSecTeamEntry 2 }
+
+xcmSecTeamUserDefaultsIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmSecUserIndex' corresponding to the ONLY
+        associated conceptual row in the 'xcmSecUserTable' for user
+        defaults (ie, defaults which apply to all members of this team).
+
+        Usage:  Please read the 'Usage:' notes in the DESCRIPTION clause
+        of each object in the 'xcmSecUserTable' for details of their
+        use when supplying user defaults information.  SOME of those
+        objects actually provide information about the team itself (eg,
+        team name) by overloading, while MOST of those objects provide
+        user defaults information.
+
+        Usage:  Normally, ONLY a newly created team OR an obsolete team
+        will have no user defaults information."
+--  DEFVAL      { 0 }                   -  no user defaults
+    ::= { xcmSecTeamEntry 3 }
+
+--.ts 'Timestamp Group (Cond Mandatory)'
+--          Timestamp Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support timestamps on Security
+--          MIB entries, and optional for all other systems.
+
+xcmSecTimestamp         OBJECT IDENTIFIER ::= { xcmSecMIB 27 }
+
+xcmSecTimestampTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecTimestampEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of the timestamps instantiated on this host system."
+    ::= { xcmSecTimestamp 2 }
+
+xcmSecTimestampEntry OBJECT-TYPE
+    SYNTAX      XcmSecTimestampEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a timestamp instantiated on this host system."
+    INDEX       { xcmSecTimestampParentType,
+                  xcmSecTimestampParentIndex,
+                  xcmSecTimestampIndex }
+    ::= { xcmSecTimestampTable 1 }
+
+XcmSecTimestampEntry ::= SEQUENCE {
+        --  Timestamp Info              
+        xcmSecTimestampParentType       XcmSecGroupSupport, 
+        xcmSecTimestampParentIndex      Ordinal32, 
+        xcmSecTimestampIndex            Ordinal32, 
+        xcmSecTimestampRowStatus        INTEGER, 
+        xcmSecTimestampCreateDate       OCTET STRING, 
+        xcmSecTimestampExpireDate       OCTET STRING, 
+        xcmSecTimestampAccessDate       OCTET STRING, 
+        xcmSecTimestampModifyDate       OCTET STRING, 
+        xcmSecTimestampCreateUserIndex  Cardinal32, 
+        xcmSecTimestampAccessUserIndex  Cardinal32, 
+        xcmSecTimestampModifyUserIndex  Cardinal32, 
+        xcmSecTimestampAccessCount      Counter, 
+        xcmSecTimestampModifyCount      Counter 
+        }                               
+
+xcmSecTimestampParentType OBJECT-TYPE
+    SYNTAX      XcmSecGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The type of the 'parent' entry which is associated
+        with this conceptual row in the 'xcmSecTimestampTable'.
+
+        Usage:  Only ONE 'XcmSecGroupSupport' bit shall be set."
+    ::= { xcmSecTimestampEntry 1 }
+
+xcmSecTimestampParentIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The index of the 'parent' entry which is associated
+        with this conceptual row in the 'xcmSecTimestampTable'."
+    ::= { xcmSecTimestampEntry 2 }
+
+xcmSecTimestampIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecTimestampTable'.
+
+        Usage:  Conforming implementations shall ALWAYS ensure that this
+        index object is unique WITHOUT consideration of the high-order
+        indices (ie, parent type and parent index)."
+    REFERENCE
+        "See:   'XcmSecFindIntegerKeyType' textual convention, using
+                'highestTimestampIndex' in the companion Security TC."
+    ::= { xcmSecTimestampEntry 3 }
+
+xcmSecTimestampRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmSecTimestampTable'."
+    ::= { xcmSecTimestampEntry 4 }
+
+xcmSecTimestampCreateDate OBJECT-TYPE
+--  SYNTAX      DateAndTime
+    SYNTAX      OCTET STRING
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The date and time when the timestamp 'owner' was created."
+--  DEFVAL      { '0000000000000000'H } -  no 'owner' create date
+    ::= { xcmSecTimestampEntry 5 }
+
+xcmSecTimestampExpireDate OBJECT-TYPE
+--  SYNTAX      DateAndTime
+    SYNTAX      OCTET STRING
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The date and time when the timestamp 'owner' will expire."
+--  DEFVAL      { '0000000000000000'H } -  no 'owner' expire date
+    ::= { xcmSecTimestampEntry 6 }
+
+xcmSecTimestampAccessDate OBJECT-TYPE
+--  SYNTAX      DateAndTime
+    SYNTAX      OCTET STRING
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The date and time when the timestamp 'owner' was accessed."
+--  DEFVAL      { '0000000000000000'H } -  no 'owner' access date
+    ::= { xcmSecTimestampEntry 7 }
+
+xcmSecTimestampModifyDate OBJECT-TYPE
+--  SYNTAX      DateAndTime
+    SYNTAX      OCTET STRING
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The date and time when the timestamp 'owner' was modified."
+--  DEFVAL      { '0000000000000000'H } -  no 'owner' modify date
+    ::= { xcmSecTimestampEntry 8 }
+
+xcmSecTimestampCreateUserIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The user index when the timestamp 'owner' was created."
+--  DEFVAL      { 0 }                   -  no 'owner' create user index
+    ::= { xcmSecTimestampEntry 9 }
+
+xcmSecTimestampAccessUserIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The user index when the timestamp 'owner' was accessed."
+--  DEFVAL      { 0 }                   -  no 'owner' access user index
+    ::= { xcmSecTimestampEntry 10 }
+
+xcmSecTimestampModifyUserIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The user index when the timestamp 'owner' was modified."
+--  DEFVAL      { 0 }                   -  no 'owner' modify user index
+    ::= { xcmSecTimestampEntry 11 }
+
+xcmSecTimestampAccessCount OBJECT-TYPE
+--  SYNTAX      Counter32
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The count of times the timestamp 'owner' was accessed."
+    ::= { xcmSecTimestampEntry 12 }
+
+xcmSecTimestampModifyCount OBJECT-TYPE
+--  SYNTAX      Counter32
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The count of times the timestamp 'owner' was modified."
+    ::= { xcmSecTimestampEntry 13 }
+
+--.ts 'Token Group (Cond Mandatory)'
+--          Token Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support secure admin sessions
+--          and optional for all other systems.
+--  
+--          Note:   Systems implementing the 'xcmSecTokenGroup'
+--                  shall ALWAYS implement the 'xcmSecSessionGroup'.
+
+--          Usage:  A token is used to authenticate secure access (both
+--                  read or 'Get' and write or 'Set') to all objects
+--                  during a secure admin session.
+--
+--          Usage:  A secure admin session is employed to
+--                  perform reliable and ordered secure admin
+--                  operations on a managed host system.
+--
+--          Note:   An XCMI conforming management agent NEED NOT support
+--                  multiple concurrent secure admin sessions
+--                  but MAY elect to do so.
+
+xcmSecToken             OBJECT IDENTIFIER ::= { xcmSecMIB 28 }
+
+xcmSecTokenTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecTokenEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of the tokens currently valid (ie, active) for all
+        secure admin sessions active on this host system."
+    ::= { xcmSecToken 2 }
+
+xcmSecTokenEntry OBJECT-TYPE
+    SYNTAX      XcmSecTokenEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a token currently valid (ie, active) for a given
+        secure admin session active on this host system."
+    INDEX       { xcmSecSessionIndex,
+                  xcmSecTokenIndex }
+    ::= { xcmSecTokenTable 1 }
+
+XcmSecTokenEntry ::= SEQUENCE {
+        --  Token Info                  
+        xcmSecTokenIndex                Ordinal32, 
+        xcmSecTokenRowStatus            INTEGER 
+        }                               
+
+xcmSecTokenIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecTokenTable'.
+
+        Usage:  EXACTLY one conceptual row in 'xcmSecTokenTable' shall
+        exist at any point in time.  The value of 'xcmSecTokenIndex'
+        shall constitute the currently valid 'token' for an active
+        secure admin session."
+    ::= { xcmSecTokenEntry 1 }
+
+xcmSecTokenRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to verify and delete individual conceptual
+        rows in the 'xcmSecTokenTable'.
+
+        Usage:  A read ('Get') of this object (for a valid conceptual
+        row) shall ALWAYS return 'active(1)' and shall ALWAYS cause the
+        IMMEDIATE deletion of this conceptual row (and its replacement
+        by another valid conceptual row, with a different token).
+
+        Usage:  A write ('Set') of this object (for a valid conceptual
+        row) shall ALWAYS use 'destroy(6)' and shall ALWAYS cause the
+        IMMEDIATE deletion of this conceptual row (and its replacement
+        by another valid conceptual row, with a different token).
+
+        Usage:  An XCMI conforming management agent shall ALWAYS reject
+        any SNMPv1/v2 'GetNext' or SNMPv2 'GetBulk' attempted access to
+        this object and shall ALWAYS record and (optionally) report an
+        abnormal 'security event' (indicating attempted security breach)
+        affecting this managed host system."
+    ::= { xcmSecTokenEntry 2 }
+
+--.ts 'User Group (Cond Mandatory)'
+--          User Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support user-based security
+--          and optional for all other systems.
+--  
+--          Note:   Systems implementing the 'xcmSecUserGroup'
+--                  MAY also implement the 'xcmSecTeamGroup'.
+
+--          Usage:  A user may have exclusive access to zero, one, or
+--                  more 'private' accounts/ and may be associated with
+--                  zero, one, or more 'private policies' (ie, service
+--                  access/limit objects)/ and may be a member of zero
+--                  one, or more teams (ie, groups of users).
+--
+--          Usage:  User objects (in this group) may supply 'private'
+--                  (ie, explicit) values for a given user.
+--
+--          Note:   The user 'number' object is not included, because
+--                  the user 'index' object shall ALWAYS be the value
+--                  of the associated system user 'number' (which
+--                  directly prevents creation of 'duplicate' user
+--                  numbers).
+
+xcmSecUser              OBJECT IDENTIFIER ::= { xcmSecMIB 29 }
+
+xcmSecUserTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecUserEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of the users configured on this host system."
+    ::= { xcmSecUser 2 }
+
+xcmSecUserEntry OBJECT-TYPE
+    SYNTAX      XcmSecUserEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a user configured on this host system."
+    INDEX       { xcmSecUserIndex }
+    ::= { xcmSecUserTable 1 }
+
+XcmSecUserEntry ::= SEQUENCE {
+        --  User Info                   
+        xcmSecUserIndex                 Ordinal32, 
+        xcmSecUserRowStatus             INTEGER, 
+        xcmSecUserName                  XcmFixedLocaleDisplayString, 
+        xcmSecUserRole                  XcmSecUserRole, 
+        xcmSecUserSkill                 XcmSecUserSkill, 
+        xcmSecUserScopes                XcmSecAccountScope, 
+        xcmSecUserPassword              OCTET STRING, 
+        xcmSecUserPasscode              OCTET STRING, 
+        xcmSecUserTeamIndex             Cardinal32, 
+        xcmSecUserAccountIndex          Cardinal32, 
+        xcmSecUserMgmtOperation         XcmSecConfigMgmtOperation, 
+        xcmSecUserMgmtData              XcmSecConfigMgmtData, 
+        xcmSecUserMgmtStatus            XcmGenSNMPv2ErrorStatus, 
+        xcmSecUserMgmtInProgress        INTEGER 
+        }                               
+
+xcmSecUserIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSecUserTable'."
+    ::= { xcmSecUserEntry 1 }
+
+xcmSecUserRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmSecUserTable'."
+    ::= { xcmSecUserEntry 2 }
+
+xcmSecUserName OBJECT-TYPE
+    SYNTAX      XcmFixedLocaleDisplayString (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A human-readable name, used by system administrators
+        and end users to identify this user for systems management.
+
+        Usage:  If this is a user defaults entry for a team, then this
+        object contains the name of the team.
+
+        Usage:  This name shall ALWAYS be the one normally used in a
+        command shell for control of this user.
+
+        Usage:  Conforming implementations shall ALWAYS ensure that each
+        'xcmSecUserEntry' has a unique (on the managed system)
+        'xcmSecUserName', (ie, user names support is mandatory), and
+        a given 'xcmSecUserName' shall ALWAYS be found via the same
+        value of 'xcmSecUserIndex' on the same managed system
+        (ie, user names shall ALWAYS be persistent)."
+--  DEFVAL      { ''H }                 -  no user name
+    ::= { xcmSecUserEntry 3 }
+
+xcmSecUserRole OBJECT-TYPE
+    SYNTAX      XcmSecUserRole
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A specific user role for this user.
+
+        Usage:  If this is a user defaults entry for a team, then this
+        object contains the default role of the team.
+
+        Usage:  The special roles 'any...' shall NOT be specified in
+        'xcmSec[Account|User]Role', or 'xcmSec...OwnerRole' objects, but
+        MAY be specified in 'xcmSecConfigAccessRole' and
+        MAY be specified in 'xcmSecConfigViewOwnerRole'
+        to grant broad privileges in a terse manner.
+
+        Usage:  The role 'alien' (invalid) user shall NOT be specified
+        in 'xcmSec[Account|User]Role'.  Requests and jobs submitted to a
+        management agent with invalid user/account identification data
+        shall be labelled as 'alien' - they shall ALWAYS be handled via
+        the current value of 'xcmSecConfigAlienJobPolicy' (or the
+        current value of 'xcmSecServiceAlienJobPolicy', if specified)
+        - if 'alien' jobs are accepted, they shall ALWAYS be assigned
+        to a selected 'guest' user or account - with inheritance of all
+        of its configured capabilities and permissions, for all aspects
+        of authentication, authorization, accounting (and audit trail)."
+--  DEFVAL      { user }                -  default user role
+    ::= { xcmSecUserEntry 4 }
+
+xcmSecUserSkill OBJECT-TYPE
+    SYNTAX      XcmSecUserSkill
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A specific user skill for this user.
+
+        Usage:  If this is a user defaults entry for a team, then this
+        object contains the default skill of the team.
+
+        Usage:  Conforming implementations need NOT support non-trivial
+        implementations of 'xcmSecUserSkill' (values other than 1)."
+--  DEFVAL      { 1 }                   -  default user skill
+    ::= { xcmSecUserEntry 5 }
+
+xcmSecUserScopes OBJECT-TYPE
+    SYNTAX      XcmSecAccountScope
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The (one or more) relative 'scopes' of accounts, which are
+        accessible to this user.  Used to show whether 'private' (one
+        user), 'group' (one or more teams of users), 'world' (all
+        authenticated users), and/or 'guest' (anonymous users) 'scopes'
+        of accounts are accessible to this user.
+
+        Usage:  If this is a user defaults entry for a team, then this
+        object contains the default account 'scopes' of the team.
+
+        Usage:  A given account shall always have EXACTLY one scope.
+        A given user may have access to one or more account scopes."
+--  DEFVAL      { 7 }                   -  'private/group/world' scopes
+    ::= { xcmSecUserEntry 6 }
+
+xcmSecUserPassword OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A protected password used by system administrators
+        and end users to authenticate their access to this user.
+
+        Note:   Conforming implementations shall NOT send passwords in
+        cleartext form 'over-the-wire' (even if only 'weak' protection
+        algorithms are used).  There is NO actual security achieved when
+        cleartext passwords are transferred 'over-the-wire'.
+
+        Usage:  If this is a user defaults entry for a team, then this
+        object contains the password of the team."
+    REFERENCE
+        "See:   'xcmSecAccountPassword'"
+--  DEFVAL      { ''H }                 -  no password
+    ::= { xcmSecUserEntry 7 }
+
+xcmSecUserPasscode OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A protected passcode used by system administrators
+        and end users to authenticate their access to this user.
+
+        Note:   Conforming implementations shall NOT send passcodes in
+        cleartext form 'over-the-wire' (even if only 'weak' protection
+        algorithms are used).  There is NO actual security achieved when
+        cleartext passcodes are transferred 'over-the-wire'.
+
+        Usage:  Passcodes shall ALWAYS be purely numeric (as opposed to
+        passwords, which may contain arbitrary characters and therefore
+        be difficult or impossible to enter at the Local User Interface
+        of a network accessible host system).
+
+        Usage:  Passcodes shall ALWAYS contain four or more digits and
+        the first (high-order) passcode digit shall ALWAYS be non-zero,
+        to prevent use of trivial (and therefore insecure) passcodes.
+
+        Usage:  A passcode, for example, might specify a so-called
+        'Personal Identification Number' (PIN), as commonly used for
+        banking automated teller machines (ATMs).
+
+        Usage:  If this is a user defaults entry for a team, then this
+        object contains the passcode of the team."
+    REFERENCE
+        "See:   'xcmSecAccountPasscode'"
+--  DEFVAL      { ''H }                 -  no passcode
+    ::= { xcmSecUserEntry 8 }
+
+xcmSecUserTeamIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmSecTeamIndex' corresponding to the ONLY
+        associated conceptual row in the 'xcmSecTeamTable',
+        or zero if this user does NOT require such information.
+
+        Usage:  If this is a user defaults entry for a team, then this
+        object contains the index of the team."
+--  DEFVAL      { 0 }                   -  no team
+    ::= { xcmSecUserEntry 9 }
+
+xcmSecUserAccountIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmSecAccountIndex' corresponding to the ONLY
+        associated conceptual row in the 'xcmSecAccountTable',
+        or zero if this user does NOT require such information.
+
+        Usage:  If this is a user defaults entry for a team, then this
+        object contains the default account index of the team."
+--  DEFVAL      { 0 }                   -  no account
+    ::= { xcmSecUserEntry 10 }
+
+xcmSecUserMgmtOperation OBJECT-TYPE
+    SYNTAX      XcmSecConfigMgmtOperation
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The most recent security management operation specified for
+        this conceptual row in the 'xcmSecUserTable'."
+    REFERENCE
+        "See:   Section 4 'Print Utilities' (pages 71 to 212) of
+                POSIX Sys Admin (IEEE 1387.4 / Draft 8, October 1994)."
+--  DEFVAL      { unknown }             -  no security mgmt operation
+    ::= { xcmSecUserEntry 11 }
+
+xcmSecUserMgmtData OBJECT-TYPE
+    SYNTAX      XcmSecConfigMgmtData (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The most recent security management data specified for
+        this conceptual row in the 'xcmSecUserTable'."
+    REFERENCE
+        "See:   Section 4 'Print Utilities' (pages 71 to 212) of
+                POSIX Sys Admin (IEEE 1387.4 / Draft 8, October 1994)."
+--  DEFVAL      { ''H }                 -  no security mgmt data
+    ::= { xcmSecUserEntry 12 }
+
+xcmSecUserMgmtStatus OBJECT-TYPE
+    SYNTAX      XcmGenSNMPv2ErrorStatus
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The most recent security management error status returned via
+        this conceptual row in 'xcmSecUserTable'.
+
+        Usage:  Conforming management agents shall ALWAYS set this
+        object to the value returned in an SNMP Set-Response PDU when
+        a security management operation is 'accepted', ie, when
+        'xcmSecUserMgmtInProgress' goes from 'false' to 'true'.
+
+        Usage:  Conforming management agents shall ALWAYS set this
+        object to the value of the completion status of the (possibly
+        deferred) security management operation, when
+        'xcmSecUserMgmtInProgress' goes from 'true' to 'false'."
+    REFERENCE
+        "See:   'xcmSecUserMgmt[Operation|Data|InProgress]'"
+--  DEFVAL      { noError }             -  no security mgmt error status
+    ::= { xcmSecUserEntry 13 }
+
+xcmSecUserMgmtInProgress OBJECT-TYPE
+--  SYNTAX      TruthValue
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The security management in progress status associated with
+        this conceptual row in 'xcmSecUserMgmtTable'."
+    REFERENCE
+        "See:   'xcmSecUserMgmt[Operation|Data|Status]'"
+--  DEFVAL      { false }               -  no security mgmt in progress
+    ::= { xcmSecUserEntry 14 }
+
+--.ts 'User Mgmt Event Definition'
+xcmSecUserMgmtV1EventOID OBJECT IDENTIFIER
+--  STATUS      current
+--  DESCRIPTION
+--      "The value of the enterprise-specific OID in an SNMPv1 trap sent
+--      whenever an 'xcmSecUserMgmtOperation' completes.
+--      See SNMPv2 trap definition 'xcmSecUserMgmtV2Event'
+--      below for 'special semantics'."
+    ::= { xcmSecUser 1 }
+
+xcmSecUserMgmtV2EventPrefix
+    OBJECT IDENTIFIER ::= { xcmSecUserMgmtV1EventOID 0 }
+
+xcmSecUserMgmtV1Event TRAP-TYPE
+    ENTERPRISE  xcmSecUserMgmtV1EventOID
+    VARIABLES   
+    {
+        xcmSecUserIndex,
+        xcmSecUserMgmtOperation,
+        xcmSecUserMgmtStatus
+    }
+--  STATUS      current
+--  DESCRIPTION
+--      "This trap is sent whenever an 'XcmSecUserMgmtOperation'
+--      completes, ie, when 'xcmSecUserMgmtStatus' becomes a
+--      completed operation status and 'XcmSecUserMgmtInProgress'
+--      goes from 'true' to 'false'.
+--
+--      Note:   The variable-bindings of this trap have been chosen to
+--      specify a complete management operation result while keeping
+--      trap messages reasonably concise (generally a few hundred octets
+--      at most).
+--
+--      This notification has the following special semantics:
+--
+--          o   The user's 'xcmSecUserIndex' field
+--              value shall ALWAYS be appended to this trap object ID,
+--              as a BER binary OID suffix.
+--
+--      This trap OID qualifier allows security management/monitoring
+--      applications to limit the alerts they receive to ones generated 
+--      by requests they have submitted."
+    ::= 1
+
+--  Note that the SNMPv2 to SNMPv1 translation rules dictate that the
+--  preceding structure will result in SNMPv1 traps of the following
+--  form:
+--
+--  xcmSecUserMgmtV1Event TRAP-TYPE
+--      ENTERPRISE  xcmSecUserMgmtV1EventOID
+--      VARIABLES   {
+--          xcmSecUserIndex,
+--          xcmSecUserMgmtOperation,
+--          xcmSecUserMgmtStatus
+--      }
+--      DESCRIPTION
+--          "This trap is sent when an 'XcmSecUserMgmtOperation'
+--          completes.
+--          See SNMPv2 trap definition 'xcmSecUserMgmtV2Event'
+--          above for 'special semantics'."
+--      ::= 1
+
+--.ts 'User Ext Group (Cond Mandatory)'
+--          User Ext Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support user-based security
+--          extensions and optional for all other systems.
+--
+--          Note:   Systems implementing the 'xcmSecUserExtGroup'
+--                  shall ALWAYS implement the 'xcmSecUserGroup'.
+
+--          Usage:  User objects (in this group) may supply 'private'
+--                  (ie, explicit) values for a given user.
+--          Usage:  User 'integrity' and 'privacy' key objects may
+--                  supply information about either 'data integrity
+--                  protocols' (eg, MD5) and keys or 'data privacy
+--                  protocols' (eg, DES) and keys for a given user.
+
+xcmSecUserExt           OBJECT IDENTIFIER ::= { xcmSecMIB 30 }
+
+xcmSecUserExtTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSecUserExtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A 'sparse' table which augments 'xcmSecUserTable'
+        with additional useful user info objects
+        for users configured on this host system."
+    ::= { xcmSecUserExt 2 }
+
+xcmSecUserExtEntry OBJECT-TYPE
+    SYNTAX      XcmSecUserExtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A 'sparse' entry which augments 'xcmSecUserEntry'
+        with additional useful user info objects
+        for a user configured on this host system."
+    INDEX       { xcmSecUserIndex }
+    ::= { xcmSecUserExtTable 1 }
+
+XcmSecUserExtEntry ::= SEQUENCE {
+        --  User Ext Info               
+        xcmSecUserAlias                 XcmFixedLocaleDisplayString, 
+        xcmSecUserDescription           XcmFixedLocaleDisplayString, 
+        xcmSecUserLoginDate             OCTET STRING, 
+        xcmSecUserLogoutDate            OCTET STRING, 
+        xcmSecUserTeamLinkIndex         Cardinal32, 
+        xcmSecUserAccountLinkIndex      Cardinal32 
+        }                               
+
+xcmSecUserAlias OBJECT-TYPE
+    SYNTAX      XcmFixedLocaleDisplayString (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A human-readable alias, used by system administrators
+        and end users to identify this user.
+
+        Usage:  If this is a user defaults entry for a team, then this
+        object contains the alias of the team (if non-empty)
+
+        Usage:  This alias MAY be the one alternately used in a
+        command shell for control of this user (if present).
+
+        Usage:  Conforming implementations need NOT ensure that each
+        'xcmSecUserEntry' has a non-empty (on the managed system)
+        'xcmSecUserAlias' (ie, user aliases support is optional)."
+--  DEFVAL      { ''H }                 -  no user alias
+    ::= { xcmSecUserExtEntry 1 }
+
+xcmSecUserDescription OBJECT-TYPE
+    SYNTAX      XcmFixedLocaleDisplayString (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "A human-readable description of this conceptual row
+        in the 'xcmSecUserTable'.
+
+        Usage:  If this is a user defaults entry for a team, then this
+        object contains the description of the team."
+--  DEFVAL      { ''H }                 -  no user description
+    ::= { xcmSecUserExtEntry 2 }
+
+xcmSecUserLoginDate OBJECT-TYPE
+--  SYNTAX      DateAndTime
+    SYNTAX      OCTET STRING
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The date and time of this user's last login."
+--  DEFVAL      { '0000000000000000'H } -  no user login date
+    ::= { xcmSecUserExtEntry 3 }
+
+xcmSecUserLogoutDate OBJECT-TYPE
+--  SYNTAX      DateAndTime
+    SYNTAX      OCTET STRING
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The date and time of this user's last or next logout."
+--  DEFVAL      { '0000000000000000'H } -  no user logout date
+    ::= { xcmSecUserExtEntry 4 }
+
+xcmSecUserTeamLinkIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmSecLinkIndex' corresponding to the first
+        associated conceptual row in the 'xcmSecLinkTable' for teams,
+        or zero if this user does NOT require such information.
+
+        Usage:  If this is a user defaults entry for a team, then this
+        object contains zero."
+--  DEFVAL      { 0 }                   -  no team 'link set'
+    ::= { xcmSecUserExtEntry 5 }
+
+xcmSecUserAccountLinkIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmSecLinkIndex' corresponding to the first
+        associated conceptual row in the 'xcmSecLinkTable' for accounts,
+        or zero if this user does NOT require such information.
+
+        Usage:  If this is a user defaults entry for a team, then this
+        object contains the default account link index of the team."
+--  DEFVAL      { 0 }                   -  no account 'link set'
+    ::= { xcmSecUserExtEntry 6 }
+
+--.ts 'Security MIB Conformance Macros'
+--
+--          Security MIB Conformance Info
+--
+--          With Mandatory and Optional Conformance Groups
+
+xcmSecMIBConformance
+    OBJECT IDENTIFIER ::= { xcmSecMIB 2 }
+xcmSecMIBGroups
+    OBJECT IDENTIFIER ::= { xcmSecMIBConformance 2 }
+
+--
+--          Compliance Statements
+--
+
+END

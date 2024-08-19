@@ -1,0 +1,1742 @@
+--  ************************************************
+--  $Id: ptp.mib 10 2012-09-6 12:17:08Z songlingling $
+--
+--  ptp.mib: ZXR10 PTP MIB file
+--
+--  Sep. 2012, songlingling
+--
+--  Copyright(c) 2008 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+
+    ZXR10-PTP-MIB DEFINITIONS ::= BEGIN
+
+        IMPORTS
+        OBJECT-TYPE,  
+        MODULE-IDENTITY,
+        Integer32,
+        Unsigned32,
+        enterprises,
+        IpAddress,
+        Counter64                 FROM SNMPv2-SMI
+        DisplayString, RowStatus  FROM SNMPv2-TC
+        zxr10,zxr10protocol       FROM ZXR10-SMI;
+
+    zxr10ptp MODULE-IDENTITY
+        LAST-UPDATED "201501281500Z"
+        ORGANIZATION "ZTE Corporation"
+        CONTACT-INFO
+            "        song lingling
+            Tel:
+            E-Mail: song.lingling@zte.com.cn
+            "
+        DESCRIPTION
+            "The MIB module to describe the PTP protocol"
+        REVISION "201501281500Z"
+        DESCRIPTION
+            "modify:    zxr10PTPShowPortState
+                        zxr10ptpPortShowPortState
+                        zxr10ptpPortState"
+        REVISION "201401171500Z"
+        DESCRIPTION
+            "del:       zxr10ptpPortCfgTable
+                        zxr10ptpDstIpConfTable
+             add:       zxr10ptpPortTable
+                        zxr10ptpDstIpTable
+             modify:    zxr10ptpConfig
+                        zxr10ptpDomain
+                        zxr10ptpIntfConfEntry
+                        zxr10ptpIpListConfEntry
+                        zxr10ptpTimeSrcCfgEntry"
+        REVISION "201310241500Z"
+        DESCRIPTION
+            "modify:    zxr10ptpPortCfgTable
+                        zxr10ptpDstIpConfTable"
+        REVISION "201306031500Z"
+        DESCRIPTION
+            "add:       zxr10PTPDestIpPortMode
+                        zxr10ptpPortCfgUniNegoDura"
+        REVISION "201305271500Z"
+        DESCRIPTION
+            "modify:    zxr10PTPConfigSourceName
+                        zxr10PTPConfigVlanPriority"
+        REVISION "201304071500Z"
+        DESCRIPTION
+            "modify:    zxr10ptpConfig
+             del:       zxr10ptpIntfConfTable
+             add:       zxr10ptpPortCfgTable
+                        zxr10ptpPortShowTable
+                        zxr10PTPInitConfig
+                        zxr10ptpTimeSrcCfgTable
+                        zxr10ptpIpListConfTable
+                        zxr10ptpDstIpConfTable
+                        zxr10ptpEthPortTable"
+        ::= { zxr10protocol 10}
+            
+    zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+    zxr10 OBJECT IDENTIFIER ::= { zte 3}
+    zxr10protocol OBJECT IDENTIFIER ::= { zxr10 101}
+    zxr10ptpConfig OBJECT IDENTIFIER ::= { zxr10ptp 1}
+    zxr10ptpDomain OBJECT IDENTIFIER ::= { zxr10ptp 2}
+    zxr10ptpShow OBJECT IDENTIFIER ::= { zxr10ptp 3}
+    zxr10ptpInit OBJECT IDENTIFIER ::= { zxr10ptp 10}
+
+    --zxr10ptpConfig
+
+        -- ptp state mode
+        zxr10PTPConfigStateAlg OBJECT-TYPE
+            SYNTAX  INTEGER {
+                      manual(1),
+                      bmc(2)
+                      }
+            MAX-ACCESS  read-write
+            STATUS  current
+            DESCRIPTION
+                  "The PTP port state mode."
+            ::= { zxr10ptpConfig 1 }
+
+        -- ptp clock type
+        zxr10PTPConfigClkMode OBJECT-TYPE
+              SYNTAX  INTEGER {
+                          oc(1),
+                          bc(2),
+                          p2ptc(4),
+                          p2ptcoc(5),
+                          e2etc(8),
+                          e2etcoc(9)
+                      }
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The ptp clock type."
+              ::= { zxr10ptpConfig 2 }
+
+        -- ptp two-step
+        zxr10PTPConfigTSC OBJECT-TYPE
+              SYNTAX  INTEGER {
+                          disable(0),
+                          enable(1)
+                          }
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The two-step attribution is true or not,
+                       t8000\M6k only support one-step."
+              ::= { zxr10ptpConfig 3 }
+
+        -- ptp slave-only
+        zxr10PTPConfigSO OBJECT-TYPE
+              SYNTAX  INTEGER {
+                          disable(0),
+                          enable(1)
+                          }
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The slave_only attribution is true or not."
+              ::= { zxr10ptpConfig 4 }
+
+        -- ptp priority1
+        zxr10PTPConfigPriority1 OBJECT-TYPE
+              SYNTAX  Integer32 (0..255)
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The ptp priority1."
+              ::= { zxr10ptpConfig 5 }
+
+        -- ptp priority2
+        zxr10PTPConfigPriority2 OBJECT-TYPE
+              SYNTAX  Integer32 (0..255)
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The ptp priority2."
+              ::= { zxr10ptpConfig 6 }
+
+        -- ptp time-source
+        zxr10PTPConfigTimeSource OBJECT-TYPE
+              SYNTAX  INTEGER {null(255)}
+              MAX-ACCESS  read-write
+              STATUS  obsolete
+              DESCRIPTION
+                      "The ptp time source."
+              ::= { zxr10ptpConfig 7 }
+
+        -- ptp clock-class
+        zxr10PTPConfigClockClass OBJECT-TYPE
+              SYNTAX  Integer32 (0..255)
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The ptp clock class."
+              ::= { zxr10ptpConfig 8 }
+
+        -- ptp clock-accuracy
+        zxr10PTPConfigClockAccuracy OBJECT-TYPE
+              SYNTAX  Integer32 (0..255)
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The ptp clock accuracy."
+              ::= { zxr10ptpConfig 9 }
+
+        -- ptp initialize
+        zxr10PTPConfigInit OBJECT-TYPE
+              SYNTAX  INTEGER {
+                  ready(0),
+                  processing(1),
+                  init(2)
+                  }
+              MAX-ACCESS  read-write
+              STATUS  obsolete
+              DESCRIPTION
+                      "Initialize all ptp information."
+              ::= { zxr10ptpConfig 10}
+
+        -- ptp enable
+        zxr10PTPConfigGlobalEnable OBJECT-TYPE
+              SYNTAX  INTEGER {
+                          disable(0),
+                          enable(1)
+                          }
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "PTP global enable is true or not."
+              ::= { zxr10ptpConfig 11 }
+
+        -- ptp network-protocol
+        zxr10PTPNetProtocol OBJECT-TYPE
+              SYNTAX  INTEGER {
+                    ipv4(1),
+                    ipv6(2),
+                    ieee802(3)
+                 }
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The global net protocol,
+                       some projects may not support."
+              ::= { zxr10ptpConfig 12 }
+
+        -- ptp transmit-mode
+        zxr10PTPConfigTransmitMode OBJECT-TYPE
+              SYNTAX  INTEGER {
+                        multicast(2),
+                        unicast(1)
+                        }
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                        "The transmit mode."
+              ::= { zxr10ptpConfig 13 }
+
+        -- ptp clockclass-rule
+        zxr10PTPConfigClockClassRule OBJECT-TYPE
+              SYNTAX  INTEGER {
+                        ptpv2(1),
+                        force(2)
+                        }
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The clock class rule."
+              ::= { zxr10ptpConfig 14 }
+
+        -- ptp vlan-priority
+        zxr10PTPConfigVlanPriority OBJECT-TYPE
+            SYNTAX    Integer32(0..7)
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                        "Vlan priority."
+            ::= { zxr10ptpConfig 15}
+
+        -- ptp source-name
+        zxr10PTPConfigSourceName OBJECT-TYPE
+            SYNTAX  DisplayString (SIZE (0..31))
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                   "The PTP source interface name."
+            ::= { zxr10ptpConfig 16}
+
+        -- ptp IpList-property
+        zxr10PTPConfigIpListProperty OBJECT-TYPE
+              SYNTAX  INTEGER {
+                        permit(1),
+                        deny(2)
+                        }
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The ip list property,use for acl control."
+              ::= { zxr10ptpConfig 17 }
+
+
+    --zxr10ptpDomain
+
+        -- ptp domain delay mechanism
+        zxr10PTPConfigDDM OBJECT-TYPE
+              SYNTAX  INTEGER {
+                  e2e(1),
+                  p2p(2)
+                       }
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The ptp domain delay mechanism."
+              ::= { zxr10ptpDomain 1 }
+
+        -- ptp domain number
+        zxr10PTPConfigDomainNum OBJECT-TYPE
+              SYNTAX  Integer32 (0..255)
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The ptp domain number."
+              ::= { zxr10ptpDomain 2 }
+
+        -- ptp announce interval
+        zxr10PTPConfigAnnounceInterval OBJECT-TYPE
+              SYNTAX  Integer32 (-4..4)
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The ptp announce interval,the range is -1..4 for t8000\M6k
+                      and 89;-4..4 for upp3081 and 15k."
+              ::= { zxr10ptpDomain 3 }
+
+        -- ptp announce timeout
+        zxr10PTPConfigAnnounceTimeout OBJECT-TYPE
+              SYNTAX  Integer32 (2..10)
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The ptp announce timeout."
+              ::= { zxr10ptpDomain 4 }
+
+        -- ptp sync interval
+        zxr10PTPConfigSyncInterval OBJECT-TYPE
+              SYNTAX  Integer32 (-8..1)
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The ptp sync interval.for t8000\M6k the range is -7..1,
+                      for 89 is -6..1,for 15k is -7..1,upp3081 does not support."
+              ::= { zxr10ptpDomain 5 }
+
+        -- ptp delay-req-interval
+        zxr10PTPConfigDelayReqInterval OBJECT-TYPE
+              SYNTAX  Integer32 (-7..5)
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The ptp delay req interval,for t8000\M6k and 15k the range is
+                      -7..1,for 89 the range is -5..5,upp3081 does not support."
+              ::= { zxr10ptpDomain 6 }
+
+        -- ptp pdelay-req-interval
+        zxr10PTPConfigPDelayReqInterval OBJECT-TYPE
+              SYNTAX  Integer32 (-4..5)
+              MAX-ACCESS  read-write
+              STATUS  current
+              DESCRIPTION
+                      "The ptp pdelay req interval,
+                      for t8000\M6k and 89 the range is 0..5,
+                      for 15k the range is -4..5,upp3081 does not support."
+              ::= { zxr10ptpDomain 7 }
+
+
+    --zxr10ptpShow
+
+        -- ptp show offset
+        zxr10PTPShowOffset OBJECT-TYPE
+              SYNTAX  DisplayString
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The ptp offset of the slave port,
+                      only valid for 89 and upp3081."
+              ::= { zxr10ptpShow 1 }
+
+        -- ptp show delay
+        zxr10PTPShowDelay OBJECT-TYPE
+              SYNTAX  DisplayString
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The ptp delay of the slave port."
+              ::= { zxr10ptpShow 2 }
+
+        -- ptp show steps from grandmaster
+        zxr10PTPShowStepsFromGM OBJECT-TYPE
+              SYNTAX  Integer32 (0..65535)
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The steps removed from grandmaster."
+              ::= { zxr10ptpShow 3 }
+
+        -- ptp show native clockid
+        zxr10PTPShowNativeClockId OBJECT-TYPE
+              SYNTAX  DisplayString
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "Native clock id."
+              ::= { zxr10ptpShow 4 }
+
+        -- ptp show parent portid
+        zxr10PTPShowParentPortId OBJECT-TYPE
+              SYNTAX  DisplayString
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The parent port id."
+              ::= { zxr10ptpShow 5 }
+
+        -- ptp show grandmaster clockid
+        zxr10PTPShowGMClockId OBJECT-TYPE
+              SYNTAX  DisplayString
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The grandmaster clock id."
+              ::= { zxr10ptpShow 6 }
+
+        -- ptp show slave port
+        zxr10PTPShowSlavePort OBJECT-TYPE
+              SYNTAX  DisplayString
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The interface name of the slave port."
+              ::= { zxr10ptpShow 7 }
+
+
+    --zxr10ptpIntfConfTable,the ptp intf configure table
+
+        zxr10ptpIntfConfTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10ptpIntfConfEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing PTP port configure
+                      information."
+              ::= { zxr10ptp 4 }
+
+        zxr10ptpIntfConfEntry OBJECT-TYPE
+              SYNTAX  Zxr10ptpIntfConfEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information of PTP port."
+              INDEX   {
+                  zxr10PTPPortConfigName
+                      }
+              ::= { zxr10ptpIntfConfTable 1 }
+
+        Zxr10ptpIntfConfEntry ::=
+            SEQUENCE {
+                         zxr10PTPPortIndex
+                             Integer32,
+                         zxr10PTPPortConfigName
+                             DisplayString,
+                         zxr10PTPPortConfigEnable
+                             INTEGER,
+                         zxr10PTPPortConfigState
+                             INTEGER,
+                         zxr10PTPPortConfigSyncInterval
+                             Integer32,
+                         zxr10PTPPortConfigDelayReqInterval
+                             Integer32,
+                         zxr10PTPPortConfigMultiDomainEnable
+                             INTEGER,
+                         zxr10PTPPortConfigDelayMech
+                             INTEGER,
+                         zxr10PTPPortNetProtocol
+                             INTEGER,
+                         zxr10PTPPortPacketMechanism
+                             INTEGER,
+                         zxr10PTPShowPortState
+                             INTEGER,
+                         zxr10PTPPortConfigTransEnable
+                             INTEGER,
+                         zxr10PTPPortUnSymmetry
+                             Unsigned32,
+                         zxr10PTPPortUnSign
+                             INTEGER,
+                         zxr10PTPPortVlanId
+                             Integer32,
+                         zxr10PTPPortSourceName
+                             DisplayString,
+                         zxr10PTPPortPDelayReqInterval
+                           Integer32,
+                         zxr10PTPPortNum
+                             Integer32,
+                         zxr10PTPPortConfigRowStatus
+                             RowStatus
+                             }
+
+        zxr10PTPPortIndex OBJECT-TYPE
+            SYNTAX           Integer32(1..2147483647)
+            MAX-ACCESS not-accessible
+            STATUS     obsolete
+            DESCRIPTION
+                   "Object which specifies a unique entry in the
+                    Zxr10PtpIntfConfEntry."
+            ::= { zxr10ptpIntfConfEntry 1 }
+
+        zxr10PTPPortConfigName OBJECT-TYPE
+            SYNTAX  DisplayString (SIZE (1..32))
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                    "The PTP port name."
+            ::= { zxr10ptpIntfConfEntry 2 }
+
+        zxr10PTPPortConfigEnable OBJECT-TYPE
+            SYNTAX  INTEGER {
+                        disable(0),
+                        enable(1)
+                        }
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                    "Enable or disable a ptp port."
+            ::= { zxr10ptpIntfConfEntry 4 }
+
+        zxr10PTPPortConfigState OBJECT-TYPE
+            SYNTAX  INTEGER {
+                        master(6),
+                        slave(9),
+                        passive(7),
+                        masterslave(10),
+                        invalid(254)
+                        }
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                    "The ptp port state configured by manual,
+                    masterslave state only t8000\M6k support."
+            ::= { zxr10ptpIntfConfEntry 5 }
+
+        zxr10PTPPortConfigSyncInterval OBJECT-TYPE
+            SYNTAX  Integer32 (-8..1)
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                    "The ptp sync interval,only upp3081 support."
+            ::= { zxr10ptpIntfConfEntry 6 }
+
+        zxr10PTPPortConfigDelayReqInterval OBJECT-TYPE
+            SYNTAX  Integer32 (-5..5)
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                   "The ptp delay req interval,only upp3081 support."
+            ::= { zxr10ptpIntfConfEntry 7 }
+
+        zxr10PTPPortConfigMultiDomainEnable OBJECT-TYPE
+            SYNTAX  INTEGER {
+                            disable(0),
+                            enable(1)
+                            }
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                   "The ptp port is multi domain port or not,
+                   only upp3081 support."
+            ::= { zxr10ptpIntfConfEntry 8 }
+
+        zxr10PTPPortConfigDelayMech OBJECT-TYPE
+            SYNTAX  INTEGER {
+                            e2e(1),
+                            p2p(2)
+                            }
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                   "The delay mechanism of the ptp port,only upp3081 support."
+            ::= { zxr10ptpIntfConfEntry 9 }
+
+        zxr10PTPPortNetProtocol OBJECT-TYPE
+            SYNTAX  INTEGER {
+                            ipv4(1),
+                            ipv6(2),
+                            ieee802(3)
+                            }
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                   "The port net protocol,only upp3081 support."
+            ::= { zxr10ptpIntfConfEntry 10 }
+
+        zxr10PTPPortPacketMechanism OBJECT-TYPE
+            SYNTAX  INTEGER {null(255)}
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                   "The port packet mechanism."
+            ::= { zxr10ptpIntfConfEntry 11 }
+
+        zxr10PTPShowPortState OBJECT-TYPE
+            SYNTAX  INTEGER {
+                  initializing(1),
+                  faulty(2),
+                  disable(3),
+                  listening(4),
+                  premaster(5),
+                  master(6),
+                  passive(7),
+                  uncalibrated(8),
+                  slave(9),
+                  masterslave(10)
+                  }
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                   "The port state."
+            ::= { zxr10ptpIntfConfEntry 12 }
+
+        zxr10PTPPortConfigTransEnable OBJECT-TYPE
+            SYNTAX  INTEGER {null(255)}
+            MAX-ACCESS  read-only
+            STATUS  obsolete
+            DESCRIPTION
+                   "Enable or disable the trans mode of a ptp port."
+            ::= { zxr10ptpIntfConfEntry 13 }
+
+        zxr10PTPPortUnSymmetry OBJECT-TYPE
+            SYNTAX  Unsigned32(0..1000000000)
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                  "The unsymmetrical offset(ns),consider the effect of
+                  the zxr10PTPPortUnSign node.t8000\M6k not support."
+            ::= { zxr10ptpIntfConfEntry 14}
+
+        zxr10PTPPortUnSign OBJECT-TYPE
+            SYNTAX  INTEGER {
+                 positive(0),
+                 negative(1)
+                 }
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                  "The unsymmetrical offset sign,consider the effect of
+                  the zxr10PTPPortUnSymmetry node.t8000\M6k not support."
+            ::= { zxr10ptpIntfConfEntry 15}
+
+        zxr10PTPPortVlanId OBJECT-TYPE
+            SYNTAX    Integer32(0..4094)
+            MAX-ACCESS  read-only
+            STATUS  obsolete
+            DESCRIPTION
+                  "Vlan id, only valid for t8000\M6k,
+                  other projects maybe not support."
+            ::= { zxr10ptpIntfConfEntry 16}
+
+        zxr10PTPPortSourceName OBJECT-TYPE
+            SYNTAX  DisplayString (SIZE (1..32))
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                   "The PTP source interface name."
+            ::= { zxr10ptpIntfConfEntry 17}
+
+        zxr10PTPPortPDelayReqInterval OBJECT-TYPE
+              SYNTAX  Integer32 (-4..4)
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+               "The ptp pdelay req interval,only upp3081 support."
+              ::= { zxr10ptpIntfConfEntry 18 }
+
+        zxr10PTPPortNum OBJECT-TYPE
+            SYNTAX  Integer32 (1..3000)
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                "The ptp port number,the value must be configured
+                when create a port."
+            ::= { zxr10ptpIntfConfEntry 19}
+
+        zxr10PTPPortConfigRowStatus OBJECT-TYPE
+            SYNTAX       RowStatus
+            MAX-ACCESS  read-create
+            STATUS  obsolete
+            DESCRIPTION
+                  "Create or delete ptp port."
+            ::= { zxr10ptpIntfConfEntry 100 }
+
+
+    --zxr10ptpPortCfgTable
+
+        zxr10ptpPortCfgTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10ptpPortCfgEntry
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "A table containing PTP port configure
+                      information."
+              ::= { zxr10ptp 5 }
+
+        zxr10ptpPortCfgEntry OBJECT-TYPE
+              SYNTAX  Zxr10ptpPortCfgEntry
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "Information of PTP port."
+              INDEX   {
+                        zxr10ptpPortCfgIfName,
+                        zxr10ptpPortCfgPortType
+                      }
+              ::= { zxr10ptpPortCfgTable 1 }
+
+
+        Zxr10ptpPortCfgEntry ::=
+            SEQUENCE {
+                        zxr10ptpPortCfgIfName
+                            DisplayString,
+                        zxr10ptpPortCfgPortType
+                            INTEGER,
+                        zxr10ptpPortCfgPortNum
+                            Integer32,
+                        zxr10ptpPortCfgEnable
+                            INTEGER,
+                        zxr10ptpPortCfgState
+                            INTEGER,
+                        zxr10ptpPortCfgSyncInterval
+                            Integer32,
+                        zxr10ptpPortCfgDelayReqInterval
+                            Integer32,
+                        zxr10ptpPortCfgMultiDomainEnable
+                            INTEGER,
+                        zxr10ptpPortCfgDelayMech
+                            INTEGER,
+                        zxr10ptpPortCfgNetProtocol
+                            INTEGER,
+                        zxr10ptpPortCfgTransmitMode
+                            INTEGER,
+                        zxr10ptpPortCfgUnSymmetry
+                            Unsigned32,
+                        zxr10ptpPortCfgUnSign
+                            INTEGER,
+                        zxr10ptpPortCfgVlanId
+                            Integer32,
+                        zxr10ptpPortCfgSourceName
+                            DisplayString,
+                        zxr10ptpPortCfgPDelayReqInterval
+                            Integer32,
+                          zxr10ptpPortCfgPktStatistic
+                            INTEGER,
+                        zxr10ptpPortCfgWorkMode
+                            INTEGER,
+                        zxr10ptpPortCfgVlanPriority
+                            INTEGER,
+                        zxr10ptpPortCfgUniNegoDura
+                            INTEGER,
+                        zxr10ptpPortCfgRowStatus
+                            RowStatus
+                        }
+
+        zxr10ptpPortCfgIfName OBJECT-TYPE
+                SYNTAX  DisplayString (SIZE (0..31))
+                MAX-ACCESS  not-accessible
+                STATUS  obsolete
+                DESCRIPTION
+                    "The PTP port name."
+                ::= { zxr10ptpPortCfgEntry 1 }
+
+        zxr10ptpPortCfgPortType OBJECT-TYPE
+                SYNTAX  INTEGER {
+                          generalPort(2),
+                          combinedOcPort(1)
+                          }
+                MAX-ACCESS  not-accessible
+                STATUS  obsolete
+                DESCRIPTION
+                      "The PTP port type,1 means combined-oc,
+                      2 means general port."
+                ::= { zxr10ptpPortCfgEntry 2 }
+
+        zxr10ptpPortCfgPortNum OBJECT-TYPE
+                SYNTAX  Integer32 (1..3000)
+                MAX-ACCESS  read-create
+                STATUS  obsolete
+                DESCRIPTION
+                      "The ptp port number,the value must be configured
+                      when create a port,1 means combined-oc."
+                ::= { zxr10ptpPortCfgEntry 3} 
+
+        zxr10ptpPortCfgEnable OBJECT-TYPE
+            SYNTAX  INTEGER {
+                        enable(1),
+                        disable(2)
+                        }
+            MAX-ACCESS  read-create
+            STATUS  obsolete
+            DESCRIPTION
+                    "Enable or disable a ptp port."
+            ::= { zxr10ptpPortCfgEntry 4 }
+
+        zxr10ptpPortCfgState OBJECT-TYPE
+            SYNTAX  INTEGER {
+                        master(6),
+                        slave(9),
+                        passive(7),
+                        masterslave(10)
+                        }
+            MAX-ACCESS  read-create
+            STATUS  obsolete
+            DESCRIPTION
+                    "The ptp port state configured by manual,
+                    masterslave state only t8000 support."
+            ::= { zxr10ptpPortCfgEntry 5 }
+
+        zxr10ptpPortCfgSyncInterval OBJECT-TYPE
+            SYNTAX  Integer32 (-8..1)
+            MAX-ACCESS  read-create
+            STATUS  obsolete
+            DESCRIPTION
+                    "The ptp sync interval,for upp3081 the range is -8..1,
+                    for 15k,the range is -4..1."
+            ::= { zxr10ptpPortCfgEntry 6 }
+
+        zxr10ptpPortCfgDelayReqInterval OBJECT-TYPE
+           SYNTAX  Integer32 (-5..5)
+           MAX-ACCESS  read-create
+           STATUS  obsolete
+           DESCRIPTION
+                   "The ptp delay req interval,for upp3081 the range is -5..5,
+                   for 15k,the range is -4..5."
+           ::= { zxr10ptpPortCfgEntry 7 }
+
+        zxr10ptpPortCfgMultiDomainEnable OBJECT-TYPE
+           SYNTAX  INTEGER {
+                        enable(1),
+                        disable(2)
+                        }
+           MAX-ACCESS  read-create
+           STATUS  obsolete
+           DESCRIPTION
+                   "The ptp port is multi domain port or not,
+                   only upp3081 support."
+           ::= { zxr10ptpPortCfgEntry 8 }
+
+        zxr10ptpPortCfgDelayMech OBJECT-TYPE
+           SYNTAX  INTEGER {
+                        e2e(1),
+                        p2p(2)
+                        }
+           MAX-ACCESS  read-create
+           STATUS  obsolete
+           DESCRIPTION
+                   "The delay mechanism of the ptp port,only upp3081 support."
+           ::= { zxr10ptpPortCfgEntry 9 }
+
+        zxr10ptpPortCfgNetProtocol OBJECT-TYPE
+            SYNTAX  INTEGER {
+                        ipv4(1),
+                        ipv6(2),
+                        ieee802(3)
+                        }
+            MAX-ACCESS  read-create
+            STATUS  obsolete
+            DESCRIPTION
+                   "The port net protocol,only upp3081 and 15k support."
+            ::= { zxr10ptpPortCfgEntry 10 }   
+
+        zxr10ptpPortCfgTransmitMode OBJECT-TYPE
+            SYNTAX  INTEGER {
+                        multicast(2),
+                        unicast(1)
+                        }
+            MAX-ACCESS  read-create
+            STATUS  obsolete
+            DESCRIPTION
+                   "The port packet transmit mode,only 15k support."
+            ::= { zxr10ptpPortCfgEntry 11 }
+
+        zxr10ptpPortCfgUnSymmetry OBJECT-TYPE
+            SYNTAX  Unsigned32(0..1000000000)
+            MAX-ACCESS  read-create
+            STATUS  obsolete
+            DESCRIPTION
+                  "The unsymmetrical offset(ns),consider the effect of
+                  the zxr10PTPPortUnSign node.t8000 not support."
+            ::= { zxr10ptpPortCfgEntry 12}
+
+        zxr10ptpPortCfgUnSign OBJECT-TYPE
+            SYNTAX  INTEGER {
+                    negative(1),
+                    positive(2)
+                    }
+            MAX-ACCESS  read-create
+            STATUS  obsolete
+            DESCRIPTION
+                  "The unsymmetrical offset sign,consider the effect of
+                  the zxr10PTPPortUnSymmetry node.t8000 not support."
+            ::= { zxr10ptpPortCfgEntry 13}
+
+        zxr10ptpPortCfgVlanId OBJECT-TYPE
+            SYNTAX    Integer32(0..4094)
+            MAX-ACCESS  read-create
+            STATUS  obsolete
+            DESCRIPTION
+                  "Vlan id, only valid for 15k,other projects maybe not support"
+            ::= { zxr10ptpPortCfgEntry 14}
+
+        zxr10ptpPortCfgSourceName OBJECT-TYPE
+            SYNTAX  DisplayString (SIZE (0..31))
+            MAX-ACCESS  read-create
+            STATUS  obsolete
+            DESCRIPTION
+                   "The PTP source interface name."
+            ::= { zxr10ptpPortCfgEntry 15}
+
+        zxr10ptpPortCfgPDelayReqInterval OBJECT-TYPE
+            SYNTAX  Integer32 (-4..4)
+            MAX-ACCESS  read-create
+            STATUS  obsolete
+            DESCRIPTION
+                "The ptp pdelay req interval,only upp3081 and 15k support."
+            ::= { zxr10ptpPortCfgEntry 16 }
+
+        zxr10ptpPortCfgPktStatistic OBJECT-TYPE
+            SYNTAX  INTEGER {
+                        disable(2),
+                        enable(1)
+                        }
+            MAX-ACCESS  read-create
+            STATUS  obsolete
+            DESCRIPTION
+                   "packet statistic switch."
+            ::= { zxr10ptpPortCfgEntry 17}
+
+        zxr10ptpPortCfgWorkMode OBJECT-TYPE
+              SYNTAX  INTEGER {
+                          freeMode(2),
+                          fixedMode(1)
+                        }
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "The ptp port work mode."
+              ::= { zxr10ptpPortCfgEntry 18}
+
+        zxr10ptpPortCfgVlanPriority OBJECT-TYPE
+            SYNTAX    INTEGER(0..7)
+            MAX-ACCESS  read-create
+            STATUS  obsolete
+            DESCRIPTION
+                "Vlan priority"
+            ::= { zxr10ptpPortCfgEntry 19}    
+
+        zxr10ptpPortCfgUniNegoDura OBJECT-TYPE
+            SYNTAX    INTEGER(60..1000)
+            MAX-ACCESS  read-create
+            STATUS  obsolete
+            DESCRIPTION
+                "Unicast negotiation duration of the port."
+            ::= { zxr10ptpPortCfgEntry 20}   
+
+        zxr10ptpPortCfgRowStatus OBJECT-TYPE
+          SYNTAX       RowStatus
+          MAX-ACCESS  read-create
+          STATUS  obsolete
+          DESCRIPTION
+              "Create or delete ptp port,must config port number."
+         ::= { zxr10ptpPortCfgEntry 100 }
+
+
+    --zxr10PTPEthIntfConfTable:
+
+        zxr10ptpEthPortTable OBJECT-TYPE
+          SYNTAX  SEQUENCE OF Zxr10ptpEthPortEntry
+          MAX-ACCESS  not-accessible
+          STATUS  current
+          DESCRIPTION
+                  "A table containing PTP port configure
+                  information."
+          ::= { zxr10ptp 6 }
+
+        zxr10ptpEthPortEntry OBJECT-TYPE
+          SYNTAX  Zxr10ptpEthPortEntry
+          MAX-ACCESS  not-accessible
+          STATUS  current
+          DESCRIPTION
+                  "Information about the PTP ethernet port."
+          INDEX   {
+                    zxr10PTPEthPortName
+                    }
+          ::= { zxr10ptpEthPortTable 1 }
+
+        Zxr10ptpEthPortEntry ::=
+           SEQUENCE {
+                        zxr10PTPEthPortName
+                            DisplayString,
+                        zxr10PTPEthPortConfigEnable
+                            INTEGER,
+                        zxr10PTPEthPortUnSymmetry
+                            Unsigned32,
+                        zxr10PTPEthPortUnSign
+                            INTEGER,
+                        zxr10PTPEthPortRowStatus
+                            RowStatus
+                    }
+
+        zxr10PTPEthPortName OBJECT-TYPE
+            SYNTAX  DisplayString (SIZE (1..31))
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                  "The PTP ethernet port name."
+            ::= { zxr10ptpEthPortEntry 1}
+
+        zxr10PTPEthPortConfigEnable OBJECT-TYPE
+            SYNTAX  INTEGER {
+                      disable(3),
+                      enable(1),
+                      discard(2)
+                      }
+            MAX-ACCESS  read-create
+            STATUS  current
+            DESCRIPTION
+                  "Enable or disable a ptp ethernet port."
+            ::= { zxr10ptpEthPortEntry 2 }
+
+        zxr10PTPEthPortUnSymmetry OBJECT-TYPE
+            SYNTAX  Unsigned32
+            MAX-ACCESS  read-create
+            STATUS  current
+            DESCRIPTION
+                      "The unsymmetrical offset."
+            ::= { zxr10ptpEthPortEntry 3 }
+
+        zxr10PTPEthPortUnSign OBJECT-TYPE
+            SYNTAX  INTEGER {
+                        positive(2),
+                        negative(1)
+                        }
+            MAX-ACCESS  read-create
+            STATUS  current
+            DESCRIPTION
+                      "The unsymmetrical offset sign."
+            ::= { zxr10ptpEthPortEntry 4 }
+
+        zxr10PTPEthPortRowStatus OBJECT-TYPE
+            SYNTAX       RowStatus
+            MAX-ACCESS  read-create
+            STATUS  obsolete
+            DESCRIPTION
+                "Create or delete a ptp ethernet port."
+            ::= { zxr10ptpEthPortEntry 100 }
+
+
+    --zxr10ptpDstIpConfTable,the ptp dst ip configure table
+
+        zxr10ptpDstIpConfTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10ptpDstIpConfEntry
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "A table containing PTP port dest ip configure
+                      information."
+              ::= { zxr10ptp 7 }
+
+        zxr10ptpDstIpConfEntry OBJECT-TYPE
+              SYNTAX  Zxr10ptpDstIpConfEntry
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "Information about the PTP interface destination IP."
+              INDEX   { 
+                        zxr10PTPDestIpPortName,
+                        zxr10PTPDestIpPortType,
+                        zxr10PTPDestIpIndex
+                      }
+              ::= { zxr10ptpDstIpConfTable 1 }
+
+        Zxr10ptpDstIpConfEntry ::=
+            SEQUENCE {
+                      zxr10PTPDestIpPortName
+                        DisplayString,
+                      zxr10PTPDestIpPortType
+                        INTEGER,
+                      zxr10PTPDestIpIndex
+                              IpAddress,
+                      zxr10PTPDestIpPortNum
+                              INTEGER,
+                      zxr10PTPDestIpAlternatePriority1
+                              INTEGER,
+                      zxr10PTPDestIpPortMode
+                              INTEGER,
+                      zxr10PTPDestIpRowStatus
+                         RowStatus
+                     }
+
+        zxr10PTPDestIpPortName OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE (0..31))
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "The PTP port name."
+              ::= { zxr10ptpDstIpConfEntry 1 }
+
+        zxr10PTPDestIpPortType OBJECT-TYPE
+              SYNTAX  INTEGER {
+                          generalPort(2),
+                          combinedOcPort(1)
+                          }
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "The PTP port type,1 means combined-oc,2 means oc,bc,tc."
+              ::= { zxr10ptpDstIpConfEntry 2 }
+
+        zxr10PTPDestIpIndex OBJECT-TYPE
+              SYNTAX  IpAddress
+              MAX-ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "The port destination IP address."
+              ::= { zxr10ptpDstIpConfEntry 3 }
+
+        zxr10PTPDestIpPortNum OBJECT-TYPE
+              SYNTAX  INTEGER (1..3000)
+              MAX-ACCESS  read-only
+              STATUS  obsolete
+              DESCRIPTION
+                      "The PTP port number,1 means combined-oc."
+              ::= { zxr10ptpDstIpConfEntry 4} 
+
+        zxr10PTPDestIpAlternatePriority1 OBJECT-TYPE
+              SYNTAX  INTEGER (0..255)
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "Set priority1 of accept master IP."
+              ::= { zxr10ptpDstIpConfEntry 5}  
+
+        zxr10PTPDestIpPortMode OBJECT-TYPE
+              SYNTAX  INTEGER {
+                          fixedmode(1),
+                          freemode(2)
+                          }
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "Set the port mode of PTP."
+              ::= { zxr10ptpDstIpConfEntry 6} 
+
+        zxr10PTPDestIpRowStatus OBJECT-TYPE
+            SYNTAX       RowStatus
+            MAX-ACCESS  read-create
+            STATUS  obsolete
+            DESCRIPTION
+               "Create or delete ptp accept master IP."
+            ::= { zxr10ptpDstIpConfEntry 100}
+
+
+    --zxr10PTPIpListConfTable
+
+        zxr10ptpIpListConfTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10ptpIpListConfEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing PTP ACL IP information."
+              ::= { zxr10ptp 8 }
+
+        zxr10ptpIpListConfEntry OBJECT-TYPE
+              SYNTAX  Zxr10ptpIpListConfEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                   "Information about PTP ACL IP configure."
+                    INDEX   { zxr10PTPIpListConfig}
+              ::= { zxr10ptpIpListConfTable 1 }
+
+        Zxr10ptpIpListConfEntry ::=
+            SEQUENCE {
+                    zxr10PTPIpListConfig
+                        IpAddress,
+                    zxr10PTPIpListRowStatus
+                        RowStatus
+                     }
+
+        zxr10PTPIpListConfig OBJECT-TYPE
+              SYNTAX  IpAddress
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The Acl IP address."
+              ::= { zxr10ptpIpListConfEntry 1 }
+
+        zxr10PTPIpListRowStatus OBJECT-TYPE
+              SYNTAX       RowStatus
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+                DESCRIPTION
+                    "Create or delete acl IP."
+              ::= { zxr10ptpIpListConfEntry 100 }
+
+
+    --zxr10ptpTimeSrcCfgTable
+
+        zxr10ptpTimeSrcCfgTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10ptpTimeSrcCfgEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing PTP time source information."
+              ::= { zxr10ptp 9 }
+
+        zxr10ptpTimeSrcCfgEntry OBJECT-TYPE
+              SYNTAX  Zxr10ptpTimeSrcCfgEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                   "Information about PTP time source configure of PTP."
+                    INDEX   { zxr10PTPTimeSrcCfgIfname}
+              ::= { zxr10ptpTimeSrcCfgTable 1 }
+
+        Zxr10ptpTimeSrcCfgEntry ::=
+            SEQUENCE {
+                       zxr10PTPTimeSrcCfgIfname
+                                DisplayString,
+                       zxr10PTPTimeSrcCfgPri1
+                                Integer32,
+                       zxr10PTPTimeSrcCfgPri2
+                                Integer32,
+                       zxr10PTPTimeSrcCfgRowStatus
+                                RowStatus
+                     }
+
+        zxr10PTPTimeSrcCfgIfname OBJECT-TYPE
+              SYNTAX  DisplayString(SIZE (1..31))
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The time source ifname, eg: gps or bits."
+              ::= { zxr10ptpTimeSrcCfgEntry 1 }
+
+        zxr10PTPTimeSrcCfgPri1 OBJECT-TYPE
+              SYNTAX  Integer32 (0..255)
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The time source priority1."
+              ::= { zxr10ptpTimeSrcCfgEntry 2 }
+
+        zxr10PTPTimeSrcCfgPri2 OBJECT-TYPE
+              SYNTAX  Integer32 (0..255)
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The time source priority2."
+              ::= { zxr10ptpTimeSrcCfgEntry 3 }
+
+        zxr10PTPTimeSrcCfgRowStatus OBJECT-TYPE
+            SYNTAX       RowStatus
+            MAX-ACCESS  read-create
+            STATUS  obsolete
+            DESCRIPTION
+                "Create or delete time source."
+            ::= { zxr10ptpTimeSrcCfgEntry 100 }
+
+
+    -- The ptp initial
+
+        zxr10PTPInitConfig    OBJECT-TYPE
+            SYNTAX  INTEGER{
+                            ready(1),
+                            initial(2)
+                            }
+            MAX-ACCESS     read-write
+            STATUS         current
+            DESCRIPTION
+                "Initial all attribution."
+            ::= { zxr10ptpInit 1}
+
+
+    --zxr10ptpPortShowTable
+
+        zxr10ptpPortShowTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10ptpPortShowEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing PTP port state
+                      information."
+              ::= { zxr10ptp 11 }
+
+        zxr10ptpPortShowEntry OBJECT-TYPE
+              SYNTAX  Zxr10ptpPortShowEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information of PTP port."
+              INDEX   {
+                        zxr10ptpPortShowIfName,
+                        zxr10ptpPortShowPortType
+                      }
+              ::= { zxr10ptpPortShowTable 1 }
+
+        Zxr10ptpPortShowEntry ::=
+            SEQUENCE {
+                        zxr10ptpPortShowIfName
+                            DisplayString,
+                        zxr10ptpPortShowPortType
+                            INTEGER,
+                        zxr10ptpPortShowPortNum
+                            Integer32,
+                        zxr10ptpPortShowPortState
+                            INTEGER
+                        }
+
+        zxr10ptpPortShowIfName OBJECT-TYPE
+            SYNTAX  DisplayString (SIZE (0..31))
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                    "The PTP port name."
+            ::= { zxr10ptpPortShowEntry 1 }
+
+        zxr10ptpPortShowPortType OBJECT-TYPE
+              SYNTAX  INTEGER {
+                          combinedOcPort(1),
+                          generalPort(2)
+                          }
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The PTP port type,1 means combined-oc,0 means not."
+              ::= { zxr10ptpPortShowEntry 2 }
+
+        zxr10ptpPortShowPortNum OBJECT-TYPE
+              SYNTAX  Integer32 (1..3000)
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                  "The ptp port number,the value must be configured
+                  when create a port,1 means combined-oc."
+              ::= { zxr10ptpPortShowEntry 3}
+
+        zxr10ptpPortShowPortState OBJECT-TYPE
+           SYNTAX  INTEGER {
+                    initializing(1),
+                    faulty(2),
+                    disable(3),
+                    listening(4),
+                    premaster(5),
+                    master(6),
+                    passive(7),
+                    uncalibrated(8),
+                    slave(9),
+                    masterslave(10),
+                    invalid(254)
+                    }
+           MAX-ACCESS  read-only
+           STATUS  current
+           DESCRIPTION
+                   "The port state."
+           ::= { zxr10ptpPortShowEntry 4 }
+
+           
+    --zxr10ptpPortTable
+
+        zxr10ptpPortTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10ptpPortEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing PTP port configure
+                      information."
+              ::= { zxr10ptp 12 }
+
+        zxr10ptpPortEntry OBJECT-TYPE
+              SYNTAX  Zxr10ptpPortEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information of PTP port."
+              INDEX   {
+                        zxr10ptpPortIfName,
+                        zxr10ptpPortType,
+                        zxr10ptpPortIndexVlanid 
+                      }
+              ::= { zxr10ptpPortTable 1 }
+
+
+        Zxr10ptpPortEntry ::=
+            SEQUENCE {
+                        zxr10ptpPortIfName
+                            DisplayString,
+                        zxr10ptpPortType
+                            INTEGER,
+                        zxr10ptpPortIndexVlanid 
+                            Unsigned32,
+                        zxr10ptpPortNum
+                            Integer32,
+                        zxr10ptpPortEnable
+                            INTEGER,
+                        zxr10ptpPortState
+                            INTEGER,
+                        zxr10ptpPortSyncInterval
+                            Integer32,
+                        zxr10ptpPortDelayReqInterval
+                            Integer32,
+                        zxr10ptpPortMultiDomainEnable
+                            INTEGER,
+                        zxr10ptpPortDelayMech
+                            INTEGER,
+                        zxr10ptpPortNetProtocol
+                            INTEGER,
+                        zxr10ptpPortTransmitMode
+                            INTEGER,
+                        zxr10ptpPortUnSymmetry
+                            Unsigned32,
+                        zxr10ptpPortUnSign
+                            INTEGER,
+                        zxr10ptpPortVlanId
+                            Integer32,
+                        zxr10ptpPortSourceName
+                            DisplayString,
+                        zxr10ptpPortPDelayReqInterval
+                            Integer32,
+                          zxr10ptpPortPktStatistic
+                            INTEGER,
+                        zxr10ptpPortWorkMode
+                            INTEGER,
+                        zxr10ptpPortVlanPriority
+                            INTEGER,
+                        zxr10ptpPortUniNegoDura
+                            INTEGER
+                        }
+
+        zxr10ptpPortIfName OBJECT-TYPE
+            SYNTAX  DisplayString (SIZE (0..31))
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "The PTP port name."
+            ::= { zxr10ptpPortEntry 1 }
+
+        zxr10ptpPortType OBJECT-TYPE
+            SYNTAX  INTEGER {
+                      combinedOcPort(1),
+                      generalPort(2)
+                      }
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                  "The PTP port type,1 means combined-oc,
+                  2 means general port."
+            ::= { zxr10ptpPortEntry 2 }
+
+        zxr10ptpPortIndexVlanid  OBJECT-TYPE
+            SYNTAX  Unsigned32 (0..4094)
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+              "The ptp port vlan ID."
+            ::= { zxr10ptpPortEntry 3}
+  
+        zxr10ptpPortNum OBJECT-TYPE
+            SYNTAX  Integer32 (1..3000)
+            MAX-ACCESS  read-write
+            STATUS  current
+            DESCRIPTION
+                  "The ptp port number,the value must be configured
+                  when create a port,1 means combined-oc."
+            ::= { zxr10ptpPortEntry 4}
+
+        zxr10ptpPortEnable OBJECT-TYPE
+            SYNTAX  INTEGER {
+                        enable(1),
+                        disable(2)
+                        }
+            MAX-ACCESS  read-write
+            STATUS  current
+            DESCRIPTION
+                    "Enable or disable a ptp port."
+            ::= { zxr10ptpPortEntry 5 }
+
+        zxr10ptpPortState OBJECT-TYPE
+            SYNTAX  INTEGER {
+                        master(6),
+                        slave(9),
+                        passive(7),
+                        masterslave(10),
+                        invalid(254)
+                        }
+            MAX-ACCESS  read-write
+            STATUS  current
+            DESCRIPTION
+                    "The ptp port state configured by manual,
+                    masterslave state only t8000\M6k support."
+            ::= { zxr10ptpPortEntry 6 }
+
+        zxr10ptpPortSyncInterval OBJECT-TYPE
+            SYNTAX  Integer32 (-8..1)
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                    "The ptp sync interval,for upp3081 the range is -8..1,
+                    for 15k,the range is -4..1."
+            ::= { zxr10ptpPortEntry 7 }
+
+        zxr10ptpPortDelayReqInterval OBJECT-TYPE
+            SYNTAX  Integer32 (-5..5)
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                   "The ptp delay req interval,for upp3081 the range is -5..5,
+                   for 15k,the range is -4..5."
+            ::= { zxr10ptpPortEntry 8 }
+
+        zxr10ptpPortMultiDomainEnable OBJECT-TYPE
+            SYNTAX  INTEGER {
+                        enable(1),
+                        disable(2)
+                        }
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                   "The ptp port is multi domain port or not,
+                   only upp3081 support."
+            ::= { zxr10ptpPortEntry 9 }
+
+        zxr10ptpPortDelayMech OBJECT-TYPE
+            SYNTAX  INTEGER {
+                            e2e(1),
+                            p2p(2)
+                            }
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                   "The delay mechanism of the ptp port,only upp3081 support."
+            ::= { zxr10ptpPortEntry 10 }
+
+        zxr10ptpPortNetProtocol OBJECT-TYPE
+            SYNTAX  INTEGER {
+                        ipv4(1),
+                        ipv6(2),
+                        ieee802(3)
+                        }
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                   "The port net protocol,only upp3081 and 15k support."
+            ::= { zxr10ptpPortEntry 11 }
+
+        zxr10ptpPortTransmitMode OBJECT-TYPE
+            SYNTAX  INTEGER {
+                        multicast(2),
+                        unicast(1)
+                        }
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                   "The port packet transmit mode,only 15k support."
+            ::= { zxr10ptpPortEntry 12 }
+
+        zxr10ptpPortUnSymmetry OBJECT-TYPE
+            SYNTAX  Unsigned32(0..1000000000)
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                  "The unsymmetrical offset(ns),consider the effect of
+                  the zxr10PTPPortUnSign node.t8000\M6k not support."
+            ::= { zxr10ptpPortEntry 13}
+
+        zxr10ptpPortUnSign OBJECT-TYPE
+            SYNTAX  INTEGER {
+                    negative(1),
+                    positive(2)
+                    }
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                  "The unsymmetrical offset sign,consider the effect of
+                  the zxr10PTPPortUnSymmetry node.t8000\M6k not support."
+            ::= { zxr10ptpPortEntry 14}
+
+        zxr10ptpPortVlanId OBJECT-TYPE
+            SYNTAX    Integer32(0..4094)
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                  "Vlan id, only valid for 15k,other projects maybe not support"
+            ::= { zxr10ptpPortEntry 15}
+
+
+        zxr10ptpPortSourceName OBJECT-TYPE
+            SYNTAX  DisplayString (SIZE (0..31))
+            MAX-ACCESS  read-write
+            STATUS  current
+            DESCRIPTION
+                   "The PTP source interface name."
+            ::= { zxr10ptpPortEntry 16}
+
+        zxr10ptpPortPDelayReqInterval OBJECT-TYPE
+            SYNTAX  Integer32 (-4..4)
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                "The ptp pdelay req interval,only upp3081 and 15k support."
+            ::= { zxr10ptpPortEntry 17 }
+
+        zxr10ptpPortPktStatistic OBJECT-TYPE
+            SYNTAX  INTEGER {
+                        disable(2),
+                        enable(1)
+                        }
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                   "packet statistic switch."
+            ::= { zxr10ptpPortEntry 18}
+
+        zxr10ptpPortWorkMode OBJECT-TYPE
+              SYNTAX  INTEGER {
+                          freeMode(2),
+                          fixedMode(1)
+                        }
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The ptp port work mode."
+              ::= { zxr10ptpPortEntry 19}
+
+        zxr10ptpPortVlanPriority OBJECT-TYPE
+            SYNTAX    INTEGER(0..7)
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                "Vlan priority"
+            ::= { zxr10ptpPortEntry 20}
+
+        zxr10ptpPortUniNegoDura OBJECT-TYPE
+            SYNTAX    INTEGER(60..1000)
+            MAX-ACCESS  read-only
+            STATUS  current
+            DESCRIPTION
+                "Unicast negotiation duration of the port."
+            ::= { zxr10ptpPortEntry 21}
+
+
+ --zxr10ptpAcceptDstIpTable,the ptp destination IP configure table
+
+     zxr10ptpAcceptDstIpTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10ptpAcceptDstIpEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing PTP port dest ip configure
+                      information."
+              ::= { zxr10ptp 13 }
+
+     zxr10ptpAcceptDstIpEntry OBJECT-TYPE
+              SYNTAX  Zxr10ptpAcceptDstIpEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information about the PTP interface destination IP."
+              INDEX    { 
+                        zxr10PTPAcceptDestIpPortName,
+                        zxr10PTPAcceptDestIpPortType,
+                        zxr10PTPAcceptDestIpIndex,
+                        zxr10ptpAcceptDestIpVlanid
+                       }
+              ::= { zxr10ptpAcceptDstIpTable 1 }
+
+     Zxr10ptpAcceptDstIpEntry ::=
+            SEQUENCE {
+                  zxr10PTPAcceptDestIpPortName
+                            DisplayString,
+                  zxr10PTPAcceptDestIpPortType
+                            INTEGER,
+                  zxr10PTPAcceptDestIpIndex
+                            IpAddress,
+                  zxr10ptpAcceptDestIpVlanid
+                            Unsigned32,
+                  zxr10PTPAcceptDestIpPortNum
+                            INTEGER,
+                  zxr10PTPAcceptDestIpPriority1
+                            INTEGER,
+                  zxr10PTPAcceptDestIpPortMode
+                            INTEGER
+                     }
+
+     zxr10PTPAcceptDestIpPortName OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE (0..31))
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The PTP port name."
+              ::= { zxr10ptpAcceptDstIpEntry 1 }
+
+     zxr10PTPAcceptDestIpPortType OBJECT-TYPE
+              SYNTAX  INTEGER {
+                          combinedOcPort(1),
+                          generalPort(2)
+                          }
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The PTP port type,1 means combined-oc,2 means oc,bc,tc."
+              ::= { zxr10ptpAcceptDstIpEntry 2 }
+
+     zxr10PTPAcceptDestIpIndex OBJECT-TYPE
+              SYNTAX  IpAddress
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The port destination IP address."
+              ::= { zxr10ptpAcceptDstIpEntry 3 }
+  
+    zxr10ptpAcceptDestIpVlanid OBJECT-TYPE
+            SYNTAX  Unsigned32 (0..4094)
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+              "The ptp port vlan ID."
+            ::= { zxr10ptpAcceptDstIpEntry 4}
+
+    zxr10PTPAcceptDestIpPortNum OBJECT-TYPE
+              SYNTAX  INTEGER (1..3000)
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The PTP port number,1 means combined-oc."
+              ::= { zxr10ptpAcceptDstIpEntry 5}
+
+    zxr10PTPAcceptDestIpPriority1 OBJECT-TYPE
+              SYNTAX  INTEGER (0..255)
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "Set priority1 of accept master IP."
+              ::= { zxr10ptpAcceptDstIpEntry 6}
+
+    zxr10PTPAcceptDestIpPortMode OBJECT-TYPE
+              SYNTAX  INTEGER {
+                          fixedmode(1),
+                          freemode(2)
+                          }
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "Set the port mode of PTP."
+              ::= { zxr10ptpAcceptDstIpEntry 7}
+
+-- end added by songlingling for ptp private mib
+
+     END

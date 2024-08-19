@@ -1,0 +1,325 @@
+-- *****************************************************************
+-- log.mib 
+--
+-- 2008-4-1 18:53
+-- 
+--
+-- Copyright (c) 1985-2007 by ZTE Corp.
+-- All rights reserved.
+-- *****************************************************************
+--
+ZXR10-LOG-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE,
+        Unsigned32, IpAddress, enterprises,NOTIFICATION-TYPE 
+                FROM SNMPv2-SMI
+        DisplayString, TEXTUAL-CONVENTION
+                FROM SNMPv2-TC;
+                
+    
+log MODULE-IDENTITY
+        LAST-UPDATED "201407080000Z"
+        ORGANIZATION "ZTE Corporation."
+        CONTACT-INFO
+               "      sun nianhua
+               Tel:    +86-25-52870000
+               E-Mail: sun.nianhua1@zte.com.cn
+               "
+        DESCRIPTION 
+                "The MIB module to describe the LOG protocol."
+
+        REVISION "201407080000Z"
+        DESCRIPTION
+                 "modify:    add disconnect(5) to operLogResult"
+
+        REVISION "201308210000Z"
+        DESCRIPTION 
+                "discard:    syncLogTable"
+
+        REVISION "201307050000Z"
+        DESCRIPTION
+                "modify:    operLogType"
+
+        REVISION "201305131056Z"
+        DESCRIPTION
+                "modify:    operLogResult"
+
+        REVISION "200804021000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."       
+        ::= { zxr10 305 }
+
+    zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+    zxr10 OBJECT IDENTIFIER ::= { zte 3 }
+    
+    
+LoginType ::= TEXTUAL-CONVENTION
+       STATUS       current
+       DESCRIPTION "enum for login type"
+       SYNTAX       INTEGER
+                     { 
+                       telnet(0),                       
+                       ssh(1),
+                       session(2),
+                       ps(3),
+                       gm(4)
+                     }
+                     
+--  Sync logging table
+syncLogTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF SyncLogEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+            "A list of sync logging information."
+        ::= { log 1 }
+
+syncLogEntry OBJECT-TYPE
+        SYNTAX  SyncLogEntry
+        MAX-ACCESS  not-accessible
+        STATUS  obsolete
+        DESCRIPTION
+            "An entry to sync logging table."
+        INDEX  { syncLogFlowID }
+        ::= { syncLogTable 1 }
+                
+SyncLogEntry ::=
+        SEQUENCE {  
+            syncLogFlowID
+                Unsigned32,   
+            syncLogCmdID
+                Unsigned32,
+            syncLogCmdString
+                DisplayString,
+            syncLogTimeStamp
+                Unsigned32,
+            syncLogIpAddr
+                DisplayString,
+            syncLogVtyNo
+                Unsigned32
+    }
+
+syncLogFlowID  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Flow identifier or serial number"
+        ::= { syncLogEntry 1 }  
+
+syncLogCmdID  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Command identifier"
+        ::= { syncLogEntry 2 }  
+
+syncLogCmdString  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Command string"
+        ::= { syncLogEntry 3 }
+
+syncLogTimeStamp  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Time stamp of logging"
+        ::= { syncLogEntry 4 }  
+         
+syncLogIpAddr  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "IP address"
+        ::= { syncLogEntry 5 }
+       
+syncLogVtyNo  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Vty number. 0:con0, 1-n:vty0-vty(n-1)"
+        ::= { syncLogEntry 6 }
+
+--  Operate logging table
+operLogTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF OperLogEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A list of operating logging information."
+        ::= { log 2 }
+
+operLogEntry OBJECT-TYPE
+        SYNTAX  OperLogEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to operating logging table."
+        INDEX  { operLogFlowID }
+        ::= { operLogTable 1 }
+
+OperLogEntry ::=
+        SEQUENCE {
+            operLogFlowID
+                Unsigned32,
+            operLogCmdID
+                Unsigned32,
+            operLogCmdString
+                DisplayString,
+            operLogTimeStamp
+                Unsigned32,
+            operLogIpAddr
+                DisplayString,
+            operLogVtyNo
+                Unsigned32,
+            operLogUserName
+                DisplayString,
+            operLogType
+                LoginType,
+            operLogResult
+                INTEGER
+    }
+    
+operLogFlowID  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Flow identifier or serial number"
+        ::= { operLogEntry 1 }
+
+operLogCmdID  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Command identifier"
+        ::= { operLogEntry 2 }
+
+operLogCmdString  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Command string"
+        ::= { operLogEntry 3 }
+
+operLogTimeStamp  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Time stamp of logging"
+        ::= { operLogEntry 4 } 
+
+operLogIpAddr  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IP address"
+        ::= { operLogEntry 5 }
+
+operLogVtyNo  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Vty number. 0:con0, 1-n:vty0-vty(n-1)"
+        ::= { operLogEntry 6 }
+
+operLogUserName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "User name"
+        ::= { operLogEntry 7 }
+
+operLogType  OBJECT-TYPE
+        SYNTAX   LoginType
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Logging type"
+        ::= { operLogEntry 8 } 
+        
+operLogResult  OBJECT-TYPE
+        SYNTAX  INTEGER{failed(1),success(2),ceaseData(3),cancel(4),disconnect(5)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Result of command processing"
+        ::= { operLogEntry 9 }                         
+      
+   --***************************************************
+   -- log info
+   --***************************************************
+   zxr10LogMsgInfo  OBJECT IDENTIFIER ::= { log 3 }   
+          
+           
+   zxr10LogClass OBJECT-TYPE
+        SYNTAX     INTEGER{cmdLog(1)}
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION
+                "The class of the message."
+        ::= { zxr10LogMsgInfo 1 }
+
+   zxr10LogLevel OBJECT-TYPE
+        SYNTAX   INTEGER(1..8)  
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION
+                "The level of the message."
+        ::= { zxr10LogMsgInfo 2 }
+
+   zxr10LogMsgText OBJECT-TYPE
+        SYNTAX     DisplayString (SIZE (1..255))
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION
+                "The text of the message.  If the text of the message
+                 exceeds 255 bytes, the message will be truncated to
+                 254 bytes and a '*' character will be appended -
+                 indicating that the message has been truncated."
+        ::= { zxr10LogMsgInfo 3 }
+
+   zxr10LogTimeStamp OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION
+                "The time stamp of the message."
+        ::= { zxr10LogMsgInfo 4 }
+                                      
+                                      
+                                      
+   --********************************************************
+   -- cmdlog trap
+   --********************************************************
+   zxr10LogMIBNotifications         OBJECT IDENTIFIER   ::= { log 4 }
+   
+   zxr10LogMsgNotification NOTIFICATION-TYPE
+        OBJECTS { zxr10LogClass,
+                  zxr10LogLevel,
+                  zxr10LogMsgText,
+                  zxr10LogTimeStamp
+        }
+        STATUS     current
+        DESCRIPTION
+                "Send the trap of the operating logging information 
+                 to uniform network manager."
+        ::= { zxr10LogMIBNotifications 1 }
+        
+                                                                                                                                                
+END
+

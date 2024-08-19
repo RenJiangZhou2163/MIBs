@@ -1,0 +1,200 @@
+--  ************************************************
+--  Id: ZXR10-PERFORMANCE-MIB.mib 
+--
+--  2013-01-30, Yu Xiangnan
+--
+--  Copyright(c) 2013 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+
+ZXR10-PERFORMANCE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Integer32
+        FROM SNMPv2-SMI
+    RowStatus
+        FROM SNMPv2-TC
+    zxr10RosngMIB
+        FROM ZXR10-SMI;
+
+    zxr10PerfMIB MODULE-IDENTITY
+    LAST-UPDATED "201307090000Z"  
+    ORGANIZATION "ZTE Corporation"
+    CONTACT-INFO
+        "ZTE Corporation
+         Nanjing Institute of ZTE Corporation
+
+         No.68 Zijinghua Rd. Yuhuatai District, Nanjing, China"
+    DESCRIPTION
+        "ZXROS performance MIB"
+
+    REVISION "201307090000Z"
+    DESCRIPTION
+    "zxr10PerfMIB"
+
+    ::= { zxr10RosngMIB 50 }
+
+
+    zxr10PerfGlobalObject OBJECT IDENTIFIER ::= { zxr10PerfMIB 1 }
+
+    zxr10PerfDataSavePeriod OBJECT-TYPE
+    SYNTAX Integer32
+    UNITS  "seconds"
+    MAX-ACCESS read-write
+    STATUS  current
+    DESCRIPTION
+    "Can set value:{
+                       300: Data save interval 300s(5min)
+                       900: Data save interval 900s(15min)
+                   }"
+    ::= { zxr10PerfGlobalObject 1 }
+
+
+    zxr10PerfDataUpdatePeriodTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Zxr10PerfDataUpdatePeriodEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "Perf data-update period table"
+    ::= { zxr10PerfMIB 2 }
+
+    zxr10PerfDataUpdatePeriodEntry  OBJECT-TYPE
+    SYNTAX  Zxr10PerfDataUpdatePeriodEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "An entry containing data-update period info:"
+    INDEX  {zxr10PerfDataUpdatePeriodTPIDType}
+    ::= { zxr10PerfDataUpdatePeriodTable 1 }
+
+    Zxr10PerfDataUpdatePeriodEntry ::=
+    SEQUENCE {
+                 zxr10PerfDataUpdatePeriodTPIDType
+                 Integer32,     
+                 zxr10PerfDataUpdatePeriodValue
+                 Integer32,
+                 zxr10PerfDataUpdatePeriodRowStatus
+                 RowStatus
+             }    
+
+    zxr10PerfDataUpdatePeriodTPIDType  OBJECT-TYPE
+    SYNTAX  Integer32 
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "Can set value:{
+                       17   : Ethport interface checkPtType,
+                       18   : Posport interface checkPtType,
+                       19   : Cposport interface checkPtType,
+                       22   : Atmport interface checkPtType,
+                       36   : Subport interface checkPtType,
+                       65535: All interface checkPtType
+                   }"
+    ::= { zxr10PerfDataUpdatePeriodEntry 1 }
+
+    zxr10PerfDataUpdatePeriodValue  OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS  "seconds"
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+    "Can set value:{
+                      2 : set update interval 2s,
+                      5 : set update interval 5s,
+                      10: set update interval 10s,
+                      30: set update interval 30s,
+                      60: set update interval 60s
+                   }
+    Distinguish project, param value 2 and 5 is for 89 project."
+    ::= { zxr10PerfDataUpdatePeriodEntry 2 }
+
+    zxr10PerfDataUpdatePeriodRowStatus  OBJECT-TYPE
+    SYNTAX   RowStatus
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+    "The status of the row.The writable columns in a row can not be changed if the row
+        is active. All columns must have a valid value before a row can be activated."
+    ::= { zxr10PerfDataUpdatePeriodEntry 100 }
+
+
+    zxr10Perf0SupressTable  OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Zxr10Perf0SupressEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "Perf 0Supress table"
+    ::= { zxr10PerfMIB 3 }
+
+    zxr10Perf0SupressEntry  OBJECT-TYPE
+    SYNTAX  Zxr10Perf0SupressEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "An entry containing zero supress state info"
+    INDEX  {zxr10Perf0SupressTPIDType,
+            zxr10Perf0SupressTPIDValue,
+            zxr10Perf0SupressCycType}
+    ::= { zxr10Perf0SupressTable 1 }
+
+    Zxr10Perf0SupressEntry ::=
+    SEQUENCE {
+                 zxr10Perf0SupressTPIDType
+                 Integer32,
+                 zxr10Perf0SupressTPIDValue
+                 OCTET STRING,
+                 zxr10Perf0SupressCycType
+                 INTEGER,
+                 zxr10Perf0SupressRowStatus
+                 RowStatus
+             }    
+
+    zxr10Perf0SupressTPIDType  OBJECT-TYPE
+    SYNTAX  Integer32 
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "Can set value:{
+                       65535 : all checkPtType
+                   }"
+    ::= { zxr10Perf0SupressEntry 1}
+
+    zxr10Perf0SupressTPIDValue  OBJECT-TYPE
+    SYNTAX  OCTET STRING(SIZE(62)) 
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "62 byte with value 255(0xff) in every byte"
+    ::= { zxr10Perf0SupressEntry 2}
+
+    zxr10Perf0SupressCycType  OBJECT-TYPE
+    SYNTAX  INTEGER {
+                       currentQtime(1),
+                       historyQtime(2),
+                       currentDtime(3),
+                       historyDtime(4)
+                    }
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "Can set value:{
+                      1: currentQtime,
+                      2: historyQtime,
+                      3: currentDtime,
+                      4: historyDtime,
+                   }"
+    ::= { zxr10Perf0SupressEntry 3}
+
+    zxr10Perf0SupressRowStatus  OBJECT-TYPE
+    SYNTAX   RowStatus
+    MAX-ACCESS  read-create
+    STATUS  current
+    DESCRIPTION
+    "The status of the row
+    active(1) :SuppressState is Unsuppressed"
+    ::= { zxr10Perf0SupressEntry 100 }
+
+END

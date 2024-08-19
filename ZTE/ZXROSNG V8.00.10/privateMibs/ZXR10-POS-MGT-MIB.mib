@@ -1,0 +1,430 @@
+--  ************************************************
+--  $Id: ZXR10-POS-MGT-MIB.mib 12 20010-08-13 01:01:17Z taowq $
+--
+--  ZXR10-ETH-MGT.mib: ZXR10 pos query and  configuration MIB file
+--  
+--  Jun. 2010, liu chao
+--   
+--  Copyright(c) 2010 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+
+ZXR10-POS-MGT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, 
+    OBJECT-TYPE
+        FROM SNMPv2-SMI
+   zxr10interfaces
+        FROM ZXR10-SMI
+    DisplayString    
+        FROM SNMPv2-TC; 
+ ----------------------------------------------------MODULE------------------------------------------------------
+    zxr10PosMgtMIB MODULE-IDENTITY
+    LAST-UPDATED "201501120000Z"   
+    ORGANIZATION "ZTE Corporation"
+    CONTACT-INFO
+        "ZTE Corporation 
+         Nanjing Institute of ZTE Corporation
+         
+         No.68 Zijinghua Rd. Yuhuatai District, Nanjing, China
+         
+         Tel: +86-25-52870000"
+
+    DESCRIPTION
+        "ZXROS v4.6.03 ethnet query and configuration MIB"
+    REVISION "201501120000Z"
+    DESCRIPTION
+     "Add zxr10PosRecvStatsOverRun in zxr10POSRecvStatsTable"       
+    REVISION "201008170000Z"   
+    DESCRIPTION
+       ""
+
+    ::= { zxr10interfaces 3 }
+
+    zxr10PosMgtMIBObjects       OBJECT IDENTIFIER ::= { zxr10PosMgtMIB 1 }   
+    
+ --   zxr10PosQuery OBJECT IDENTIFIER
+ --       ::=  { zxr10PosMgtMIBObjects 1 }
+        
+    zxr10PosConfiguration OBJECT IDENTIFIER
+        ::=  { zxr10PosMgtMIBObjects 2 }     
+        
+ --   zxr10PosStats OBJECT IDENTIFIER
+ --       ::=  { zxr10PosMgtMIBObjects 3 }                
+-------------------------------------------------------self define type----------------------------------------    
+    InterfaceIndex ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT "d"
+        STATUS       current
+        DESCRIPTION
+            "A unique value, greater than zero, for each interface or
+            interface sub-layer in the managed system.  It is
+            recommended that values are assigned contiguously starting
+            from 1.  The value for each interface sub-layer must remain
+            constant at least from one re-initialization of the entity's
+            network management system to the next re-initialization."
+        SYNTAX       Integer32 (1..65536)  
+ --   DisplayString ::= OCTET STRING
+    --  This data type is used to model textual information taken
+    --  from the NVT ASCII character set.  By convention, objects
+    --  with this syntax are declared as having
+    --  SIZE (0..255)
+-------------------------------------------------------self define type-----------------------------------------                   
+-- Posnet physic interface configuration table  
+--this talbe is supported by both pm and pss interface,
+--the leaf node is start from 1 if it is supported by pss interface;
+--and start from 50 if ti is supported by pm
+
+   
+    zxr10PosPhyIfTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10PosPhyIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Posnet configuration table"
+        ::= { zxr10PosConfiguration 3 }
+        
+    zxr10PosPhyIfEntry  OBJECT-TYPE
+        SYNTAX  Zxr10PosPhyIfEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10PosPhyIfIndex }
+        ::= { zxr10PosPhyIfTable 1 }
+
+    Zxr10PosPhyIfEntry ::=
+        SEQUENCE {
+            zxr10PosPhyIfIndex
+               InterfaceIndex,
+            zxr10PosPhyIfName
+               DisplayString,
+            zxr10PosPhyIfNo 
+               INTEGER,       
+            zxr10PosPhyIfEncapType 
+               INTEGER,      
+            zxr10PosPhyIfSingleComm 
+               INTEGER,          
+            zxr10PosPhyIfIpLdsh  
+               INTEGER,
+            zxr10PosPhyIfLdshBandwidth  
+               INTEGER,          
+            zxr10PosPhyIfStrictMtu  
+               INTEGER,   
+            zxr10PosPhyIfLoopbackStatus 
+               INTEGER,    
+                
+    -- pm take charge  following      start from 50     
+            zxr10PosPhyIfFrameType 
+               INTEGER,       
+            zxr10PosPhyIfCrcCheck 
+               INTEGER,      
+            zxr10PosPhyIfScramble 
+               INTEGER,          
+            zxr10PosPhyIfClockMode  
+               INTEGER,
+            zxr10PosPhyIfFlagC2  
+               INTEGER      
+    }
+
+    zxr10PosPhyIfIndex  OBJECT-TYPE
+        SYNTAX  InterfaceIndex 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Posnet interface ifIndex"
+        ::= { zxr10PosPhyIfEntry 1 } 
+   
+    zxr10PosPhyIfName  OBJECT-TYPE
+        SYNTAX  DisplayString 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Posnet interface ifName"
+        ::= { zxr10PosPhyIfEntry 2 } 
+         
+     zxr10PosPhyIfNo  OBJECT-TYPE
+        SYNTAX  INTEGER 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Posnet interface No"
+        ::= { zxr10PosPhyIfEntry 3 }    
+        
+      zxr10PosPhyIfEncapType  OBJECT-TYPE
+        SYNTAX  INTEGER {
+                          other(0), 
+                          ppp(1),
+                          hdlc(2),
+                          framerelay(3),
+                          lapb(4),
+                          x25(5),
+                          ether(6),
+                          aal5(7),
+                          none(8),
+                          diag(255)
+                          
+                       }
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Posnet interface EncapType"
+        ::= { zxr10PosPhyIfEntry 4 }   
+        
+       zxr10PosPhyIfSingleComm  OBJECT-TYPE
+        SYNTAX  INTEGER {     
+                          notSupported(0),
+                          all(1), 
+                          rx(2),
+                          tx(3)
+                        } 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Posnet interface SingleComm"
+        ::= { zxr10PosPhyIfEntry 5 }    
+        
+      zxr10PosPhyIfIpLdsh  OBJECT-TYPE
+        SYNTAX  INTEGER {
+                          notSupported(0),
+                          dest(1), 
+                          pkt(2),
+                          none(3)
+                        }  
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Posnet interface IpLdsh"
+        ::= { zxr10PosPhyIfEntry 6 } 
+        
+     zxr10PosPhyIfLdshBandwidth  OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Posnet interface LdshBandwidth"
+        ::= { zxr10PosPhyIfEntry 7 }     
+        
+      zxr10PosPhyIfStrictMtu  OBJECT-TYPE
+        SYNTAX  INTEGER  {
+                          notSupported(0),
+                           related(1), 
+                           notRelated(2)                          
+                         }  
+
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Posnet interface StrictMtu"
+        ::= { zxr10PosPhyIfEntry 8 }          
+        
+        
+      zxr10PosPhyIfLoopbackStatus  OBJECT-TYPE
+        SYNTAX  INTEGER  {
+                          cancel(0),
+                           outer(1), 
+                           inner(2)                          
+                         }  
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Posnet interface LoopbackStatus"
+        ::= { zxr10PosPhyIfEntry 9 }      
+        
+        
+     --pm segment            start from 30
+       zxr10PosPhyIfFrameType  OBJECT-TYPE
+       SYNTAX  INTEGER {
+                          sdh(0)                                     
+                       }
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Posnet interface frame type"
+        ::= { zxr10PosPhyIfEntry 50 }   
+        
+       zxr10PosPhyIfCrcCheck  OBJECT-TYPE
+        SYNTAX  INTEGER {
+                          crc16(0), 
+                          crc32(1),
+                          unknown(2)
+                        } 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Posnet interface CRC"
+        ::= { zxr10PosPhyIfEntry 51 }    
+        
+      zxr10PosPhyIfScramble  OBJECT-TYPE
+        SYNTAX  INTEGER {
+                          disable(0), 
+                          enable(1),
+                          unknown(2)
+                        }  
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Posnet interface Scramble"
+        ::= { zxr10PosPhyIfEntry 52 } 
+        
+      zxr10PosPhyIfClockMode  OBJECT-TYPE
+        SYNTAX  INTEGER {
+                           internal(0),
+                           line(1),
+                           unknown(2)
+                        }
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Posnet interface clock mode"
+        ::= { zxr10PosPhyIfEntry 53 }     
+        
+      zxr10PosPhyIfFlagC2  OBJECT-TYPE
+        SYNTAX  INTEGER{ 
+                         flagC2-000(0),
+                         flagC2-001(1),
+                         flagC2-002(2),
+                         flagC2-003(3),
+                         flagC2-004(4),
+                         flagC2-018(18),
+                         flagC2-019(19),
+                         flagC2-020(20),
+                         flagC2-021(21),
+                         flagC2-022(22),
+                         flagC2-023(23),
+                         flagC2-024(24),
+                         flagC2-025(25),
+                         flagC2-026(26),
+                         flagC2-027(27),
+                         flagC2-207(207),
+                         flagC2-254(254)
+                       }
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical Posnet interface flag c2"
+        ::= { zxr10PosPhyIfEntry 54 }        
+
+
+    --------------------------------------------------------------------------
+   
+    zxr10POSRecvStatsTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10POSRecvStatsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Posnet receive statistic table"
+        ::= { zxr10PosConfiguration 4 }
+        
+    zxr10POSRecvStatsEntry  OBJECT-TYPE
+        SYNTAX  Zxr10POSRecvStatsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxr10PosRecvStatsIndex }
+        ::= { zxr10POSRecvStatsTable 1 }
+
+    Zxr10POSRecvStatsEntry ::=
+        SEQUENCE {
+            zxr10PosRecvStatsIndex
+               InterfaceIndex,
+            zxr10PosRecvStatsName
+               DisplayString,
+            zxr10PosRecvStatsAbort 
+               Counter64,       
+            zxr10PosRecvStatsOverFlow  
+               Counter64,           
+            zxr10PosRecvStatsRunt 
+               Counter64, 
+            zxr10PosRecvStatsGiant  
+               Counter64,          
+            zxr10PosRecvStatsDrop  
+               Counter64,
+            zxr10PosRecvStatsFcsError  
+               Counter64,
+            zxr10PosRecvStatsOverRun
+               Counter64    
+    }
+
+    zxr10PosRecvStatsIndex  OBJECT-TYPE
+        SYNTAX  InterfaceIndex 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10POSRecvStatsEntry 1 } 
+   
+    zxr10PosRecvStatsName  OBJECT-TYPE
+        SYNTAX  DisplayString 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10POSRecvStatsEntry 2 } 
+         
+     zxr10PosRecvStatsAbort  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10POSRecvStatsEntry 3 }    
+        
+      zxr10PosRecvStatsOverFlow  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10POSRecvStatsEntry 4 }   
+        
+       zxr10PosRecvStatsRunt  OBJECT-TYPE
+        SYNTAX  Counter64 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10POSRecvStatsEntry 5 }    
+        
+      zxr10PosRecvStatsGiant  OBJECT-TYPE
+        SYNTAX  Counter64  
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10POSRecvStatsEntry 6 } 
+        
+     zxr10PosRecvStatsDrop  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10POSRecvStatsEntry 7 }     
+        
+      zxr10PosRecvStatsFcsError  OBJECT-TYPE
+        SYNTAX  Counter64  
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            ""
+        ::= { zxr10POSRecvStatsEntry 8 }
+        
+      zxr10PosRecvStatsOverRun  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Received OverRun Packets on Posnet"
+        ::= { zxr10POSRecvStatsEntry 9 }
+
+END                       
+ 
+ 
+ 
+ 
+ 
+ 
+ 

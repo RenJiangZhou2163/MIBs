@@ -1,0 +1,2360 @@
+--*****************************************************************
+-- ZXROSNG-MAC-MIB.mib
+-- MAC MIB Definitions
+-- lizhuo10114767
+-- 2013-03-22
+--
+-- Copyright (c) 1985-2013 by ZTE Corp.
+-- All rights reserved.
+-- *****************************************************************
+--
+
+ZXROSNG-MAC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    NOTIFICATION-TYPE,
+    IpAddress,
+    Unsigned32        FROM SNMPv2-SMI -- [RFC2578]
+    
+    Ipv6Address       FROM IPV6-TC
+                 
+    MacAddress,
+    DisplayString,
+    RowStatus   FROM SNMPv2-TC
+
+    zxr10RosngMIB     FROM ZXR10-SMI
+;
+
+             
+zxMacMIB MODULE-IDENTITY
+        LAST-UPDATED "201807131800Z"  --2018-07-13 18:00
+        ORGANIZATION "ZTE Corporation."
+        CONTACT-INFO
+        "    Li zhuo(Chen zehan)
+             Tel:    +86-1865165xxxx
+             E-Mail:li.zhuo3@zte.com.cn
+        "
+        DESCRIPTION
+             "This MIB contains managed object
+             definitions for MAC config and status"
+             
+        REVISION "201807131800Z" --2018-07-13 18:00
+        DESCRIPTION
+        "   add:
+            zxMacPortCfgRowStatus
+            modify:
+            zxMacPortCfgLimitMax
+        "
+        
+        REVISION "201705221800Z" --2017-05-22 18:00
+        DESCRIPTION
+        "   modify DEFVAL: 
+            zxMacVpnCfgStpTunnelled,
+            zxMacVpnCfgLldpTunnelled,
+            zxMacVpnCfgDot1xTunnelled,
+            zxMacVpnCfgDot3xTunnelled,
+            zxMacVpnCfgLacpTunnelled,
+            zxMacVpnCfgGarpTunnelled,
+            zxMacVpnCfgAllBriMultiTunnelled,
+            zxMacVpnCfgZdpZtpTunnelled,
+            zxMacVpnCfgVTPTunnelled,
+            zxMacVpnCfgCDPTunnelled
+            add: 
+            zxMacVpnCfgZesrTunnelled,
+            zxMacVpnCfgPvstPlusTunnelled,
+            zxMacVpnCfgUdldTunnelled,
+            zxMacVpnCfgMstpTunnelled,
+            zxMacVpnCfgRstpTunnelled,
+            zxMacVpnCfgGvrpTunnelled,
+            zxMacVpnCfgMacInMacTunnelled,
+            zxMacVpnCfgEfmTunnelled,
+            zxMacVpnCfgCfmTunnelled,
+            zxMacVpnCfgY1731,
+            zxMacVpnCfgPbbTeTunnelled,
+            zxMacVpnCfgUserProtocolName,
+            zxMacVpnCfgUserProtocolTunnelled,
+            zxMacVpnCfgGmrpTunnelled,
+            zxMacVpnCfgDldpTunnelled,
+            zxMacVpnCfgErpsTunnelled
+        "
+             
+        REVISION "201602231800Z" --2016-02-23 18:00
+        DESCRIPTION
+        "   add value shutdown for  
+            zxMacPortCfgLimitPolicy.
+        "
+            
+        REVISION "201601081800Z" --2016-01-08 18:00
+        DESCRIPTION
+        "   add : 
+            zxMacVxlanItemTable
+            obsolete:
+            zxMacItemCfgVxlanId,
+            zxMacItemCfgRemoteIp,
+            zxMacItemCfgRemoteIpv6,
+            zxMacItemCfgRemoteIpType,
+            zxMacItemOnVlanVxlanId,
+            zxMacItemOnVlanRemoteIp,
+            zxMacItemOnVlanRemoteIpv6,
+            zxMacItemOnVlanRemoteIpType,
+            zxMacItemOnPortVxlanId,
+            zxMacItemOnPortRemoteIp,
+            zxMacItemOnPortRemoteIpv6,        
+            zxMacItemOnPortRemoteIpType
+        "
+        REVISION "201511181800Z" --2015-11-18 18:00
+        DESCRIPTION
+        "   add : 
+            zxMacItemOnPortRemoteIpv6,
+            zxMacItemOnVlanRemoteIpv6,
+            zxMacItemCfgRemoteIpv6
+            zxMacItemOnPortRemoteIpType,
+            zxMacItemOnVlanRemoteIpType,
+            zxMacItemCfgRemoteIpType
+        "           
+        REVISION "201412221800Z" --2014-12-22 18:00
+        DESCRIPTION
+        "   modify DESCRIPTION:
+            id to ID,
+            mac to MAC
+        "            
+        REVISION "201410221800Z" --2014-10-22 18:00
+        DESCRIPTION
+        "   add:
+            zxMacItemCfgVxlanId,
+            zxMacItemCfgRemoteIp,
+            zxMacItemOnVlanVxlanId,
+            zxMacItemOnVlanRemoteIp,
+            zxMacItemOnPortVxlanId,
+            zxMacItemOnPortRemoteIp
+        "
+        
+        REVISION "201403041800Z" --2014-03-04 18:00
+        DESCRIPTION
+        "   modify DEFVAL:
+            zxMacVplsPortCfgTrbcAction,
+            zxMacVplsPortCfgTrmcAction,
+            zxMacVplsPortCfgTrucAction,
+            zxMacVplsPortCfgTrkcAction
+            modify DESCRIPTION:
+            zxMacVplsPortCfgTrafficMax,
+            zxMacGlobalCfgAgingTime
+        "
+        
+        REVISION "201312031800Z" --2013-12-03 18:00
+        DESCRIPTION
+        "   add:
+            zxMacItemOnVlanTable          
+            zxMacItemOnPortTable
+        "
+
+        REVISION "201311181000Z" --2013-11-18 10:00
+        DESCRIPTION
+        "   del:
+            enterprises
+            add:
+            zxMacGlobalCfgAutoWrite
+            zxMacGlobalCfgAutoWriteInterval
+            zxMacGlobalStatusStaticMacNum
+            zxMacGlobalStatusDynamicMacNum
+            zxMacGlobalStatusPerMacNum
+            zxMacGlobalStatusFiltMacNum
+            zxMacGlobalStatusToPerMacNum
+            zxMacVplsItemCfgTime
+            zxMacPortCfgToPermanent
+            zxMacItemCfgTime
+            zxMacPortStatusStaticMacNum
+            zxMacPortStatusDynamicMacNum
+            zxMacPortStatusPerMacNum
+            zxMacPortStatusFiltMacNum
+            zxMacPortStatusToPerMacNum
+        "
+        REVISION "201311051000Z" --2013-11-05 10:00
+        DESCRIPTION
+        "   add:
+            zxMacItemCfgNickName
+        "
+
+        REVISION "201307251000Z" --2013-07-25 10:00
+        DESCRIPTION
+        "   add:
+            zxMacNotifications
+        "   
+  
+        REVISION "201306221800Z" --2013-06-22 18:00
+        DESCRIPTION
+        "   add:
+            type topermanent for item flag
+        "           
+        REVISION "201303221800Z" --2013-03-22 18:00
+        DESCRIPTION
+        "   add:
+            zxMacGlobalCfg
+            zxMacGlobalStatus
+            zxMacVlanCfgTable
+            zxMacPortCfgTable
+            zxMacItemCfgTable
+            zxMacVplsPortStatusTable
+            zxMacVpnStatusTable
+            zxMacVlanStatusTable
+            zxMacPortStatusTable
+            "
+       
+        REVISION "201205141800Z" --2012-05-14 18:00
+        DESCRIPTION
+            " Initial version of this MIB module."
+
+        ::= { zxr10RosngMIB  500 } 
+
+
+--********************************************         
+--definition of zxMacGlobalObjects::
+--********************************************  
+zxMacGlobalObjects  OBJECT IDENTIFIER ::= { zxMacMIB  1 }    
+zxMacGlobalCfg      OBJECT IDENTIFIER ::= { zxMacGlobalObjects  1 }
+zxMacGlobalStatus   OBJECT IDENTIFIER ::= { zxMacGlobalObjects  2 }
+--********************************************         
+--definition of zxMacGlobalCfg::
+--********************************************  
+    zxMacGlobalCfgLearnEnable   OBJECT-TYPE
+        SYNTAX  INTEGER{
+            disable(1),
+            enable(2)
+        }
+        MAX-ACCESS    read-only
+        STATUS        current        
+        DESCRIPTION   "Configuration of Global MAC learning."
+        DEFVAL        {enable} 
+        ::=  { zxMacGlobalCfg 1 }
+
+    zxMacGlobalCfgLimitMax  OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Configuration of Global max MAC number.
+            Default value is determined by device."
+        ::= { zxMacGlobalCfg 2 }
+        
+    zxMacGlobalCfgLimitPolicy  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            forward(1),
+            drop(2)
+        }
+        MAX-ACCESS  read-only
+        STATUS      current        
+        DESCRIPTION
+            "Configuration of Global max MAC number policy."
+        DEFVAL      {forward} 
+        ::= { zxMacGlobalCfg 3 } 
+        
+    zxMacGlobalCfgHigigLearn   OBJECT-TYPE
+        SYNTAX  INTEGER{
+            disable(1),
+            enable(2)
+        }
+        MAX-ACCESS    read-only
+        STATUS        current        
+        DESCRIPTION   "Configuration of higig learn."
+        DEFVAL        {enable} 
+        ::=  { zxMacGlobalCfg 4 }
+
+    zxMacGlobalCfgAlarmThreshold  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current         
+        DESCRIPTION
+            "Configuration of Global alarm threshold."
+        DEFVAL  {80}
+        ::= { zxMacGlobalCfg 5 }  
+        
+    zxMacGlobalCfgAgingTime  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        UNITS       "seconds"
+        MAX-ACCESS  read-only        
+        STATUS  current
+        DESCRIPTION
+            "Configuration of Global aging time.
+            Default value is determined by device.
+            Zero means not to age."        
+        ::= { zxMacGlobalCfg 6 }
+    
+    zxMacGlobalCfgDefPriMov            OBJECT-TYPE
+        SYNTAX  INTEGER{
+            enable(1),
+            disable(2)
+        }
+        MAX-ACCESS    read-only
+        STATUS        current         
+        DESCRIPTION   
+            "Configuration of MAC movable between port of default priority."
+        DEFVAL        {enable}
+        ::=  { zxMacGlobalCfg 7 }
+
+    zxMacGlobalCfgLowPriMov           OBJECT-TYPE
+        SYNTAX  INTEGER{
+            enable(1),
+            disable(2)
+        }
+        MAX-ACCESS    read-only
+        STATUS        current        
+        DESCRIPTION   
+            "Configuration of MAC movable between port of low priority."
+        DEFVAL        {enable} 
+        ::=  { zxMacGlobalCfg 8 }
+
+    zxMacGlobalCfgNormalPriMov          OBJECT-TYPE
+        SYNTAX  INTEGER{
+            enable(1),
+            disable(2)
+        }
+        MAX-ACCESS    read-only
+        STATUS        current        
+        DESCRIPTION   
+            "Configuration of MAC movable between port of normal priority."
+        DEFVAL        {enable} 
+        ::=  { zxMacGlobalCfg 9 }
+
+        zxMacGlobalCfgHighPriMov         OBJECT-TYPE
+        SYNTAX  INTEGER{
+            enable(1),
+            disable(2)
+        }
+        MAX-ACCESS    read-only
+        STATUS        current        
+        DESCRIPTION   
+            "Configuration of MAC movable between port of high priority."
+        DEFVAL        {enable} 
+        ::=  { zxMacGlobalCfg 10 }
+
+        zxMacGlobalCfgAutoWrite      OBJECT-TYPE
+        SYNTAX  INTEGER{
+            disable(1),
+            enable(2)
+        }
+        MAX-ACCESS    read-only
+        STATUS        current        
+        DESCRIPTION   
+            "Configuration of auto write to-permanent MAC to file."
+        DEFVAL        {disable} 
+        ::=  { zxMacGlobalCfg 11 }
+
+        zxMacGlobalCfgAutoWriteInterval      OBJECT-TYPE
+        SYNTAX  Unsigned32
+        UNITS       "minutes"
+        MAX-ACCESS    read-only
+        STATUS        current        
+        DESCRIPTION   
+            "Configuration of auto write to-permanent MAC interval."
+        DEFVAL  {1440}
+        ::=  { zxMacGlobalCfg 12 }
+
+--********************************************         
+--definition of zxMacGlobalStatus::
+--********************************************  
+    zxMacGlobalStatusMacNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Global current MAC number."
+        DEFVAL  {0}
+        ::= { zxMacGlobalStatus 1 }
+
+    zxMacGlobalStatusVplsMacNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Global current VPLS MAC number."
+        DEFVAL  {0}
+        ::= { zxMacGlobalStatus 2 }
+
+    zxMacGlobalStatusVplsAcMacNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Global current VPLS MAC number of AC port ."
+        DEFVAL  {0}
+        ::= { zxMacGlobalStatus 3 }        
+
+    zxMacGlobalStatusVplsPwMacNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Global current VPLS MAC number of PW port."
+        DEFVAL  {0}
+        ::= { zxMacGlobalStatus 4 }
+        
+    zxMacGlobalStatusProtected  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            disable(1),
+            enable(2)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Global protect status."
+        DEFVAL  {disable}
+        ::= { zxMacGlobalStatus 5 }
+
+    zxMacGlobalStatusHisMaxCount  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Global history max count."
+        DEFVAL  {0}
+        ::= { zxMacGlobalStatus 6 }  
+
+    zxMacGlobalStatusStaticMacNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Global current static MAC number."
+        DEFVAL  {0}
+        ::= { zxMacGlobalStatus 7 }  
+
+    zxMacGlobalStatusDynamicMacNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Global current dynamic MAC number."
+        DEFVAL  {0}
+        ::= { zxMacGlobalStatus 8 }  
+
+    zxMacGlobalStatusPerMacNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Global current permanent MAC number."
+        DEFVAL  {0}
+        ::= { zxMacGlobalStatus 9 }  
+
+    zxMacGlobalStatusFiltMacNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Global current filt MAC number."
+        DEFVAL  {0}
+        ::= { zxMacGlobalStatus 10 }  
+
+    zxMacGlobalStatusToPerMacNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Global current topermanent MAC number."
+        DEFVAL  {0}
+        ::= { zxMacGlobalStatus 11 }  
+
+
+--********************************************         
+--definition of zxMacVplsPortCfgTable::
+--********************************************                    
+zxMacObjects  OBJECT IDENTIFIER ::= { zxMacMIB  2 }
+
+    zxMacVplsPortCfgTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ZxMacVplsPortCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Configuration for MAC on VPLS port."
+        ::= { zxMacObjects 1 }
+    zxMacVplsPortCfgEntry  OBJECT-TYPE
+        SYNTAX   ZxMacVplsPortCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Configuration for MAC on VPLS port."
+        INDEX  { zxMacVplsPortCfgInstName,  zxMacVplsPortCfgIfName}
+        ::= { zxMacVplsPortCfgTable 1 }
+
+    ZxMacVplsPortCfgEntry ::= SEQUENCE {
+            zxMacVplsPortCfgInstName          DisplayString,
+            zxMacVplsPortCfgIfName            DisplayString,
+            zxMacVplsPortCfgIfIndex           Unsigned32,
+            zxMacVplsPortCfgEntriesMax        Unsigned32,
+            zxMacVplsPortCfgEntriesAction     INTEGER,
+            zxMacVplsPortCfgAgingTime         Unsigned32,
+            zxMacVplsPortCfgTrafficMax        Unsigned32,
+            zxMacVplsPortCfgTrbcMaximum       Unsigned32,
+            zxMacVplsPortCfgTrbcAction        INTEGER,
+            zxMacVplsPortCfgTrmcMaximum       Unsigned32,
+            zxMacVplsPortCfgTrmcAction        INTEGER,
+            zxMacVplsPortCfgTrucMaximum       Unsigned32,
+            zxMacVplsPortCfgTrucAction        INTEGER,
+            zxMacVplsPortCfgTrkcMaximum       Unsigned32,
+            zxMacVplsPortCfgTrkcAction        INTEGER
+        }
+
+   zxMacVplsPortCfgInstName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "VPLS inst name."
+        ::= { zxMacVplsPortCfgEntry 1 }
+      
+    zxMacVplsPortCfgIfName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Port name."
+        ::= { zxMacVplsPortCfgEntry 2 }
+        
+    zxMacVplsPortCfgIfIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Port index."
+        ::= { zxMacVplsPortCfgEntry 3 }
+    
+    zxMacVplsPortCfgEntriesMax  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of max MAC number on VPLS port.
+            Default value is determined by device."
+        ::= { zxMacVplsPortCfgEntry 4 }
+
+    zxMacVplsPortCfgEntriesAction  OBJECT-TYPE
+        SYNTAX  INTEGER{
+        broadcast(0),
+        drop(1)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of max MAC number action on VPLS port."
+        DEFVAL  {broadcast}
+        ::= { zxMacVplsPortCfgEntry 5 }    
+        
+    zxMacVplsPortCfgAgingTime  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        UNITS       "seconds"
+        MAX-ACCESS  read-only        
+        STATUS  current
+        DESCRIPTION
+            "Configuration of aging time on VPLS port.
+            Default value is determined by device."
+        ::= { zxMacVplsPortCfgEntry 6 } 
+
+    zxMacVplsPortCfgTrafficMax  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of traffic rate maximum on VPLS port.
+            4294967295 means no rate limit."
+        DEFVAL  {4294967295}
+        ::= { zxMacVplsPortCfgEntry 7 }
+ 
+    zxMacVplsPortCfgTrbcMaximum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of broadcast limit rate maximum on VPLS port."
+        DEFVAL  {100}
+        ::= { zxMacVplsPortCfgEntry 8 } 
+        
+    zxMacVplsPortCfgTrbcAction  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            broadcast(0),
+            drop(1)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of broadcast limit rate action on VPLS port."
+        DEFVAL  {drop}
+        ::= { zxMacVplsPortCfgEntry 9 } 
+ 
+    zxMacVplsPortCfgTrmcMaximum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of multicast limit rate maximum on VPLS port."
+        DEFVAL  {100}
+        ::= { zxMacVplsPortCfgEntry 10 } 
+        
+    zxMacVplsPortCfgTrmcAction  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            broadcast(0),
+            drop(1)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of multicast limit rate action on VPLS port."
+        DEFVAL  {drop}
+        ::= { zxMacVplsPortCfgEntry 11 }
+        
+    zxMacVplsPortCfgTrucMaximum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of unknow-unicast limit rate maximum on VPLS port."
+        DEFVAL  {100}
+        ::= { zxMacVplsPortCfgEntry 12 }
+
+    zxMacVplsPortCfgTrucAction  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            broadcast(0),
+            drop(1)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of unknow-unicast limit rate action on VPLS port."
+        DEFVAL  {drop}
+        ::= { zxMacVplsPortCfgEntry 13 }
+
+
+    zxMacVplsPortCfgTrkcMaximum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of know-unicast limit rate maximum on VPLS port."
+        DEFVAL  {100}
+        ::= { zxMacVplsPortCfgEntry 14 }
+        
+    zxMacVplsPortCfgTrkcAction  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            broadcast(0),
+            drop(1)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of know-unicast limit rate action on VPLS port."
+        DEFVAL  {drop}
+        ::= { zxMacVplsPortCfgEntry 15 }
+        
+        
+--********************************************         
+--definition of zxMacVplsItemCfgTable::  
+--******************************************** 
+    zxMacVplsItemCfgTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ZxMacVplsItemCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "VPLS MAC table."
+        ::= { zxMacObjects 2 }
+    zxMacVplsItemCfgEntry  OBJECT-TYPE
+        SYNTAX   ZxMacVplsItemCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "VPLS MAC table."
+        INDEX  { zxMacVplsItemCfgVpnName, 
+        zxMacVplsItemCfgMac,  zxMacVplsItemCfgVlanId}
+        
+        ::= { zxMacVplsItemCfgTable 1 }
+
+    ZxMacVplsItemCfgEntry ::= SEQUENCE {
+            zxMacVplsItemCfgVpnName      DisplayString,
+            zxMacVplsItemCfgIfName       DisplayString,
+            zxMacVplsItemCfgMac          MacAddress,
+            zxMacVplsItemCfgVlanId       Unsigned32,            
+            zxMacVplsItemCfgMultiflag    INTEGER,
+            zxMacVplsItemCfgTime         DisplayString
+        }
+    zxMacVplsItemCfgVpnName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "VPLS name of the MAC address."
+        ::= { zxMacVplsItemCfgEntry 1 }
+        
+    zxMacVplsItemCfgIfName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Port name of the MAC address."
+        ::= { zxMacVplsItemCfgEntry 2 }
+        
+    zxMacVplsItemCfgMac  OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "MAC address."
+        ::= { zxMacVplsItemCfgEntry 3 }
+        
+    zxMacVplsItemCfgVlanId  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "VLAN ID of the MAC address."
+        ::= { zxMacVplsItemCfgEntry 4 }
+        
+    zxMacVplsItemCfgMultiflag  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            dynamic(1),
+            static(2),
+            permanent(3),
+            srcfilter(4),
+            dstfilter(5),
+            bothfilter(6),
+            tostatic(7),
+            topermanent(8)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Type of the MAC address."
+        ::= { zxMacVplsItemCfgEntry 5 }  
+
+    zxMacVplsItemCfgTime  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Time of the MAC address."
+        ::= { zxMacVplsItemCfgEntry 6 }
+
+     
+--********************************************         
+--definition of zxMacVpnCfgTable::  
+--******************************************** 
+    zxMacVpnCfgTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ZxMacVpnCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Configuration for MAC on VPLS instance."
+        ::= { zxMacObjects 3 }
+    zxMacVpnCfgEntry  OBJECT-TYPE
+        SYNTAX   ZxMacVpnCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Configuration for MAC on VPLS instance."
+        INDEX  { zxMacVpnCfgInstName}
+        ::= { zxMacVpnCfgTable 1 }
+
+    ZxMacVpnCfgEntry ::= SEQUENCE {
+            zxMacVpnCfgInstName           DisplayString,
+            zxMacVpnCfgLearnEnable        INTEGER,
+            zxMacVpnCfgAntiMove           INTEGER,
+            zxMacVpnCfgMacEntriesMax      Unsigned32,
+            zxMacVpnCfgMacEntriesAction   INTEGER,
+            zxMacVpnCfgVpnId              Unsigned32,
+            zxMacVpnCfgAgingTime          Unsigned32,
+            zxMacVpnCfgRemoteNoLearning   INTEGER,
+            zxMacVpnCfgL2protocolCtrlPolicy INTEGER,
+            zxMacVpnCfgStpTunnelled       INTEGER,
+            zxMacVpnCfgLldpTunnelled      INTEGER,
+            zxMacVpnCfgDot1xTunnelled     INTEGER,
+            zxMacVpnCfgDot3xTunnelled     INTEGER,
+            zxMacVpnCfgLacpTunnelled      INTEGER,
+            zxMacVpnCfgGarpTunnelled      INTEGER, 
+            zxMacVpnCfgAllBriMultiTunnelled   INTEGER,
+            zxMacVpnCfgZdpZtpTunnelled    INTEGER, 
+            zxMacVpnCfgTrafficMax         Unsigned32,
+            zxMacVpnCfgTrbcMaximum        Unsigned32,  
+            zxMacVpnCfgTrbcAction         INTEGER, 
+            zxMacVpnCfgTrmcMaximum        Unsigned32,
+            zxMacVpnCfgTrmcAction         INTEGER, 
+            zxMacVpnCfgTrucMaximum        Unsigned32, 
+            zxMacVpnCfgTrucAction         INTEGER, 
+            zxMacVpnCfgDefPirMoveEn       INTEGER, 
+            zxMacVpnCfgLowerPriMoveEn     INTEGER, 
+            zxMacVpnCfgNormalPriMoveEn    INTEGER,
+            zxMacVpnCfgHigherPriMoveEn    INTEGER,
+            zxMacVpnCfgVTPTunnelled       INTEGER,
+            zxMacVpnCfgCDPTunnelled       INTEGER,
+            zxMacVpnCfgZesrTunnelled       INTEGER,
+            zxMacVpnCfgPvstPlusTunnelled   INTEGER,
+            zxMacVpnCfgUdldTunnelled       INTEGER,
+            zxMacVpnCfgMstpTunnelled       INTEGER,
+            zxMacVpnCfgRstpTunnelled       INTEGER,
+            zxMacVpnCfgGvrpTunnelled       INTEGER,
+            zxMacVpnCfgMacInMacTunnelled       INTEGER,
+            zxMacVpnCfgEfmTunnelled       INTEGER,
+            zxMacVpnCfgCfmTunnelled       INTEGER,
+            zxMacVpnCfgY1731Tunnelled       INTEGER,
+            zxMacVpnCfgPbbTeTunnelled       INTEGER,
+            zxMacVpnCfgUserProtocolName     DisplayString,
+            zxMacVpnCfgUserProtocolTunnelled       INTEGER,
+            zxMacVpnCfgGmrpTunnelled       INTEGER,
+            zxMacVpnCfgDldpTunnelled       INTEGER,
+            zxMacVpnCfgErpsTunnelled       INTEGER
+        }
+
+    zxMacVpnCfgInstName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "VPLS instance name."
+        ::= { zxMacVpnCfgEntry 1 }
+        
+    zxMacVpnCfgLearnEnable  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            disable(0),
+            enable(1)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of MAC learning on VPLS instance."
+        DEFVAL {enable}
+        ::= { zxMacVpnCfgEntry 2}
+        
+    zxMacVpnCfgAntiMove  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            disable(2),
+            remotefixed(1),
+            localfixed(0)            
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of MAC anti-move on VPLS instance."
+        DEFVAL {disable}
+        ::= { zxMacVpnCfgEntry 3}
+        
+    zxMacVpnCfgMacEntriesMax  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of max MAC number on VPLS instance.
+            Default value is determined by device."
+        ::= { zxMacVpnCfgEntry 4}
+        
+    zxMacVpnCfgMacEntriesAction  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            broadcast(0),
+            drop(1)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of max MAC number action on VPLS instance."
+        DEFVAL {broadcast}
+        ::= { zxMacVpnCfgEntry 5}
+        
+    zxMacVpnCfgVpnId  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Index of VPLS instance."
+        ::= { zxMacVpnCfgEntry 6}
+        
+    zxMacVpnCfgAgingTime  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        UNITS       "seconds"
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of aging time on VPLS instance.
+            Default value is determined by device."
+        ::= { zxMacVpnCfgEntry 7} 
+
+    zxMacVpnCfgRemoteNoLearning  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            disable(0),
+            enable(1)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of remote no learning policy on VPLS instance."
+        DEFVAL {disable}
+        ::= { zxMacVpnCfgEntry 8} 
+
+    zxMacVpnCfgL2protocolCtrlPolicy  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            disable(0),
+            enable(1)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy on VPLS instance."
+        DEFVAL {disable}
+        ::= { zxMacVpnCfgEntry 9}     
+
+    zxMacVpnCfgStpTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(0),
+            tunnelling(1),
+            terminating(2),
+            tunnellingMonitor(3),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for STP on VPLS instance."
+        DEFVAL {unknown}
+        ::= { zxMacVpnCfgEntry 10}
+ 
+    zxMacVpnCfgLldpTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(0),
+            tunnelling(1),
+            terminating(2),
+            tunnellingMonitor(3),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for LLDP on VPLS instance."
+        DEFVAL {unknown}
+        ::= { zxMacVpnCfgEntry 11}
+        
+    zxMacVpnCfgDot1xTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(0),
+            tunnelling(1),
+            terminating(2),
+            tunnellingMonitor(3),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for DOT1X on VPLS instance."
+        DEFVAL {unknown}
+        ::= { zxMacVpnCfgEntry 12}
+
+    zxMacVpnCfgDot3xTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(0),
+            tunnelling(1),
+            terminating(2),
+            tunnellingMonitor(3),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for DOT3X on VPLS instance."
+        DEFVAL {unknown}
+        ::= { zxMacVpnCfgEntry 13}
+
+    zxMacVpnCfgLacpTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(0),
+            tunnelling(1),
+            terminating(2),
+            tunnellingMonitor(3),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for LACP on VPLS instance."
+        DEFVAL {unknown}
+        ::= { zxMacVpnCfgEntry 14}
+
+    zxMacVpnCfgGarpTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(0),
+            tunnelling(1),
+            terminating(2),
+            tunnellingMonitor(3),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of 
+            l2pt policy for GARP on VPLS instance."
+        DEFVAL {unknown}
+        ::= { zxMacVpnCfgEntry 15}
+
+    zxMacVpnCfgAllBriMultiTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(0),
+            tunnelling(1),
+            terminating(2),
+            tunnellingMonitor(3),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of 
+            l2pt policy for AllBRIDGEMULTIAST on VPLS instance."
+        DEFVAL {unknown}
+        ::= { zxMacVpnCfgEntry 16}
+
+    zxMacVpnCfgZdpZtpTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(0),
+            tunnelling(1),
+            terminating(2),
+            tunnellingMonitor(3),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for ZDPZTP on VPLS instance."
+        DEFVAL {unknown}
+        ::= { zxMacVpnCfgEntry 17}
+
+    zxMacVpnCfgTrafficMax  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of traffic limit rate maximum on VPLS instance."
+        DEFVAL {1000000}
+        ::= { zxMacVpnCfgEntry 18}
+        
+    zxMacVpnCfgTrbcMaximum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of broadcast limit rate maximum on VPLS instance."
+        DEFVAL {10}
+        ::= { zxMacVpnCfgEntry 19}
+        
+    zxMacVpnCfgTrbcAction  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            broadcast(0),
+            drop(1)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of broadcast limit rate action on VPLS instance."
+        DEFVAL {drop}
+        ::= { zxMacVpnCfgEntry 20}
+    
+    zxMacVpnCfgTrmcMaximum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of multicast limit rate  maximum on VPLS instance."
+        DEFVAL {100}
+        ::= { zxMacVpnCfgEntry 21}
+        
+    zxMacVpnCfgTrmcAction  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            broadcast(0),
+            drop(1)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of multicast limit rate action on VPLS instance."
+        DEFVAL {drop}
+        ::= { zxMacVpnCfgEntry 22}  
+
+    
+    zxMacVpnCfgTrucMaximum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of 
+            unknown-unicast limit rate maximum on VPLS instance."
+        DEFVAL {10}
+        ::= { zxMacVpnCfgEntry 23}
+        
+    zxMacVpnCfgTrucAction  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            broadcast(0),
+            drop(1)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of 
+            unknown-unicast limit rate action on VPLS instance."
+        DEFVAL {drop}
+        ::= { zxMacVpnCfgEntry 24}          
+
+    zxMacVpnCfgDefPirMoveEn  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            enable(0),
+            disable(1)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of 
+            default priority MAC move policy on VPLS instance."
+        DEFVAL {enable}
+        ::= { zxMacVpnCfgEntry 25}
+        
+    zxMacVpnCfgLowerPriMoveEn  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            enable(0),
+            disable(1)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of 
+            lower priority MAC move policy on VPLS instance."
+        DEFVAL {enable}
+        ::= { zxMacVpnCfgEntry 26}       
+
+    zxMacVpnCfgNormalPriMoveEn  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            enable(0),
+            disable(1)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of 
+            normal priority MAC move policy on VPLS instance."
+        DEFVAL {enable}
+        ::= { zxMacVpnCfgEntry 27}       
+
+    zxMacVpnCfgHigherPriMoveEn  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            enable(0),
+            disable(1)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of 
+            higher priority MAC move policy on VPLS instance."
+        DEFVAL {enable}
+        ::= { zxMacVpnCfgEntry 28}
+        
+    zxMacVpnCfgVTPTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(0),
+            tunnelling(1),
+            terminating(2),
+            tunnellingMonitor(3),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for VTP on VPLS instance."
+        DEFVAL {unknown}
+        ::= { zxMacVpnCfgEntry 29}
+    
+    zxMacVpnCfgCDPTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(0),
+            tunnelling(1),
+            terminating(2),
+            tunnellingMonitor(3),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for CDP on VPLS instance."
+        DEFVAL {unknown}
+        ::= { zxMacVpnCfgEntry 30}
+
+    zxMacVpnCfgZesrTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(1),
+            tunnelling(2),
+            terminating(3),
+            tunnellingMonitor(4),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for ZESR on VPLS instance."
+        ::= { zxMacVpnCfgEntry 31}
+        
+    zxMacVpnCfgPvstPlusTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(1),
+            tunnelling(2),
+            terminating(3),
+            tunnellingMonitor(4),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for PVST+ on VPLS instance."
+        ::= { zxMacVpnCfgEntry 32}
+        
+    zxMacVpnCfgUdldTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(1),
+            tunnelling(2),
+            terminating(3),
+            tunnellingMonitor(4),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for UDLD on VPLS instance."
+        ::= { zxMacVpnCfgEntry 33}
+        
+    zxMacVpnCfgMstpTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(1),
+            tunnelling(2),
+            terminating(3),
+            tunnellingMonitor(4),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for MSTP on VPLS instance."
+        ::= { zxMacVpnCfgEntry 34}
+        
+    zxMacVpnCfgRstpTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(1),
+            tunnelling(2),
+            terminating(3),
+            tunnellingMonitor(4),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for RSTP on VPLS instance."
+        ::= { zxMacVpnCfgEntry 35}
+        
+    zxMacVpnCfgGvrpTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(1),
+            tunnelling(2),
+            terminating(3),
+            tunnellingMonitor(4),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for GVRP on VPLS instance."
+        ::= { zxMacVpnCfgEntry 36}
+        
+    zxMacVpnCfgMacInMacTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(1),
+            tunnelling(2),
+            terminating(3),
+            tunnellingMonitor(4),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for MAC in MAC on VPLS instance."
+        ::= { zxMacVpnCfgEntry 37}
+        
+    zxMacVpnCfgEfmTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(1),
+            tunnelling(2),
+            terminating(3),
+            tunnellingMonitor(4),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for EFM on VPLS instance."
+        ::= { zxMacVpnCfgEntry 38}
+        
+    zxMacVpnCfgCfmTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(1),
+            tunnelling(2),
+            terminating(3),
+            tunnellingMonitor(4),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for CFM on VPLS instance."
+        ::= { zxMacVpnCfgEntry 39}
+        
+    zxMacVpnCfgY1731Tunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(1),
+            tunnelling(2),
+            terminating(3),
+            tunnellingMonitor(4),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for Y1731 on VPLS instance."
+        ::= { zxMacVpnCfgEntry 40}
+        
+    zxMacVpnCfgPbbTeTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(1),
+            tunnelling(2),
+            terminating(3),
+            tunnellingMonitor(4),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for PBB on VPLS instance."
+        ::= { zxMacVpnCfgEntry 41}
+        
+    zxMacVpnCfgUserProtocolName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for user protocol template name on VPLS instance."
+        ::= { zxMacVpnCfgEntry 42}
+        
+    zxMacVpnCfgUserProtocolTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(1),
+            tunnelling(2),
+            terminating(3),
+            tunnellingMonitor(4),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for user protocol on VPLS instance."
+        ::= { zxMacVpnCfgEntry 43}
+        
+    zxMacVpnCfgGmrpTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(1),
+            tunnelling(2),
+            terminating(3),
+            tunnellingMonitor(4),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for GMRP on VPLS instance."
+        ::= { zxMacVpnCfgEntry 44}
+        
+    zxMacVpnCfgDldpTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(1),
+            tunnelling(2),
+            terminating(3),
+            tunnellingMonitor(4),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for DLDP on VPLS instance."
+        ::= { zxMacVpnCfgEntry 45}        
+        
+    zxMacVpnCfgErpsTunnelled  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            discarding(1),
+            tunnelling(2),
+            terminating(3),
+            tunnellingMonitor(4),
+            unknown(255)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of l2pt policy for ERPS on VPLS instance."
+        ::= { zxMacVpnCfgEntry 46}
+
+--********************************************         
+--definition of zxMacVlanCfgTable::  
+--******************************************** 
+zxMacVlanCfgTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ZxMacVlanCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Configuration for MAC on VLAN."
+        ::= { zxMacObjects 4 }
+    zxMacVlanCfgEntry  OBJECT-TYPE
+        SYNTAX   ZxMacVlanCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Configuration for MAC on VLAN."
+        INDEX  { zxMacVlanCfgVlanId}
+        ::= { zxMacVlanCfgTable 1 }
+
+    ZxMacVlanCfgEntry ::= SEQUENCE {
+            zxMacVlanCfgVlanId               Unsigned32,
+            zxMacVlanCfgLearnEnable          INTEGER,
+            zxMacVlanCfgLimitMax             Unsigned32,
+            zxMacVlanCfgLimitPolicy          INTEGER
+        }
+        
+    zxMacVlanCfgVlanId  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "VLAN ID."
+        ::= { zxMacVlanCfgEntry 1 }
+       
+    zxMacVlanCfgLearnEnable  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            disable(1),
+            enable(2)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Configuration of MAC learning on VLAN."
+        DEFVAL  {enable}
+        ::= { zxMacVlanCfgEntry 2 } 
+        
+    zxMacVlanCfgLimitMax  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configuration of max MAC number on VLAN.
+            Default value is determined by device."
+        ::= { zxMacVlanCfgEntry 3 } 
+        
+    zxMacVlanCfgLimitPolicy  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            forward(1),
+            drop(2)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Configuration of max MAC number policy on VLAN."
+        DEFVAL  {forward}
+        ::= { zxMacVlanCfgEntry 4 } 
+        
+ 
+--********************************************         
+--definition of zxMacPortCfgTable::  
+--******************************************** 
+ zxMacPortCfgTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ZxMacPortCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Configuration for MAC on port."
+        ::= { zxMacObjects 5 }
+        
+    zxMacPortCfgEntry  OBJECT-TYPE
+        SYNTAX   ZxMacPortCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Configuration for MAC on port."
+        INDEX  {zxMacPortCfgIfName}
+        ::= { zxMacPortCfgTable 1 }
+
+    ZxMacPortCfgEntry ::= SEQUENCE {
+            zxMacPortCfgIfName               DisplayString,
+            zxMacPortCfgLearnEnable          INTEGER,
+            zxMacPortCfgLimitMax             Unsigned32,
+            zxMacPortCfgLimitPolicy          INTEGER,
+            zxMacPortCfgLearnPriority        INTEGER,
+            zxMacPortCfgToPermanent          INTEGER,
+            zxMacPortCfgRowStatus            RowStatus
+        }
+      
+    zxMacPortCfgIfName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Port name."
+        ::= { zxMacPortCfgEntry 1 }
+        
+    
+    zxMacPortCfgLearnEnable  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            disable(1),
+            enable(2)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Configuration of MAC learning on port."
+        DEFVAL  {enable}
+        ::= { zxMacPortCfgEntry 2}
+        
+    zxMacPortCfgLimitMax  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Configuration of max MAC number on port.
+            Default value is determined by device."
+        ::= { zxMacPortCfgEntry 3 } 
+        
+    zxMacPortCfgLimitPolicy  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            forward(1),
+            drop(2),
+            shutdown(3)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Configuration of max MAC number policy on port."
+        DEFVAL  {forward}
+        ::= { zxMacPortCfgEntry 4 } 
+        
+    zxMacPortCfgLearnPriority  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            default(1), 
+            lower(2),
+            normal(3),
+            higher(4)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Configuration of MAC learn priority on Port."
+        DEFVAL  {default}
+        ::= { zxMacPortCfgEntry 5 }
+        
+    zxMacPortCfgToPermanent  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            disable(1),
+            enable(2)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Configuration of MAC to-permanent on port."
+        DEFVAL  {disable}
+        ::= { zxMacPortCfgEntry 6 }
+        
+    zxMacPortCfgRowStatus  OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "This object allows entries to be created and deleted
+                       in the zxMacPortCfgTable."
+        ::= { zxMacPortCfgEntry 100 }
+        
+--********************************************         
+--definition of zxMacItemCfgTable::  
+--******************************************** 
+    zxMacItemCfgTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ZxMacItemCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "MAC table."
+        ::= { zxMacObjects 6}
+    zxMacItemCfgEntry  OBJECT-TYPE
+        SYNTAX   ZxMacItemCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "MAC table."
+        INDEX  { zxMacItemCfgMac,  zxMacItemCfgVlanId}
+        ::= { zxMacItemCfgTable 1 }
+
+    ZxMacItemCfgEntry ::= SEQUENCE {            
+            zxMacItemCfgMac          MacAddress,
+            zxMacItemCfgVlanId       Unsigned32,
+            zxMacItemCfgIfName       DisplayString,
+            zxMacItemCfgMultiflag    INTEGER,
+            zxMacItemCfgNickName     Unsigned32,
+            zxMacItemCfgTime         DisplayString,
+            zxMacItemCfgVxlanId      Unsigned32,
+            zxMacItemCfgRemoteIp     IpAddress,
+            zxMacItemCfgRemoteIpv6   Ipv6Address,
+            zxMacItemCfgRemoteIpType INTEGER
+        }        
+        
+    zxMacItemCfgMac  OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MAC address."
+        ::= { zxMacItemCfgEntry 1 }
+        
+    zxMacItemCfgVlanId  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "VLAN ID of the MAC address."
+        ::= { zxMacItemCfgEntry 2 }
+        
+    zxMacItemCfgIfName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Port name of the MAC address."
+        ::= { zxMacItemCfgEntry 3 }
+
+    zxMacItemCfgMultiflag  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            dynamic(1),
+            static(2),
+            permanent(3),
+            srcfilter(4),
+            dstfilter(5),
+            bothfilter(6),
+            tostatic(7),
+            topermanent(8)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Type of the MAC address."
+        ::= { zxMacItemCfgEntry 4 }  
+
+    zxMacItemCfgNickName  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Nickname of the MAC address."
+        ::= { zxMacItemCfgEntry 5 }
+
+    zxMacItemCfgTime  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Time of the MAC address."
+        ::= { zxMacItemCfgEntry 6 }
+
+    zxMacItemCfgVxlanId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  read-only
+        STATUS      obsolete
+        DESCRIPTION
+            "VXLAN of the MAC address."
+        ::= { zxMacItemCfgEntry 7}
+        
+    zxMacItemCfgRemoteIp OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-only
+        STATUS      obsolete
+        DESCRIPTION
+            "Remote IP of the MAC address. "
+        ::= { zxMacItemCfgEntry 8}
+        
+    zxMacItemCfgRemoteIpv6 OBJECT-TYPE
+        SYNTAX      Ipv6Address
+        MAX-ACCESS  read-only
+        STATUS      obsolete
+        DESCRIPTION
+            "Remote IPv6 of the MAC address. "
+        ::= { zxMacItemCfgEntry 9}
+
+    zxMacItemCfgRemoteIpType OBJECT-TYPE
+        SYNTAX  INTEGER{
+            ipv4(1),
+            ipv6(2),
+            noIp(3)
+        } 
+        MAX-ACCESS  read-only
+        STATUS      obsolete
+        DESCRIPTION
+            "Remote IP type of the MAC address. "
+        ::= { zxMacItemCfgEntry 10}
+ --********************************************         
+--definition of zxMacVplsPortStatusTable::  
+--******************************************** 
+zxMacVplsPortStatusTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ZxMacVplsPortStatusEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Status for MAC on VPLS port."
+        ::= { zxMacObjects 7 }
+    zxMacVplsPortStatusEntry  OBJECT-TYPE
+        SYNTAX   ZxMacVplsPortStatusEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Status for MAC on VPLS port."
+        INDEX  { zxMacVplsPortStatusInstName, zxMacVplsPortStatusIfName}
+        ::= { zxMacVplsPortStatusTable 1 }
+
+    ZxMacVplsPortStatusEntry ::= SEQUENCE {
+            zxMacVplsPortStatusInstName          DisplayString,
+            zxMacVplsPortStatusIfName            DisplayString,
+            zxMacVplsPortStatusCurrentNum        Unsigned32,
+            zxMacVplsPortStatusProtected         INTEGER
+        }
+        
+    zxMacVplsPortStatusInstName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "VPLS instance name."
+        ::= { zxMacVplsPortStatusEntry 1 }
+        
+    zxMacVplsPortStatusIfName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Port name."
+        ::= { zxMacVplsPortStatusEntry 2 }
+        
+    zxMacVplsPortStatusCurrentNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Current MAC number on VPLS port."
+        DEFVAL  {0}
+        ::= { zxMacVplsPortStatusEntry 3 }
+       
+    zxMacVplsPortStatusProtected  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            disable(1),
+            enable(2)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Protect status on VPLS port."
+        DEFVAL  {disable}
+        ::= { zxMacVplsPortStatusEntry 4 }    
+        
+        
+ --********************************************         
+--definition of zxMacVpnStatusTable::  
+--******************************************** 
+zxMacVpnStatusTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ZxMacVpnStatusEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Status for MAC on VPLS."
+        ::= { zxMacObjects 8 }
+    zxMacVpnStatusEntry  OBJECT-TYPE
+        SYNTAX   ZxMacVpnStatusEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Status for MAC on VPLS."
+        INDEX  { zxMacVpnStatusInstName}
+        ::= { zxMacVpnStatusTable 1 }
+
+    ZxMacVpnStatusEntry ::= SEQUENCE {
+            zxMacVpnStatusInstName            DisplayString,
+            zxMacVpnStatusCurrentNum          Unsigned32,
+            zxMacVpnStatusProtected           INTEGER
+        }
+        
+    zxMacVpnStatusInstName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "VPLS instance name."
+        ::= { zxMacVpnStatusEntry 1 }
+        
+    zxMacVpnStatusCurrentNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Current MAC number on VPLS."
+        DEFVAL  {0}
+        ::= { zxMacVpnStatusEntry 2 }
+       
+    zxMacVpnStatusProtected  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            disable(1),
+            enable(2)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Protect status on VPLS."
+        DEFVAL  {disable}
+        ::= { zxMacVpnStatusEntry 3 }
+        
+ --********************************************         
+--definition of zxMacVlanStatusTable::  
+--******************************************** 
+zxMacVlanStatusTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ZxMacVlanStatusEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Status for MAC on VLAN."
+        ::= { zxMacObjects 9 }
+    zxMacVlanStatusEntry  OBJECT-TYPE
+        SYNTAX   ZxMacVlanStatusEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Status for MAC on VLAN."
+        INDEX  { zxMacVlanStatusVlanId}
+        ::= { zxMacVlanStatusTable 1 }
+
+    ZxMacVlanStatusEntry ::= SEQUENCE {
+            zxMacVlanStatusVlanId            Unsigned32,
+            zxMacVlanStatusCurrentNum        Unsigned32,
+            zxMacVlanStatusProtected         INTEGER
+        }
+        
+    zxMacVlanStatusVlanId  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "VLAN ID."
+        ::= { zxMacVlanStatusEntry 1 }
+        
+    zxMacVlanStatusCurrentNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Current MAC number on VLAN."
+        DEFVAL  {0}
+        ::= { zxMacVlanStatusEntry 2 }
+       
+    zxMacVlanStatusProtected  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            disable(1),
+            enable(2)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Protect status on VLAN."
+        DEFVAL  {disable}
+        ::= { zxMacVlanStatusEntry 3 } 
+        
+
+--********************************************         
+--definition of zxMacPortStatusTable::  
+--******************************************** 
+zxMacPortStatusTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ZxMacPortStatusEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Status for MAC on port."
+        ::= { zxMacObjects 10 }
+    zxMacPortStatusEntry  OBJECT-TYPE
+        SYNTAX   ZxMacPortStatusEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "Status for MAC on port."
+        INDEX  { zxMacPortStatusIfName}
+        ::= { zxMacPortStatusTable 1 }
+
+    ZxMacPortStatusEntry ::= SEQUENCE {
+            zxMacPortStatusIfName            DisplayString,
+            zxMacPortStatusCurrentNum          Unsigned32,
+            zxMacPortStatusProtected           INTEGER,
+            zxMacPortStatusStaticMacNum    Unsigned32,
+            zxMacPortStatusDynamicMacNum   Unsigned32,
+            zxMacPortStatusPerMacNum  Unsigned32,
+            zxMacPortStatusFiltMacNum       Unsigned32,
+            zxMacPortStatusToPerMacNum  Unsigned32
+        }
+        
+    zxMacPortStatusIfName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Port name."
+        ::= { zxMacPortStatusEntry 1 }
+        
+    zxMacPortStatusCurrentNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Current MAC number on Port."
+        DEFVAL  {0}
+        ::= { zxMacPortStatusEntry 2 }
+       
+    zxMacPortStatusProtected  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            disable(1),
+            enable(2)
+        }
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Protect status on Port."
+        DEFVAL  {disable}
+        ::= { zxMacPortStatusEntry 3 }   
+
+    zxMacPortStatusStaticMacNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Current static MAC number on Port."
+        DEFVAL  {0}
+        ::= { zxMacPortStatusEntry 4 }
+
+    zxMacPortStatusDynamicMacNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Current dynamic MAC number on Port."
+        DEFVAL  {0}
+        ::= { zxMacPortStatusEntry 5 }
+
+    zxMacPortStatusPerMacNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Current permanent MAC number on Port."
+        DEFVAL  {0}
+        ::= { zxMacPortStatusEntry 6 }
+
+    zxMacPortStatusFiltMacNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Current filt MAC number on Port."
+        DEFVAL  {0}
+        ::= { zxMacPortStatusEntry 7 }
+
+    zxMacPortStatusToPerMacNum  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "Current topermanent MAC number on Port."
+        DEFVAL  {0}
+        ::= { zxMacPortStatusEntry 8 }
+
+--********************************************         
+--definition of zxMacItemOnVlanTable::  
+--******************************************** 
+    zxMacItemOnVlanTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ZxMacItemOnVlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "MAC table on VLAN."
+        ::= { zxMacObjects 11}
+    zxMacItemOnVlanEntry  OBJECT-TYPE
+        SYNTAX   ZxMacItemOnVlanEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "MAC table on VLAN."
+        INDEX  { zxMacItemOnVlanVlanId, zxMacItemOnVlanMac  }
+        ::= { zxMacItemOnVlanTable 1 }
+
+    ZxMacItemOnVlanEntry ::= SEQUENCE {            
+            zxMacItemOnVlanVlanId       Unsigned32,  
+            zxMacItemOnVlanMac          MacAddress,
+            zxMacItemOnVlanIfName       DisplayString,
+            zxMacItemOnVlanMultiflag    INTEGER,
+            zxMacItemOnVlanNickName     Unsigned32,
+            zxMacItemOnVlanTime         DisplayString,
+            zxMacItemOnVlanVxlanId      Unsigned32,
+            zxMacItemOnVlanRemoteIp     IpAddress,
+            zxMacItemOnVlanRemoteIpv6   Ipv6Address,
+            zxMacItemOnVlanRemoteIpType INTEGER
+        }        
+        
+     zxMacItemOnVlanVlanId  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "VLAN ID of the MAC address."
+        ::= { zxMacItemOnVlanEntry 1 }
+
+    zxMacItemOnVlanMac  OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MAC address."
+        ::= { zxMacItemOnVlanEntry 2 }
+        
+    zxMacItemOnVlanIfName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Port name of the MAC address."
+        ::= { zxMacItemOnVlanEntry 3 }
+
+    zxMacItemOnVlanMultiflag  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            dynamic(1),
+            static(2),
+            permanent(3),
+            srcfilter(4),
+            dstfilter(5),
+            bothfilter(6),
+            tostatic(7),
+            topermanent(8)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Type of the MAC address."
+        ::= { zxMacItemOnVlanEntry 4 }  
+
+    zxMacItemOnVlanNickName  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Nickname of the MAC address."
+        ::= { zxMacItemOnVlanEntry 5 }
+
+    zxMacItemOnVlanTime  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Time of the MAC address."
+        ::= { zxMacItemOnVlanEntry 6 }
+        
+    zxMacItemOnVlanVxlanId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  read-only
+        STATUS      obsolete
+        DESCRIPTION
+            "VXLAN of the MAC address."
+        ::= { zxMacItemOnVlanEntry 7}
+        
+    zxMacItemOnVlanRemoteIp OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-only
+        STATUS      obsolete
+        DESCRIPTION
+            "Remote IP of the MAC address. "
+        ::= { zxMacItemOnVlanEntry 8}
+        
+    zxMacItemOnVlanRemoteIpv6 OBJECT-TYPE
+        SYNTAX      Ipv6Address
+        MAX-ACCESS  read-only
+        STATUS      obsolete
+        DESCRIPTION
+            "Remote IPv6 of the MAC address. "
+        ::= { zxMacItemOnVlanEntry 9}
+
+    zxMacItemOnVlanRemoteIpType OBJECT-TYPE
+        SYNTAX  INTEGER{
+            ipv4(1),
+            ipv6(2),
+            noIp(3)
+        }
+        MAX-ACCESS  read-only
+        STATUS      obsolete
+        DESCRIPTION
+            "Remote IP type of the MAC address. "
+        ::= { zxMacItemOnVlanEntry 10}
+
+--********************************************         
+--definition of zxMacItemOnPortTable::  
+--******************************************** 
+    zxMacItemOnPortTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ZxMacItemOnPortEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "MAC table on port."
+        ::= { zxMacObjects 12}
+    zxMacItemOnPortEntry  OBJECT-TYPE
+        SYNTAX   ZxMacItemOnPortEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "MAC table on port."
+        INDEX {zxMacItemOnPortIfName,zxMacItemOnPortVlanId,zxMacItemOnPortMac}
+        ::= { zxMacItemOnPortTable 1 }
+
+    ZxMacItemOnPortEntry ::= SEQUENCE {  
+            zxMacItemOnPortIfName       DisplayString,
+            zxMacItemOnPortVlanId       Unsigned32,  
+            zxMacItemOnPortMac          MacAddress,
+            zxMacItemOnPortMultiflag    INTEGER,
+            zxMacItemOnPortNickName     Unsigned32,
+            zxMacItemOnPortTime         DisplayString,
+            zxMacItemOnPortVxlanId      Unsigned32,
+            zxMacItemOnPortRemoteIp     IpAddress,
+            zxMacItemOnPortRemoteIpv6   Ipv6Address,
+            zxMacItemOnPortRemoteIpType INTEGER
+        }        
+
+    zxMacItemOnPortIfName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Port name of the MAC address."
+        ::= { zxMacItemOnPortEntry 1 }
+        
+     zxMacItemOnPortVlanId  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "VLAN ID of the MAC address."
+        ::= { zxMacItemOnPortEntry 2 }
+
+    zxMacItemOnPortMac  OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MAC address."
+        ::= { zxMacItemOnPortEntry 3 }
+        
+    zxMacItemOnPortMultiflag  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            dynamic(1),
+            static(2),
+            permanent(3),
+            srcfilter(4),
+            dstfilter(5),
+            bothfilter(6),
+            tostatic(7),
+            topermanent(8)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Type of the MAC address."
+        ::= { zxMacItemOnPortEntry 4 }  
+
+    zxMacItemOnPortNickName  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Nickname of the MAC address."
+        ::= { zxMacItemOnPortEntry 5 }
+
+    zxMacItemOnPortTime  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Time of the MAC address."
+        ::= { zxMacItemOnPortEntry 6 }
+        
+    zxMacItemOnPortVxlanId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  read-only
+        STATUS      obsolete
+        DESCRIPTION
+            "VXLAN of the MAC address."
+        ::= { zxMacItemOnPortEntry 7}
+        
+    zxMacItemOnPortRemoteIp OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-only
+        STATUS      obsolete
+        DESCRIPTION
+            "Remote IP of the MAC address. "
+        ::= { zxMacItemOnPortEntry 8}
+        
+    zxMacItemOnPortRemoteIpv6 OBJECT-TYPE
+        SYNTAX      Ipv6Address
+        MAX-ACCESS  read-only
+        STATUS      obsolete
+        DESCRIPTION
+            "Remote IPv6 of the MAC address. "
+        ::= { zxMacItemOnPortEntry 9}
+        
+    zxMacItemOnPortRemoteIpType OBJECT-TYPE
+        SYNTAX  INTEGER{
+            ipv4(1),
+            ipv6(2),
+            noIp(3)
+        }
+        MAX-ACCESS  read-only
+        STATUS      obsolete
+        DESCRIPTION
+            "Remote IP type of the MAC address. "
+        ::= { zxMacItemOnPortEntry 10}
+--********************************************         
+--definition of zxMacVxlanItemTable::  
+--******************************************** 
+    zxMacVxlanItemTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ZxMacVxlanItemEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "VXLAN MAC table."
+        ::= { zxMacObjects 13}
+    zxMacVxlanItemEntry  OBJECT-TYPE
+        SYNTAX   ZxMacVxlanItemEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+           "VXLAN MAC table."
+        INDEX  {zxMacVxlanItemMac,
+                zxMacVxlanItemVlanId,
+                zxMacVxlanItemVxlanId}
+        ::= { zxMacVxlanItemTable 1 }
+
+    ZxMacVxlanItemEntry ::= SEQUENCE {            
+            zxMacVxlanItemMac          MacAddress,
+            zxMacVxlanItemVlanId       Unsigned32,
+            zxMacVxlanItemVxlanId      Unsigned32,
+            zxMacVxlanItemIfName       DisplayString,
+            zxMacVxlanItemMultiflag    INTEGER,
+            zxMacVxlanItemTunnelId     Unsigned32,
+            zxMacVxlanItemTime         DisplayString,            
+            zxMacVxlanItemRemoteIp     IpAddress,
+            zxMacVxlanItemRemoteIpv6   Ipv6Address,
+            zxMacVxlanItemRemoteIpType INTEGER
+        }        
+        
+    zxMacVxlanItemMac  OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MAC address."
+        ::= { zxMacVxlanItemEntry 1 }
+        
+    zxMacVxlanItemVlanId  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "VLAN ID of the MAC address."
+        ::= { zxMacVxlanItemEntry 2 }
+        
+    zxMacVxlanItemVxlanId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "VXLAN of the MAC address."
+        ::= { zxMacVxlanItemEntry 3}
+        
+    zxMacVxlanItemIfName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Port name of the MAC address."
+        ::= { zxMacVxlanItemEntry 4 }
+
+    zxMacVxlanItemMultiflag  OBJECT-TYPE
+        SYNTAX  INTEGER{
+            dynamic(1),
+            static(2),
+            permanent(3),
+            srcfilter(4),
+            dstfilter(5),
+            bothfilter(6),
+            tostatic(7),
+            topermanent(8)
+        } 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Type of the MAC address."
+        ::= { zxMacVxlanItemEntry 5 } 
+ 
+    zxMacVxlanItemTunnelId  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Tunnel of the MAC address."
+        ::= { zxMacVxlanItemEntry 6 } 
+        
+    zxMacVxlanItemTime  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Time of the MAC address."
+        ::= { zxMacVxlanItemEntry 7 }
+        
+    zxMacVxlanItemRemoteIp OBJECT-TYPE
+        SYNTAX      IpAddress
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Remote IP of the MAC address. "
+        ::= { zxMacVxlanItemEntry 8}
+        
+    zxMacVxlanItemRemoteIpv6 OBJECT-TYPE
+        SYNTAX      Ipv6Address
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Remote IPv6 of the MAC address. "
+        ::= { zxMacVxlanItemEntry 9}
+
+    zxMacVxlanItemRemoteIpType OBJECT-TYPE
+        SYNTAX  INTEGER{
+            ipv4(1),
+            ipv6(2),
+            noIp(3)
+        } 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "Remote IP type of the MAC address. "
+        ::= { zxMacVxlanItemEntry 10}
+--********************************************         
+--definition of zxMacNotifications::
+--********************************************   
+zxMacNotifications  OBJECT IDENTIFIER ::= { zxMacMIB  3 }
+
+    zxMacNotify NOTIFICATION-TYPE
+        STATUS current
+        DESCRIPTION
+            "MAC change notify."
+        ::= { zxMacNotifications 1 }
+ END

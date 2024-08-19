@@ -1,0 +1,735 @@
+XEROX-SIMPLE-JOB-MGMT-MIB DEFINITIONS ::= BEGIN
+--  Module: Simple Job Mgmt MIB
+--  Author: Ira McDonald, Rob Sklut
+--  File    43jobman.mib
+--  Date:   21 October 2001 - Version 4.10.int
+
+IMPORTS
+--  MODULE-IDENTITY, OBJECT-TYPE,
+--      OBJECT-IDENTITY,
+--      NOTIFICATION-TYPE
+--          FROM SNMPv2-SMI             -  IETF RFC 1442/1902/2578
+--  RowStatus, TruthValue
+--          FROM SNMPv2-TC              -  IETF RFC 1443/1903/2579
+--  MODULE-COMPLIANCE, OBJECT-GROUP
+--          FROM SNMPv2-CONF            -  IETF RFC 1444/1904/2580
+--  hrDeviceIndex
+--          FROM HOST-RESOURCES-MIB     -  IETF RFC 1514/2790
+    hrDeviceIndex
+        FROM    HOST-RESOURCES-MIB
+--  xeroxCommonMIB
+--          FROM XEROX-COMMON-MIB
+    xeroxCommonMIB
+        FROM    XEROX-COMMON-MIB
+--  Ordinal32,
+--      XcmFixedLocaleDisplayString,
+--      XcmGenSNMPv2ErrorStatus
+--          FROM XEROX-GENERAL-TC
+    Ordinal32,
+    XcmFixedLocaleDisplayString,
+    XcmGenSNMPv2ErrorStatus
+        FROM    XEROX-GENERAL-TC
+--  xcmJobGenBasicEntry,
+--      xcmJobIdentifierOnSystem
+--          FROM XEROX-JOB-MONITORING-MIB
+    xcmJobIdentifierOnSystem
+        FROM    XEROX-JOB-MONITORING-MIB
+--  XcmSimpleJobMgmtGroupSupport,
+--      XcmSimpleJobMgmtOperation,
+--      XcmSimpleJobMgmtData
+--          FROM XEROX-SIMPLE-JOB-MGMT-TC/
+    XcmSimpleJobMgmtGroupSupport,
+    XcmSimpleJobMgmtOperation,
+    XcmSimpleJobMgmtData
+        FROM    XEROX-SIMPLE-JOB-MGMT-TC
+    OBJECT-TYPE
+        FROM    RFC-1212
+    TRAP-TYPE
+        FROM    RFC-1215
+    ;
+
+xcmSimpleJobMgmtMIB OBJECT IDENTIFIER
+--  LAST-UPDATED "0110210000Z" -  21 October 2001
+--  ORGANIZATION "Xerox Corporation - XCMI Working Group"
+--  CONTACT-INFO
+--      "           XCMI Editors
+--      Email:      xcmieditors@cp10.es.xerox.com
+--
+--      - 
+--      -  BEGIN XEROX PRIVATE DATA
+--      - 
+--                  Ira McDonald
+--      Postal:     High North Inc
+--                  221 Ridge Ave
+--                  Grand Marais, MI  49839
+--      Voice:      906-494-2434
+--      FAX:        906-494-2434 (by prior arrangement only)
+--      Email:      imcdonal@sdsp.mc.xerox.com
+--
+--                  Rob Sklut
+--      Postal:     Xerox Corporation
+--                  200 Cross Keys Office Park
+--                  Rochester, NY  14623
+--      Voice:      716-425-6601
+--      Fax:        716-425-6122
+--      Email:      Robert_Sklut@.mc.xerox.com
+--      - 
+--      -  ENDOF XEROX PRIVATE DATA
+--      - 
+--      "
+--  DESCRIPTION
+--      "Version:   4.10.int
+--
+--      The MIB module for performing lightweight management of jobs
+--      in network accessible host systems.
+--
+--      See:    Document Printing Application - Part 1: Abstract Service
+--              (ISO 10175-1 / Final Text, March 1996).
+--      See:    POSIX System Administration - Part 4: Print Interfaces
+--              (IEEE 1387.4 / Draft 8, October 1994).
+--      See:    OSI Reference Model - Part 1:  Basic Reference Model
+--              (CCITT X.200:1992 | ISO 7498-1:1992).
+--
+--      Copyright (C) 1997-2001 Xerox Corporation. All Rights Reserved."
+    ::= { xeroxCommonMIB 76 }
+
+--.ts 'Simple Job Base Group (Mandatory)'
+--          Simple Job Base Group (Mandatory)
+--
+--          Implementation of this group is mandatory for all systems.
+
+xcmSimpleJobBase        OBJECT IDENTIFIER ::= { xcmSimpleJobMgmtMIB 1 }
+
+xcmSimpleJobBaseTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSimpleJobBaseEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of general counters and capabilities for ease of use
+        of the XCMI Simple Job Mgmt MIB on this host system.
+
+        Usage:  The ONLY valid row in the 'xcmSimpleJobBaseTable'
+        shall ALWAYS have an 'xcmSimpleJobBaseIndex' of one ('1')."
+    ::= { xcmSimpleJobBase 2 }
+
+xcmSimpleJobBaseEntry OBJECT-TYPE
+    SYNTAX      XcmSimpleJobBaseEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry of general counters and capabilities for ease of use
+        of the XCMI Simple Job Mgmt MIB on this host system.
+
+        Usage:  The ONLY valid row in the 'xcmSimpleJobBaseTable'
+        shall ALWAYS have an 'xcmSimpleJobBaseIndex' of one ('1')."
+    INDEX       { xcmSimpleJobBaseIndex }
+    ::= { xcmSimpleJobBaseTable 1 }
+
+XcmSimpleJobBaseEntry ::= SEQUENCE {
+        --  General Info                
+        xcmSimpleJobBaseIndex           Ordinal32, 
+        xcmSimpleJobBaseRowStatus       INTEGER, 
+        xcmSimpleJobBaseGroupSupport    XcmSimpleJobMgmtGroupSupport, 
+        xcmSimpleJobBaseCreateSupport   XcmSimpleJobMgmtGroupSupport, 
+        xcmSimpleJobBaseUpdateSupport   XcmSimpleJobMgmtGroupSupport 
+        }                               
+
+xcmSimpleJobBaseIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSimpleJobBaseTable'.
+
+        Usage:  The ONLY valid row in the 'xcmSimpleJobBaseTable'
+        shall ALWAYS have an 'xcmSimpleJobBaseIndex' of one ('1')."
+    ::= { xcmSimpleJobBaseEntry 1 }
+
+xcmSimpleJobBaseRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to display status of the ONLY valid
+        conceptual row in the 'xcmSimpleJobBaseTable'.
+
+        Usage:  'xcmSimpleJobBaseRowStatus' is 'read-only' because
+        the ONLY valid conceptual row shall NOT be deleted."
+    ::= { xcmSimpleJobBaseEntry 2 }
+
+xcmSimpleJobBaseGroupSupport OBJECT-TYPE
+    SYNTAX      XcmSimpleJobMgmtGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The terse conformance statement of ALL mandatory, conditionally
+        mandatory, and optional XCMI Simple Job Mgmt MIB groups
+        supported by this management agent implementation (ie, version)
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for XCMI Simple Job Mgmt MIB groups."
+--  DEFVAL      { 3 }                   -  mandatory groups supported
+    ::= { xcmSimpleJobBaseEntry 3 }
+
+xcmSimpleJobBaseCreateSupport OBJECT-TYPE
+    SYNTAX      XcmSimpleJobMgmtGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The terse conformance statement of ALL mandatory, conditionally
+        mandatory, and optional XCMI Simple Job Mgmt MIB groups
+        supported for dynamic row creation (via '...RowStatus')
+        by this management agent implementation (ie, version)
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for XCMI Simple Job Mgmt MIB groups."
+--  DEFVAL      { 0 }                   -  no dynamic row create groups
+    ::= { xcmSimpleJobBaseEntry 4 }
+
+xcmSimpleJobBaseUpdateSupport OBJECT-TYPE
+    SYNTAX      XcmSimpleJobMgmtGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The terse conformance statement of ALL mandatory, conditionally
+        mandatory, and optional XCMI Simple Job Mgmt MIB groups
+        supported for existing row update (via SNMP Set-Request PDUs)
+        by this management agent implementation (ie, version)
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents shall ALWAYS accurately
+        report their support for XCMI Simple Job Mgmt MIB groups."
+--  DEFVAL      { 2 }                   -  existing row update groups
+    ::= { xcmSimpleJobBaseEntry 5 }
+
+--
+--          Simple Job Mgmt MIB
+--
+
+--
+--.ts 'Simple Job Mgmt Group (Mandatory)'
+--          Simple Job Mgmt Group (Mandatory)
+--
+--          Implementation of this group is mandatory for all systems.
+
+--          Usage:  Secondary table in the Simple MIB, used to
+--                  augment the XCMI Job Monitoring MIB for support of
+--                  simple job management requests.
+--
+--          Usage:  Conforming management agents which implement this
+--          group shall ALWAYS implement all of the mandatory groups
+--          and all of the applicable conditionally mandatory groups
+--          in the XCMI Job Monitoring MIB.
+
+xcmSimpleJobMgmt        OBJECT IDENTIFIER ::= { xcmSimpleJobMgmtMIB 3 }
+
+xcmSimpleJobMgmtTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSimpleJobMgmtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table which augments the 'xcmJobGenBasicTable' in the
+        XCMI Job Monitoring MIB, to support simple job management
+        of jobs on this host system."
+    ::= { xcmSimpleJobMgmt 2 }
+
+xcmSimpleJobMgmtEntry OBJECT-TYPE
+    SYNTAX      XcmSimpleJobMgmtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry which augments an 'xcmJobGenBasicEntry' in the
+        XCMI Job Monitoring MIB, to support simple job management
+        of a job on this host system."
+    INDEX       { hrDeviceIndex, xcmJobIdentifierOnSystem }
+    ::= { xcmSimpleJobMgmtTable 1 }
+
+XcmSimpleJobMgmtEntry ::= SEQUENCE {
+        --  Simple Job Mgmt Info        
+        xcmSimpleJobMgmtOperation       XcmSimpleJobMgmtOperation, 
+        xcmSimpleJobMgmtData            XcmSimpleJobMgmtData, 
+        xcmSimpleJobMgmtStatus          XcmGenSNMPv2ErrorStatus, 
+        xcmSimpleJobMgmtInProgress      INTEGER 
+        }                               
+
+--
+--          Simple Job Mgmt Info
+--
+
+xcmSimpleJobMgmtOperation OBJECT-TYPE
+    SYNTAX      XcmSimpleJobMgmtOperation
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The simple job management operation specified for
+        this conceptual row in the 'xcmSimpleJobMgmtTable'
+        and the 'xcmJobGenBasicTable' (XCMI Job Monitoring MIB).
+
+        Usage:  Conforming management agents SHALL 'reject' any
+        SNMP Set-Operation to 'xcmSimpleJobMgmt[Operation|Data]'
+        while another management operation is already in progress
+        (ie, while 'xcmSimpleJobMgmtInProgress' is 'true'),
+        with 'badValue' (SNMPv1) or 'inconsistentValue' (SNMPv2/v3).
+
+        Usage:  Conforming management stations SHALL set
+        'xcmSimpleJobMgmtOperation' (mgmt operation) and
+        'xcmSimpleJobMgmtData' (mgmt arguments)
+        SIMULTANEOUSLY (in the same SNMP Set-Operation PDU).
+
+        Usage:  Performing 'delete' (system operator) shall ALWAYS force
+        'xcmJobCurrentState' to 'completed(17)' immediately,
+        and MAY affect 'xcmJobAccountingBasicRowStatus'.
+
+        Usage:  Performing 'remove' (user cancel) shall ALWAYS force
+        'xcmJobCurrentState' to 'completed(17)' in a timely fashion,
+        but shall NOT affect 'xcmJobAccountingBasicRowStatus'."
+    REFERENCE
+        "See:   Section 4 'Print Utilities' (pages 71 to 212) of
+                POSIX Sys Admin (IEEE 1387.4 / Draft 8, October 1994).
+        See:    OBJECT clauses in MODULE-COMPLIANCE macro of
+                XCMI Simple Job Mgmt MIB, for compliance info."
+--  DEFVAL      { none }                -  no job mgmt operation
+    ::= { xcmSimpleJobMgmtEntry 1 }
+
+xcmSimpleJobMgmtData OBJECT-TYPE
+    SYNTAX      XcmSimpleJobMgmtData (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The simple job management data specified for
+        this conceptual row in the 'xcmSimpleJobMgmtTable'
+        and the 'xcmJobGenBasicTable' (XCMI Job Monitoring MIB).
+
+        Usage:  Conforming management agents SHALL 'reject' any
+        SNMP Set-Operation to 'xcmSimpleJobMgmt[Operation|Data]'
+        while another management operation is already in progress
+        (ie, while 'xcmSimpleJobMgmtInProgress' is 'true'),
+        with 'badValue' (SNMPv1) or 'inconsistentValue' (SNMPv2/v3).
+
+        Usage:  Conforming management stations SHALL set
+        'xcmSimpleJobMgmtOperation' (mgmt operation) and
+        'xcmSimpleJobMgmtData' (mgmt arguments)
+        SIMULTANEOUSLY (in the same SNMP Set-Operation PDU)."
+    REFERENCE
+        "See:   Security Config, Account, and User groups in
+                XCMI Security MIB.
+        See:    Section 6.6 'Security in DPA' (pages 38 to 39) of
+                DPA (ISO 10175-1 / Final Text, March 1996).
+        See:    Section 4 'Print Utilities' (pages 71 to 212) of
+                POSIX Sys Admin (IEEE 1387.4 / Draft 8, October 1994).
+        See:    OBJECT clauses in MODULE-COMPLIANCE macro of
+                XCMI Simple Job Mgmt MIB, for compliance info."
+--  DEFVAL      { ''H }                 -  no job mgmt data
+    ::= { xcmSimpleJobMgmtEntry 2 }
+
+xcmSimpleJobMgmtStatus OBJECT-TYPE
+    SYNTAX      XcmGenSNMPv2ErrorStatus
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The simple job management error status associated with
+        this conceptual row in 'xcmSimpleJobMgmtTable'.
+
+        Usage:  Conforming management agents shall ALWAYS set this
+        object to the value returned in an SNMP Set-Response PDU when
+        a simple job management operation is 'accepted', ie, when
+        'xcmSimpleJobMgmtInProgress' goes from 'false' to 'true'.
+
+        Usage:  Conforming management agents shall ALWAYS set this
+        object to the value of the completion status of the (possibly
+        deferred) simple job management operation, when
+        'xcmSimpleJobMgmtInProgress' goes from 'true' to 'false'."
+    REFERENCE
+        "See:   'xcmSimpleJobMgmt[Operation|Data|InProgress]'"
+--  DEFVAL      { noError }             -  no job mgmt error status
+    ::= { xcmSimpleJobMgmtEntry 3 }
+
+xcmSimpleJobMgmtInProgress OBJECT-TYPE
+--  SYNTAX      TruthValue
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The simple job management in progress status associated with
+        this conceptual row in 'xcmSimpleJobMgmtTable'.
+
+        Usage:  Conforming management agents SHALL 'reject' any
+        SNMP Set-Operation to 'xcmSimpleJobMgmt[Operation|Data]'
+        while another management operation is already in progress
+        (ie, while 'xcmSimpleJobMgmtInProgress' is 'true'),
+        with 'badValue' (SNMPv1) or 'inconsistentValue' (SNMPv2/v3)."
+    REFERENCE
+        "See:   'xcmSimpleJobMgmt[Operation|Data|Status]'"
+--  DEFVAL      { false }               -  no job mgmt in progress
+    ::= { xcmSimpleJobMgmtEntry 4 }
+
+--.ts 'Simple Job Mgmt Event Definition'
+xcmSimpleJobMgmtV1EventOID OBJECT IDENTIFIER
+--  STATUS      current
+--  DESCRIPTION
+--      "The value of the enterprise-specific OID in an SNMPv1 trap sent
+--      whenever an 'xcmSimpleJobMgmtOperation' completes.
+--      See SNMPv2 trap definition 'xcmSimpleJobMgmtV2Event'
+--      below for 'special semantics'."
+    ::= { xcmSimpleJobMgmt 1 }
+
+xcmSimpleJobMgmtV2EventPrefix
+    OBJECT IDENTIFIER ::= { xcmSimpleJobMgmtV1EventOID 0 }
+
+xcmSimpleJobMgmtV1Event TRAP-TYPE
+    ENTERPRISE  xcmSimpleJobMgmtV1EventOID
+    VARIABLES   
+    {
+        hrDeviceIndex,
+        xcmJobIdentifierOnSystem,
+        xcmSimpleJobMgmtOperation,
+        xcmSimpleJobMgmtStatus
+    }
+--  STATUS      current
+--  DESCRIPTION
+--      "This trap is sent whenever an 'XcmSimpleJobMgmtOperation'
+--      completes, ie, when 'xcmSimpleJobMgmtStatus' becomes a
+--      completed operation status and 'XcmSimpleJobMgmtInProgress'
+--      goes from 'true' to 'false'.
+--
+--      Note:  The 'hrDeviceIndex' is included for convenience, even
+--      though the IETF Printer MIB doesn't include 'hrDeviceIndex'
+--      in its traps.  Then the management station doesn't have to parse
+--      the received varBind OIDs on a trap in order to discover which 
+--      device trapped.
+--
+--      Note:   The variable-bindings of this trap have been chosen to
+--      specify a complete job management operation result while keeping
+--      trap messages reasonably concise (generally a few hundred octets
+--      at most).
+--
+--      This notification has the following special semantics:
+--
+--          o   If the job's 'xcmJobClientId' field is non-empty and
+--              it is a valid 'XcmGlobalUniqueID' representation, its
+--              value shall ALWAYS be appended to this trap object ID,
+--              as a BER binary OID suffix.
+--
+--              Note:   The BER binary OID suffix shall NOT include the
+--              BER tag of 6 indicating an OID and shall NOT include the
+--              BER length field in octets of the OID suffix.
+--
+--      This trap OID qualifier allows job-submission and job-monitoring
+--      applications to limit the alerts they receive to ones generated 
+--      by jobs which they have submitted.
+--
+--      Note:   The sum of the trap varBind values must be less than
+--      can fit into a PDU on any transport, roughly 540 octets on some
+--      transports.  Thus implementors are warned to minimize the length
+--      of the 'xcmJobClientId' and 'xcmJobIdentifierOnSystem' objects."
+    ::= 1
+
+--  Note that the SNMPv2 to SNMPv1 translation rules dictate that the
+--  preceding structure will result in SNMPv1 traps of the following
+--  form:
+--
+--  xcmSimpleJobMgmtV1Event TRAP-TYPE
+--      ENTERPRISE  xcmSimpleJobMgmtV1EventOID
+--      VARIABLES   {
+--          hrDeviceIndex,
+--          xcmJobIdentifierOnSystem,
+--          xcmSimpleJobMgmtOperation,
+--          xcmSimpleJobMgmtStatus
+--      }
+--      DESCRIPTION
+--          "This trap is sent when an 'XcmSimpleJobMgmtOperation'
+--          completes.
+--          See SNMPv2 trap definition 'xcmSimpleJobMgmtV2Event'
+--          above for 'special semantics'."
+--      ::= 1
+
+--
+--.ts 'Simple Job Intercept Group (Cond Mandatory)'
+--          Simple Job Intercept Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which support simple job intercept
+--          via the defined extensions to the XCMI Job Monitoring MIB
+--          and optional for all other systems.
+
+--          Usage:  Secondary table in the Simple MIB, used to
+--                  augment the XCMI Job Monitoring MIB for support of
+--                  simple job intercept requests.
+--
+--          Usage:  Conforming management agents which implement this
+--          group shall ALWAYS implement all of the mandatory groups
+--          and all of the applicable conditionally mandatory groups
+--          in the XCMI Job Monitoring MIB.
+
+xcmSimpleJobIntercept   OBJECT IDENTIFIER ::= { xcmSimpleJobMgmtMIB 4 }
+
+xcmSimpleJobInterceptTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmSimpleJobInterceptEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table which is indexed by the future 'xcmJobClientId' in the
+        XCMI Job Monitoring MIB, to support simple job intercept
+        requests for upstream jobs (off this host system)."
+    ::= { xcmSimpleJobIntercept 2 }
+
+xcmSimpleJobInterceptEntry OBJECT-TYPE
+    SYNTAX      XcmSimpleJobInterceptEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry which is indexed by the future 'xcmJobClientId' in the
+        XCMI Job Monitoring MIB, to support a simple job intercept
+        request for an upstream job (off this host system)."
+    INDEX       { xcmSimpleJobInterceptClientId }
+    ::= { xcmSimpleJobInterceptTable 1 }
+
+XcmSimpleJobInterceptEntry ::= SEQUENCE {
+        --  Simple Job Intercept Info   
+        xcmSimpleJobInterceptClientId   XcmFixedLocaleDisplayString, 
+        xcmSimpleJobInterceptRowStatus  INTEGER, 
+        xcmSimpleJobInterceptOperation  XcmSimpleJobMgmtOperation, 
+        xcmSimpleJobInterceptData       XcmSimpleJobMgmtData, 
+        xcmSimpleJobInterceptStatus     XcmGenSNMPv2ErrorStatus, 
+        xcmSimpleJobInterceptInProgress INTEGER 
+        }                               
+
+--
+--          Simple Job Intercept Info
+--
+
+xcmSimpleJobInterceptClientId OBJECT-TYPE
+--  SYNTAX      XcmGlobalUniqueID       - for XCMI conforming clients
+--  SYNTAX      XcmFixedLocaleDisplayString (SIZE (0..32))   - minimum
+    SYNTAX      XcmFixedLocaleDisplayString (SIZE (0..128)) -- maximum
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmSimpleJobInterceptTable'.
+
+        Usage:  The future value of 'xcmJobClientId' from the XCMI Job
+        Monitoring MIB which uniquely identifies this client's job.
+
+        Usage:  XCMI conforming management agents MAY choose to REJECT
+        any attempt at row creation in the 'xcmSimpleJobInterceptTable'
+        which specifies a value for 'xcmSimpleJobInterceptClientId' that
+        does NOT conform to the 'XcmGlobalUniqueID' format (therefore
+        cannot be appended onto the trap OID for any job-related traps).
+
+        Usage:  XCMI conforming management agents MAY choose to ACCEPT
+        any attempt at row creation in the 'xcmSimpleJobInterceptTable'
+        which specifies a value for 'xcmSimpleJobInterceptClientId' that
+        is nonetheless unique in the scope of the managed system (but
+        not append it onto the trap OID for any job-related traps).
+
+        Usage:  XCMI conforming management stations (ie, clients) shall
+        ALWAYS submit an 'xcmJobClientId' in 'XcmGlobalUniqueID' format.
+        XCMI conforming management agents (ie, servers and devices)
+        shall ALWAYS append such an 'xcmJobClientId' onto the trap OID
+        for any job-related traps.
+
+        Usage:  Non-XCMI conforming management stations (ie, clients)
+        MAY submit a non-unique 'xcmJobClientId', although they may be
+        otherwise strictly conformant DPA (ISO 10175) clients."
+    ::= { xcmSimpleJobInterceptEntry 1 }
+
+xcmSimpleJobInterceptRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and destroy individual conceptual
+        rows in 'xcmSimpleJobInterceptTable'."
+    ::= { xcmSimpleJobInterceptEntry 2 }
+
+xcmSimpleJobInterceptOperation OBJECT-TYPE
+    SYNTAX      XcmSimpleJobMgmtOperation
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The simple job intercept operation specified for
+        this conceptual row in the 'xcmSimpleJobInterceptTable'
+        and the 'xcmJobClientId' object (XCMI Job Monitoring MIB).
+
+        Usage:  Conforming management agents SHALL 'reject' any
+        SNMP Set-Operation to 'xcmSimpleJobIntercept[Operation|Data]'
+        while another management operation is already in progress
+        (ie, while 'xcmSimpleJobInterceptInProgress' is 'true'),
+        with 'badValue' (SNMPv1) or 'inconsistentValue' (SNMPv2/v3).
+
+        Usage:  Conforming management stations SHALL set
+        'xcmSimpleJobInterceptOperation' (mgmt operation) and
+        'xcmSimpleJobInterceptData' (mgmt arguments)
+        SIMULTANEOUSLY (in the same SNMP Set-Operation PDU)."
+    REFERENCE
+        "See:   Section 4 'Print Utilities' (pages 71 to 212) of
+                POSIX Sys Admin (IEEE 1387.4 / Draft 8, October 1994).
+        See:    OBJECT clauses in MODULE-COMPLIANCE macro of
+                XCMI Simple Job Mgmt MIB, for compliance info."
+--  DEFVAL      { none }                -  no job intercept operation
+    ::= { xcmSimpleJobInterceptEntry 3 }
+
+xcmSimpleJobInterceptData OBJECT-TYPE
+    SYNTAX      XcmSimpleJobMgmtData (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The simple job intercept data specified for
+        this conceptual row in the 'xcmSimpleJobInterceptTable'
+        and the 'xcmJobClientId' object (XCMI Job Monitoring MIB).
+
+        Usage:  Conforming management agents SHALL 'reject' any
+        SNMP Set-Operation to 'xcmSimpleJobIntercept[Operation|Data]'
+        while another management operation is already in progress
+        (ie, while 'xcmSimpleJobInterceptInProgress' is 'true'),
+        with 'badValue' (SNMPv1) or 'inconsistentValue' (SNMPv2/v3).
+
+        Usage:  Conforming management stations SHALL set
+        'xcmSimpleJobInterceptOperation' (mgmt operation) and
+        'xcmSimpleJobInterceptData' (mgmt arguments)
+        SIMULTANEOUSLY (in the same SNMP Set-Operation PDU)."
+    REFERENCE
+        "See:   Security Config, Account, and User groups in
+                XCMI Security MIB.
+        See:    Section 6.6 'Security in DPA' (pages 38 to 39) of
+                DPA (ISO 10175-1 / Final Text, March 1996).
+        See:    Section 4 'Print Utilities' (pages 71 to 212) of
+                POSIX Sys Admin (IEEE 1387.4 / Draft 8, October 1994).
+        See:    OBJECT clauses in MODULE-COMPLIANCE macro of
+                XCMI Simple Job Mgmt MIB, for compliance info."
+--  DEFVAL      { ''H }                 -  no job intercept data
+    ::= { xcmSimpleJobInterceptEntry 4 }
+
+xcmSimpleJobInterceptStatus OBJECT-TYPE
+    SYNTAX      XcmGenSNMPv2ErrorStatus
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The simple job intercept error status associated with
+        this conceptual row in 'xcmSimpleJobInterceptTable'.
+
+        Usage:  Conforming management agents shall ALWAYS set this
+        object to the value returned in an SNMP Set-Response PDU when
+        a simple job intercept operation is 'accepted', ie, when
+        'xcmSimpleJobInterceptInProgress' goes from 'false' to 'true'.
+
+        Usage:  Conforming management agents shall ALWAYS set this
+        object to the value of the completion status of the (possibly
+        deferred) simple job intercept operation, when
+        'xcmSimpleJobInterceptInProgress' goes from 'true' to 'false'."
+    REFERENCE
+        "See:   'xcmSimpleJobIntercept[Operation|Data|InProgress]'"
+--  DEFVAL      { noError }             -  no job intercept error status
+    ::= { xcmSimpleJobInterceptEntry 5 }
+
+xcmSimpleJobInterceptInProgress OBJECT-TYPE
+--  SYNTAX      TruthValue
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The simple job intercept in progress status associated with
+        this conceptual row in 'xcmSimpleJobInterceptTable'.
+
+        Usage:  Conforming management agents SHALL 'reject' any
+        SNMP Set-Operation to 'xcmSimpleJobIntercept[Operation|Data]'
+        while another management operation is already in progress
+        (ie, while 'xcmSimpleJobInterceptInProgress' is 'true'),
+        with 'badValue' (SNMPv1) or 'inconsistentValue' (SNMPv2/v3)."
+    REFERENCE
+        "See:   'xcmSimpleJobIntercept[Operation|Data|Status]'"
+--  DEFVAL      { false }               -  no job intercept in progress
+    ::= { xcmSimpleJobInterceptEntry 6 }
+
+--.ts 'Simple Job Intercept Event Definition'
+xcmSimpleJobInterceptV1EventOID OBJECT IDENTIFIER
+--  STATUS      current
+--  DESCRIPTION
+--      "The value of the enterprise-specific OID in an SNMPv1 trap sent
+--      whenever an 'xcmSimpleJobInterceptOperation' completes.
+--      See SNMPv2 trap definition 'xcmSimpleJobInterceptV2Event'
+--      below for 'special semantics'."
+    ::= { xcmSimpleJobIntercept 1 }
+
+xcmSimpleJobInterceptV2EventPrefix
+    OBJECT IDENTIFIER ::= { xcmSimpleJobInterceptV1EventOID 0 }
+
+xcmSimpleJobInterceptV1Event TRAP-TYPE
+    ENTERPRISE  xcmSimpleJobInterceptV1EventOID
+    VARIABLES   
+    {
+        xcmSimpleJobInterceptClientId,
+        xcmSimpleJobInterceptOperation,
+        xcmSimpleJobInterceptStatus
+    }
+--  STATUS      current
+--  DESCRIPTION
+--      "This trap is sent whenever an 'XcmSimpleJobInterceptOperation'
+--      completes.
+--
+--      Note:   The variable-bindings of this trap have been chosen to
+--      specify a complete job intercept operation result while keeping
+--      trap messages reasonably concise (generally a few hundred octets
+--      at most).
+--
+--      This notification has the following special semantics:
+--
+--          o   If 'xcmSimpleJobInterceptClientId' is non-empty and
+--              it is a valid 'XcmGlobalUniqueID' representation, its
+--              value shall ALWAYS be appended to this trap object ID,
+--              as a BER binary OID suffix.
+--
+--              Note:   The BER binary OID suffix shall NOT include the
+--              BER tag of 6 indicating an OID and shall NOT include the
+--              BER length field in octets of the OID suffix.
+--
+--      This trap OID qualifier allows job-submission and job-monitoring
+--      applications to limit the alerts they receive to ones generated 
+--      by jobs which they have submitted.
+--
+--      Note:   The sum of the trap varBind values must be less than
+--      can fit into a PDU on any transport, roughly 540 octets on some
+--      transports.  Thus implementors are warned to minimize the length
+--      of the 'xcmJobClientId' and 'xcmJobIdentifierOnSystem' objects."
+    ::= 1
+
+--  Note that the SNMPv2 to SNMPv1 translation rules dictate that the
+--  preceding structure will result in SNMPv1 traps of the following
+--  form:
+--
+--  xcmSimpleJobInterceptV1Event TRAP-TYPE
+--      ENTERPRISE  xcmSimpleJobInterceptV1EventOID
+--      VARIABLES   {
+--          xcmSimpleJobInterceptClientId,
+--          xcmSimpleJobInterceptOperation,
+--          xcmSimpleJobInterceptStatus
+--      }
+--      DESCRIPTION
+--          "This trap is sent when an 'XcmSimpleJobInterceptOperation'
+--          completes.
+--          See SNMPv2 trap definition 'xcmSimpleJobInterceptV2Event'
+--          above for 'special semantics'."
+--      ::= 1
+
+--.ts 'Simple Job Mgmt MIB Conformance Macros'
+--
+--          Simple Job Mgmt MIB Conformance Information
+--
+--          With Mandatory and Optional Conformance Groups
+
+xcmSimpleJobMgmtMIBConformance
+    OBJECT IDENTIFIER ::= { xcmSimpleJobMgmtMIB 2 }
+xcmSimpleJobMgmtMIBGroups
+    OBJECT IDENTIFIER ::= { xcmSimpleJobMgmtMIBConformance 2 }
+
+--
+--          Compliance Statement
+--
+
+END

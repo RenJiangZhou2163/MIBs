@@ -1,0 +1,5138 @@
+
+--  TEKTRONIX-GPID-MIB { iso(1) org(3) dod(6) internet(1) private(4)
+--                       enterprises(1) tektronix(128) gpid (2) }
+--
+--  This is a MIB module for Tektronix network-connected printers.
+--  It includes only the enterprise-specific objects; see the following
+--  RFCs for Internet-standard MIB objects supported by the printer:
+--
+--  RFC 1155    Structure of Management Information
+--  RFC 1212    Concise MIB Format
+--  RFC 1213    MIB-II
+--  RFC 1229    Generic Interface Extensions (as amended by RFC 1239)
+--  RFC 1239    Reassignment of Experimental MIBs to Standard MIBs
+--  RFC 1354    IP Forwarding Table MIB
+--  RFC 1398    Ethernet/IEEE 802.3 MIB
+
+TEKTRONIX-GPID-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+	enterprises             FROM RFC1155-SMI
+	OBJECT-TYPE             FROM RFC-1212
+	DisplayString           FROM RFC1213-MIB;
+
+--  Identifier 128 has been assigned to Tektronix, Inc. by the
+--  IANA.  Each division within Tektronix manages its own
+--  subtree below the Tektronix enterprise ID.
+
+tektronix       OBJECT IDENTIFIER ::= { enterprises 128 }
+
+-- Graphic Printing and Imaging Division
+
+tekgpid         OBJECT IDENTIFIER ::= { tektronix 2 }
+
+gpidmibs        OBJECT IDENTIFIER ::= { tekgpid 1 }
+gpidproducts    OBJECT IDENTIFIER ::= { tekgpid 2 }
+
+gpidprintermib  OBJECT IDENTIFIER ::= { gpidmibs 3 }
+
+	  -- groups in PRINTERMIB
+
+	  gpidGeneral    OBJECT IDENTIFIER ::= { gpidprintermib 1 }
+
+	  gpidInput      OBJECT IDENTIFIER ::= { gpidprintermib 2 }
+
+	  gpidOutput     OBJECT IDENTIFIER ::= { gpidprintermib 3 }
+
+	  gpidMarker     OBJECT IDENTIFIER ::= { gpidprintermib 4 }
+
+	  gpidMediaPath  OBJECT IDENTIFIER ::= { gpidprintermib 5 }
+
+	  gpidChannel    OBJECT IDENTIFIER ::= { gpidprintermib 6 }
+
+	  gpidAlerts     OBJECT IDENTIFIER ::= { gpidprintermib 7 }
+
+	  gpidJobAccnt   OBJECT IDENTIFIER ::= { gpidprintermib 8 }
+
+	  gpidSysSetup   OBJECT IDENTIFIER ::= { gpidprintermib 9 }
+
+
+	  -- the gpidGeneral group
+
+	  -- Implementation of the gpidGeneral group is mandatory for
+	  -- all printers. This group contains variables that are 
+	  -- provide status and information on the entire printer.
+	  -- In the DMTF model this group usually is implemented on
+	  -- the printer's system controller.
+
+	  gpidGeneralManufacturer OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..20))
+	      ACCESS  read-only 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "The name of the manufacturer of the printer.
+		       Tektronix, Inc."
+	      ::= { gpidGeneral 1 }
+
+	  gpidGeneralProduct OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..80))
+	      ACCESS  read-only 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "The product type name. For instance, Phaser 480."
+	      ::= { gpidGeneral 2 }
+
+	  gpidGeneralVersion OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..80))
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The Tektronix Version number as reported on the 
+		       startpage. For instance, 1.1/01.22."
+	      ::= { gpidGeneral 3 }
+
+	  gpidGeneralStatus OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  ready(3),
+			  criticalState(4),
+			  non-critical(5),
+			  criticalandNonCritical(6),
+			  onRequest(7),
+			  unavailable(8),
+			  busy(9),
+			  waiting(10)
+		      }                 
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The status indicator for the print engine. This
+		       is an overall indication of the printer's state.
+		       In addition, each of the sub-units can report their
+		       state so this in essence reports the highest priority
+		       state."
+	      ::= { gpidGeneral 4 }
+
+	  gpidGeneralPrinterBusy OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  initializing(1),
+			  ready(2),
+			  printing(3),
+			  warmingUp(4),
+			  cleaning(5),
+			  standby(6),
+			  energyStar(7),
+			  engineFailure(8),
+			  receivingData(9),
+			  processingData(10),
+			  printingStartPage(11),
+			  frontPanelInUse(12),
+			  copying(13),
+			  waiting(14),
+			  off-line(15),
+			  printerError(16),
+			  busy(17),
+			  checkPrint(18),
+			  coolingDown(19),
+			  isCool(20),
+			  cuttingMedia(21),
+			  feedingMedia(22),
+			  loadingMedia(23),
+			  unloadingMedia(24),
+			  loadingInk(25),
+			  fuserWarmingUp(26),
+			  fuserCoolingDown(27),
+			  serviceMode(28),
+			  testing(29),
+			  waitingForCancel(30),
+			  warmupManFeedError(31),
+			  transientEngError(32),
+			  engineSyncError(33),
+			  mptMediaClassUnknownErr(34)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This status indicator for the print engine indicating
+		       the current printer state."
+	      ::= { gpidGeneral 5 }
+
+	  gpidGeneralEngineFailure OBJECT-TYPE
+	      SYNTAX  INTEGER 
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This status indicator for a print engine failure
+		       indicating which print engine failure occured.
+		       This failure may be transient merely requiring the
+		       printer to be turned off and on. Or could require
+		       service support. Each printer will use its own
+		       enumerations. For instance, Wren has specified:
+			  enging-OK(-1),          
+			  blackCartridgeMovementError(1),
+			  cyanCartridgeMovementError(2),
+			  magentaCartridgeMovementError(3),
+			  yellowCartridgeMovementError(4),
+			  tonerCartridgeCoolingFanError(5),
+			  scannerMotorUnlocked(10),
+			  laserPowerDownError(11),
+			  lSyncOver(12),
+			  lSyncShort(13),
+			  chargerError(20),
+			  asychronousOPC(21),
+			  opcPositionError(22),
+			  intermediateTransferRollerMovementError(30),
+			  cleaningBladeMovementError(31),
+			  paperTransferRollerMovementError(33),
+			  fuserLowTemperature(40),
+			  fuserHighTemperature(41),
+			  fuserThermistorOpen(42),
+			  powerSupplyCoolingFanError(50),
+			  ozoneFanError(51),
+			  sleeveMotorUnlocked(61),
+			  transportMotorUnlocked(62),
+			  mainMotorUnlocked(63),
+			  ROMCheckSumError(70),
+			  SRAMCheckError(71),
+		      for its enumerations."
+	      ::= { gpidGeneral 6 }
+
+	  gpidGeneralEnergyStarOperState OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  operational(1),          
+			  energy-star(2)
+		      }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "This variable is used to indicate the state
+		       of the print engine. This variable should
+		       not be confused with the energy star state
+		       variable that lives on the I/O card. If the
+		       printer is in standby then this variable
+		       should be in energy-star. When this
+		       variable is operational the printer is ready to
+		       print."
+	      ::= { gpidGeneral 7 }
+
+	  gpidGeneralEnergyStarAdminState OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  operational(1),          
+			  energy-star(2)
+		      }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "This variable is used to toggle the variable
+		       gpidGeneralEnergyOperState. If the printer
+		       is in the energy-star mode then writing to this
+		       variable will wake the printer up. If the printer
+		       is in operational mode then writing to this
+		       variable will put the printer in energy-star mode.
+		       This variable should be considered write only."
+	      ::= { gpidGeneral 8 }
+
+	  gpidGeneralTimeTillWarm OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to indicate the estimated time
+		       until warmup is complete. This should indicate
+		       a range of plus or minus 3 minutes."
+	      ::= { gpidGeneral 9 }
+
+	  gpidGeneralRAMInstalled OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to indicate the amount of
+		       RAM installed in the printer. It is is MBytes."
+	      ::= { gpidGeneral 10 }
+
+	  gpidGeneralFontsInstalled OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to indicate the number of 
+		       fonts installed in the printer."
+	      ::= { gpidGeneral 11 }
+
+	  gpidGeneralCopyStationInstalled OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  installed(1),          
+			  notInstalled(2)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to indicate if
+		       there is a CopyStation attached to the printer."
+	      ::= { gpidGeneral 12 }
+
+
+	  -- the gpidInput group
+
+	  -- Implementation of the gpidInput group is mandatory for
+	  -- all printers. The input group is used for sub-units of
+	  -- the printer that feed media into the printer. In most
+	  -- Tektronix printers these units are removable trays. In
+	  -- most Tektronix printers there is no way to seperately
+	  -- select manual feed so it is not considered a seperate unit.
+
+	  gpidInputNumber OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of input devices present on this system."
+	      ::= { gpidInput 1 }
+
+	  -- the Input table
+
+	  -- The Input table contains information on the entity's
+	  -- input trays.  Each tray is thought of as being a separate
+	  -- input device. In most cases the word device and tray are
+	  -- interchangable. Each device thus is a sub-sub-unit, i.e.
+	  -- a device under the input sub-unit umbrella. This table will 
+	  -- contain 1 or more entries. 
+
+	  gpidInputTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidInputEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidInput entries.  The number of
+		      entries is given by the value of gpidInputNumber."
+	      ::= { gpidInput 2 }
+
+	  gpidInputEntry OBJECT-TYPE
+	      SYNTAX  GpidInputEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidInput entry containing objects at 
+		       the input device level for a particular input device."
+	      INDEX   { gpidInputTrayIndex }
+	      ::= { gpidInputTable 1 }
+
+	  GpidInputEntry ::=
+	      SEQUENCE {
+		  gpidInputTrayIndex
+		      INTEGER,
+		  gpidInputTrayId
+		      INTEGER,
+		  gpidInputTrayType
+		      INTEGER,
+		  gpidInputCapacityUnit
+		      INTEGER,
+		  gpidInputMaxCapacity
+		      INTEGER,
+		  gpidInputCurrentLevel
+		      INTEGER,
+		  gpidInputStatus
+		      INTEGER,
+		  gpidInputMediaType
+		      INTEGER,
+		  gpidInputMediaSize
+		      INTEGER
+	      }
+
+	  gpidInputTrayIndex OBJECT-TYPE
+	      SYNTAX  INTEGER 
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique value for each input device.  This is
+		       index into the tray table."
+	      ::= { gpidInputEntry 1 }
+
+	  gpidInputTrayId OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  manualFeed(3),
+			  mainTray(4),
+			  upperTray(5),
+			  middleTray(6),
+			  lowerTray(7),
+			  trayOne(8),
+			  trayTwo(9),
+			  trayThree(10),
+			  trayFour(11),
+			  trayFive(12),
+			  continuousRoll(13),
+			  continousFanFold(14),
+			  multipurposeTray(15),
+			  autoDuplexUnit(16),
+			  envelopeFeeder(17)
+		      }         
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique value for each input device.  This ID
+		       indicates which instance of the tray is installed.
+		       DO NOT CHANGE THIS ENUMERATION WITHOUT CHANGING
+		       gpidInputDefaultSource."
+	      ::= { gpidInputEntry 2 }
+
+	  gpidInputTrayType OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  removeableTray(3),
+			  unremoveableTray(4),
+			  sheetFeedManual(5),
+			  continuousRoll(6),
+			  continousFanFold(7)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The kind of tray being used."
+	      ::= { gpidInputEntry 3 }
+
+	  gpidInputCapacityUnit OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  thousandth-inch(3),
+			  hundredth-millimeter(4),
+			  sheets(8),
+			  feet(16),
+			  meters(17)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The measurement unit used when by the variables
+		      gpidInputmaxCapacity and gpidInputCurrentLevel. For
+		      most Tektronix printers this will be sheets(8)."
+	      ::= { gpidInputEntry 4 }
+
+	  gpidInputMaxCapacity OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of sheets that can be placed in the tray."
+	      ::= { gpidInputEntry 5 }
+	  gpidInputCurrentLevel OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of sheets that are currently in 
+		       the tray. This report may lie because the current  
+		       printers only have a out, low and full indicators. Thus
+		       if it possible to put a hundred sheets in the
+		       tray, the level indicator could be 100, 25, or 0.
+		       This would mean that when 100 is specified
+		       the tray could have between 100 and 26 sheets.
+		       When 25 is specified then the tray would have
+		       between 25 and 1 sheets in the tray. By convention,
+		       a low indication will be 10% or less of maximum."
+	      ::= { gpidInputEntry 6 }
+
+	  gpidInputStatus OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  ready(3),
+			  criticalState(4),
+			  non-critical(5),
+			  criticalandNonCritical(6),
+			  onRequest(7),
+			  unavailable(8),
+			  busy(9)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The current state of the particular input device."
+	      ::= { gpidInputEntry 7 }
+
+	  gpidInputMediaType OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  paper(3),
+			  heavyPaper(4),
+			  transparency(5),
+			  coatedPaper(6),
+ 			  cardStock(7),
+			  labelStock(8),
+			  fabricTransfer(9),
+			  duplexSetting(10),
+			  envelope(11),
+			  thickCoverIndex(12),
+			  thinCoverIndex(13),
+			  heavyWeightCoverPaper(14),
+			  letterhead(15),
+                          colorPaper(16),
+			  special(17),    
+			  thinCardStock(18),
+			  thickCardStock(19),
+			  photoPaper(20),
+			  businessCards(21),
+			  greetingCards(22),
+			  cdDVDLabels(23),
+			  cdDVDInserts(24),
+			  clearFilm(101),
+			  whiteFilm(102),
+			  transferFilm(103),
+			  film(104),
+			  photo(105),
+			  mixed(-20)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The media type currently loaded in the tray. 
+		       DO NOT CHANGE THIS ENTRY WITHOUT CHANGING
+		       gpidJobAccntCurrentMediaType and gpidJobAccntMediaType."
+	      ::= { gpidInputEntry 8 }
+
+	  gpidInputMediaSize OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  letter(3),
+			  legal(4),
+			  envelopeC6(5),
+			  envelopeDL(6),
+			  envelopeNo6(7),
+			  envelopeNo10(8),
+			  envelopeExec(9),
+                          ukFoolscap(13),
+                          usFolio(14),
+			  tabloid(15),
+                          bookletEnvelope9x12(16),
+			  iso-a0(23),
+			  iso-a1(24),
+			  iso-a2(25),
+			  iso-a3(26),
+			  iso-a4(27),
+			  iso-a5(28),
+			  iso-a6(29),
+			  iso-b4(34),
+			  iso-b5(35),
+			  iso-b6(36),
+			  iso-c5(37),
+			  iso-sra3(38),
+			  tabloid-extra(101),
+			  oversize-A(102),
+			  tabloid-maximum(103),
+			  tabloid-plus(104),
+			  tabloid-xl(105),
+                          jis-b5(107),
+                          jis-b6(108),
+                          oficio(112),
+                          spFolio(113),
+                          ra3(115),
+			  jis-b1(124),
+			  jis-b2(125),
+			  jis-b3(126),
+			  jis-b4(127),
+                          envelopeISOC6 (129),
+                          envelopeISOB4(130), 
+                          envelopeISOB5(131), 
+                          envelopeISOB6(132), 
+			  regularC(134),
+			  regularD(135),
+			  regularE(136),
+			  architectB(143),
+			  architectC(144),
+			  architectD(145),
+			  architectE(146),
+			  film8x10(147), 
+			  film10x12(148),
+			  film11x14(149),
+			  film14x17(150),
+			  special30x42(157),
+			  envelopeMonarch(160),
+			  postcard(161),
+			  envelopeCOM10(162),
+			  statement(163),
+			  special8x10(164),
+			  letterTab(165),
+			  a4Tab(166),
+			  folio(167),
+			  folioSpecial(168),
+			  special312-5x440(169),
+			  special12x18(170),
+			  special12-5x18(171),
+			  special13x18(172),
+			  envelopeC4(173),
+			  envelopeC5(174),
+			  envelopeChoukei3(175),
+			  envelopeKakugata2(176),
+			  envelopeChoukei4(177),
+			  postcard4x6(178),
+			  doublePostcard(179),
+			  executive(180),
+			  envelopeA7(181),			  
+			  custom(999),
+			  mixed-mediasize(-20)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The media size currently loaded in the tray.
+		      DO NOT CHANGE THIS ENUMERATION WITHOUT CHANGING
+		      gpidInputDefaultMediaSize."
+	      ::= { gpidInputEntry 9 }
+
+	  gpidInputDefaultSource OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  manualFeed(3),
+			  mainTray(4),
+			  upperTray(5),
+			  middleTray(6),
+			  lowerTray(7),
+			  trayOne(8),
+			  trayTwo(9),
+			  trayThree(10),
+			  trayFour(11),
+			  trayFive(12),
+			  continuousRoll(13),
+			  continousFanFold(14),
+			  multipurposeTray(15),
+			  autoDuplexUnit(16),
+			  envelopeFeeder(17)
+		      }         
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The variable reports and sets the default input source
+		      for the printer. This variable must have the
+		      same enumerations as the variable gpidInputTrayId.
+		      DO NOT CHANGE THIS ENUMERATION WITHOUT CHANGING
+		      gpidInputTrayId."
+	      ::= { gpidInput 3 }
+
+	  gpidInputDefaultMediaSize OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  letter(3),
+			  legal(4),
+			  envelopeC6(5),
+			  envelopeDL(6),
+			  envelopeNo6(7),
+			  envelopeNo10(8),
+			  envelopeExec(9),
+			  tabloid(15),
+			  iso-a0(23),
+			  iso-a1(24),
+			  iso-a2(25),
+			  iso-a3(26),
+			  iso-a4(27),
+			  iso-a5(28),
+			  iso-a6(29),
+			  iso-b4(34),
+			  iso-b5(35),
+			  iso-b6(36),
+			  iso-c5(37),
+			  iso-sra3(38),
+			  tabloid-extra(101),
+			  oversize-A(102),
+			  tabloid-maximum(103),
+			  tabloid-plus(104),
+			  tabloid-xl(105),
+			  jis-b1(124),
+			  jis-b2(125),
+			  jis-b3(126),
+			  jis-b4(127),
+			  regularC(134),
+			  regularD(135),
+			  regularE(136),
+			  architectB(143),
+			  architectC(144),
+			  architectD(145),
+			  architectE(146),
+			  film8x10(147), 
+			  film10x12(148),
+			  film11x14(149),
+			  film14x17(150),
+			  special30x42(157),
+			  envelopeMonarch(160),
+			  postcard(161),
+			  envelopeCOM10(162),
+			  statement(163),
+			  special8x10(164),
+			  letterTab(165),
+			  a4Tab(166),
+			  folio(167),
+			  folioSpecial(168),
+			  special312-5x440(169),
+			  special12x18(170),
+			  special12-5x18(171),
+			  special13x18(172),
+			  envelopeC4(173),
+			  envelopeC5(174),
+			  envelopeChoukei3(175),
+			  envelopeKakugata2(176),
+			  envelopeChoukei4(177),
+			  postcard4x6(178),
+			  doublePostcard(179),
+			  executive(180),
+			  envelopeA7(181),			  
+			  custom(999),
+			  mixed-mediasize(-20)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The default media size to be reported or set.
+		      DO NOT CHANGE THIS ENUMERATION WITHOUT CHANGING
+		      gpidInputMediaSize, gpidJobAccntMediaSize and
+		      gpidJobAccntCurrentMediaSize."
+	      ::= { gpidInput 4 }
+
+	  -- the gpidOutput group
+	  -- Implementation of the gpidOutput group is mandatory for
+	  -- all printers. The output group is used for sub-units of
+	  -- the printer that receive media that has been successfully
+	  -- marked on. In most Tektronix printers there is a single unit 
+	  -- which is removable tray that does not return any status. 
+	  -- the Input table
+
+	  gpidOutputNumber OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of output devices present on this system."
+	      ::= { gpidOutput 1 }
+
+	  -- the Output table
+
+	  -- The Output table contains information on the entity's
+	  -- output trays.  Each output tray is thought of as being a separate
+	  -- output device. In most cases the word device and tray are
+	  -- interchangable. Each device thus is a sub-sub-unit, i.e.
+	  -- a device under the input sub-unit umbrella. This table will 
+	  -- contain 1 or more entries. 
+
+	  gpidOutputTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidOutputEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidOutput entries.  The number of
+		      entries is given by the value of gpidOutputNumber."
+	      ::= { gpidOutput 2 }
+
+	  gpidOutputEntry OBJECT-TYPE
+	      SYNTAX  GpidOutputEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidOutput entry containing objects at 
+		       the ouput device level for a particular output device."
+	      INDEX   { gpidOutputTrayIndex }
+	      ::= { gpidOutputTable 1 }
+
+	  GpidOutputEntry ::=
+	      SEQUENCE {
+		  gpidOutputTrayIndex
+		      INTEGER,
+		  gpidOutputId
+		      INTEGER,
+		  gpidOutputType
+		      INTEGER,
+		  gpidOutputCapacityUnit
+		      INTEGER,
+		  gpidOutputMaxCapacity
+		      INTEGER,
+		  gpidOutputCurrentLevel
+		      INTEGER,
+		  gpidOutputStatus
+		      INTEGER,
+		  gpidOutputDeliveryOrientation
+		      INTEGER,
+		  gpidOutputMediaCutting
+		      INTEGER,
+		  gpidOutputMediaFusing
+		      INTEGER,
+		  gpidOutputAdvanceMedia
+		      INTEGER,
+		  gpidOutputAdvanceDistance
+		      INTEGER
+	      }
+  
+	 gpidOutputTrayIndex OBJECT-TYPE
+	      SYNTAX  INTEGER 
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique value for each output device.  This is
+		       index into the output tray table."
+	      ::= { gpidOutputEntry 1 }
+
+	  gpidOutputId OBJECT-TYPE
+	      SYNTAX  INTEGER (0..255)
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for the output device sub-unit."
+	      ::= { gpidOutputEntry 2 }
+
+	  gpidOutputType OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),
+			  unknown(2),
+			  removeableTray(3),
+			  unremoveableTray(4),
+			  continuousRollDevice(5),
+			  mailBox(6)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The kind of output tray being used. In the current
+		       printers this is reported as other(1)."
+	      ::= { gpidOutputEntry 3 }
+
+	  gpidOutputCapacityUnit OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  thousandth-inch(3),
+			  hundredth-millimeter(4),
+			  sheets(8),
+			  feet(16),
+			  meters(17)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The measurement unit used when by the variable
+		       gpidOutputMaxCapacity and gpidOutputCurrentLevel. 
+		       For most Tektronix printers this will be sheets(8)."
+	      ::= { gpidOutputEntry 4 }
+
+	  gpidOutputMaxCapacity OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of sheets that can be placed in the tray."
+	      ::= { gpidOutputEntry 5 }
+
+	  gpidOutputCurrentLevel OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of sheets that are currently in 
+		       the tray. This report may lie because the current  
+		       printers only have a none and full indicators. Thus
+		       if it possible to put a hundred sheets in the
+		       tray, the level indicator could be 100, or 0.
+		       This would mean that when 0 is specified
+		       the tray could have between 0 and 99 sheets."
+	      ::= { gpidOutputEntry 6 }
+
+	  gpidOutputStatus OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  ready(3),
+			  criticalState(4),
+			  non-critical(5),
+			  criticalandNonCritical(6),
+			  onRequest(7),
+			  unavailable(8),
+			  busy(9)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The current state of the output sub-unit. The currently
+		       available printers will report this as unknown(2)."
+	      ::= { gpidOutputEntry 7 }
+
+
+	  gpidOutputDeliveryOrientation OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  faceUp(3),
+			  faceDown(4)
+		      }
+	      ACCESS  read-write
+	      STATUS  optional
+	      DESCRIPTION
+		      "The orientation of the output media when it
+		       is placed in the tray. For some printers this
+		       is a settable option and can be either face up
+		       or face down. In other printers this is a read
+		       only variable and any attempt to change it will
+		       have no effect."
+	      ::= { gpidOutputEntry 8 }
+
+	  gpidOutputMediaCutting OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  none(1),          -- none of the following
+			  endOfJob(2),
+			  endOfPage(4),
+			  notapplicable(-1)
+		      }
+	      ACCESS  read-write
+	      STATUS  optional
+	      DESCRIPTION
+		      "The default value of the media cutting parameter.
+		       If on and the input media is roll media then
+		       printer will cut. The value of -1 can not be set.
+		       It can only be reported. If it is reported the
+		       feature is not supported."
+	      ::= { gpidOutputEntry 9 }
+
+	  gpidOutputMediaFusing OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  hot(1),          -- none of the following
+			  cold(2),
+			  off(3),
+			  notapplicable(-1)
+		      }
+	      ACCESS  read-write
+	      STATUS  optional
+	      DESCRIPTION
+		      "The default value of the media fusing parameter. The
+		       value of -1 can not be set. It can only be reported.
+		       if it is reported the feature is not supported."
+	      ::= { gpidOutputEntry 10 }
+
+	  gpidOutputAdvanceMedia OBJECT-TYPE
+	      SYNTAX  INTEGER { 
+			  none(1),
+			  endOfJob(2),
+			  endOfPage(4),
+			  notapplicable(-1)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       of the advance media feature in the printer. The
+		       value of -1 can not be set. It can only be reported.
+		       if it is reported the feature is not supported."
+	      ::= { gpidOutputEntry 11 }
+
+	  gpidOutputAdvanceDistance OBJECT-TYPE
+	      SYNTAX  INTEGER (-1..100000)
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       of the advance distance feature in the printer. This
+		       value is in thousandth-inches (.001). The
+		       value of -1 can not be set. It can only be reported.
+		       if it is reported the feature is not supported."
+	      ::= { gpidOutputEntry 12 }
+
+	  -- the gpidMarker group
+
+	  -- Implementation of the gpidMarker group is mandatory for
+	  -- all printers. The marker group is used for sub-units of
+	  -- the printer that put marks on media. All currently
+	  -- available Tektronix printers have one marking unit with
+	  -- one or more supplies sub-sub-units.
+
+	  gpidMarkerId OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for the marker device sub-unit."
+	      ::= { gpidMarker 1 }
+
+	  gpidMarkerTech OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),
+			  unknown(2),
+			  electrophotographic-LED(3),
+			  electophotographic-Laser(4),
+			  electophotographic-Other(5),
+			  impactMovingHeadDotMatrix9pin(6),
+			  impactMovingHeadDotMatrix24pin(7),
+			  impactMovingHeadDotMatrixother(8),
+			  impactMovingHeadFullyFormed(9),
+			  impactBand(10),
+			  impactOther(11),
+			  inkjetAqueous(12),
+			  inkjetSolid(13),
+			  inkjetOther(14),
+			  pen(15),
+			  thermalTransfer(16),
+			  thermalSensitive(17),
+			  thermalDiffusion(18),
+			  thermalOther(19),
+			  electroerosion(20),
+			  electrostatic(21),
+			  photographicMicrofiche(22),
+			  photographicImagesetter(23),
+			  photographicOther(24),
+			  ionDeposition(25),
+			  eBeam(26),
+			  typesetter(27)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The kind of marking technology being used. 
+		       The current printers use:                          
+				electophotographic-Laser(4),
+				inkjetSolid(13),
+				thermalTransfer(16),
+				thermalDiffusion(18)."
+	      ::= { gpidMarker 2 }
+
+	  gpidMarkerCounterUnits OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),
+			  unknown(2),
+			  thousandth-inch(3),
+			  hundredth-millimeter(4),
+			  characters(5),
+			  lines(6),
+			  impressions(7),
+			  sheets(8),
+			  dotRow(9),
+			  hours(11),
+			  feet(16),
+			  meters(17)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The measurement unit used when by the variable
+		       gpidMarkerLifeCounts and gpidMarkerPowerOnCount.
+		       For most Tektronix printers this will be sheets(8)."
+	      ::= { gpidMarker 3 }
+
+	  gpidMarkerLifeCounts OBJECT-TYPE
+	      SYNTAX  Counter
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of sheets that have been run 
+		       through the marking unit."
+	      ::= { gpidMarker 4 }
+
+	  gpidMarkerPowerOnCount OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of sheets that have been run 
+		       through the marking unit since power up."
+	      ::= { gpidMarker 5 }
+
+	  gpidMarkerProcessColorant OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of colors available with this marker."
+	      ::= { gpidMarker 6 }
+
+	  gpidMarkerSpotColors OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of spot colors available with this marker."
+	      ::= { gpidMarker 7 }
+
+	  gpidMarkerStatus OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  ready(3),
+			  criticalState(4),
+			  non-critical(5),
+			  criticalandNonCritical(6),
+			  onRequest(7),
+			  unavailable(8),
+			  busy(9)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The current state of the marker sub-unit. This
+		       is an overall indicator of the marker's state.
+		       Each of the marker's supplies can also report
+		       their state. Thus this will report the highest
+		       priority state of the marker's supplies."
+	      ::= { gpidMarker 8 }
+
+	  gpidMarkerSuppliesNumber OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of marker supply units (Functional 
+		       Replacement Units) present on this system. This
+		       number can include both input supply units, such
+		       as Cyan toner, and output supply units, such as
+		       toner waste bins."
+	      ::= { gpidMarker 9 }
+
+
+	  -- the Marker table
+
+	  -- The Marker table contains information on the entity's
+	  -- marking supply units.  Each supply unit is thought of as being
+	  -- separate device that can be replaced, filled or emptied, etc.
+	  -- Each marker supply thus is a sub-sub-unit, i.e., a device
+	  -- under the marker sub-unit umbrella. This table will 
+	  -- contain 1 or more entries. 
+
+	  gpidMarkerSuppliesTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidMarkerSuppliesEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidMarker entries.  The number of entries
+		       is given by the value of gpidMarkerSuppliesNumber."
+	      ::= { gpidMarker 10 }
+
+	  gpidMarkerSuppliesEntry OBJECT-TYPE
+	      SYNTAX  GpidMarkerSuppliesEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidMarkerSupplies entry containing objects at 
+		       the marker supplies device level for a particular 
+		       marker supply device."
+	      INDEX { gpidMarkerSuppliesIndex }
+	      ::= { gpidMarkerSuppliesTable 1 }
+
+	  GpidMarkerSuppliesEntry ::=
+	      SEQUENCE {
+		  gpidMarkerSuppliesIndex
+		      INTEGER,
+		  gpidMarkerSuppliesColorantId
+		      INTEGER,
+		  gpidMarkerSuppliesMarkerId
+		      INTEGER,
+		  gpidMarkerSuppliesType
+		      INTEGER,
+		  gpidMarkerSuppliesDescription
+		      DisplayString,
+		  gpidMarkerSuppliesMaxCapacity
+		      INTEGER,
+		  gpidMarkerSuppliesCurrentLevel
+		      INTEGER,
+		  gpidMarkerSuppliesMaxLifeCount
+		      INTEGER,
+		  gpidMarkerSuppliesLifeCount
+		      INTEGER,
+		  gpidMarkerSuppliesRemaining
+		      INTEGER,
+		  gpidMarkerSuppliesStatus
+		      INTEGER
+	      }
+
+	  gpidMarkerSuppliesIndex OBJECT-TYPE
+	      SYNTAX  INTEGER 
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for each marker supply element."
+	      ::= { gpidMarkerSuppliesEntry 1 }
+
+	  gpidMarkerSuppliesColorantId OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  genericMarker(3),
+			  cyanMarker(4),
+			  magentaMarker(5),
+			  yellowMarker(6),
+			  blackMarker(7),
+			  processorUnit(8),
+			  coronaUnit(9),
+			  secondTransferRoll(10),
+			  fuser(11),
+			  tonerDischarge(12),
+			  transferToneDischarge(13),
+			  preTransferUnit(14),
+			  wasteInkBin(15),
+			  maintenanceTray(16),
+			  paperFeedUnit(17),
+			  tensionUnit(18),
+			  cyanPrintUnit(19),
+			  magentaPrintUnit(20),
+			  yellowPrintUnit(21),
+			  blackPrintUnit(22),
+			  accumulatorBelt(23),
+			  beltCleanerAssembly(24),
+			  stapler(25)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for each marker supply element."
+	      ::= { gpidMarkerSuppliesEntry 2 }
+
+	  gpidMarkerSuppliesMarkerId OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The marker ID for this marker supply. This 
+		       is essentially unused in the Tektronix printers.
+		       If multiple markers were possible then there
+		       could be a marker supplies table for each
+		       marker instance."
+	      ::= { gpidMarkerSuppliesEntry 3 }
+
+
+	  gpidMarkerSuppliesType OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  toner(3),
+			  wasteToner(4),
+			  ink(5),
+			  inkCartridge(6),
+			  inkRibbon(7),
+			  wasteInk(8),
+			  organicPhotoConductor(9),
+			  developer(10),
+			  fuserOil(11),
+			  wax-solid(12),
+			  wax-ribbon(13),
+			  wasteWax(14),
+			  maintenanceTray(15),
+			  feeder(16),
+			  tensioner(17)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The kind of supply type being used."
+	      ::= { gpidMarkerSuppliesEntry 4 }
+
+	  gpidMarkerSuppliesDescription OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..127))
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A textual statement of the marker supply type. This
+		       will match the wording in the printer and the
+		       printer's user manual. This should make it easier
+		       to connect a supply alert with the physical hardware."
+	      ::= { gpidMarkerSuppliesEntry 5 }
+
+	  gpidMarkerSuppliesMaxCapacity OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The maximum capacity of the marker supply element.
+		       This will be the maximum amount of some supply unit.
+		       The value (-2) means unknown."
+	      ::= { gpidMarkerSuppliesEntry 6 }
+
+	  gpidMarkerSuppliesCurrentLevel OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The current capacity of the marker supply element.
+		       For instance, on printers with toner cartridges that
+		       are replaced as an entire entity but report toner
+		       low this will have a value in between 0 and 
+		       gpidMarkerSuppliesMaxCapacity. By convention,
+		       a low indication will be 10% or less of maximum.
+		       The value (-2) means unknown.  A value of (-3) means 
+		       that the printer knows that there is some supply
+		       remaining."
+	      ::= { gpidMarkerSuppliesEntry 7 }
+
+	  gpidMarkerSuppliesMaxLifeCount OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of sheets that can be expected to be run 
+		       through the marking supply unit. When the 
+		       gpidMarkerSuppliesLifeCount exceeds this number
+		       the supply is expected to be exhausted. Your
+		       mileage will vary. The value (-2) means unknown."
+	      ::= { gpidMarkerSuppliesEntry 8 }
+
+	  gpidMarkerSuppliesLifeCount OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of sheets that have been run 
+		       through the marking supply unit. With the
+		       Phaser 540 writing to this variable will cause
+		       the value to be set to 0. The value (-2) means 
+		       unknown.  A value of (-3) means that the printer 
+		       knows that it has not reached its max limit yet."
+	      ::= { gpidMarkerSuppliesEntry 9 }
+
+	  gpidMarkerSuppliesStatus OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  ready(3),
+			  criticalState(4),
+			  non-critical(5),
+			  criticalandNonCritical(6),
+			  onRequest(7),
+			  unavailable(8),
+			  busy(9)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The current state of the particular marker supply."
+	      ::= { gpidMarkerSuppliesEntry 10 }
+
+	  gpidMarkerSuppliesRemaining OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The percent of the marker remaing.  The variable will
+		       take the values (0, 100).  The value 0 indicates no 
+		       marker is remaining and 100 indicates the marker is 
+		       at full capacity.  This value should be displayed as
+		       a percentage."
+	      ::= { gpidMarkerSuppliesEntry 11 }
+
+
+	  -- the gpidMediaPath group
+
+	  -- Implementation of the gpidMediaPath group is mandatory for
+	  -- all printers. The media path group is used for sub-units of
+	  -- the printer that pull the media from the input sub-unit, 
+	  -- through the marker and place the media in the output sub-unit.
+
+	  gpidMediaPathMediaSizeUnit OBJECT-TYPE
+	      SYNTAX  INTEGER  {
+			  other(1),
+			  unknown(2),
+			  thousandth-inch(3),
+			  hundredth-millimeter(4),
+			  sheets(8)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The unit of measurement being used to indicate the 
+		       maximum and minimum media size that can be handled 
+		       by the media path. The thousandth-inch is .001 inches 
+		       and hunderdth-millimeter is .01 millimeters. This
+		       will be thousandth-inch for most Tektronix printers."
+	      ::= { gpidMediaPath 1 }
+
+	  gpidMediaPathId OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for the mediaPath."
+	      ::= { gpidMediaPath 2 }
+
+	  gpidMediaPathMaxMediaFeedDir OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The maximum size of the media in the feed direction."
+	      ::= { gpidMediaPath 3 }
+
+
+	  gpidMediaPathMaxMediaAcrossFeedDir OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The maximum size of the media across the feed 
+		       direction."
+	      ::= { gpidMediaPath 4 }
+
+	  gpidMediaPathMinMediaFeedDir OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The minimum size of the paper in the feed direction."
+	      ::= { gpidMediaPath 5 }
+
+	  gpidMediaPathMinMediaAcrossFeedDir OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The minimum size of the paper across the feed 
+		       direction."
+	      ::= { gpidMediaPath 6 }
+
+	  gpidMediaPathStatus OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  ready(3),
+			  criticalState(4),
+			  non-critical(5),
+			  criticalandNonCritical(6),
+			  onRequest(7),
+			  unavailable(8),
+			  busy(9)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The current state of the mediaPath device."
+	      ::= { gpidMediaPath 7 }
+
+	  -- the gpidChannel group
+
+	  -- Implementation of the gpidChannel group is mandatory for
+	  -- all printers. The channel group is used for sub-units of
+	  -- the printer that accept print and status data from a
+	  -- host computer. A channel may be virtual or physical.
+	  -- Each channel has an associated default Page Description Language.
+	  -- Each PDL will contain version information.
+
+	  gpidChannelsNumber OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number i/o channels both virtual and physical 
+		       present on this system."
+	      ::= { gpidChannel 1 }
+
+	  -- the Channels table
+
+	  -- The Channels table contains information on the entity's
+	  -- i/o channels (ports).  Each virtual channel is thought of 
+	  -- as being separate device that can be sent data. 
+	  -- Each virtual channel thus is a sub-sub-unit, i.e., a device
+	  -- under the channel sub-unit umbrella. This table will 
+	  -- contain 1 or more entries.  It is important to note that
+	  -- the gpidChannelsTable will report the channels (ports) that
+	  -- are available with a particular printer. Additional settings
+	  -- for the channels available with a particular printer are
+	  -- reported in the other tables that follow. For instance,
+	  -- the detailed information on the phyical ethernet channel
+	  -- are available in the variable gpidChannelsEthernetTable.
+	  -- The values reported for unavailable channels 
+	  -- will be indeterminate.
+
+	  gpidChannelsTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidChannels entries.  The number of
+		       entries is given by the value of gpidChannelsNumber."
+	      ::= { gpidChannel 2 }
+
+	  gpidChannelsEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidChannels entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsIndex }
+	      ::= { gpidChannelsTable 1 }
+
+	  GpidChannelsEntry ::=
+	      SEQUENCE {
+		  gpidChannelsIndex
+		      INTEGER,
+		  gpidChannelsType
+		      INTEGER,
+		  gpidChannelsDefaultPDL
+		      INTEGER,
+		  gpidChannelsFiltering
+		      DisplayString,
+		  gpidChannelsState
+		      INTEGER
+	      }
+
+	  gpidChannelsIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsEntry 1 }
+
+	  gpidChannelsType OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),
+			  unknown(2),
+			  serial(3),
+			  parallel(4),
+			  ieee1284(5),
+			  scsi(6),
+			  applePAP(7),
+			  lpdServer(8),
+			  novellRserver(9),
+			  novellPserver(10),
+			  port9100(11),
+			  adobeAppSocket(12),
+			  ftp(13),
+			  tftp(14),
+			  dlc-llc(15),
+			  ibm3270(16),
+			  ibm5250(17),
+			  fax(18),
+			  ieee1394(19),
+			  transport1(20),
+			  cpap(21),
+			  ipc(22),
+			  ole(23),
+			  named-pipe(24),
+			  ipp(25),
+			  phaserTrieve(101),
+			  telnet(102)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The channel type for this port."
+	      ::= { gpidChannelsEntry 2 }
+
+	  gpidChannelsDefaultPDL OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  pcl(3),
+			  hpgl(4),
+			  pjl(5),
+			  postscript(6),
+			  ipds(7),
+			  ppds(8),
+			  escapeP(9),
+			  epson(10),
+			  ddif(11),
+			  interpress(12),
+			  iso-6429(13),
+			  line-data(14),
+			  modca(15),
+			  reGIS(16),
+			  scs(17),
+			  spdl(18),
+			  tek4014(19),
+			  pds(20),
+			  igp(21),
+			  code-v(22),
+			  dsc-dse(23),
+			  wps(24),
+			  ln03(25),
+			  ccitt(26),
+			  quic(27),
+			  cpap(28),
+			  dec-ppl(29),
+			  simple-text(30),
+			  npap(31),
+			  doc(32),
+			  imPRESS(33),
+			  pinWriter(34),
+			  npdl(35),
+			  pl201(36),
+			  automatic(37),
+			  pdf(54)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The default page description language for this  
+		       channel (port). In PostScript this is referred to
+		       as the Interpreter parameter. Warning: Setting the 
+		       default PDL can cause a configuration error which is 
+		       fatal. Setting the defaultPDL to postscript (6) will be 
+		       fatal if the channel protocol is /Raw. Setting the 
+		       defaultPDL to a PDL other than postscript will be fatal
+		       if the channel protocol is /Normal. Each channel's 
+		       protocol setting should be checked and set 
+		       appropriately before setting the default PDL.
+		       See gpidChannelsParallelProtocol and 
+		       gpidChannelsSerialProtocol. The legal values for 
+		       this variable are postscript, pcl, hpgl, and automatic."
+	      ::= { gpidChannelsEntry 3 }
+
+	  gpidChannelsFiltering OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The kind of filtering done for this channel (port). 
+		       In PostScript this is referred to as the Filtering
+		       parameter. This object does not apply to the serial
+		       nor the parallel port. Setting this variable
+		       to a value not legal for the port may result in
+		       a fatal error. Please check the printer's configuration
+		       and documentation before setting this variable."
+	      ::= { gpidChannelsEntry 4 }
+
+	  gpidChannelsState OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),
+			  unknown(2),
+			  printandControlDataAccepted(3),
+			  noDataAccepted(4)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "Reports the state of the channel (port). Is it
+		       accepting data or not accepting data."
+	      ::= { gpidChannelsEntry 5 }
+
+
+	  gpidChannelsPDLNumber OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of Page Description Languages 
+		       present on this printer."
+	      ::= { gpidChannel 3 }
+
+	  -- the gpidChannelsPDL table
+
+	  -- The gpidChannelsPDL table contains information on the entity's
+	  -- Page Description Languages.  Each Page Description is thought of 
+	  -- as being a separate entity. This table will contain 1 or more
+	  -- entries. Each PDL can be assigned as the default for each
+	  -- port.  The ChannelsPDL entity is a sub-sub-unit, i.e., an entity
+	  -- under the channel sub-unit umbrella.
+
+	  gpidChannelsPDLTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsPDLEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidChannelsPDL entries.  The number of
+		       entries is given by the value of gpidChannelsPDLNumber."
+	      ::= { gpidChannel 4 }
+
+	  gpidChannelsPDLEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsPDLEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidChannelsPDL entry containing objects at 
+		       the PDL level for a particular Page Description
+		       Language."
+	      INDEX   { gpidChannelsPDLIndex }
+	      ::= { gpidChannelsPDLTable 1 }
+
+	  GpidChannelsPDLEntry ::=
+	      SEQUENCE {
+		  gpidChannelsPDLIndex
+		      INTEGER,
+		  gpidChannelsPDLFamily
+		      INTEGER,
+		  gpidChannelsPDLLanguageLevel
+		      DisplayString,
+		  gpidChannelsPDLVersion
+		      DisplayString,
+		  gpidChannelsPDLDescription
+		      DisplayString 
+	      }
+
+	  gpidChannelsPDLIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for each PDL."
+	      ::= { gpidChannelsPDLEntry 1 }
+
+	  gpidChannelsPDLFamily OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),
+			  unknown(2),
+			  pcl(3),
+			  hpgl(4),
+			  pjl(5),
+			  postscript(6),
+			  ipds(7),
+			  ppds(8),
+			  escapeP(9),
+			  epson(10),
+			  ddif(11),
+			  interpress(12),
+			  iso-6429(13),
+			  line-data(14),
+			  modca(15),
+			  reGIS(16),
+			  scs(17),
+			  spdl(18),
+			  tek4014(19),
+			  pds(20),
+			  igp(21),
+			  code-v(22),
+			  dsc-dse(23),
+			  wps(24),
+			  ln03(25),
+			  ccitt(26),
+			  quic(27),
+			  cpap(28),
+			  dec-ppl(29),
+			  simple-text(30),
+			  npap(31),
+			  doc(32),
+			  imPRESS(33),
+			  pinWriter(34),
+			  npdl(35),
+			  pl201(36),
+			  automatic(37)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The page description language type."
+	      ::= { gpidChannelsPDLEntry 2 }
+
+	  gpidChannelsPDLLanguageLevel OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..80))
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The language level. For instance, PostScript Level 2."
+	      ::= { gpidChannelsPDLEntry 3 }
+
+	  gpidChannelsPDLVersion OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..80))
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The language version. For instance, 2015."
+	      ::= { gpidChannelsPDLEntry 4 }
+
+	  gpidChannelsPDLDescription OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..80))
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The formal name for the  Page Description Language."
+	      ::= { gpidChannelsPDLEntry 5 }
+
+
+	  -- the Channels Ethernet table
+
+	  -- This table contains information on the entity's
+	  -- Ethernet channel (port). There will be only one row in this 
+	  -- table.
+
+	  gpidChannelsEthernetTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsEthernetEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A list of gpidChannelsEthernet entries."
+	      ::= { gpidChannel 5 }
+
+	  gpidChannelsEthernetEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsEthernetEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A gpidChannels entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsEthernetIndex }
+	      ::= { gpidChannelsEthernetTable 1 }
+
+	  GpidChannelsEthernetEntry ::=
+	      SEQUENCE {
+		  gpidChannelsEthernetIndex
+		      INTEGER,
+		  gpidChannelsEthernetAddress
+		      DisplayString,
+		  gpidChannelsEthernetConnectorType
+		      DisplayString,
+		  gpidChannelsEthernetName
+		      DisplayString,
+		  gpidChannelsEthernetOn
+		      INTEGER
+	      }
+
+	  gpidChannelsEthernetIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A unique number for the channel (port)."
+	      ::= { gpidChannelsEthernetEntry 1 }
+
+	  gpidChannelsEthernetAddress OBJECT-TYPE
+	      SYNTAX  DisplayString
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The ethernet address."
+	      ::= { gpidChannelsEthernetEntry 2 }
+
+	  gpidChannelsEthernetConnectorType OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..80))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The ethernet connector type."
+	      ::= { gpidChannelsEthernetEntry 3 }
+
+	  gpidChannelsEthernetName OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..80))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The Ethernet name type."
+	      ::= { gpidChannelsEthernetEntry 4 }
+
+	  gpidChannelsEthernetOn OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),          
+			  off(2)
+		      }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       ethernet physical connnection."
+	      ::= { gpidChannelsEthernetEntry 5 }
+
+
+	  -- the Channels TokenRing table
+
+	  -- This table contains information on the entity's
+	  -- TokenRing channel (port). There will be only one row in this 
+	  -- table.
+
+	  gpidChannelsTokenRingTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsTokenRingEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A list of gpidChannelsTokenRing entries."
+	      ::= { gpidChannel 6 }
+
+	  gpidChannelsTokenRingEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsTokenRingEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A gpidChannelsTokenRing entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsTokenRingIndex }
+	      ::= { gpidChannelsTokenRingTable 1 }
+
+	  GpidChannelsTokenRingEntry ::=
+	      SEQUENCE {
+		  gpidChannelsTokenRingIndex
+		      INTEGER,
+		  gpidChannelsTokenRingAddress
+		      DisplayString,
+		  gpidChannelsTokenRingBridging
+		      DisplayString,
+		  gpidChannelsTokenRingEarlyRelease
+		      INTEGER,
+		  gpidChannelsTokenRingOn
+		      INTEGER,
+		  gpidChannelsTokenRingSpeed
+		      INTEGER,
+		  gpidChannelsTokenRingName
+		      DisplayString
+	      }
+
+	  gpidChannelsTokenRingIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsTokenRingEntry 1 }
+
+	  gpidChannelsTokenRingAddress OBJECT-TYPE
+	      SYNTAX  DisplayString
+	      ACCESS  not-accessible 
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The TokenRing address."
+	      ::= { gpidChannelsTokenRingEntry 2 }
+
+	  gpidChannelsTokenRingBridging OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..80))
+	      ACCESS  not-accessible 
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The TokenRing bridging."
+	      ::= { gpidChannelsTokenRingEntry 3 }
+
+	  gpidChannelsTokenRingEarlyRelease OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  not-accessible 
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       TokenRing EarlyTokenRelease."
+	      ::= { gpidChannelsTokenRingEntry 4 }
+
+	  gpidChannelsTokenRingOn OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       TokenRing physical connnection."
+	      ::= { gpidChannelsTokenRingEntry 5 }
+
+	  gpidChannelsTokenRingSpeed OBJECT-TYPE
+	      SYNTAX  INTEGER { 
+			four(4),
+			sixteen(16)
+		   }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "This variable is used to report and set the speed of 
+		       TokenRing interface."
+	      ::= { gpidChannelsTokenRingEntry 6 }
+
+	  gpidChannelsTokenRingName OBJECT-TYPE
+	      SYNTAX  DisplayString
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The TokenRing card name."
+	      ::= { gpidChannelsTokenRingEntry 7 }
+
+
+	  -- the Channels Serial table
+
+	  -- This table contains information on the entity's
+	  -- Serial channel (port). There will be only one row in this 
+	  -- table.
+
+	  gpidChannelsSerialTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsSerialEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidChannelsSerial entries."
+	      ::= { gpidChannel 7 }
+
+	  gpidChannelsSerialEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsSerialEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidChannelsSerial entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsSerialIndex }
+	      ::= { gpidChannelsSerialTable 1 }
+
+	  GpidChannelsSerialEntry ::=
+	      SEQUENCE {
+		  gpidChannelsSerialIndex
+		      INTEGER,
+		  gpidChannelsSerialBaud
+		      INTEGER,
+		  gpidChannelsSerialCheckParity
+		      INTEGER,
+		  gpidChannelsSerialDelayedOutputClose
+		      INTEGER,
+		  gpidChannelsSerialDatabits
+		      INTEGER,
+		  gpidChannelsSerialFlowControl
+		      DisplayString,
+		  gpidChannelsSerialOn
+		      INTEGER,
+		  gpidChannelsSerialParity
+		      INTEGER,
+		  gpidChannelsSerialPrinterControl
+		      DisplayString,
+		  gpidChannelsSerialProtocol
+		      DisplayString,
+		  gpidChannelsSerialStopBits
+		      INTEGER
+	      }
+
+	  gpidChannelsSerialIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsSerialEntry 1 }
+
+	  gpidChannelsSerialBaud OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  three(300),
+			  six(600),
+			  twelve(1200),
+			  twentyfour(2400),
+			  fortyeight(4800),
+			  ninetysix(9600),
+			  nineteentwo(19200),
+			  thirtyeightfour(38400)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The Serial baud rate."
+	      ::= { gpidChannelsSerialEntry 2 }
+
+	  gpidChannelsSerialCheckParity OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The Serial check parity."
+	      ::= { gpidChannelsSerialEntry 3 }
+
+	  gpidChannelsSerialDelayedOutputClose OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The Serial delayed output close."
+	      ::= { gpidChannelsSerialEntry 4 }
+
+	  gpidChannelsSerialDatabits OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  seven(7),
+			  eight(8)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The Serial databits."
+	      ::= { gpidChannelsSerialEntry 5 }
+
+	  gpidChannelsSerialFlowControl OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The Serial flow control. The valid entries for
+		       this variable are Dtr and XonXoff. Setting this
+		       variable to any other value will result in the
+		       return of a bad value error."
+	      ::= { gpidChannelsSerialEntry 6 }
+
+	  gpidChannelsSerialOn OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       Serial connnection."
+	      ::= { gpidChannelsSerialEntry 7 }
+
+	  gpidChannelsSerialParity OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  even(1),
+			  mark(2),
+			  none(3),
+			  odd(4),
+			  space(5)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The Serial parity."
+	      ::= { gpidChannelsSerialEntry 8 }
+
+	  gpidChannelsSerialPrinterControl OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The Serial printer control. Only PSPrinter is legal."
+	      ::= { gpidChannelsSerialEntry 9 }
+
+	  gpidChannelsSerialProtocol OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The Serial protocol. Warning: Setting this variable
+		       can cause a configuration error which is fatal. 
+		       See the warning in the description of the
+		       gpidChannelsDefaultPDL variable. The legal values
+		       for this variable are Binary, Normal, Raw, TBCP."
+	      ::= { gpidChannelsSerialEntry 10 }
+
+	  gpidChannelsSerialStopBits OBJECT-TYPE
+	      SYNTAX  INTEGER { 
+			one(1),
+			two(2)
+		   }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The serial stop bits."
+	      ::= { gpidChannelsSerialEntry 11 }
+
+
+	  -- the Channels Parallel table
+
+	  -- This table contains information on the entity's
+	  -- Parallel channel (port). There will be only one row in this 
+	  -- table.
+
+	  gpidChannelsParallelTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsParallelEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidChannelsParallel entries."
+	      ::= { gpidChannel 8 }
+
+	  gpidChannelsParallelEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsParallelEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidChannelsParallel entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsParallelIndex }
+	      ::= { gpidChannelsParallelTable 1 }
+
+	  GpidChannelsParallelEntry ::=
+	      SEQUENCE {
+		  gpidChannelsParallelIndex
+		      INTEGER,
+		  gpidChannelsParallelDelayedOutputClose
+		      INTEGER,
+		  gpidChannelsParallelHandshake
+		      INTEGER,
+		  gpidChannelsParallelOn
+		      INTEGER,
+		  gpidChannelsParallelOutputDevice
+		      DisplayString,
+		  gpidChannelsParallelProtocol
+		      DisplayString
+	      }
+
+	  gpidChannelsParallelIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsParallelEntry 1 }
+
+	  gpidChannelsParallelDelayedOutputClose OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The Parallel delayed output close."
+	      ::= { gpidChannelsParallelEntry 2 }
+
+	  gpidChannelsParallelHandshake OBJECT-TYPE
+	      SYNTAX  INTEGER { 
+			  bi-directional(1),
+			  uni-directional(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The Parallel hardware/software signal interface.
+		       If the gpidChannelsParallelOutputDevice is set to
+		       %Parallel%, then setting this variable to 
+		       uni-directional is illegal and will result in
+		       a return of a bad value error."
+	      ::= { gpidChannelsParallelEntry 3 }
+
+	  gpidChannelsParallelOn OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       Parallel connnection."
+	      ::= { gpidChannelsParallelEntry 4 }
+
+	  gpidChannelsParallelOutputDevice OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..80))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The Parallel output device. If the variable
+		       gpidChannelsParallelHandshake is set to uni-directional,
+		       then setting this variable to %Parallel% is illegal
+		       and will result in a return of a bad value error."
+	      ::= { gpidChannelsParallelEntry 5 }
+
+	  gpidChannelsParallelProtocol OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..80))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The Parallel protocol. Warning: Setting this variable
+		       can cause a configuration error which is fatal. 
+		       See the warning in the description of the
+		       gpidChannelsDefaultPDL variable. The legal values
+		       for this variable are Binary, Normal, Raw, TBCP."
+	      ::= { gpidChannelsParallelEntry 6 }
+
+
+	  -- the Channels EtherTalk table
+
+	  -- This table contains information on the entity's
+	  -- EtherTalk channel (port). There will be only one row in this 
+	  -- table.
+
+	  gpidChannelsEtherTalkTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsEtherTalkEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidChannelsEtherTalk entries."
+	      ::= { gpidChannel 9 }
+
+	  gpidChannelsEtherTalkEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsEtherTalkEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidChannelsEtherTalk entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsEtherTalkIndex }
+	      ::= { gpidChannelsEtherTalkTable 1 }
+
+	  GpidChannelsEtherTalkEntry ::=
+	      SEQUENCE {
+		  gpidChannelsEtherTalkIndex
+		      INTEGER,
+		  gpidChannelsEtherTalkAddress
+		      DisplayString,
+		  gpidChannelsEtherTalkDelayedOutputClose
+		      INTEGER,
+		  gpidChannelsEtherTalkType
+		      DisplayString,
+		  gpidChannelsEtherTalkZone
+		      DisplayString,
+		  gpidChannelsEtherTalkNodeID
+		      INTEGER,
+		  gpidChannelsEtherTalkOn
+		      INTEGER,
+		  gpidChannelsEtherTalkPrinterControl
+		      DisplayString
+	      }
+
+	  gpidChannelsEtherTalkIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsEtherTalkEntry 1 }
+
+	  gpidChannelsEtherTalkAddress OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..80))
+	      ACCESS  read-only 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "The EtherTalk address."
+	      ::= { gpidChannelsEtherTalkEntry 2 }
+
+	  gpidChannelsEtherTalkDelayedOutputClose OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The EtherTalk delayed output close."
+	      ::= { gpidChannelsEtherTalkEntry 3 }
+
+	  gpidChannelsEtherTalkType OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "The EtherTalk EtherTalkType, e.g., (LaserWriter)."
+	      ::= { gpidChannelsEtherTalkEntry 4 }
+
+	  gpidChannelsEtherTalkZone OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "The EtherTalk zone, e.g., (*)."
+	      ::= { gpidChannelsEtherTalkEntry 5 }
+
+	  gpidChannelsEtherTalkNodeID OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "The EtherTalk node ID."
+	      ::= { gpidChannelsEtherTalkEntry 6 }
+
+	  gpidChannelsEtherTalkOn OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       EtherTalk connnection."
+	      ::= { gpidChannelsEtherTalkEntry 7 }
+
+	  gpidChannelsEtherTalkPrinterControl OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The EtherTalk printer control. Only PSPrinter is legal."
+	      ::= { gpidChannelsEtherTalkEntry 8 }
+
+
+	  -- the Channels LocalTalk table
+
+	  -- This table contains information on the entity's
+	  -- LocalTalk channel (port). There will be only one row in this 
+	  -- table.
+
+	  gpidChannelsLocalTalkTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsLocalTalkEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidChannelsLocalTalk entries."
+	      ::= { gpidChannel 10 }
+
+	  gpidChannelsLocalTalkEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsLocalTalkEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidChannelsLocalTalk entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsLocalTalkIndex }
+	      ::= { gpidChannelsLocalTalkTable 1 }
+
+	  GpidChannelsLocalTalkEntry ::=
+	      SEQUENCE {
+		  gpidChannelsLocalTalkIndex
+		      INTEGER,
+		  gpidChannelsLocalTalkDelayedOutputClose
+		      INTEGER,
+		  gpidChannelsLocalTalkType
+		      DisplayString,
+		  gpidChannelsLocalTalkNodeID
+		      INTEGER,
+		  gpidChannelsLocalTalkOn
+		      INTEGER,
+		  gpidChannelsLocalTalkPrinterControl
+		      DisplayString
+	      }
+
+	  gpidChannelsLocalTalkIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsLocalTalkEntry 1 }
+
+	  gpidChannelsLocalTalkDelayedOutputClose OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The LocalTalk delayed output close."
+	      ::= { gpidChannelsLocalTalkEntry 2 }
+
+	  gpidChannelsLocalTalkType OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "The LocalTalk LocalTalkType e.g. (LaserWriter)."
+	      ::= { gpidChannelsLocalTalkEntry 3 }
+
+	  gpidChannelsLocalTalkNodeID OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "The LocalTalk node ID."
+	      ::= { gpidChannelsLocalTalkEntry 4 }
+
+	  gpidChannelsLocalTalkOn OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       LocalTalk connnection."
+	      ::= { gpidChannelsLocalTalkEntry 5 }
+
+	  gpidChannelsLocalTalkPrinterControl OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The LocalTalk printer control. Only PSPrinter is legal."
+	      ::= { gpidChannelsLocalTalkEntry 6 }
+
+
+	  -- the Channels TokenTalk table
+
+	  -- This table contains information on the entity's
+	  -- TokenTalk channel (port). There will be only one row in this 
+	  -- table.
+
+	  gpidChannelsTokenTalkTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsTokenTalkEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidChannelsTokenTalk entries."
+	      ::= { gpidChannel 11 }
+
+	  gpidChannelsTokenTalkEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsTokenTalkEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidChannelsTokenTalk entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsTokenTalkIndex }
+	      ::= { gpidChannelsTokenTalkTable 1 }
+
+	  GpidChannelsTokenTalkEntry ::=
+	      SEQUENCE {
+		  gpidChannelsTokenTalkIndex
+		      INTEGER,
+		  gpidChannelsTokenTalkDelayedOutputClose
+		      INTEGER,
+		  gpidChannelsTokenTalkAddress
+		      DisplayString,
+		  gpidChannelsTokenTalkPrinterControl
+		      DisplayString,
+		  gpidChannelsTokenTalkType
+		      DisplayString,
+		  gpidChannelsTokenTalkZone
+		      DisplayString,
+		  gpidChannelsTokenTalkNodeID
+		      INTEGER,
+		  gpidChannelsTokenTalkOn
+		      INTEGER,
+		  gpidChannelsTokenTalkPhysical
+		      DisplayString,
+		  gpidChannelsTokenTalkTransmitEncapsulation
+		      DisplayString,
+		  gpidChannelsTokenTalkNetwork
+		      INTEGER,
+		  gpidChannelsTokenTalkProtocolVersion
+		      DisplayString,
+		  gpidChannelsTokenTalkDDPChecksumEnable
+		      INTEGER,
+		  gpidChannelsTokenTalkBridging
+		      DisplayString
+	      }
+
+	  gpidChannelsTokenTalkIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsTokenTalkEntry 1 }
+
+	  gpidChannelsTokenTalkDelayedOutputClose OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The TokenTalk delayed output close."
+	      ::= { gpidChannelsTokenTalkEntry 2 }
+
+	  gpidChannelsTokenTalkAddress OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..80))
+	      ACCESS  read-only 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "The TokenTalk address."
+	      ::= { gpidChannelsTokenTalkEntry 3 }
+
+	  gpidChannelsTokenTalkPrinterControl OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The TokenTalk printer control. Only PSPrinter is legal."
+	      ::= { gpidChannelsTokenTalkEntry 4 }
+
+	  gpidChannelsTokenTalkType OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "The TokenTalk TokenTalkType, e.g., (LaserWriter)."
+	      ::= { gpidChannelsTokenTalkEntry 5 }
+
+	  gpidChannelsTokenTalkZone OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "The TokenTalk zone, e.g., (*)."
+	      ::= { gpidChannelsTokenTalkEntry 6 }
+
+	  gpidChannelsTokenTalkNodeID OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "The TokenTalk node ID."
+	      ::= { gpidChannelsTokenTalkEntry 7 }
+
+	  gpidChannelsTokenTalkOn OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       TokenTalk connnection."
+	      ::= { gpidChannelsTokenTalkEntry 8 }
+
+	  gpidChannelsTokenTalkPhysical OBJECT-TYPE
+	      SYNTAX  DisplayString 
+	      ACCESS  read-only 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "The TokenTalk physical media."
+	      ::= { gpidChannelsTokenTalkEntry 9 }
+
+	  gpidChannelsTokenTalkTransmitEncapsulation OBJECT-TYPE
+	      SYNTAX  DisplayString 
+	      ACCESS  read-only 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "The TokenTalk transmit encapsulation."
+	      ::= { gpidChannelsTokenTalkEntry 10 }
+
+	  gpidChannelsTokenTalkNetwork OBJECT-TYPE
+	      SYNTAX  INTEGER 
+	      ACCESS  read-only 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "The TokenTalk network number."
+	      ::= { gpidChannelsTokenTalkEntry 11 }
+
+	  gpidChannelsTokenTalkProtocolVersion OBJECT-TYPE
+	      SYNTAX  DisplayString 
+	      ACCESS  read-only 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "The TokenTalk protocol version."
+	      ::= { gpidChannelsTokenTalkEntry 12 }
+
+	  gpidChannelsTokenTalkDDPChecksumEnable OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       TokenTalk checksum enable parameter. If this
+		       parameter is on the DDP checksums will be used. If
+		       this parameter is off DDP checksums will be ignored."
+	      ::= { gpidChannelsTokenTalkEntry 13 }
+
+	  gpidChannelsTokenTalkBridging OBJECT-TYPE
+	      SYNTAX  DisplayString 
+	      ACCESS  read-only 
+	      STATUS  mandatory 
+	      DESCRIPTION
+		      "The TokenTalk bridging."
+	      ::= { gpidChannelsTokenTalkEntry 14 }
+
+
+	  -- the Channels IP table
+
+	  -- This table contains information on the entity's
+	  -- IP channel (port). There will be only one row in this 
+	  -- table.
+
+	  gpidChannelsIPTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsIPEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A list of gpidChannelsIP entries."
+	      ::= { gpidChannel 12 }
+
+	  gpidChannelsIPEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsIPEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A gpidChannelsIP entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsIPIndex }
+	      ::= { gpidChannelsIPTable 1 }
+
+	  GpidChannelsIPEntry ::=
+	      SEQUENCE {
+		  gpidChannelsIPIndex
+		      INTEGER,
+		  gpidChannelsIPAdaptiveEncapsulation
+		      INTEGER,
+		  gpidChannelsIPAddress
+		      DisplayString,
+		  gpidChannelsIPAddressDynamic
+		      INTEGER,
+		  gpidChannelsIPBroadcastAddress
+		      DisplayString,
+		  gpidChannelsIPGatewayAddress
+		      DisplayString,
+		  gpidChannelsIPNetworkMask
+		      DisplayString,
+		  gpidChannelsIPOn
+		      INTEGER,
+		  gpidChannelsIPPhysical
+		      DisplayString,
+		  gpidChannelsIPTransmitEncapsulation
+		      DisplayString
+	      }
+
+	  gpidChannelsIPIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsIPEntry 1 }
+
+	  gpidChannelsIPAdaptiveEncapsulation OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       use of adaptive encapsulation."
+	      ::= { gpidChannelsIPEntry 2 }
+
+	  gpidChannelsIPAddress OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  not-accessible 
+	      STATUS  obsolete 
+	      DESCRIPTION
+		      "The IP address. This variable requires a
+		       valid IP address. Setting this value to an illegal
+		       value may result in a fatal error."
+	      ::= { gpidChannelsIPEntry 3 }
+
+	  gpidChannelsIPAddressDynamic OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  not-accessible 
+	      STATUS  obsolete 
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       use of bootp and rarp."
+	      ::= { gpidChannelsIPEntry 4 }
+
+	  gpidChannelsIPBroadcastAddress OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..15))
+	      ACCESS  not-accessible 
+	      STATUS  obsolete 
+	      DESCRIPTION
+		      "The IP broadcast address. This variable requires are
+		       valid IP address. Setting this value to an illegal
+		       value may result in a fatal error."
+	      ::= { gpidChannelsIPEntry 5 }
+
+	  gpidChannelsIPGatewayAddress OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..4096))
+	      ACCESS  not-accessible 
+	      STATUS  obsolete 
+	      DESCRIPTION
+		      "The IP gateway address. This variable requires are
+		       valid destination IP address and a valid gateway
+		       IP address, separated by a slash (/). Multiple 
+		       destination and gateway addesses can be specified
+		       by separating each pair with a space charater. 
+		       Setting this value to an illegal value may result 
+		       in a fatal error."
+	      ::= { gpidChannelsIPEntry 6 }
+
+	  gpidChannelsIPNetworkMask OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..15))
+	      ACCESS  not-accessible 
+	      STATUS  obsolete 
+	      DESCRIPTION
+		      "The IP network mask. This variable requires are
+		       valid IP address mask. Setting this value to an illegal
+		       value may result in a fatal error."
+	      ::= { gpidChannelsIPEntry 7 }
+
+	  gpidChannelsIPOn OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  not-accessible 
+	      STATUS  obsolete 
+	      DESCRIPTION
+		      "This variable is used to report the state of 
+		       IP connnection."
+	      ::= { gpidChannelsIPEntry 8 }
+
+	  gpidChannelsIPPhysical OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  not-accessible 
+	      STATUS  obsolete 
+	      DESCRIPTION
+		      "The IP physical media."
+	      ::= { gpidChannelsIPEntry 9 }
+
+	  gpidChannelsIPTransmitEncapsulation OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  not-accessible 
+	      STATUS  obsolete 
+	      DESCRIPTION
+		      "The IP Transmit Encapsulation. The legal values for
+		       variable are DIX and 802.3-2-SNAP. Setting this
+		       variable to an illegal value may result in a
+		       fatal error."
+	      ::= { gpidChannelsIPEntry 10 }
+
+
+	  -- the Channels IPX table
+
+	  -- This table contains information on the entity's
+	  -- IPX channel (port). There will be only one row in this 
+	  -- table.
+
+	  gpidChannelsIPXTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsIPXEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A list of gpidChannelsIPX entries."
+	      ::= { gpidChannel 13 }
+
+	  gpidChannelsIPXEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsIPXEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete 
+	      DESCRIPTION
+		      "A gpidChannelsIPX entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsIPXIndex }
+	      ::= { gpidChannelsIPXTable 1 }
+
+	  GpidChannelsIPXEntry ::=
+	      SEQUENCE {
+		  gpidChannelsIPXIndex
+		      INTEGER,
+		  gpidChannelsIPXNetworkAddress
+		      DisplayString,
+		  gpidChannelsIPXOn
+		      INTEGER,
+		  gpidChannelsIPXPhysical
+		      DisplayString,
+		  gpidChannelsIPXTransmitEncapsulation
+		      DisplayString
+	      }
+
+	  gpidChannelsIPXIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  not-accessible 
+	      STATUS  obsolete 
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsIPXEntry 1 }
+
+	  gpidChannelsIPXNetworkAddress OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..80))
+	      ACCESS  not-accessible 
+	      STATUS  obsolete 
+	      DESCRIPTION
+		      "The IPX address."
+	      ::= { gpidChannelsIPXEntry 2 }
+
+	  gpidChannelsIPXOn OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  not-accessible 
+	      STATUS  obsolete 
+	      DESCRIPTION
+		      "This variable is used to report the state of 
+		       IPX connnection."
+	      ::= { gpidChannelsIPXEntry 3 }
+
+	  gpidChannelsIPXPhysical OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  not-accessible 
+	      STATUS  obsolete 
+	      DESCRIPTION
+		      "The IPX physical media."
+	      ::= { gpidChannelsIPXEntry 4 }
+
+	  gpidChannelsIPXTransmitEncapsulation OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  not-accessible 
+	      STATUS  obsolete 
+	      DESCRIPTION
+		      "The IPX Transmit Encapsulation. The legal values for
+		       variable are Adaptive, DIX and 802.3-2-SNAP. Setting 
+		       this variable to an illegal value may result in a
+		       fatal error."
+	      ::= { gpidChannelsIPXEntry 5 }
+
+
+	  -- the Channels AppSck table
+
+	  -- This table contains information on the entity's
+	  -- AppSocket channel (port). There will be only one row in this 
+	  -- table.
+
+	  gpidChannelsAppSckTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsAppSckEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidChannelsAppSck entries."
+	      ::= { gpidChannel 14 }
+
+	  gpidChannelsAppSckEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsAppSckEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidChannelsAppSck entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsAppSckIndex }
+	      ::= { gpidChannelsAppSckTable 1 }
+
+	  GpidChannelsAppSckEntry ::=
+	      SEQUENCE {
+		  gpidChannelsAppSckIndex
+		      INTEGER,
+		  gpidChannelsAppSckDataPortNo
+		      INTEGER,
+		  gpidChannelsAppSckDelayedOutputClose
+		      INTEGER,
+		  gpidChannelsAppSckOn
+		      INTEGER,
+		  gpidChannelsAppSckPrinterControl
+		      DisplayString,
+		  gpidChannelsAppSckPrintHost
+		      DisplayString,
+		  gpidChannelsAppSckRcvWindowSize
+		      INTEGER,
+		  gpidChannelsAppSckSndWindowSize
+		      INTEGER,
+		  gpidChannelsAppSckStatusPortNo
+		      INTEGER
+	      }
+
+	  gpidChannelsAppSckIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsAppSckEntry 1 }
+
+	  gpidChannelsAppSckDataPortNo OBJECT-TYPE
+	      SYNTAX  INTEGER 
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The AppSck data port number."
+	      ::= { gpidChannelsAppSckEntry 2 }
+
+	  gpidChannelsAppSckDelayedOutputClose OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       AppSocket delayed output close."
+	      ::= { gpidChannelsAppSckEntry 3 }
+
+	  gpidChannelsAppSckOn OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       AppSocket connnection."
+	      ::= { gpidChannelsAppSckEntry 4 }
+
+	  gpidChannelsAppSckPrinterControl OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The AppSocket printer control. Only PSPrinter is legal."
+	      ::= { gpidChannelsAppSckEntry 5 }
+
+	  gpidChannelsAppSckPrintHost OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..128))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The AppSocket print host. This variable requires the
+		       entry of 1 or 2 valid IP addresses. The space
+		       character must be used to separate two entries.
+		       Setting this variable to an illegal value may
+		       result in a fatal error."
+	      ::= { gpidChannelsAppSckEntry 6 }
+
+	  gpidChannelsAppSckRcvWindowSize OBJECT-TYPE
+	      SYNTAX  INTEGER 
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The AppSocket receive window size. The legal value for 
+		       this variable are 0 or any number between 1024 to 59392,
+		       inclusive. The value of zero is used as the
+		       default value."
+	      ::= { gpidChannelsAppSckEntry 7 }
+
+	  gpidChannelsAppSckSndWindowSize OBJECT-TYPE
+	      SYNTAX  INTEGER 
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The AppSocket send window size. The legal value for this
+		       variable are 0 or any number between 1024 to 59392,
+		       inclusive. The value of zero is used as the
+		       default value."
+	      ::= { gpidChannelsAppSckEntry 8 }
+
+	  gpidChannelsAppSckStatusPortNo OBJECT-TYPE
+	      SYNTAX  INTEGER 
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The AppSck status port number."
+	      ::= { gpidChannelsAppSckEntry 9 }
+
+
+	  -- the Channels SNMP table
+
+	  -- This table contains information on the entity's
+	  -- SNMP channel (port). There will be only one row in this 
+	  -- table.
+
+	  gpidChannelsSNMPTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsSNMPEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A list of gpidChannelsSNMP entries."
+	      ::= { gpidChannel 15 }
+
+	  gpidChannelsSNMPEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsSNMPEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A gpidChannelsSNMP entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsSNMPIndex }
+	      ::= { gpidChannelsSNMPTable 1 }
+
+	  GpidChannelsSNMPEntry ::=
+	      SEQUENCE {
+		  gpidChannelsSNMPIndex
+		      INTEGER,
+		  gpidChannelsSNMPEnableAuthenTraps
+		      INTEGER,
+		  gpidChannelsSNMPPrivateHost
+		      DisplayString,
+		  gpidChannelsSNMPTrapHost
+		      DisplayString,
+		  gpidChannelsSNMPName
+		      DisplayString,
+		  gpidChannelsSNMPContact
+		      DisplayString,
+		  gpidChannelsSNMPLocation
+		      DisplayString
+	      }
+
+	  gpidChannelsSNMPIndex OBJECT-TYPE
+	     SYNTAX  INTEGER
+	     ACCESS  not-accessible
+	     STATUS  obsolete
+	     DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsSNMPEntry 1 }
+
+	  gpidChannelsSNMPEnableAuthenTraps OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       SNMP Authentication traps."
+	      ::= { gpidChannelsSNMPEntry 2 }
+
+	  gpidChannelsSNMPPrivateHost OBJECT-TYPE
+	      SYNTAX  DisplayString
+	      ACCESS  not-accessible 
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The SNMP private host."
+	      ::= { gpidChannelsSNMPEntry 3 }
+
+	  gpidChannelsSNMPTrapHost OBJECT-TYPE
+	      SYNTAX  DisplayString
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The SNMP trap host."
+	      ::= { gpidChannelsSNMPEntry 4 }
+
+	  gpidChannelsSNMPName OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The SNMP PS SysName. This is SNMP system name."
+	      ::= { gpidChannelsSNMPEntry 5 }
+
+	  gpidChannelsSNMPContact OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The SNMP PS SysContact. This is SNMP system contact."
+	      ::= { gpidChannelsSNMPEntry 6 }
+
+	  gpidChannelsSNMPLocation OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The SNMP PS SysLocation. This is SNMP system location."
+	      ::= { gpidChannelsSNMPEntry 7 }
+
+	  -- the Channels LPR table
+
+	  -- This table contains information on the entity's
+	  -- LPR channel (port). There will be only one row in this 
+	  -- table.
+
+	  gpidChannelsLPRTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsLPREntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidChannelsLPR entries."
+	      ::= { gpidChannel 16 }
+
+	  gpidChannelsLPREntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsLPREntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidChannelsLPR entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsLPRIndex }
+	      ::= { gpidChannelsLPRTable 1 }
+
+	  GpidChannelsLPREntry ::=
+	      SEQUENCE {
+		  gpidChannelsLPRIndex
+		      INTEGER,
+		  gpidChannelsLPRDelayedOutputClose
+		      INTEGER,
+		  gpidChannelsLPROn
+		      INTEGER,
+		  gpidChannelsLPRPrinterControl
+		      DisplayString,
+		  gpidChannelsLPRPrintHost
+		      DisplayString,
+		  gpidChannelsLPRRcvWindowSize
+		      INTEGER
+	      }
+	  gpidChannelsLPRIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsLPREntry 1 }
+
+	  gpidChannelsLPRDelayedOutputClose OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       delayed output close."
+	      ::= { gpidChannelsLPREntry 2 }
+
+	  gpidChannelsLPROn OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       LPR connnection."
+	      ::= { gpidChannelsLPREntry 3 }
+
+	  gpidChannelsLPRPrinterControl OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The LPR printer control. Only PSPrinter is legal."
+	      ::= { gpidChannelsLPREntry 4 }
+
+	  gpidChannelsLPRPrintHost OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The LPR print host. This variable requires the
+		       entry of 1 or 2 valid IP addresses. The space
+		       character must be used to separate two entries.
+		       Setting this variable to an illegal value may
+		       result in a fatal error."
+	      ::= { gpidChannelsLPREntry 5 }
+
+	  gpidChannelsLPRRcvWindowSize OBJECT-TYPE
+	      SYNTAX  INTEGER 
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The LPR receive window size. The legal value for this
+		       variable are 0 or any number between 1024 to 59392,
+		       inclusive. The value of zero is used as the
+		       default value."
+	      ::= { gpidChannelsLPREntry 6 }
+
+	  -- the Channels SysLog table
+
+	  -- This table contains information on the entity's
+	  -- SysLog channel (port). There will be only one row in this 
+	  -- table.
+
+	  gpidChannelsSysLogTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsSysLogEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A list of gpidChannelsSysLog entries."
+	      ::= { gpidChannel 17 }
+
+	  gpidChannelsSysLogEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsSysLogEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A gpidChannelsSysLog entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsSysLogIndex }
+	      ::= { gpidChannelsSysLogTable 1 }
+
+	  GpidChannelsSysLogEntry ::=
+	      SEQUENCE {
+		  gpidChannelsSysLogIndex
+		      INTEGER,
+		  gpidChannelsSysLogHost
+		      DisplayString,
+		  gpidChannelsSysLogPriority
+		      INTEGER
+	      }
+
+	  gpidChannelsSysLogIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsSysLogEntry 1 }
+
+	  gpidChannelsSysLogHost OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..15))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The SysLog Log Host. This variable requires are
+		       valid IP address. Setting this value to an illegal
+		       value may result in a fatal error."
+	      ::= { gpidChannelsSysLogEntry 2 }
+
+	  gpidChannelsSysLogPriority OBJECT-TYPE
+	      SYNTAX  INTEGER (1..7)
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The SysLog Log Priority."
+	      ::= { gpidChannelsSysLogEntry 3 }
+
+
+	  -- the Channels PrntSrvr table
+
+	  -- This table contains information on the entity's
+	  -- PrintServer channel (port). There will be only one row in this 
+	  -- table.
+
+	  gpidChannelsPrntSrvrTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsPrntSrvrEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidChannelsPrntSrvr entries."
+	      ::= { gpidChannel 18 }
+
+	  gpidChannelsPrntSrvrEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsPrntSrvrEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidChannelsPrntSrvr entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsPrntSrvrIndex }
+	      ::= { gpidChannelsPrntSrvrTable 1 }
+
+	  GpidChannelsPrntSrvrEntry ::=
+	      SEQUENCE {
+		  gpidChannelsPrntSrvrIndex
+		      INTEGER,
+		  gpidChannelsPrntSrvrDelayedOutputClose
+		      INTEGER,
+		  gpidChannelsPrntSrvrFileServer
+		      DisplayString,
+		  gpidChannelsPrntSrvrNotify
+		      INTEGER,
+		  gpidChannelsPrntSrvrPassword
+		      DisplayString,
+		  gpidChannelsPrntSrvrOn
+		      INTEGER,
+		  gpidChannelsPrntSrvrPrinterControl
+		      DisplayString,
+		  gpidChannelsPrntSrvrPrintServerName
+		      DisplayString,
+		  gpidChannelsPrntSrvrScanInterval
+		      INTEGER,
+		  gpidChannelsPrntSrvrStatus
+		      DisplayString
+	      }
+
+	  gpidChannelsPrntSrvrIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsPrntSrvrEntry 1 }
+
+	  gpidChannelsPrntSrvrDelayedOutputClose OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The PrintServer delayed output close."
+	      ::= { gpidChannelsPrntSrvrEntry 2 }
+
+	  gpidChannelsPrntSrvrFileServer OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The PrintServer File Server."
+	      ::= { gpidChannelsPrntSrvrEntry 3 }
+
+	  gpidChannelsPrntSrvrNotify OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The PrintServer notify variable."
+	      ::= { gpidChannelsPrntSrvrEntry 4 }
+
+	  gpidChannelsPrntSrvrPassword OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The PrintServer Login Password."
+	      ::= { gpidChannelsPrntSrvrEntry 5 }
+
+	  gpidChannelsPrntSrvrOn OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       PrintServer connnection."
+	      ::= { gpidChannelsPrntSrvrEntry 6 }
+
+	  gpidChannelsPrntSrvrPrinterControl OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The PrintServer Printer Control. Only PSPrinter is 
+		       legal."
+	      ::= { gpidChannelsPrntSrvrEntry 7 }
+
+	  gpidChannelsPrntSrvrPrintServerName OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The PrintServer Print Server Name."
+	      ::= { gpidChannelsPrntSrvrEntry 8 }
+
+	  gpidChannelsPrntSrvrScanInterval OBJECT-TYPE
+	      SYNTAX  INTEGER (1..3600)
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The PrintServer Scan Interval."
+	      ::= { gpidChannelsPrntSrvrEntry 9 }
+
+	  gpidChannelsPrntSrvrStatus OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The PrintServer status."
+	      ::= { gpidChannelsPrntSrvrEntry 10 }
+
+
+	  -- the telnet Channels table
+
+	  -- This table contains information on the entity's telnet
+	  -- channel (port). There will be only one row in this 
+	  -- table.
+
+	  gpidChannelstelnetTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelstelnetEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidChannelstelnet entries."
+	      ::= { gpidChannel 19 }
+
+	  gpidChannelstelnetEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelstelnetEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidChannelstelnet entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelstelnetIndex }
+	      ::= { gpidChannelstelnetTable 1 }
+
+	  GpidChannelstelnetEntry ::=
+	      SEQUENCE {
+		  gpidChannelstelnetIndex
+		      INTEGER,
+		  gpidChannelstelnetDelayedOutputClose
+		      INTEGER,
+		  gpidChannelstelnetOn
+		      INTEGER,
+		  gpidChannelstelnetPrinterControl
+		      DisplayString,
+		  gpidChannelstelnetProtocol
+		      DisplayString,
+		  gpidChannelstelnetPassword
+		      DisplayString
+	      }
+
+	  gpidChannelstelnetIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelstelnetEntry 1 }
+
+	  gpidChannelstelnetDelayedOutputClose OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The telnet delayed output close."
+	      ::= { gpidChannelstelnetEntry 2 }
+
+	  gpidChannelstelnetOn OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       telnet connnection."
+	      ::= { gpidChannelstelnetEntry 3 }
+
+	  gpidChannelstelnetPrinterControl OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The telnet Printer Control. Only PSPrinter is 
+		       legal."
+	      ::= { gpidChannelstelnetEntry 4 }
+
+	  gpidChannelstelnetProtocol OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The telnet protocol. Warning: Setting this variable
+		       can cause a configuration error which is fatal. 
+		       See the warning in the description of the
+		       gpidChannelsDefaultPDL variable. The legal values
+		       for this variable are Binary, Normal, Raw, TBCP."
+	      ::= { gpidChannelstelnetEntry 5 }
+
+	  gpidChannelstelnetPassword OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The telnet password. This variable can be set
+		       but when set it reports Password Set. When not
+		       set it report Password Not Set."
+	      ::= { gpidChannelstelnetEntry 6 }
+
+	  -- the Channels FTP table
+
+	  -- This table contains information on the entity's
+	  -- FTP channel (port). 
+	  -- There will be only one row in this table.
+
+	  gpidChannelsFTPTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsFTPEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidChannelsFTP entries."
+	      ::= { gpidChannel 20 }
+
+	  gpidChannelsFTPEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsFTPEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidChannelsFTP entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsFTPIndex }
+	      ::= { gpidChannelsFTPTable 1 }
+
+	  GpidChannelsFTPEntry ::=
+	      SEQUENCE {
+		  gpidChannelsFTPIndex
+		      INTEGER,
+		  gpidChannelsFTPDelayedOutputClose
+		      INTEGER,
+		  gpidChannelsFTPOn
+		      INTEGER,
+		  gpidChannelsFTPPassword
+		      DisplayString,
+		  gpidChannelsFTPPrinterControl
+		      DisplayString
+	      }
+
+	  gpidChannelsFTPIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsFTPEntry 1 }
+
+	  gpidChannelsFTPDelayedOutputClose OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The FTP delayed output close."
+	      ::= { gpidChannelsFTPEntry 2 }
+
+	  gpidChannelsFTPOn OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       FTP connnection."
+	      ::= { gpidChannelsFTPEntry 3 }
+
+	  gpidChannelsFTPPassword OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The FTP priviledged access mode
+		       password in the command shell."
+	      ::= { gpidChannelsFTPEntry 4 }
+
+	  gpidChannelsFTPPrinterControl OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The FTP Printer Control. Only 
+		       PSPrinter is legal."
+	      ::= { gpidChannelsFTPEntry 5 }
+
+	  -- the Channels PhaserTrieve table
+
+	  -- This table contains information on the entity's
+	  -- PhaserTrieve channel (port). 
+	  -- There will be only one row in this table.
+
+	  gpidChannelsPhaserTrieveTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsPhaserTrieveEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A list of gpidChannelsPhaserTrieve entries."
+	      ::= { gpidChannel 21 }
+
+	  gpidChannelsPhaserTrieveEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsPhaserTrieveEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A gpidChannelsPhaserTrieve entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsPhaserTrieveIndex }
+	      ::= { gpidChannelsPhaserTrieveTable 1 }
+
+	  GpidChannelsPhaserTrieveEntry ::=
+	      SEQUENCE {
+		  gpidChannelsPhaserTrieveIndex
+		      INTEGER,
+		  gpidChannelsPhaserTrieveDelayedOutputClose
+		      INTEGER,
+		  gpidChannelsPhaserTrieveOn
+		      INTEGER,
+		  gpidChannelsPhaserTrieveOutputDevice
+		      DisplayString,
+		  gpidChannelsPhaserTrievePrinterControl
+		      DisplayString
+	      }
+
+	  gpidChannelsPhaserTrieveIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsPhaserTrieveEntry 1 }
+
+	  gpidChannelsPhaserTrieveDelayedOutputClose OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The PhaserTrieve delayed output close."
+	      ::= { gpidChannelsPhaserTrieveEntry 2 }
+
+	  gpidChannelsPhaserTrieveOn OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       PhaserTrieve connnection."
+	      ::= { gpidChannelsPhaserTrieveEntry 3 }
+
+	  gpidChannelsPhaserTrieveOutputDevice OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The PhaserTrieve OutputDevice. This variable can be
+		       set to %Parallel% or an empty string. This is 
+		       like BackChannel on the Parallel channel."
+	      ::= { gpidChannelsPhaserTrieveEntry 4 }
+
+	  gpidChannelsPhaserTrievePrinterControl OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The PhaserTrieve Printer Control. Only 
+		       PSPrinter is legal."
+	      ::= { gpidChannelsPhaserTrieveEntry 5 }
+
+	  -- the Channels DNS table
+
+	  -- This table contains information on the entity's DNS entries.
+	  -- There will be only one row in this table.
+
+	  gpidChannelsDNSTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsDNSEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A list of gpidChannelsDNS entries."
+	      ::= { gpidChannel 22 }
+
+	  gpidChannelsDNSEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsDNSEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A gpidChannelsDNS entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsDNSIndex }
+	      ::= { gpidChannelsDNSTable 1 }
+
+	  GpidChannelsDNSEntry ::=
+	      SEQUENCE {
+		  gpidChannelsDNSIndex
+		      INTEGER,
+		  gpidChannelsDNSServers
+		      DisplayString,
+		  gpidChannelsDNSDomainNames
+		      DisplayString,
+		  gpidChannelsDNSTimeout
+		      INTEGER,
+		  gpidChannelsDNSRetries
+		      INTEGER
+	      }
+
+	  gpidChannelsDNSIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsDNSEntry 1 }
+
+	  gpidChannelsDNSServers OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..47))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The DNS Name Server(s). This is up to 3 IP addresses
+		       seperated by a space."
+	      ::= { gpidChannelsDNSEntry 2 }
+
+	  gpidChannelsDNSDomainNames OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..80))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The DNS Domain Name(s). This is a list of domain
+		       domain names seperated by a space."
+	      ::= { gpidChannelsDNSEntry 3 }
+
+	  gpidChannelsDNSTimeout OBJECT-TYPE
+	      SYNTAX  INTEGER (0..60)
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The DNS connection timeout value. This is the time
+		       that the printer will wait between attempts to 
+		       the domain name servers."
+	      ::= { gpidChannelsDNSEntry 4 }
+
+	  gpidChannelsDNSRetries OBJECT-TYPE
+	      SYNTAX  INTEGER (0..5)
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The DNS connection retries value. This is the number
+		       retries the printer will make before assuming that
+		       the domain name server(s) are down. The number zero
+		       means that one attempt and no retries will be made."
+	      ::= { gpidChannelsDNSEntry 5 }
+	  -- the Channels IPP table
+
+	  -- This table contains information on the entity's
+	  -- IPP channel (port). There will be only one row in this 
+	  -- table.
+
+	  gpidChannelsIPPTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidChannelsIPPEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidChannelsIPP entries."
+	      ::= { gpidChannel 23 }
+
+	  gpidChannelsIPPEntry OBJECT-TYPE
+	      SYNTAX  GpidChannelsIPPEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidChannelsIPP entry containing objects at 
+		       the virtual channels device level for a particular 
+		       virtual channel device."
+	      INDEX   { gpidChannelsIPPIndex }
+	      ::= { gpidChannelsIPPTable 1 }
+
+	  GpidChannelsIPPEntry ::=
+	      SEQUENCE {
+		  gpidChannelsIPPIndex
+		      INTEGER,
+		  gpidChannelsIPPDelayedOutputClose
+		      INTEGER,
+		  gpidChannelsIPPOn
+		      INTEGER,
+		  gpidChannelsIPPPrinterControl
+		      DisplayString,
+	   	  gpidChannelsIPPNetworkPath
+		      DisplayString		  
+	      }
+	  gpidChannelsIPPIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for each channel (port)."
+	      ::= { gpidChannelsIPPEntry 1 }
+
+	  gpidChannelsIPPDelayedOutputClose OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       delayed output close."
+	      ::= { gpidChannelsIPPEntry 2 }
+
+	  gpidChannelsIPPOn OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       IPP connnection."
+	      ::= { gpidChannelsIPPEntry 3 }
+
+	  gpidChannelsIPPPrinterControl OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The IPP printer control. Only PSPrinter is legal."
+	      ::= { gpidChannelsIPPEntry 4 }
+
+	  gpidChannelsIPPNetworkPath OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "Network URL for IPP."
+	      ::= { gpidChannelsIPPEntry 5 }
+
+
+	  -- the gpidAlerts group
+
+	  -- Implementation of the gpidAlerts group is mandatory for
+	  -- all printers. The alerts group is used for detecting
+	  -- reportable events. It can be used to report warnings, 
+	  -- non-critical problems, and critical problems to a 
+	  -- host computer. Since each sub-unit can have different 
+	  -- problems the status codes (enumerations) are defined per 
+	  -- printer sub-unit.
+
+	  gpidAlertsNumber OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of alerts in the gpidAlerts Table."
+	      ::= { gpidAlerts 1 }
+
+	  -- the gpidAlerts table
+
+	  -- The gpidAlerts table contains information on the entity's
+	  -- errors and warnings.  Each sub-unit (group) can have
+	  -- states that are indicated in the alerts table. This table
+	  -- will contain 0 or more entries. 
+
+	  gpidAlertsTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidAlertsEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidAlerts entries.  The number of
+		       entries is given by the value of gpidAlertsNumber."
+	      ::= { gpidAlerts 2 }
+
+	  gpidAlertsEntry OBJECT-TYPE
+	      SYNTAX  GpidAlertsEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidAlerts entry containing objects at 
+		       the Alerts level for a particular printer."
+	      INDEX   { gpidAlertsId }
+	      ::= { gpidAlertsTable 1 }
+
+	  GpidAlertsEntry ::=
+	      SEQUENCE {
+		  gpidAlertsId
+		      INTEGER,
+		  gpidAlertsSeverityLevel
+		      INTEGER,
+		  gpidAlertsLocation
+		      INTEGER,
+		  gpidAlertsCode
+		      INTEGER
+	      }
+
+	  gpidAlertsId OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for each alert."
+	      ::= { gpidAlertsEntry 1 }
+
+	  gpidAlertsSeverityLevel OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),
+			  unknown(2),
+			  critical(3),
+			  warning(4)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The level of the alert."
+	      ::= { gpidAlertsEntry 2 }
+
+	  gpidAlertsLocation OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The indicator of the object that has the error or 
+		       warning."
+	      ::= { gpidAlertsEntry 3 }
+
+
+	  gpidAlertsCode OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The state of the object. Because DMTF is 
+		       allowing different alert codes based on the
+		       sub-unit reporting the alert, there is no
+		       single enumeration table that can handle
+		       these values. Refer to the Printer
+		       Management Interface Specification for 
+		       the enumerations for the Alert Codes."
+	      ::= { gpidAlertsEntry 4 }
+
+	  -- the gpidJobAccounting group
+
+	  -- Implementation of the gpidJobAccounting group is mandatory for
+	  -- all printers.  The job accounting group is used for
+	  -- reporting information about the print jobs that have
+	  -- been executed. It can be used to get and clear print
+	  -- job records. It can also report job specific problems
+	  -- such as media type mismatch. Finally, it can try to
+	  -- indicate which page of a multiple page job is printing.
+	  -- In reality this number will be the number of pages that have 
+	  -- been ejected by the printer plus one.
+
+	  gpidJobAccntCurrentNumber OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The number of jobs in the gpidJobAccntCurrentTable.
+		       If the value returned is less than zero either
+		       job accounting is disabled."
+	      ::= { gpidJobAccnt 1 }
+
+	  gpidJobAccntTotalNumber OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of records (jobs) in the gpidJobAccntTable.
+		       If the value returned is less than zero either
+		       job accounting is disabled."
+	      ::= { gpidJobAccnt 2 }
+
+	  gpidJobAccntDeleteAllJobs OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  yes(1),
+			  no(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		       "This variable is used to delete all of the job
+		       accounting records on the printer's hard disk
+		       or in the printer's memory.  There is no way to
+		       undo this deletion."
+	      ::= { gpidJobAccnt 8 }
+
+	  -- the CurrentJobAccounting table
+
+	  -- The gpidJobAccntCurrent table contains information on the 
+	  -- entity's current print job.  This table will contain 0 or 
+	  -- 1 entries. 
+
+	  gpidJobAccntCurrentTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidJobAccntCurrentEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A list of gpidJobAccntCurrent entries.  
+		       The number of entries is given by the value of 
+		       gpidJobAccntCurrentNumber."
+	      ::= { gpidJobAccnt 6 }
+
+	  gpidJobAccntCurrentEntry OBJECT-TYPE
+	      SYNTAX  GpidJobAccntCurrentEntry
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A gpidJobAccntCurrent entry containing objects at 
+		       the Job Accounting level for a particular printer."
+	      INDEX   { gpidJobAccntCurrentIndex }
+	      ::= { gpidJobAccntCurrentTable 1 }
+
+	  GpidJobAccntCurrentEntry ::=
+	      SEQUENCE {
+		  gpidJobAccntCurrentIndex
+		      INTEGER,
+		  gpidJobAccntCurrentUserId
+		      DisplayString,
+		  gpidJobAccntCurrentJobId
+		      INTEGER,
+		  gpidJobAccntCurrentJobName
+		      DisplayString,
+		  gpidJobAccntCurrentJobHostSource
+		      DisplayString,
+		  gpidJobAccntCurrentPagesPicked
+		      INTEGER,
+		  gpidJobAccntCurrentPagesOutput
+		      INTEGER,
+		  gpidJobAccntCurrentStartJobTime
+		      TimeTicks,
+		  gpidJobAccntCurrentMediaType
+		      INTEGER,
+		  gpidJobAccntCurrentMediaTypeMismatch
+		      INTEGER,
+		  gpidJobAccntCurrentMediaSize
+		      INTEGER,
+		  gpidJobAccntCurrentMediaSizeMismatch
+		      INTEGER,
+		  gpidJobAccntCurrentState
+		      INTEGER,
+		  gpidJobAccntCurrentNoOfPlanes
+		      INTEGER,
+		  gpidJobAccntCurrentCyanUsed
+		      INTEGER,
+		  gpidJobAccntCurrentMagentaUsed
+		      INTEGER,
+		  gpidJobAccntCurrentYellowUsed
+		      INTEGER,
+		  gpidJobAccntCurrentBlackUsed
+		      INTEGER,
+		  gpidJobAccntCurrentMaintenanceKitUsed
+		      INTEGER
+	      }
+
+	  gpidJobAccntCurrentIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "A unique number for each current job."
+	      ::= { gpidJobAccntCurrentEntry 1 }
+
+	  gpidJobAccntCurrentUserId OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..127))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The User ID for a particular job."
+	      ::= { gpidJobAccntCurrentEntry 2 }
+
+	  gpidJobAccntCurrentJobId OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The job ID for a particular job."
+	      ::= { gpidJobAccntCurrentEntry 3 }
+
+	  gpidJobAccntCurrentJobName OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..127))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The Job Name for a particular job."
+	      ::= { gpidJobAccntCurrentEntry 4 }
+
+	  gpidJobAccntCurrentJobHostSource OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..127))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "Where a job originated from."
+	      ::= { gpidJobAccntCurrentEntry 5 }
+
+	  gpidJobAccntCurrentPagesPicked OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The number of pages picked."
+	      ::= { gpidJobAccntCurrentEntry 6 }
+
+	  gpidJobAccntCurrentPagesOutput OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The number of pages output."
+	      ::= { gpidJobAccntCurrentEntry 7 }
+
+	  gpidJobAccntCurrentStartJobTime OBJECT-TYPE
+	      SYNTAX  TimeTicks
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The start time of a job."
+	      ::= { gpidJobAccntCurrentEntry 8 }
+
+	  gpidJobAccntCurrentMediaType OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),
+			  unknown(2),
+			  paper(3),
+			  heavyPaper(4),
+			  transparency(5),
+			  coatedPaper(6),
+ 			  cardStock(7),
+			  labelStock(8),
+			  fabricTransfer(9),
+			  duplexSetting(10),
+			  envelope(11),
+			  thickCoverIndex(12),
+			  thinCoverIndex(13),
+			  heavyWeightCoverPaper(14),
+			  letterhead(15),
+                          colorPaper(16),
+			  special(17),    
+			  thinCardStock(18),
+			  thickCardStock(19),
+			  photoPaper(20),
+			  businessCards(21),
+			  greetingCards(22),
+			  cdDVDLabels(23),
+			  cdDVDInserts(24),
+			  clearFilm(101),
+			  whiteFilm(102),
+			  transferFilm(103),
+			  film(104),
+			  photo(105),
+			  mixed(-20)
+		      }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The media type used by the job.
+		       DO NOT CHANGE THIS ENTRY WITHOUT CHANGING
+		       gpidInputMediaType and gpidJobAccntMediaType."
+	      ::= { gpidJobAccntCurrentEntry 9 }
+
+	  gpidJobAccntCurrentMediaTypeMismatch OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  mediaOK(1),
+			  mediaTypeMismatch(2),
+			  paper-requested-transparency-loaded(3),
+			  transparency-requested-paper-loaded(4)
+		      }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "This variable is used to report a mismatch
+		       between the media type in the 
+		       requested tray and the media type 
+		       requested in the job. For instance, if
+		       the job specifies that it be printed on
+		       transparency and paper is loaded in the tray
+		       then this will variable report an error."
+	      ::= { gpidJobAccntCurrentEntry 10 }
+
+	  gpidJobAccntCurrentMediaSize OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  letter(3),
+			  legal(4),
+			  envelopeC6(5),
+			  envelopeDL(6),
+			  envelopeNo6(7),
+			  envelopeNo10(8),
+			  envelopeExec(9),
+			  tabloid(15),
+			  iso-a0(23),
+			  iso-a1(24),
+			  iso-a2(25),
+			  iso-a3(26),
+			  iso-a4(27),
+			  iso-a5(28),
+			  iso-a6(29),
+			  iso-b4(34),
+			  iso-b5(35),
+			  iso-b6(36),
+			  iso-c5(37),
+			  iso-sra3(38),
+			  tabloid-extra(101),
+			  oversize-A(102),
+			  tabloid-maximum(103),
+			  tabloid-plus(104),
+			  tabloid-xl(105),
+			  jis-b1(124),
+			  jis-b2(125),
+			  jis-b3(126),
+			  jis-b4(127),
+			  regularC(134),
+			  regularD(135),
+			  regularE(136),
+			  architectB(143),
+			  architectC(144),
+			  architectD(145),
+			  architectE(146),
+			  film8x10(147), 
+			  film10x12(148),
+			  film11x14(149),
+			  film14x17(150),
+			  special30x42(157),
+			  envelopeMonarch(160),
+			  postcard(161),
+			  envelopeCOM10(162),
+			  statement(163),
+			  special8x10(164),
+			  letterTab(165),
+			  a4Tab(166),
+			  folio(167),
+			  folioSpecial(168),
+			  special312-5x440(169),
+			  special12x18(170),
+			  special12-5x18(171),
+			  special13x18(172),
+			  envelopeC4(173),
+			  envelopeC5(174),
+			  envelopeChoukei3(175),
+			  envelopeKakugata2(176),
+			  envelopeChoukei4(177),
+			  postcard4x6(178),
+			  doublePostcard(179),
+			  executive(180),
+			  envelopeA7(181),			  
+			  custom(999),
+			  mixed(-20)
+		      }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The media size used by the job.
+		      DO NOT CHANGE THIS ENUMERATION WITHOUT CHANGING
+		      gpidInputMediaSize, gpidJobAccntMediaSize and
+		      gpidInputDefaultMediaSize."
+	      ::= { gpidJobAccntCurrentEntry 11 }
+
+	  gpidJobAccntCurrentMediaSizeMismatch OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  mediaOK(1),
+			  mediaSizeMismatch(2)
+		      }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "This variable is used to report a mismatch
+		       between the media size in the 
+		       requested tray and the media size 
+		       requested in the job. For instance, if
+		       the job specifies that it be printed on
+		       A (letter) and A4 (metric) is loaded in the tray
+		       then this will variable report an error."
+	      ::= { gpidJobAccntCurrentEntry 12 }
+
+	  gpidJobAccntCurrentState OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  ready(2),
+			  receivingData(3),
+			  processingData(4),
+			  printing(5),    
+			  waiting(14)
+		      }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "This status indicator for the jobs status indicating
+		       the current printer state."
+	      ::= { gpidJobAccntCurrentEntry 13 }
+
+	  gpidJobAccntCurrentNoOfPlanes OBJECT-TYPE
+	      SYNTAX  INTEGER 
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "The number of planes printed."
+	      ::= { gpidJobAccntCurrentEntry 14 }
+
+          gpidJobAccntCurrentCyanUsed OBJECT-TYPE
+              SYNTAX  INTEGER
+              ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "The amount of the cyan consumable used. This integer
+                       is a representation of a floating point value.
+                       The floating point value varies from 0.0 to 100.0.
+                       The integer varies from 0 to 1,000,000,000. When the
+                       value is 0, none of that consumable was used.
+                       When the value is 1,000,000,000, 100% of the consumable
+                       was used. For example, an entire ink stick or toner
+                       cartridge was consumed."
+              ::= { gpidJobAccntCurrentEntry 15 }
+
+          gpidJobAccntCurrentMagentaUsed OBJECT-TYPE
+              SYNTAX  INTEGER
+              ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "The amount of the magenta consumable used. This integer
+                       is a representation of a floating point value.
+                       The floating point value varies from 0.0 to 100.0.
+                       The integer varies from 0 to 1,000,000,000. When the
+                       value is 0, none of that consumable was used.
+                       When the value is 1,000,000,000, 100% of the consumable
+                       was used. For example, an entire ink stick or toner
+                       cartridge was consumed."
+              ::= { gpidJobAccntCurrentEntry 16 }
+
+          gpidJobAccntCurrentYellowUsed OBJECT-TYPE
+              SYNTAX  INTEGER
+              ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "The amount of the yellow consumable used. This integer
+                       is a representation of a floating point value.
+                       The floating point value varies from 0.0 to 100.0.
+                       The integer varies from 0 to 1,000,000,000. When the
+                       value is 0, none of that consumable was used.
+                       When the value is 1,000,000,000, 100% of the consumable
+                       was used. For example, an entire ink stick or toner
+                       cartridge was consumed."
+              ::= { gpidJobAccntCurrentEntry 17 }
+
+          gpidJobAccntCurrentBlackUsed OBJECT-TYPE
+              SYNTAX  INTEGER
+              ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "The amount of the black consumable used. This integer
+                       is a representation of a floating point value.
+                       The floating point value varies from 0.0 to 100.0.
+                       The integer varies from 0 to 1,000,000,000. When the
+                       value is 0, none of that consumable was used.
+                       When the value is 1,000,000,000, 100% of the consumable
+                       was used. For example, an entire ink stick or toner
+                       cartridge was consumed."
+              ::= { gpidJobAccntCurrentEntry 18 }
+
+          gpidJobAccntCurrentMaintenanceKitUsed OBJECT-TYPE
+              SYNTAX  INTEGER
+              ACCESS  not-accessible
+              STATUS  obsolete
+              DESCRIPTION
+                      "The amount of the Maintenance Kit used. This integer
+                       is a representation of a floating point value.
+                       The floating point value varies from 0.0 to 100.0.
+                       The integer varies from 0 to 1,000,000,000. When the
+                       value is 0, none of the Maintenance Kit was used.
+                       When the value is 1,000,000,000, 100% of the Maintenance
+                       Kit was used.  NOTA: this member is defined only on 
+                       Phase Change printers.  All other printers will
+                       return a value of -1, indicating that this member
+                       is undefined."
+              ::= { gpidJobAccntCurrentEntry 19 }
+
+	  -- the JobAccounting table
+
+	  -- The gpidJobAccnt table contains information on the entity's
+	  -- completed print jobs.  Each job is considered a complete
+	  -- record This table will contain 0 or more entries. 
+
+	  gpidJobAccntTable OBJECT-TYPE
+	      SYNTAX  SEQUENCE OF GpidJobAccntEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A list of gpidJobAccnt entries.  The number of
+		       entries is given by the value of 
+		       gpidJobAccntTotalNumber."
+	      ::= { gpidJobAccnt 7 }
+
+	  gpidJobAccntEntry OBJECT-TYPE
+	      SYNTAX  GpidJobAccntEntry
+	      ACCESS  not-accessible
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A gpidJobAccnt entry containing objects at 
+		       the Job Accounting level for a particular printer."
+	      INDEX   { gpidJobAccntIndex }
+	      ::= { gpidJobAccntTable 1 }
+
+	  GpidJobAccntEntry ::=
+	      SEQUENCE {
+		  gpidJobAccntIndex
+		      INTEGER,
+		  gpidJobAccntUserId
+		      DisplayString,
+		  gpidJobAccntJobId
+		      INTEGER,
+		  gpidJobAccntJobName
+		      DisplayString,
+		  gpidJobAccntJobHostSource
+		      DisplayString,
+		  gpidJobAccntPagesPicked
+		      INTEGER,
+		  gpidJobAccntPagesOutput
+		      INTEGER,
+		  gpidJobAccntInterpreterTime
+		      TimeTicks,
+		  gpidJobAccntStartJobTime
+		      TimeTicks,
+		  gpidJobAccntEndJobTime
+		      TimeTicks,
+		  gpidJobAccntMediaType
+		      INTEGER,
+		  gpidJobAccntMediaSize
+		      INTEGER,
+		  gpidJobAccntNoOfPlanes
+		      INTEGER,
+		  gpidJobAccntCyanUsed
+		      INTEGER,
+		  gpidJobAccntMagentaUsed
+		      INTEGER,
+		  gpidJobAccntYellowUsed
+		      INTEGER,
+		  gpidJobAccntBlackUsed
+		      INTEGER,
+		  gpidJobAccntMaintenanceKitUsed
+		      INTEGER,
+		  gpidJobAccntStaplesUsed
+		      INTEGER,
+		  gpidJobAccntSidesOutput
+		      INTEGER,
+		  gpidJobAccntClientSubmissionId
+		      DisplayString		   
+	      }
+
+	  gpidJobAccntIndex OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "A unique number for each job."
+	      ::= { gpidJobAccntEntry 1 }
+
+	  gpidJobAccntUserId OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..127))
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The User ID for a particular job."
+	      ::= { gpidJobAccntEntry 2 }
+
+	  gpidJobAccntJobId OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The job ID for a particular job."
+	      ::= { gpidJobAccntEntry 3 }
+
+	  gpidJobAccntJobName OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..127))
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The Job Name for a particular job."
+	      ::= { gpidJobAccntEntry 4 }
+
+	  gpidJobAccntJobHostSource OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..127))
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "Where a job originated from."
+	      ::= { gpidJobAccntEntry 5 }
+
+
+	  gpidJobAccntPagesPicked OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of pages picked."
+	      ::= { gpidJobAccntEntry 6 }
+
+	  gpidJobAccntPagesOutput OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of pages output."
+	      ::= { gpidJobAccntEntry 7 }
+
+	  gpidJobAccntInterpreterTime OBJECT-TYPE
+	      SYNTAX  TimeTicks
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The amount of time the interpreter used to complete
+		       the job."
+	      ::= { gpidJobAccntEntry 8 }
+
+	  gpidJobAccntStartJobTime OBJECT-TYPE
+	      SYNTAX  TimeTicks
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The start time of a job."
+	      ::= { gpidJobAccntEntry 9 }
+
+	  gpidJobAccntEndJobTime OBJECT-TYPE
+	      SYNTAX  TimeTicks
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The end time of a job."
+	      ::= { gpidJobAccntEntry 10 }
+
+	  gpidJobAccntMediaType OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),
+			  unknown(2),
+			  paper(3),
+			  heavyPaper(4),
+			  transparency(5),
+			  coatedPaper(6),
+ 			  cardStock(7),
+			  labelStock(8),
+			  fabricTransfer(9),
+			  duplexSetting(10),
+			  envelope(11),
+			  thickCoverIndex(12),
+			  thinCoverIndex(13),
+			  heavyWeightCoverPaper(14),
+			  letterhead(15),
+                          colorPaper(16),
+			  special(17),    
+			  thinCardStock(18),
+			  thickCardStock(19),
+			  photoPaper(20),
+			  businessCards(21),
+			  greetingCards(22),
+			  cdDVDLabels(23),
+			  cdDVDInserts(24),
+			  clearFilm(101),
+			  whiteFilm(102),
+			  transferFilm(103),
+			  film(104),
+			  photo(105),
+			  mixed(-20)			  
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The media type used by the job.
+		       DO NOT CHANGE THIS ENTRY WITHOUT CHANGING
+		       gpidJobAccntCurrentMediaType and gpidInputMediaType."
+	      ::= { gpidJobAccntEntry 11 }
+
+	  gpidJobAccntMediaSize OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),          -- none of the following
+			  unknown(2),
+			  letter(3),
+			  legal(4),
+			  envelopeC6(5),
+			  envelopeDL(6),
+			  envelopeNo6(7),
+			  envelopeNo10(8),
+			  envelopeExec(9),
+                          ukFoolscap(13),
+                          usFolio(14),
+			  tabloid(15),
+                          bookletEnvelope9x12(16),
+			  iso-a0(23),
+			  iso-a1(24),
+			  iso-a2(25),
+			  iso-a3(26),
+			  iso-a4(27),
+			  iso-a5(28),
+			  iso-a6(29),
+			  iso-b4(34),
+			  iso-b5(35),
+			  iso-b6(36),
+			  iso-c5(37),
+			  iso-sra3(38),
+			  tabloid-extra(101),
+			  oversize-A(102),
+			  tabloid-maximum(103),
+			  tabloid-plus(104),
+			  tabloid-xl(105),
+                          jis-b5(107),
+                          jis-b6(108),
+                          oficio(112),
+                          spFolio(113),
+                          ra3(115),
+			  jis-b1(124),
+			  jis-b2(125),
+			  jis-b3(126),
+			  jis-b4(127),
+                          envelopeISOC6 (129),
+                          envelopeISOB4(130), 
+                          envelopeISOB5(131), 
+                          envelopeISOB6(132), 
+			  regularC(134),
+			  regularD(135),
+			  regularE(136),
+			  architectB(143),
+			  architectC(144),
+			  architectD(145),
+			  architectE(146),
+			  film8x10(147), 
+			  film10x12(148),
+			  film11x14(149),
+			  film14x17(150),
+			  special30x42(157),
+			  envelopeMonarch(160),
+			  postcard(161),
+			  envelopeCOM10(162),
+			  statement(163),
+			  special8x10(164),
+			  letterTab(165),
+			  a4Tab(166),
+			  folio(167),
+			  folioSpecial(168),
+			  special312-5x440(169),
+			  special12x18(170),
+			  special12-5x18(171),
+			  special13x18(172),
+			  envelopeC4(173),
+			  envelopeC5(174),
+			  envelopeChoukei3(175),
+			  envelopeKakugata2(176),
+			  envelopeChoukei4(177),
+			  postcard4x6(178),
+			  doublePostcard(179),
+			  executive(180),
+			  envelopeA7(181),			  
+			  custom(999),
+			  mixed(-20)
+		      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The media size used by the job.
+		      DO NOT CHANGE THIS ENUMERATION WITHOUT CHANGING
+		      gpidInputMediaSize, gpidInputDefaultMediaSize and
+		      gpidJobAccntCurrentMediaSize."
+	      ::= { gpidJobAccntEntry 12 }
+
+	  gpidJobAccntNoOfPlanes OBJECT-TYPE
+	      SYNTAX  INTEGER 
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of planes printed."
+	      ::= { gpidJobAccntEntry 13 }
+
+          gpidJobAccntCyanUsed OBJECT-TYPE
+              SYNTAX  INTEGER
+              ACCESS  read-only
+              STATUS  mandatory
+              DESCRIPTION
+                      "The amount of the cyan consumable used. This integer
+                       is a representation of a floating point value.
+                       The floating point value varies from 0.0 to 100.0.
+                       The integer varies from 0 to 1,000,000,000. When the
+                       value is 0, none of that consumable was used.
+                       When the value is 1,000,000,000, 100% of the consumable
+                       was used. For example, an entire ink stick or toner
+                       cartridge was consumed."
+              ::= { gpidJobAccntEntry 14 }
+
+          gpidJobAccntMagentaUsed OBJECT-TYPE
+              SYNTAX  INTEGER
+              ACCESS  read-only
+              STATUS  mandatory
+              DESCRIPTION
+                      "The amount of the magenta consumable used. This integer
+                       is a representation of a floating point value.
+                       The floating point value varies from 0.0 to 100.0.
+                       The integer varies from 0 to 1,000,000,000. When the
+                       value is 0, none of that consumable was used.
+                       When the value is 1,000,000,000, 100% of the consumable
+                       was used. For example, an entire ink stick or toner
+                       cartridge was consumed."
+              ::= { gpidJobAccntEntry 15 }
+
+          gpidJobAccntYellowUsed OBJECT-TYPE
+              SYNTAX  INTEGER
+              ACCESS  read-only
+              STATUS  mandatory
+              DESCRIPTION
+                      "The amount of the yellow consumable used. This integer
+                       is a representation of a floating point value.
+                       The floating point value varies from 0.0 to 100.0.
+                       The integer varies from 0 to 1,000,000,000. When the
+                       value is 0, none of that consumable was used.
+                       When the value is 1,000,000,000, 100% of the consumable
+                       was used. For example, an entire ink stick or toner
+                       cartridge was consumed."
+              ::= { gpidJobAccntEntry 16 }
+
+          gpidJobAccntBlackUsed OBJECT-TYPE
+              SYNTAX  INTEGER
+              ACCESS  read-only
+              STATUS  mandatory
+              DESCRIPTION
+                      "The amount of the black consumable used. This integer
+                       is a representation of a floating point value.
+                       The floating point value varies from 0.0 to 100.0.
+                       The integer varies from 0 to 1,000,000,000. When the
+                       value is 0, none of that consumable was used.
+                       When the value is 1,000,000,000, 100% of the consumable
+                       was used. For example, an entire ink stick or toner
+                       cartridge was consumed."
+              ::= { gpidJobAccntEntry 17 }
+
+          gpidJobAccntMaintenanceKitUsed OBJECT-TYPE
+              SYNTAX  INTEGER
+              ACCESS  read-only
+              STATUS  mandatory
+              DESCRIPTION
+                      "The amount of the Maintenance Kit used. This integer
+                       is a representation of a floating point value.
+                       The floating point value varies from 0.0 to 100.0.
+                       The integer varies from 0 to 1,000,000,000. When the
+                       value is 0, none of the Maintenance Kit was used.
+                       When the value is 1,000,000,000, 100% of the Maintenance
+                       Kit was used. NOTA: this member is defined only on 
+                       Phase Change printers.  All other printer types will 
+                       return a value of -1, indicating that this member 
+                       is undefined."
+              ::= { gpidJobAccntEntry 18 }
+
+	  gpidJobAccntStaplesUsed OBJECT-TYPE
+              SYNTAX  INTEGER
+              ACCESS  read-only
+              STATUS  mandatory
+              DESCRIPTION
+		  "Number of staples used for the job. When the value
+                   is 0 it means no staples are used for this job."
+              ::= { gpidJobAccntEntry 19 }
+	      
+	  gpidJobAccntSidesOutput OBJECT-TYPE
+	      SYNTAX  INTEGER
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The number of sides output."
+	      ::= { gpidJobAccntEntry 20 }
+
+          gpidJobAccntClientSubmissionId OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..48))
+	      ACCESS  read-only
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "Unique job submission identifier set by client during submission of job."
+	      ::= { gpidJobAccntEntry 21 }
+
+	  -- the gpidSysSetup group
+
+	  -- Implementation of the gpidSysSetup group is mandatory for
+	  -- all printers. This group contains variables that are 
+	  -- provide status and information on the entire printer.
+	  -- In the DMTF model this group usually is implemented on
+	  -- the printer's system controller.
+
+	  gpidSysSetupAuthorizationKey OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..80))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The authorization key. This should be considered
+		       write only."
+	      ::= { gpidSysSetup 1 }
+
+	  gpidSysSetupPrinterName OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..32))
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "The printer name stored in the printer."
+	      ::= { gpidSysSetup 2 }
+
+	  gpidSysSetupInstallation OBJECT-TYPE
+	      SYNTAX  DisplayString (SIZE (0..31))
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "An installation date assigned by the user or 
+		       system administrator. For instance, May 1, 1994.
+		       This is to be entered by the system administrator
+		       if this date is needed."
+	      ::= { gpidSysSetup 3 }
+
+	  gpidSysSetupReset OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  yes(1),          
+			  no(2)
+		      }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "This variable is used to reset the printer to 
+		       its power up state. This should be considered a
+		       write-only variable."
+	      ::= { gpidSysSetup 4 }
+
+	  gpidSysSetupStartPage OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),          
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to turn the printers 
+		       start page on and off."
+	      ::= { gpidSysSetup 5 }
+
+	  gpidSysSetupSysStartJob OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),          
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to turn the printers 
+		       system start job on and off."
+	      ::= { gpidSysSetup 6 }
+
+	  gpidSysSetupManualFeedWait OBJECT-TYPE
+	      SYNTAX  INTEGER (0..65535)
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to set the amount of 
+		       time the printer waits for paper to be 
+		       placed in the manual feed slot."
+	      ::= { gpidSysSetup 7 }
+
+	  gpidSysSetupWaitTimeout OBJECT-TYPE
+	      SYNTAX  INTEGER (0..65535)
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to set the amount of 
+		       time the printer waits for data when 
+		       expecting a continuous data stream."
+	      ::= { gpidSysSetup 8 }
+
+	  gpidSysSetupJobTimeout OBJECT-TYPE
+	      SYNTAX  INTEGER (0..65535)
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to set the amount of 
+		       time the printer waits for data before 
+		       printer will timeout."
+	      ::= { gpidSysSetup 9 }
+
+	  gpidSysSetupEnergyStarTimeout OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			 unknown(1),
+			 fifteenMin(2),
+			 thirtyMin(3),
+			 oneHr(4),
+			 oneHrthirtyMin(5),
+			 twoHrs(6),
+			 twoHrsthirtyMin(7),
+			 threeHrs(8),
+			 threeHrsthirtyMin(9),
+			 fourHrs(10),
+			 notapplicable(-1)		
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to set the amount of
+		       time the printer waits before putting itself
+		       into energy star mode.  When the printer 
+		       is in energy star mode the printer may not respond 
+		       to status queries."
+	      ::= { gpidSysSetup 10 }
+
+	  gpidSysSetupEnableFrontPanel OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       of the front panel. When the front panel is enabled
+		       users will be able to use it to change parameters.
+		       When the front panel is disabled users will only
+		       be able to print the various test prints."
+	      ::= { gpidSysSetup 11 }
+
+	  gpidSysSetupCheckPrintEnable OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2)
+		      }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       of the Check Print feature in the printer.
+		       When this variable is on the user will be
+		       use the Check Print feature in the printer
+		       driver."
+	      ::= { gpidSysSetup 12 }
+
+	  gpidSysSetupChckPrntTimeout OBJECT-TYPE
+	      SYNTAX  INTEGER (-1..10080)
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "This variable is used to set the amount of
+		       time the printer waits before continuing when
+		       check print has been enabled and selected by the
+		       printer driver. This value is in minutes.  The
+		       value of -1 can not be set. It can only be reported.
+		       if it is reported the feature is not supported."
+	      ::= { gpidSysSetup 13 }
+
+	  gpidSysSetupPrintQuality OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),
+			  unknown(2),
+			  fastColor(3),
+			  standard(4),
+			  enhanced(5),
+			  photo(6),
+			  standardMonochrome(7),
+			  photoMonochrome(8),
+			  monochrome(9),
+			  premium(10),
+			  draft(11),
+			  notapplicable(-1)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       of the default value for print quality. The above 
+		       selections should be a superset of all possible 
+		       Print Quality values for Tek printers. The value 
+		       of -1 can not be set, it can only be reported.
+		       If -1 is reported the feature is not supported."
+	      ::= { gpidSysSetup 14 }
+
+	  gpidSysSetupTekColorMode OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  other(1),
+			  unknown(2),
+			  none(3),
+			  vividColor(4),
+			  euroscalePress(5),
+			  swopPress(6),
+			  sRGBDisplay(7),
+			  commercialPress(8),
+			  snapPress(9),
+			  monochrome(10),
+			  automatic(11),
+			  toyo(12),
+			  dic(13),
+			  fujiProof(14),
+		          rawRGB(15),
+			  rawCMYK(16),
+			  userDefined(17),
+			  raw(18),
+			  newsPrint(19),
+			  notapplicable(-1)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       of the default value for TekColor mode. 
+		       The value of -1 can not be set, it can only be reported.
+		       If -1 is reported the feature is not supported."
+	      ::= { gpidSysSetup 15 }
+
+	  gpidSysSetupErrorHandler OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2),
+			  notapplicable(-1)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       of the Error Handler feature in the printer.
+		       When this variable is on the error page
+		       will be printed when a PostScript error occurs. The
+		       value of -1 can not be set, it can only be reported.
+		       If -1 is reported the feature is not supported."
+	      ::= { gpidSysSetup 16 }
+
+	  gpidSysSetupHTTPServer OBJECT-TYPE
+	      SYNTAX  INTEGER {
+			  on(1),
+			  off(2),
+			  notapplicable(-1)
+		      }
+	      ACCESS  not-accessible
+	      STATUS  obsolete
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       of the HTTP server feature in the printer.
+		       When this variable is on the HTTP server within
+		       the printer will be available. The value of -1 can not 
+		       be set, it can only be reported.  If -1 is reported the 
+		       feature is not supported."
+	      ::= { gpidSysSetup 17 }
+
+	  gpidSysSetupMirrorPrint OBJECT-TYPE
+	      SYNTAX  INTEGER { 
+			  on(1),
+			  off(2),
+			  notapplicable(-1)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       of the mirror print feature in the printer. The
+		       value of -1 can not be set, it can only be reported.
+		       If -1 is reported the feature is not supported."
+	      ::= { gpidSysSetup 18 }
+
+	  gpidSysSetupImageSmoothing OBJECT-TYPE
+	      SYNTAX  INTEGER { 
+			  on(1),
+			  off(2),
+			  notapplicable(-1)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       of the image smoothing feature in the printer. The
+		       value of -1 can not be set, it can only be reported.
+		       If -1 is reported the feature is not supported."
+	      ::= { gpidSysSetup 19 }
+
+	  gpidSysSetupDuplexPrinting OBJECT-TYPE
+	      SYNTAX  INTEGER { 
+			  disabled(1),
+			  longEdge(2),
+			  shortEdge(3),
+			  notapplicable(-1)
+		      }
+	      ACCESS  read-write
+	      STATUS  mandatory
+	      DESCRIPTION
+		      "This variable is used to report and set the state of 
+		       of the duplex printing feature in the printer. The
+		       value of -1 can not be set, it can only be reported.
+		       If it is reported the feature is not supported.  The
+		       value longEdge indicates that duplex printing is enabled
+		       and the tumble of the page will be along the long edge
+		       of the media.  The value shortEdge indicates duplex
+		       printing is enabled and the tumble is along the short
+		       edge of the media."
+	      ::= { gpidSysSetup 20 }
+
+          gpidSysSetupQuickCollate OBJECT-TYPE
+              SYNTAX  INTEGER {
+                          on(1),
+                          off(2),
+                          notapplicable(-1)
+                      }
+              ACCESS  read-write
+              STATUS  mandatory
+              DESCRIPTION
+                      "This variable is used to report and set the state of
+                       of the quick collation feature in the printer. The
+                       value of -1 can not be set, it can only be reported.
+                       If it is reported the feature is not supported."
+              ::= { gpidSysSetup 21 }
+
+	  gpidSysSetupHasHardDisk OBJECT-TYPE
+	      SYNTAX  INTEGER {
+                          true(1),
+                          false(2),
+                          notapplicable(-1)
+                      }
+	      ACCESS  read-only
+	      STATUS  mandatory
+              DESCRIPTION
+	             " This variable is used to report if a hard disk is
+                       installed in the printer. If the reported value is
+                          1  it implies that one or more hard disks 
+		             are installed.
+                          2  it implies that no hard disk is installed.
+ 	                 -1  it implies taht the feature is not supported. "
+              ::= { gpidSysSetup 22 }              
+	
+
+	  END

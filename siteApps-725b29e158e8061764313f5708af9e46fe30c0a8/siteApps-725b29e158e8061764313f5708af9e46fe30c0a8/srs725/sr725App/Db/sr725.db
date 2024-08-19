@@ -1,0 +1,754 @@
+
+## Static info
+
+record(stringin, "$(P)ID-Sts") {
+	field(DESC, "Firmware ID")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(ID,s) $(PORT)")
+	field(FLNK, "$(P):SN-Sts")
+}
+
+record(longin, "$(P):SN-Sts") {
+	field(DESC, "Serial num.")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(SN,i) $(PORT)")
+}
+
+
+## Device control
+
+record(stringout, "$(P)Rst-Cmd") {
+	field(DESC, "Reset micro")
+	field(DTYP, "stream")
+	field( OUT, "@sr725.proto sendVal(RS,1) $(PORT)")
+}
+
+record(stringout, "$(P)Restore-Cmd") {
+	field(DESC, "Restore initial settings from EEPROM")
+	field(DTYP, "stream")
+	field( OUT, "@sr725.proto sendVal(RC,1) $(PORT)")
+}
+
+## Control parameters
+
+# Query current settings and one-time parameters (ID and SN)
+record(bo, "$(P)Update-Cmd") {
+	field(DESC, "Update setting readbacks")
+	field(PINI, "YES")
+	field(ZNAM, "Revert")
+	field(ONAM, "revert")
+	field(FLNK, "$(P)Update:1-Fout_")
+}
+
+record(fanout, "$(P)Update:1-Fout_") {
+	field(LNK1, "$(P)ID-Sts")
+	field(LNK2, "$(P)LockMode-RB")
+	field(LNK3, "$(P)LockMode:Save-RB")
+	field(LNK4, "$(P)PLL-RB")
+	field(LNK5, "$(P)Gain-RB")
+	field(LNK6, "$(P)GainSave-RB")
+	field(FLNK, "$(P)Update:2-Fout_")
+}
+record(fanout, "$(P)Update:2-Fout_") {
+	field(LNK1, "$(P)PPS:PLL-RB")
+	field(LNK2, "$(P)PPS:PLLSave-RB")
+	field(LNK3, "$(P)PPS:Gain-RB")
+	field(LNK4, "$(P)PPS:GainSave-RB")
+	field(LNK5, "$(P)PPS:Stab-RB_")
+	field(LNK6, "$(P)PPS:StabSave-RB")
+}
+
+# LockMode
+
+record(mbbo, "$(P)LockMode-Sel") {
+	field(DESC, "Output and PPS status when locked")
+	field(DTYP, "stream")
+	field( OUT, "@sr725.proto setVal(LM,i) $(PORT)")
+	field(ZRST, "PPS on filt.")
+	field(ONST, "PPS on")
+	field(TWST, "PPS off")
+	field(THST, "PPS off out on")
+	field(FLNK, "$(P)LockMode-RB")
+}
+
+record(mbbi, "$(P)LockMode-RB") {
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(LM,i) $(PORT)")
+	field(ZRST, "PPS on filt.")
+	field(ONST, "PPS on")
+	field(TWST, "PPS off")
+	field(THST, "PPS off out on")
+	field(FLNK, "$(P)LockMode:Update-RB_")
+}
+
+record(longout, "$(P)LockMode:Update-RB_") {
+	field( DOL, "$(P)LockMode-RB NPP")
+	field(OMSL, "closed_loop")
+	field( OUT, "$(P)LockMode-Sel NPP")
+}
+
+record(bo, "$(P)LockMode:Save-Cmd") {
+	field(DESC, "Save to EEPROM")
+	field(DTYP, "stream")
+	field( OUT, "@sr725.proto sendCmd(LM!) $(PORT)")
+	field(FLNK, "$(P)LockMode:Save-RB")
+}
+
+record(mbbi, "$(P)LockMode:Save-RB") {
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(LM!,i) $(PORT)")
+	field(ZRST, "PPS on filt.")
+	field(ONST, "PPS on")
+	field(TWST, "PPS off")
+	field(THST, "PPS off out on")
+}
+
+# FLL enable/disable
+
+record(bo, "$(P)PLL-Sel") {
+	field(DESC, "FLL Control")
+	field(DTYP, "stream")
+	field( OUT, "@sr725.proto setVal(LO,i) $(PORT)")
+	field(ZNAM, "Open")
+	field(ONAM, "Closed")
+	field(FLNK, "$(P)PLL-RB")
+}
+
+record(bi, "$(P)PLL-RB") {
+	field(DESC, "FLL status")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(LO,i) $(PORT)")
+	field(ZNAM, "Open")
+	field(ONAM, "Closed")
+	field(FLNK, "$(P)PLL-RB_")
+}
+
+record(longout, "$(P)PLL-RB_") {
+	field( DOL, "$(P)PLL-RB NPP")
+	field(OMSL, "closed_loop")
+	field( OUT, "$(P)PLL-Sel NPP")
+}
+
+# FLL Loop gain
+
+record(mbbo, "$(P)Gain-Sel") {
+	field(DESC, "FLL Time const")
+	field(DTYP, "stream")
+	field( OUT, "@sr725.proto setVal(GA,i) $(PORT)")
+	field(ZRST, "Infinite")
+	field(ONST, "128 sec")
+	field(TWST, "64 sec")
+	field(THST, "32 sec")
+	field(FRST, "16 sec")
+	field(FVST, "8 sec")
+	field(SXST, "4 sec")
+	field(SVST, "2 sec")
+	field(EIST, "1 sec")
+	field(NIST, "0.5 sec")
+	field(TEST, "0.25 sec")
+	field(FLNK, "$(P)Gain-RB")
+}
+
+record(mbbi, "$(P)Gain-RB") {
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(GA,i) $(PORT)")
+	field(ZRST, "Infinite")
+	field(ONST, "128 sec")
+	field(TWST, "64 sec")
+	field(THST, "32 sec")
+	field(FRST, "16 sec")
+	field(FVST, "8 sec")
+	field(SXST, "4 sec")
+	field(SVST, "2 sec")
+	field(EIST, "1 sec")
+	field(NIST, "0.5 sec")
+	field(TEST, "0.25 sec")
+	field(FLNK, "$(P)Gain-RB_")
+}
+
+record(longout, "$(P)Gain-RB_") {
+	field( DOL, "$(P)Gain-RB NPP")
+	field(OMSL, "closed_loop")
+	field( OUT, "$(P)Gain-Sel NPP")
+}
+
+record(bo, "$(P)GainSave-Cmd") {
+	field(DESC, "Save to EEPROM")
+	field(DTYP, "stream")
+	field( OUT, "@sr725.proto sendCmd(GA!) $(PORT)")
+	field(FLNK, "$(P)GainSave-RB")
+}
+
+record(mbbi, "$(P)GainSave-RB") {
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(GA!,i) $(PORT)")
+	field(ZRST, "Infinite")
+	field(ONST, "128 sec")
+	field(TWST, "64 sec")
+	field(THST, "32 sec")
+	field(FRST, "16 sec")
+	field(FVST, "8 sec")
+	field(SXST, "4 sec")
+	field(SVST, "2 sec")
+	field(EIST, "1 sec")
+	field(NIST, "0.5 sec")
+	field(TEST, "0.25 sec")
+}
+
+# PLL Loop control
+
+record(bo, "$(P)PPS:PLL-Sel") {
+	field(DESC, "PLL Control")
+	field(DTYP, "stream")
+	field( OUT, "@sr725.proto setVal(PL,i) $(PORT)")
+	field(ZNAM, "Opened")
+	field(ONAM, "Closed")
+	field(FLNK, "$(P)PPS:PLL-RB")
+}
+
+record(bi, "$(P)PPS:PLL-RB") {
+	field(DESC, "PLL status")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(PL,i) $(PORT)")
+	field(ZNAM, "Opened")
+	field(ONAM, "Closed")
+	field(FLNK, "$(P)PPS:PLL-RB_")
+}
+
+record(longout, "$(P)PPS:PLL-RB_") {
+	field( DOL, "$(P)PPS:PLL-RB NPP")
+	field(OMSL, "closed_loop")
+	field( OUT, "$(P)PPS:PLL-Sel NPP")
+}
+
+record(bo, "$(P)PPS:PLLSave-Cmd") {
+	field(DESC, "Save to EEPROM")
+	field(DTYP, "stream")
+	field( OUT, "@sr725.proto sendCmd(PL!) $(PORT)")
+	field(FLNK, "$(P)PPS:PLLSave-RB")
+}
+
+record(bi, "$(P)PPS:PLLSave-RB") {
+	field(DESC, "PLL status")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(PL!,i) $(PORT)")
+	field(ZNAM, "Opened")
+	field(ONAM, "Closed")
+}
+
+# PLL Loop gain
+
+record(mbbo, "$(P)PPS:Gain-Sel") {
+	field(DESC, "Time const (hrs)")
+	field(DTYP, "stream")
+	field( OUT, "@sr725.proto setVal(PT,i) $(PORT)")
+	field(ZRST, "0.07")
+	field(ONST, "0.14")
+	field(TWST, "0.28")
+	field(THST, "0.57")
+	field(FRST, "1.14")
+	field(FVST, "2.28")
+	field(SXST, "4.55")
+	field(SVST, "9.10")
+	field(EIST, "18.20")
+	field(NIST, "36.41")
+	field(TEST, "72.82")
+	field(ELST, "145.64")
+	field(TVST, "291.27")
+	field(TTST, "582.54")
+	field(FTST, "1165.08")
+	field(FLNK, "$(P)PPS:Gain-RB")
+}
+
+record(mbbi, "$(P)PPS:Gain-RB") {
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(PT,i) $(PORT)")
+	field(ZRST, "0.07")
+	field(ONST, "0.14")
+	field(TWST, "0.28")
+	field(THST, "0.57")
+	field(FRST, "1.14")
+	field(FVST, "2.28")
+	field(SXST, "4.55")
+	field(SVST, "9.10")
+	field(EIST, "18.20")
+	field(NIST, "36.41")
+	field(TEST, "72.82")
+	field(ELST, "145.64")
+	field(TVST, "291.27")
+	field(TTST, "582.54")
+	field(FTST, "1165.08")
+	field(FLNK, "$(P)PPS:Gain-RB_")
+}
+
+record(longout, "$(P)PPS:Gain-RB_") {
+	field( DOL, "$(P)PPS:Gain-RB NPP")
+	field(OMSL, "closed_loop")
+	field( OUT, "$(P)PPS:Gain-Sel NPP")
+}
+
+
+record(bo, "$(P)PPS:GainSave-Cmd") {
+	field(DESC, "Save to EEPROM")
+	field(DTYP, "stream")
+	field( OUT, "@sr725.proto sendCmd(PT!) $(PORT)")
+	field(FLNK, "$(P)PPS:GainSave-RB")
+}
+
+record(mbbi, "$(P)PPS:GainSave-RB") {
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(PT!,i) $(PORT)")
+	field(ZRST, "0.07")
+	field(ONST, "0.14")
+	field(TWST, "0.28")
+	field(THST, "0.57")
+	field(FRST, "1.14")
+	field(FVST, "2.28")
+	field(SXST, "4.55")
+	field(SVST, "9.10")
+	field(EIST, "18.20")
+	field(NIST, "36.41")
+	field(TEST, "72.82")
+	field(ELST, "145.64")
+	field(TVST, "291.27")
+	field(TTST, "582.54")
+	field(FTST, "1165.08")
+}
+
+# PLL Stability factor
+
+record(ao, "$(P)PPS:Stab-Sel") {
+	field(DESC, "PLL stability factor")
+	field(DTYP, "stream")
+	field( OUT, "@sr725.proto setVal(PF,i) $(PORT)")
+	field(DRVH, "4")
+	field(HOPR, "4")
+	field(LOPR, "0")
+	field(DRVL, "0")
+	field(FLNK, "$(P)PPS:Stab-RB_")
+}
+
+record(ai, "$(P)PPS:Stab-RB_") {
+	field(DESC, "PLL stability factor")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(PF,i) $(PORT)")
+	field(HOPR, "4")
+	field(LOPR, "0")
+	field(FLNK, "$(P)PPS:Stab-RB")
+}
+
+record(calc, "$(P)PPS:Stab-RB") {
+	field(CALC, "2**(A-2)")
+	field(INPA, "$(P)PPS:Stab-RB_ NPP MS")
+	field(FLNK, "$(P)PPS:StabUpdate-RB_")
+}
+
+record(longout, "$(P)PPS:StabUpdate-RB_") {
+	field( DOL, "$(P)PPS:Stab-RB_ NPP")
+	field(OMSL, "closed_loop")
+	field( OUT, "$(P)PPS:Stab-Sel NPP")
+}
+
+record(bo, "$(P)PPS:StabSave-Cmd") {
+	field(DESC, "Save to EEPROM")
+	field(DTYP, "stream")
+	field( OUT, "@sr725.proto sendCmd(PF!) $(PORT)")
+	field(FLNK, "$(P)PPS:StabSave-RB")
+}
+
+record(ai, "$(P)PPS:StabSave-RB") {
+	field(DESC, "PLL stability factor")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(PF,i) $(PORT)")
+	field(HOPR, "4")
+	field(LOPR, "0")
+	field(FLNK, "$(P)PPS:StabSave-RB")
+}
+
+## "Slow" status
+
+record(mbbiDirect, "$(P)Sts:1-Sts_") {
+	field(DESC, "Supply and Lamp status")
+	field(SCAN, "10 second")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getStatus($(P)) $(PORT)")
+	field(PINI, "YES")
+	field(FLNK, "$(P)E:Heat-I")
+}
+record(mbbi, "$(P)Sts:Desc1-Sts_") {
+	field(ZRST, "Logic V. low")
+	field(ONST, "Logic V. high")
+	field(TWST, "Oven V. low")
+	field(THST, "Oven V. high")
+	field(FRST, "Lamp light high")
+	field(FVST, "Lamp light low")
+	field(SXST, "Gate V. low")
+	field(SVST, "Gate V. high")
+}
+record(mbbiDirect, "$(P)Sts:2-Sts_") {
+	field(DESC, "RF Synth. status")
+}
+record(mbbi, "$(P)Sts:Desc2-Sts_") {
+	field(ZRST, "synth. unlock")
+	field(ONST, "xtal vactor low")
+	field(TWST, "xtal vactor hi")
+	field(THST, "VCO low")
+	field(FRST, "VCO high")
+	field(FVST, "AGC low")
+	field(SXST, "AGC high")
+	field(SVST, "Bad PLL param.")
+}
+record(mbbiDirect, "$(P)Sts:3-Sts_") {
+	field(DESC, "Temp. Ctlr. status")
+}
+record(mbbi, "$(P)Sts:Desc3-Sts_") {
+	field(ZRST, "Lamp temp. low")
+	field(ONST, "Lamp temp. high")
+	field(TWST, "xtal temp. low")
+	field(THST, "xtal temp. high")
+	field(FRST, "Cell temp. low")
+	field(FVST, "Cell temp. high")
+	field(SXST, "Case temp. low")
+	field(SVST, "Case temp. high")
+}
+record(mbbiDirect, "$(P)Sts:4-Sts_") {
+	field(DESC, "FLL status")
+}
+record(mbbi, "$(P)Sts:Desc4-Sts_") {
+	field(ZRST, "F. lock warmup")
+	field(ONST, "F. lock off")
+	field(TWST, "10MHz EFC high")
+	field(THST, "10MHz EFC low")
+	field(FRST, "Cal. V. high")
+	field(FVST, "Cal. V. low")
+	field(SXST, "")
+	field(SVST, "")
+}
+record(mbbiDirect, "$(P)Sts:5-Sts_") {
+	field(DESC, "Ext. lock status")
+}
+record(mbbi, "$(P)Sts:Desc5-Sts_") {
+	field(ZRST, "PLL Disabled")
+	field(ONST, "<256 good ins")
+	field(TWST, "PLL Active")
+	field(THST, ">256 bad ins")
+	field(FRST, "Input >>1 pps")
+	field(FVST, "PLL restart")
+	field(SXST, "freq ctl. sat.")
+	field(SVST, "No 1 pps in")
+}
+record(mbbiDirect, "$(P)Sts:6-Sts_") {
+	field(DESC, "System status")
+}
+record(mbbi, "$(P)Sts:Desc6-Sts_") {
+	field(ZRST, "Lamp reset")
+	field(ONST, "Watchdog reset")
+	field(TWST, "Bad irq vector")
+	field(THST, "EEPROM wr err")
+	field(FRST, "EEPROM rd err")
+	field(FVST, "Bad cmd syntax")
+	field(SXST, "Bad cmd param.")
+	field(SVST, "System Reset")
+}
+
+record(ai, "$(P)E:Heat-I") {
+	field(DESC, "heater supply")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD1,f) $(PORT)")
+	field( EGU, "V")
+	field(ASLO, "10")
+	field(PREC, "2")
+	field( LOW, "22.0")
+	field( LSV, "MAJOR")
+	field(HIGH, "24.2")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)E:Logic-I")
+}
+
+record(ai, "$(P)E:Logic-I") {
+	field(DESC, "logic supply")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD2,f) $(PORT)")
+	field( EGU, "V")
+	field(ASLO, "10")
+	field(PREC, "2")
+	field( LOW, "22.0")
+	field( LSV, "MAJOR")
+	field(HIGH, "24.2")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)E:Gate-I")
+}
+
+record(ai, "$(P)E:Gate-I") {
+	field(DESC, "FET Gate")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD3,f) $(PORT)")
+	field( EGU, "V")
+	field(ASLO, "10")
+	field(PREC, "2")
+	field( LOW, "4.5")
+	field( LSV, "MAJOR")
+	field(HIGH, "5.2")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)E:Drain-I")
+}
+
+record(ai, "$(P)E:Drain-I") {
+	field(DESC, "FET Drain")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD4,f) $(PORT)")
+	field( EGU, "V")
+	field(ASLO, "10")
+	field(PREC, "2")
+	field( LOW, "2.9")
+	field( LSV, "MAJOR")
+	field(HIGH, "3.6")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)E:Crystal-I")
+}
+
+record(ai, "$(P)E:Crystal-I") {
+	field(DESC, "Crystal heater")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD5,f) $(PORT)")
+	field( EGU, "V")
+	field(PREC, "3")
+	field( LOW, "1.9")
+	field( LSV, "MAJOR")
+	field(HIGH, "2.4")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)E:Reson-I")
+}
+
+record(ai, "$(P)E:Reson-I") {
+	field(DESC, "Cell heater")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD6,f) $(PORT)")
+	field( EGU, "V")
+	field(PREC, "3")
+	field( LOW, "1.7")
+	field( LSV, "MAJOR")
+	field(HIGH, "2.6")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)E:Lamp-I")
+}
+
+record(ai, "$(P)E:Lamp-I") {
+	field(DESC, "Lamp supply")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD7,f) $(PORT)")
+	field( EGU, "V")
+	field(PREC, "3")
+	field( LOW, "1.0")
+	field( LSV, "MAJOR")
+	field(HIGH, "1.7")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)E:Photo-I")
+}
+
+record(ai, "$(P)E:Photo-I") {
+	field(DESC, "Photosignal")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD8,f) $(PORT)")
+	field( EGU, "V")
+	field(PREC, "3")
+	field( LOW, "0.9")
+	field( LSV, "MAJOR")
+	field(HIGH, "4.6")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)E:IV-I")
+}
+
+record(ai, "$(P)E:IV-I") {
+	field(DESC, "I/V converter")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD9,f) $(PORT)")
+	field( EGU, "V")
+	field(PREC, "3")
+	field(ASLO, "4")
+	field( LOW, "10.9")
+	field( LSV, "MAJOR")
+	field(HIGH, "14.6")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)T:Case-I")
+}
+
+record(ai, "$(P)T:Case-I") {
+	field(DESC, "Case temp.")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD10,f) $(PORT)")
+	field( EGU, "C")
+	field(PREC, "1")
+	field(ASLO, "100")
+	field( LOW, "65")
+	field( LSV, "MINOR")
+	field(HIGH, "75")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)T:Crystal-I")
+}
+
+record(ai, "$(P)T:Crystal-I") {
+	field(DESC, "Crystal temp.")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD11,f) $(PORT)")
+	field( EGU, "C")
+	field(PREC, "1")
+	field(ASLO, "100")
+	field( LOW, "90")
+	field( LSV, "MAJOR")
+	field(HIGH, "98")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)T:Cell-I")
+}
+
+record(ai, "$(P)T:Cell-I") {
+	field(DESC, "Cell temp.")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD12,f) $(PORT)")
+	field( EGU, "C")
+	field(PREC, "1")
+	field(ASLO, "100")
+	field( LOW, "90")
+	field( LSV, "MAJOR")
+	field(HIGH, "99")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)T:Lamp-I")
+}
+
+record(ai, "$(P)T:Lamp-I") {
+	field(DESC, "Lamp temp.")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD13,f) $(PORT)")
+	field( EGU, "C")
+	field(PREC, "1")
+	field(ASLO, "100")
+	field( LOW, "90")
+	field( LSV, "MAJOR")
+	field(HIGH, "99")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)E:Cal-I")
+}
+
+record(ai, "$(P)E:Cal-I") {
+	field(DESC, "Cal. voltage")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD14,f) $(PORT)")
+	field( EGU, "V")
+	field(PREC, "3")
+	field(ASLO, "1")
+	field( LOW, "2.0")
+	field( LSV, "MAJOR")
+	field(HIGH, "3.0")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)E:Gnd-I")
+}
+
+record(ai, "$(P)E:Gnd-I") {
+	field(DESC, "Ground")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD15,f) $(PORT)")
+	field( EGU, "V")
+	field(PREC, "3")
+	field(ASLO, "1")
+	field( LOW, "-0.05")
+	field( LSV, "MAJOR")
+	field(HIGH, "0.05")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)E:VCXO-I")
+}
+
+record(ai, "$(P)E:VCXO-I") {
+	field(DESC, "Vtor VCXO")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD16,f) $(PORT)")
+	field( EGU, "V")
+	field(PREC, "3")
+	field(ASLO, "4")
+	field( LOW, "10.0")
+	field( LSV, "MAJOR")
+	field(HIGH, "11.3")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)E:VCO-I")
+}
+
+record(ai, "$(P)E:VCO-I") {
+	field(DESC, "Vtor VCO")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD17,f) $(PORT)")
+	field( EGU, "V")
+	field(PREC, "3")
+	field(ASLO, "4")
+	field( LOW, "10.0")
+	field( LSV, "MAJOR")
+	field(HIGH, "12.0")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)E:Gain-I")
+}
+
+record(ai, "$(P)E:Gain-I") {
+	field(DESC, "f mult. ctrl")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD18,f) $(PORT)")
+	field( EGU, "V")
+	field(PREC, "3")
+	field(ASLO, "4")
+	field( LOW, "8.9")
+	field( LSV, "MAJOR")
+	field(HIGH, "10.2")
+	field( HSV, "MAJOR")
+	field(FLNK, "$(P)E:Synth-I")
+}
+
+record(ai, "$(P)E:Synth-I") {
+	field(DESC, "Synth lock")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(AD19,f) $(PORT)")
+	field( EGU, "V")
+	field(PREC, "3")
+	field( LOW, "4.3")
+	field( LSV, "MAJOR")
+	field(HIGH, "5.3")
+	field( HSV, "MAJOR")
+}
+
+## "Fast" status
+
+record(ai, "$(P)10MHz:Err-I") {
+	field(SCAN, "2 second")
+	field(DESC, "10MHz err")
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getSig($(P)RefSig-I) $(PORT)")
+	field(LOLO, "-1000")
+	field(LLSV, "MAJOR")
+	field( LOW, "-200")
+	field( LSV, "MINOR")
+	field(HIGH, "200")
+	field( HSV, "MINOR")
+	field(HIHI, "1000")
+	field(HHSV, "MAJOR")
+	field(FLNK, "$(P)K:TagRaw-I")
+}
+
+record(ai, "$(P)RefSig-I") {
+	field(DESC, "Rb ref. strength")
+	field( LOW, "700")
+	field( LSV, "MINOR")
+}
+
+record(longin, "$(P)K:TagRaw-I") {
+	field(DTYP, "stream")
+	field( INP, "@sr725.proto getVal(TT,i) $(PORT)")
+	field( EGU, "ns")
+	field(FLNK, "$(P)K:Tag-I")
+}
+
+record(calc, "$(P)K:Tag-I") {
+	field(DESC, "Input PPS delta")
+	field(INPA, "$(P)K:TagRaw-I")
+	field(INPB, "1e9")
+	field(INPC, "500e6")
+	field(CALC, "(A>C)?(A-B):A")
+	field(HOPR, "500e6")
+	field(LOPR, "-500e6")
+	field( EGU, "ns")
+}

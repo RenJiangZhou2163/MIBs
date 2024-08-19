@@ -1,0 +1,2202 @@
+-- *****************************************************************
+-- Mpls_Ldp.mib 
+-- MPLS Label Distribution Protocol MIB Definitions
+-- chenransheng187417
+-- 2009-11-3
+--
+-- Copyright (c) 1985-2008 by ZTE Corp.
+-- All rights reserved.
+-- *****************************************************************
+--
+
+ZXR10-MPLS-LDP-MIB DEFINITIONS ::= BEGIN  
+     
+IMPORTS
+       OBJECT-TYPE, 
+       MODULE-IDENTITY,  
+       NOTIFICATION-TYPE,             
+       Counter32,Counter64,Unsigned32,enterprises,IpAddress
+             FROM SNMPv2-SMI
+       DisplayString,TimeStamp
+             FROM SNMPv2-TC 
+
+       MplsLdpIdentifier
+             FROM MPLS-TC-STD-MIB                          --  [RFC3811]
+
+       InetAddressPrefixLength,
+       InetAddressType,
+       InetAddress
+             FROM INET-ADDRESS-MIB;                         --  [RFC3291]
+             
+             
+zxr10mplsLdpMIB MODULE-IDENTITY
+         LAST-UPDATED "201511260900Z" 
+         ORGANIZATION "Multiprotocol Label Switching (mpls)
+                       Working Group"
+         CONTACT-INFO
+             "Joan Cucchiara (jcucchiara@crescentnetworks.com)
+              Crescent Networks
+
+              Hans Sjostrand (hans@ipunplugged.com)
+              ipUnplugged
+
+              James V. Luciani (jluciani@crescentnetworks.com)
+              Crescent Networks
+
+              Working Group Chairs:
+              George Swallow,   email: swallow@cisco.com
+              Vijay Srinivasan, email: vijay@cosinecom.com
+              MPLS Working Group, email: mpls@uu.net
+         "
+         DESCRIPTION
+             "This MIB contains managed object definitions for the
+             'Multiprotocol Label Switching, Label Distribution
+             Protocol, LDP' document."
+         REVISION "201511260900Z"
+         DESCRIPTION
+             "modify: change MAX-ACCESS from read-only to not-accessible
+                      of below nodes in zxr10LdpBfdTable:
+                   zxr10LdpBfdAddrType
+                   zxr10LdpBfdDstAddr
+                   zxr10LdpBfdPrefixLength
+             "
+         REVISION "201401090900Z"
+         DESCRIPTION
+             "add: zxr10LdpIgpSyncIntTable
+              "
+         REVISION "201406261200Z"
+         DESCRIPTION
+             "modify: change DEFVAL from number to defined word 
+                      of below tables or nodes:
+                   zxr10LdpGr zxr10LdpLabelRetentionMode
+                   zxr10LdpLspControlMode zxr10LdpGlblAutoCfgMode
+                   zxr10LdpV6GlblAutoCfgMode zxr10LdpV4IntfLblDistributeMode
+                   zxr10LdpV4IntfGtsm zxr10LdpV6IntfLblDistributeMode
+             "    
+         REVISION "201403051200Z"
+         DESCRIPTION
+             "modify: change zxr10LdpConnWithDod STATUS to 'obsolete'
+             "    
+         REVISION "201402271200Z"
+         DESCRIPTION
+             "modify: modify word spell fault of below 
+                      tables or nodes decription:
+                   zxr10LdpLabelAdvertise zxr10LdpInstCfgEntry
+                   zxr10LdpFecAddr zxr10LdpGrSessNeighborLiveTime
+                   zxr10LdpInterfaceEntry zxr10LdpLabelAdvertiseEntry
+                   zxr10LdpBfdSrcAddr
+             "
+         REVISION "201401071200Z"
+         DESCRIPTION
+             "add: zxr10LdpV6TrafficCntAcl in zxr10LdpInstCfgTable
+                   zxr10LdpV6GlblAutoCfgMode in zxr10LdpInstCfgTable
+                   zxr10LdpV6DisAutoCfgIntTable
+              modify: modify zxr10LdpTrafficCntAcl node description
+                      modify zxr10LdpGlblAutoCfgMode node description
+              "
+         REVISION "201312231200Z"
+         DESCRIPTION
+             "add: zxr10LdpPeerBfdDelay,zxr10LdpPeerBfdTime
+                   in zxr10LdpPeerBfdTable
+             "    
+         REVISION "201311041200Z"
+         DESCRIPTION
+             "add: zxr10LdpBfdSrcAddr,zxr10LdpBfdProtectBind
+                   in zxr10LdpBfdTable"
+         REVISION "201310281200Z"
+         DESCRIPTION
+             "modify: modify word spell fault of below 
+                      tables or nodes decription:
+                   zxr10LdpGrTable zxr10LdpGrEntry
+                   zxr10LdpGrSessMaxRecoveryTime zxr10LdpMd5PwdFlag
+                   zxr10LdpSessTable zxr10LdpSessHelloNumber
+                   zxr10LdpSessTcpRetry zxr10LdpDirectHelloHoldTime
+                   zxr10LdpDirectHelloInterTime zxr10LdpInstanceNo
+                   zxr10LdpInstNo zxr10LdpV4IntfLdpInstNo
+                   zxr10LdpV6IntfLdpInstNo zxr10LdpGtsmLdpInstNo
+                   zxr10LdpPeerBfdLdpInstNo zxr10LdpV4DisACIntfInstNo
+             "
+         REVISION "201307261200Z"
+         DESCRIPTION
+             "add: zxr10LdpGlblAutoCfgMode in zxr10LdpInstCfgTable
+                   zxr10LdpV4DisAutoCfgIntTable
+             "
+         REVISION "201307091200Z"
+         DESCRIPTION
+             "add: zxr10LdpLostIngressOctets in zxr10LdpFecTable
+                   zxr10LdpLostIngressPackets in zxr10LdpFecTable
+                   zxr10LdpLostTransitOctets in zxr10LdpFecTable
+                   zxr10LdpLostTransitPackets in zxr10LdpFecTable
+             "
+         REVISION "201305081200Z"
+         DESCRIPTION
+             "add: zxr10LdpTrafficCntAcl in zxr10LdpInstCfgTable
+              modify: change SYNTAX from Counter32 to Counter64
+                      of below nodes in zxr10LdpFecTable:
+                      zxr10LdpIngressOctets
+                      zxr10LdpIngressPackets
+                      zxr10LdpTransitOctets
+                      zxr10LdpTransitPackets
+             "
+         REVISION "201302281200Z"
+         DESCRIPTION
+             "add: zxr10LdpInstCfgTable
+                   zxr10LdpV4IntfCfgTable
+                   zxr10LdpV6IntfCfgTable
+                   zxr10LdpGtsmTable
+                   zxr10LdpPeerBfdTable
+             "
+         REVISION "200108161200Z"
+         DESCRIPTION
+             "Initial revision."
+         ::= { zxr10MplsLdp 1} 
+     
+      zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+      zxr10 OBJECT IDENTIFIER ::= { zte 3} 
+      zxr10MplsLdp OBJECT IDENTIFIER ::= { zxr10 314}     
+   
+      zxr10LdpLsrAttrObjects OBJECT IDENTIFIER ::={ zxr10mplsLdpMIB 14}
+      
+
+--********************************************         
+--difinition of objects ::  
+--********************************************   
+
+zxr10LdpTrapVarsObject  OBJECT IDENTIFIER ::= { zxr10mplsLdpMIB 5 }
+
+zxr10LdpLspFec OBJECT-TYPE
+            SYNTAX        InetAddress
+            MAX-ACCESS    accessible-for-notify
+            STATUS        current
+            DESCRIPTION
+            "The LSP FEC in IP address format."
+            ::= { zxr10LdpTrapVarsObject 1 }
+
+zxr10LdpLspFecLen OBJECT-TYPE
+            SYNTAX        InetAddressPrefixLength
+            MAX-ACCESS    accessible-for-notify
+            STATUS        current
+            DESCRIPTION
+            "The length in bits of the LSP FEC prefix."
+            ::= { zxr10LdpTrapVarsObject 2 }
+        
+zxr10LdpLspDownReason OBJECT-TYPE
+            SYNTAX        INTEGER { 
+                            null (0),
+                            topologyChanged (1), 
+                            receivedWithdrawl (2),
+                            neighborDown (3),
+                            filterChanged (4),
+                            bfdSessionDown (5),
+                            unknown (6) }
+            MAX-ACCESS    accessible-for-notify
+            STATUS        current
+            DESCRIPTION
+            "The reason why the LSP went down. Can be one of the following:
+            the topology changed, the neighbor withdrew the label, 
+            the neighbor went down, the filter changed, the BFD session
+            went down or the reason is unknown."
+            ::= { zxr10LdpTrapVarsObject 3 }
+
+zxr10LdpRtrid OBJECT-TYPE
+            SYNTAX        InetAddress
+            MAX-ACCESS    accessible-for-notify
+            STATUS        current
+            DESCRIPTION
+            "The router id of the sending router."
+            ::= { zxr10LdpTrapVarsObject 4 }
+
+zxr10LdpSesDownReason OBJECT-TYPE
+            SYNTAX        INTEGER { 
+                            null (0),
+                            holdExpired (1), 
+                            connectionExpired (2),
+                            allAdjacenciesDown (3),
+                            badTLV (4),
+                            badPDU (5),
+                            connectionError (6),
+                            connectionReset (7),
+                            peerSentNotification (8),
+                            unexpectedEOF (9),
+                            clearneighbor (10),
+                            initError (11),
+                            gracefulRestartAbort (12),
+                            cliCommand (13),
+                            unknown (14) }
+            MAX-ACCESS    accessible-for-notify
+            STATUS        current
+            DESCRIPTION
+            "The reason why the session transitioned to nonexistent state. 
+            Can be one of the following:
+            unknown reason, hold time expired, connection time expired, 
+            all adjacencies down,  received bad tlv, received bad pdu, 
+            connection error, connection reset, received notification from peer, 
+            received unexpected end-of-file, clear mpls ldp, 
+            error during initialization, graceful restart was aborted or client
+            command."
+            ::= { zxr10LdpTrapVarsObject 5 }
+
+zxr10LdpOutIfName  OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS accessible-for-notify
+            STATUS     current
+            DESCRIPTION
+                    "The name of the interface."
+            ::= { zxr10LdpTrapVarsObject 6}
+
+zxr10LdpLspFecAddrType OBJECT-TYPE
+            SYNTAX        InetAddressType
+            MAX-ACCESS    accessible-for-notify
+            STATUS        current
+            DESCRIPTION
+            "The Internet address type of the LSP FEC ."
+            ::= { zxr10LdpTrapVarsObject 7 }
+
+zxr10LdpRtridAddrType OBJECT-TYPE
+            SYNTAX        InetAddressType
+            MAX-ACCESS    accessible-for-notify
+            STATUS        current
+            DESCRIPTION
+            "The Internet address type of the router id ."
+            ::= { zxr10LdpTrapVarsObject 8 }
+            
+--********************************************         
+--definition of tables::  
+--********************************************    
+
+--*************zxr10LdpFecTable*************** 
+zxr10LdpFecTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10LdpFecEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION "Fec Table. This table contains
+                    one entry per fec table."
+        
+            ::= { zxr10mplsLdpMIB 6 }
+
+zxr10LdpFecEntry OBJECT-TYPE
+            SYNTAX     Zxr10LdpFecEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                "The parameter of a fec entity containing statistics 
+                information about a particular LDP FEC."
+            INDEX { zxr10LdpFecIndex }
+            ::= { zxr10LdpFecTable 1 }
+
+Zxr10LdpFecEntry ::= SEQUENCE {
+            zxr10LdpFecIndex          Unsigned32,
+            zxr10LdpFecType           INTEGER,
+            zxr10LdpFecAddrType       InetAddressType,
+            zxr10LdpFecAddr           InetAddress,
+            zxr10LdpFecAddrLength     InetAddressPrefixLength,
+            zxr10LdpFecState          INTEGER,
+            zxr10LdpIngressOctets     Counter64,
+            zxr10LdpIngressPackets    Counter64,
+            zxr10LdpTransitOctets     Counter64,
+            zxr10LdpTransitPackets    Counter64,
+            zxr10LdpFecLspUp          TimeStamp,
+            zxr10LdpFecLspDown        TimeStamp,
+            zxr10LdpFecLspDownReason  INTEGER,
+            zxr10LdpLostIngressOctets   Counter64,
+            zxr10LdpLostIngressPackets  Counter64,
+            zxr10LdpLostTransitOctets   Counter64,
+            zxr10LdpLostTransitPackets  Counter64   }
+
+zxr10LdpFecIndex OBJECT-TYPE
+            SYNTAX      Unsigned32
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION "The index which uniquely identifies this entry."
+            ::= { zxr10LdpFecEntry 1 }
+
+zxr10LdpFecType OBJECT-TYPE
+            SYNTAX      INTEGER { 
+                            indirect (0),
+                            direct (1),
+                            me (2),
+                            invalid (3) }
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION 
+            "The type of this LDP FEC. If the value of this object
+                is 'indirect (0)' then the FEC type described by this
+                row is for address prefixes and not included in local 
+                address list. If the value of this object is 'direct 
+                (1)' then the FEC type described by this row is for 
+                address prefixes and included in local address list. 
+                If the value of this object is 'me(2)' then the FEC 
+                type described by this row is for a host address. If 
+                the value of this object is 'invalid(3)' then the FEC 
+                value is 'FFFF'."
+            ::= { zxr10LdpFecEntry 2 }
+            
+zxr10LdpFecAddrType  OBJECT-TYPE
+         SYNTAX      InetAddressType
+         MAX-ACCESS  read-only
+         STATUS      current
+         DESCRIPTION
+             "The value of this object is the type of the
+             Internet address.  The value of this object,
+             decides how the value of the zxr10LdpFecAddr object
+             is interpreted."
+         REFERENCE
+             "RFC3036, Section 3.4.1. FEC TLV."
+         ::= { zxr10LdpFecEntry 3 }
+            
+zxr10LdpFecAddr OBJECT-TYPE
+            SYNTAX      InetAddress
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION "LDP FEC address."
+            ::= { zxr10LdpFecEntry 4 }
+
+zxr10LdpFecAddrLength OBJECT-TYPE
+            SYNTAX      InetAddressPrefixLength
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION "The LDP FEC length (in bits)."
+            ::= { zxr10LdpFecEntry 5 }
+            
+zxr10LdpFecState OBJECT-TYPE
+            SYNTAX      INTEGER {
+                    ok(1),
+                    egress(2),
+                    noOutLabel(3),
+                    noInLabel(4)
+                }
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The state of this LDP FEC. If the FEC exists with the 
+                 local popular tag and the outgoing label then the value 
+                 of this object is 'ok(1)'. If the FEC exists with the 
+                 local explicit or implicit null tag then the value of 
+                 this object is 'egress(2)'. If the FEC exists with the 
+                 local popluar tag only then the value of this object is 
+                 'noOutLabel(3)'. If the FEC exists without local tag then 
+                 the value of this object is 'noInLabel(4)'."
+            ::= { zxr10LdpFecEntry 6 } 
+
+zxr10LdpIngressOctets OBJECT-TYPE
+            SYNTAX      Counter64
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The number of octets of traffic originated on 
+                 this box, forwarded over the current LDP FEC. The 
+                 number reported is not realtime and may be subject 
+                 to several minutes delay. The delay is controllable 
+                 by ldp statistics gathering interval, which by 
+                 default is 5 minutes."
+            ::= { zxr10LdpFecEntry 7 }
+            
+zxr10LdpIngressPackets OBJECT-TYPE
+            SYNTAX      Counter64
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The number of packets of traffic originated on 
+                 this box, forwarded over the current LDP FEC. The 
+                 number reported is not realtime and may be subject 
+                 to several minutes delay. The delay is controllable 
+                 by ldp statistics gathering interval, which by 
+                 default is 5 minutes."
+            ::= { zxr10LdpFecEntry 8 }  
+            
+zxr10LdpTransitOctets OBJECT-TYPE
+            SYNTAX      Counter64
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The number of octets of traffic destined to this FEC, 
+                 originated on a different box, forwarded over the 
+                 current LDP FEC. The number reported is not realtime 
+                 and may be subject to several minutes delay. The delay 
+                 is controllable by ldp statistics gathering interval, 
+                 which by default is 5 minutes."
+            ::= { zxr10LdpFecEntry 9 }  
+            
+zxr10LdpTransitPackets OBJECT-TYPE
+            SYNTAX      Counter64
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The number of packets of traffic destined to this FEC, 
+                 originated on a different box, forwarded over the 
+                 current LDP FEC. The number reported is not realtime 
+                 and may be subject to several minutes delay. The delay 
+                 is controllable by ldp statistics gathering interval, 
+                 which by default is 5 minutes."
+            ::= { zxr10LdpFecEntry 10 }
+
+zxr10LdpFecLspUp OBJECT-TYPE
+            SYNTAX      TimeStamp
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The value of sysUpTime at the time of the most recent 
+                 change in state of LSP about FEC from down to up.
+                 If no such changes have occurred since the last
+                 re-initialization of the local management subsystem,
+                 then this object contains a zero value."
+            ::= { zxr10LdpFecEntry 11 }
+
+zxr10LdpFecLspDown OBJECT-TYPE
+            SYNTAX      TimeStamp
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The value of sysUpTime at the time of the most recent 
+                 change in state of LSP about FEC from up to down.
+                 If no such changes have occurred since the last
+                 re-initialization of the local management subsystem,
+                 then this object contains a zero value."
+            ::= { zxr10LdpFecEntry 12 }
+
+zxr10LdpFecLspDownReason OBJECT-TYPE
+            SYNTAX        INTEGER { 
+                            null (0),
+                            topologyChanged (1), 
+                            receivedWithdrawl (2),
+                            neighborDown (3),
+                            filterChanged (4),
+                            bfdSessionDown (5),
+                            unknown (6) }
+            MAX-ACCESS    read-only
+            STATUS        current
+            DESCRIPTION
+            "The reason why the LSP went down about the most recent 
+                change in state of LSP from up to down. 
+                Can be one of the following:
+            the topology changed, the neighbor withdrew the label, 
+            the neighbor went down, the filter changed, the BFD session
+            went down or the reason is unknown. 
+            If no such changes have occurred since the last
+                re-initialization of the local management subsystem,
+                then this object contains a zero value."
+            ::= { zxr10LdpFecEntry 13 }
+            
+zxr10LdpLostIngressOctets OBJECT-TYPE
+            SYNTAX      Counter64
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The number of octets of traffic lost on 
+                 this box, forwarded over the current LDP FEC. The 
+                 number reported is not realtime and may be subject 
+                 to several minutes delay. The delay is controllable 
+                 by ldp statistics gathering interval, which by 
+                 default is 5 minutes."
+            ::= { zxr10LdpFecEntry 14 }
+            
+zxr10LdpLostIngressPackets OBJECT-TYPE
+            SYNTAX      Counter64
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The number of packets of traffic lost on 
+                 this box, forwarded over the current LDP FEC. The 
+                 number reported is not realtime and may be subject 
+                 to several minutes delay. The delay is controllable 
+                 by ldp statistics gathering interval, which by 
+                 default is 5 minutes."
+            ::= { zxr10LdpFecEntry 15 }  
+            
+zxr10LdpLostTransitOctets OBJECT-TYPE
+            SYNTAX      Counter64
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The number of lost octets of traffic destined to this FEC, 
+                 originated on a different box, forwarded over the 
+                 current LDP FEC. The number reported is not realtime 
+                 and may be subject to several minutes delay. The delay 
+                 is controllable by ldp statistics gathering interval, 
+                 which by default is 5 minutes."
+            ::= { zxr10LdpFecEntry 16 }  
+            
+zxr10LdpLostTransitPackets OBJECT-TYPE
+            SYNTAX      Counter64
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                 "The number of lost packets of traffic destined to this FEC, 
+                 originated on a different box, forwarded over the 
+                 current LDP FEC. The number reported is not realtime 
+                 and may be subject to several minutes delay. The delay 
+                 is controllable by ldp statistics gathering interval, 
+                 which by default is 5 minutes."
+            ::= { zxr10LdpFecEntry 17 }
+
+--*************zxr10LdpBfdTable*************** 
+zxr10LdpBfdTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10LdpBfdEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "Bfd Table. This table contains
+                    one entry per bfd table."
+            ::= { zxr10mplsLdpMIB 7 } 
+            
+zxr10LdpBfdEntry OBJECT-TYPE
+            SYNTAX     Zxr10LdpBfdEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The parameter of a bfd entity."
+            INDEX { zxr10LdpBfdAddrType, zxr10LdpBfdDstAddr, zxr10LdpBfdPrefixLength }
+            ::= { zxr10LdpBfdTable 1 }
+            
+Zxr10LdpBfdEntry ::= SEQUENCE {
+                zxr10LdpBfdAddrType    
+                    InetAddressType,
+                zxr10LdpBfdDstAddr    
+                    InetAddress,
+                zxr10LdpBfdPrefixLength
+                    InetAddressPrefixLength,  
+                zxr10LdpBfdMinTxInterval
+                    Unsigned32, 
+                zxr10LdpBfdMinRxInterval
+                    Unsigned32,   
+                zxr10LdpBfdMult
+                    Unsigned32,   
+                zxr10LdpBfdLspEffect
+                    INTEGER, 
+                zxr10LdpBfdIfUp 
+                    INTEGER,
+                zxr10LdpBfdSrcAddr    
+                    InetAddress,
+                zxr10LdpBfdProtectBind
+                    INTEGER             
+                }   
+zxr10LdpBfdAddrType  OBJECT-TYPE
+            SYNTAX     InetAddressType
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    " The value of this object is the type of the
+                      Internet address.  The value of this object,
+                      decides how the value of the zxr10LdpBfdDstAddr
+                      object is interpreted."
+            ::= { zxr10LdpBfdEntry 1 } 
+                
+zxr10LdpBfdDstAddr  OBJECT-TYPE
+            SYNTAX     InetAddress
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    " The address about FEC related to BFD."
+            ::= { zxr10LdpBfdEntry 2 } 
+            
+zxr10LdpBfdPrefixLength  OBJECT-TYPE
+            SYNTAX     InetAddressPrefixLength
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The mask length of the FEC related to BFD."
+            ::= { zxr10LdpBfdEntry 3 }
+            
+zxr10LdpBfdMinTxInterval  OBJECT-TYPE
+            SYNTAX     Unsigned32
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The time span that two control package is send."
+            ::= { zxr10LdpBfdEntry 4 }
+            
+zxr10LdpBfdMinRxInterval  OBJECT-TYPE
+            SYNTAX     Unsigned32
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The time span that two control package is received."
+            ::= { zxr10LdpBfdEntry 5 }
+            
+zxr10LdpBfdMult  OBJECT-TYPE
+            SYNTAX     Unsigned32
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If this parameter multiply zxr10LdpBfdMinRxInterval 
+                    a control message is no received it means the lsp has 
+                    some problem."
+            ::= { zxr10LdpBfdEntry 6 }
+                                  
+zxr10LdpBfdLspEffect  OBJECT-TYPE
+            SYNTAX     INTEGER{true(1),false(0)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "A fec needs bfd protection."
+            ::= { zxr10LdpBfdEntry 7 }   
+            
+zxr10LdpBfdIfUp  OBJECT-TYPE
+            SYNTAX     INTEGER{false(0),true(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the bfd is up."
+            ::= { zxr10LdpBfdEntry 8 }  
+
+zxr10LdpBfdSrcAddr  OBJECT-TYPE
+            SYNTAX     InetAddress
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    " The source address specified with package of LSP PING."
+            ::= { zxr10LdpBfdEntry 9 }
+
+zxr10LdpBfdProtectBind  OBJECT-TYPE
+            SYNTAX     INTEGER{false(1),true(2)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "FRR or ECMP protect bind flag.
+                     If the value is 1,then not support protect bind.
+                     If the value is 2,then support protect bind."
+            ::= { zxr10LdpBfdEntry 10 }
+--*************zxr10LdpGrTable***************   
+zxr10LdpGrTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10LdpGrEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "GR Table. This table contains
+                    one entry per GR table."
+            ::= { zxr10mplsLdpMIB 8 }  
+            
+zxr10LdpGrEntry OBJECT-TYPE
+            SYNTAX     Zxr10LdpGrEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The parameter of a GR entity about session."
+            INDEX { zxr10LdpGrSessLocalId, zxr10LdpGrSessPeerId }
+            ::= { zxr10LdpGrTable 1 }  
+            
+Zxr10LdpGrEntry ::= SEQUENCE {
+                zxr10LdpGrSessLocalId  
+                    MplsLdpIdentifier,
+                zxr10LdpGrSessPeerId  
+                    MplsLdpIdentifier,
+                zxr10LdpGrSessRestart    
+                    INTEGER,
+                zxr10LdpGrSessNeighborLiveTime
+                    Unsigned32,  
+                zxr10LdpGrSessMaxRecoveryTime
+                    Unsigned32, 
+                zxr10LdpSessIsInGr
+                    INTEGER,   
+                zxr10LdpGrSessState
+                    INTEGER,   
+                zxr10LdpGrSessWaitTime
+                    Unsigned32                                   
+                }   
+
+zxr10LdpGrSessLocalId  OBJECT-TYPE
+            SYNTAX     MplsLdpIdentifier
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The identifier of local lsr used to identify a session relating GR."
+            ::= { zxr10LdpGrEntry 1 } 
+
+zxr10LdpGrSessPeerId  OBJECT-TYPE
+            SYNTAX     MplsLdpIdentifier
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The identifier of peer lsr used to identify a session relating GR."
+            ::= { zxr10LdpGrEntry 2 }  
+            
+zxr10LdpGrSessRestart  OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the session supports GR."
+            ::= { zxr10LdpGrEntry 3 } 
+
+zxr10LdpGrSessNeighborLiveTime  OBJECT-TYPE
+            SYNTAX     Unsigned32
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The max time(seconds) of the lsr can wait to reconnect
+                     with peer lsr in GR process."
+            ::= { zxr10LdpGrEntry 4 } 
+            
+zxr10LdpGrSessMaxRecoveryTime  OBJECT-TYPE
+            SYNTAX     Unsigned32
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The max time(seconds) of the session mapping the label from the peer lsr 
+                    after reconnect with peer lsr in GR process."
+            ::= { zxr10LdpGrEntry 5 }             
+                
+zxr10LdpSessIsInGr  OBJECT-TYPE
+            SYNTAX     INTEGER { false(0), true(1) }
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the session is in GR process."
+            ::= { zxr10LdpGrEntry 6 } 
+                
+zxr10LdpGrSessState  OBJECT-TYPE
+            SYNTAX     INTEGER{normal(0),reconnect(1),recovery(2)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "Indicates the status of the GR session."
+            ::= { zxr10LdpGrEntry 7 }  
+              
+zxr10LdpGrSessWaitTime  OBJECT-TYPE
+            SYNTAX     Unsigned32
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The remaining time(seconds) of waiting for session reconnection  
+                     and recovering in GR process. If the value of zxr10LdpSessIsInGr
+                     is false, then the value of this object is zero."
+            ::= { zxr10LdpGrEntry 8 } 
+
+--*************zxr10LdpInterfaceTable***************   
+zxr10LdpInterfaceTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10LdpInterfaceEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "Interface Table. This table contains
+                    one entry per interface table."
+            ::= { zxr10mplsLdpMIB 9 }   
+            
+zxr10LdpInterfaceEntry OBJECT-TYPE
+            SYNTAX     Zxr10LdpInterfaceEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The parameter of an interface entity relating LDP."
+            INDEX { zxr10LdpInterfaceType, zxr10LdpInterfaceIndex }
+            ::= { zxr10LdpInterfaceTable 1 }
+
+Zxr10LdpInterfaceEntry ::= SEQUENCE {
+                zxr10LdpInterfaceType
+                    InetAddressType,
+                zxr10LdpInterfaceIndex 
+                    Unsigned32,
+                zxr10LdpInterfaceName    
+                    DisplayString,
+                zxr10LdpInterfaceAddr
+                    InetAddress,  
+                zxr10LdpInterfaceAdminStatus
+                    INTEGER, 
+                zxr10LdpInterfaceOperStatus
+                    INTEGER,
+                zxr10LdpInterfaceTransAddress
+                    InetAddress,    
+                zxr10LdpInterfaceTransAddrType
+                    InetAddressType                     
+                } 
+
+zxr10LdpInterfaceType  OBJECT-TYPE
+            SYNTAX     InetAddressType
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    " The value of this object is the type of the
+                      Internet address.  The value of this object,
+                      decides how the value of the zxr10LdpInterfaceAddr
+                      object is interpreted."
+            ::= { zxr10LdpInterfaceEntry 1 }
+         
+zxr10LdpInterfaceIndex  OBJECT-TYPE
+            SYNTAX     Unsigned32
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The index of the interface."
+            ::= { zxr10LdpInterfaceEntry 2 }
+            
+zxr10LdpInterfaceName  OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The name of the interface."
+            ::= { zxr10LdpInterfaceEntry 3}  
+            
+zxr10LdpInterfaceAddr  OBJECT-TYPE
+            SYNTAX     InetAddress
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The host ip address of the interface."
+            ::= { zxr10LdpInterfaceEntry 4 }  
+            
+zxr10LdpInterfaceAdminStatus  OBJECT-TYPE
+            SYNTAX     INTEGER{down(0),up(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The administer status of the interface."
+            ::= { zxr10LdpInterfaceEntry 5 }  
+            
+zxr10LdpInterfaceOperStatus  OBJECT-TYPE
+            SYNTAX     INTEGER{down(0),up(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The optrater status of the interface."
+            ::= { zxr10LdpInterfaceEntry 6 } 
+
+zxr10LdpInterfaceTransAddress  OBJECT-TYPE
+            SYNTAX     InetAddress
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "IP address to use for LDP transport address."
+            ::= { zxr10LdpInterfaceEntry 7 }            
+
+zxr10LdpInterfaceTransAddrType  OBJECT-TYPE
+            SYNTAX     InetAddressType
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    " The value of this object is the type of the
+                      Internet address.  The value of this object,
+                      decides how the value of the zxr10LdpInterfaceTransAddress
+                      object is interpreted."
+            ::= { zxr10LdpInterfaceEntry 8 }            
+
+--*************zxr10LdpLabelAdvertiseTable*************** 
+zxr10LdpLabelAdvertiseTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10LdpLabelAdvertiseEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "Acl Table. This table contains
+                    one entry per acl table."
+            ::= { zxr10mplsLdpMIB 10 }   
+            
+            
+zxr10LdpLabelAdvertiseEntry OBJECT-TYPE
+            SYNTAX     Zxr10LdpLabelAdvertiseEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The parameter of an acl entry relating label advertisement."
+            INDEX { zxr10LdpLabelAdvertiseForACL }
+            ::= { zxr10LdpLabelAdvertiseTable 1 }  
+            
+Zxr10LdpLabelAdvertiseEntry ::= SEQUENCE {
+                zxr10LdpLabelAdvertiseForACL    
+                    DisplayString,
+                zxr10LdpLabelAdvertiseToAcl
+                    DisplayString                             
+                } 
+
+zxr10LdpLabelAdvertiseForACL  OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    " The acl number used to filtrate which labels is acceptable."
+            ::= { zxr10LdpLabelAdvertiseEntry 1 }  
+            
+zxr10LdpLabelAdvertiseToAcl  OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The acl number used to filtrate destination of the label sent."
+            ::= { zxr10LdpLabelAdvertiseEntry 2 }           
+
+                
+--*************zxr10LdpEntityHelloIntervTable*************** 
+zxr10LdpEntityHelloIntervTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10LdpEntityHelloIntervEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "Hello Table. This table contains
+                    one entry per hello table."
+            ::= { zxr10mplsLdpMIB 11 }   
+            
+zxr10LdpEntityHelloIntervEntry OBJECT-TYPE
+            SYNTAX     Zxr10LdpEntityHelloIntervEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The parameter of a hello entity entry."
+            INDEX { zxr10LdpEntityHelloLocalId, zxr10LdpEntityHelloPeerId, zxr10LdpEntityHelloMibIndex }
+            ::= { zxr10LdpEntityHelloIntervTable 1 } 
+            
+Zxr10LdpEntityHelloIntervEntry ::= SEQUENCE {
+                zxr10LdpEntityHelloLocalId 
+                    MplsLdpIdentifier,
+                zxr10LdpEntityHelloPeerId 
+                    MplsLdpIdentifier,
+                zxr10LdpEntityHelloMibIndex
+                    Unsigned32,
+                zxr10LdpEntityHelloIfIndex    
+                    Unsigned32,
+                zxr10LdpEntityHelloNexthopAddrType
+                    InetAddressType,
+                zxr10LdpEntityHelloNexthopAddr
+                    InetAddress,  
+                zxr10LdpEntityHelloHoldTimer
+                    Unsigned32,
+                zxr10LdpEntityHelloSendTimer
+                    Unsigned32
+                }  
+
+zxr10LdpEntityHelloLocalId  OBJECT-TYPE
+            SYNTAX     MplsLdpIdentifier
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The identifier of local lsr used to identify a session."
+            ::= { zxr10LdpEntityHelloIntervEntry 1 } 
+                   
+zxr10LdpEntityHelloPeerId  OBJECT-TYPE
+            SYNTAX     MplsLdpIdentifier
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The identifier of peer lsr used to identify a session."
+            ::= { zxr10LdpEntityHelloIntervEntry 2 }   
+
+zxr10LdpEntityHelloMibIndex  OBJECT-TYPE
+            SYNTAX     Unsigned32
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "An identifier for this specific adjacency."
+            ::= { zxr10LdpEntityHelloIntervEntry 3 }
+
+zxr10LdpEntityHelloIfIndex  OBJECT-TYPE
+            SYNTAX     Unsigned32
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The index of interface about hello. If the value is 0xFFFFFFFF 
+                    then the hello type is targeted-hello."
+            ::= { zxr10LdpEntityHelloIntervEntry 4 }
+
+zxr10LdpEntityHelloNexthopAddrType  OBJECT-TYPE
+            SYNTAX     InetAddressType
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    " The value of this object is the type of the
+                      Internet address.  The value of this object,
+                      decides how the value of the zxr10LdpEntityHelloNexthopAddr
+                      object is interpreted."
+            ::= { zxr10LdpEntityHelloIntervEntry 5 } 
+            
+zxr10LdpEntityHelloNexthopAddr  OBJECT-TYPE
+            SYNTAX     InetAddress
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The Nexthop Address about hello."
+            ::= { zxr10LdpEntityHelloIntervEntry 6 } 
+            
+zxr10LdpEntityHelloHoldTimer  OBJECT-TYPE
+            SYNTAX     Unsigned32
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The max time between two recving hello message."
+            ::= { zxr10LdpEntityHelloIntervEntry 7 }
+
+zxr10LdpEntityHelloSendTimer  OBJECT-TYPE
+            SYNTAX     Unsigned32
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The time span between two sending hello message."
+            ::= { zxr10LdpEntityHelloIntervEntry 8}
+
+
+--*************zxr10LdpEntityHelloIntervTable*************** 
+zxr10LdpMd5Table OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10LdpMd5Entry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "Ldp MD5 Table. This table contains
+                    one entry per MD5 table."
+            ::= { zxr10mplsLdpMIB 12 } 
+            
+zxr10LdpMd5Entry OBJECT-TYPE
+            SYNTAX     Zxr10LdpMd5Entry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The parameter of a MD5 entry containing information 
+                    about the session set password."
+            INDEX { zxr10LdpMd5NeighborAddr }
+            ::= { zxr10LdpMd5Table 1 }
+
+Zxr10LdpMd5Entry ::= SEQUENCE {
+                zxr10LdpMd5NeighborAddr 
+                    IpAddress,  
+                zxr10LdpMd5PwdFlag
+                    INTEGER,  
+                zxr10LdpMd5Pwd
+                    DisplayString,
+                zxr10LdpMd5Encrypt 
+            INTEGER
+                } 
+            
+zxr10LdpMd5NeighborAddr  OBJECT-TYPE
+            SYNTAX     IpAddress
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The peer address as the index of MD5."
+            ::= { zxr10LdpMd5Entry 1 } 
+            
+zxr10LdpMd5PwdFlag  OBJECT-TYPE
+            SYNTAX     INTEGER{nopwd(0),withpwd(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the MD5 is successfully registered."
+            ::= { zxr10LdpMd5Entry 2 }
+            
+zxr10LdpMd5Pwd  OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The password used for communication between lsrs."
+            ::= { zxr10LdpMd5Entry 3 } 
+            
+zxr10LdpMd5Encrypt  OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The password is encrypted."
+            ::= { zxr10LdpMd5Entry 4 } 
+            
+            
+--*************zxr10LdpSessTable***************             
+zxr10LdpSessTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10LdpSessEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "Ldp Session Table. This table contains
+                    one entry per session if it is successfully registered."
+            ::= { zxr10mplsLdpMIB 13 } 
+            
+zxr10LdpSessEntry OBJECT-TYPE
+            SYNTAX     Zxr10LdpSessEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The parameter of a session entry containing information 
+                    about the session."
+            INDEX { zxr10LdpSessLocalId, zxr10LdpSessPeerId }
+            ::= { zxr10LdpSessTable 1 }
+
+Zxr10LdpSessEntry ::= SEQUENCE {
+                zxr10LdpSessLocalId 
+                    MplsLdpIdentifier,
+                zxr10LdpSessPeerId 
+                    MplsLdpIdentifier,
+                zxr10LdpSessHelloNumber 
+                    Unsigned32,  
+                zxr10LdpSessKeepAlive
+                    Unsigned32,  
+                zxr10LdpSessCurBkoff
+                    Unsigned32,  
+                zxr10LdpSessTcpRetry
+                    Unsigned32,   
+                zxr10LdpSessLife
+                    Unsigned32,
+                zxr10LdpSessState
+                    INTEGER,
+                zxr10LdpSessIfName
+                    DisplayString,
+                zxr10LdpSessionUp
+                    TimeStamp,
+                zxr10LdpSessionDown
+                    TimeStamp,
+                zxr10LdpSessionDownReason
+                    INTEGER                
+                }  
+
+zxr10LdpSessLocalId  OBJECT-TYPE
+            SYNTAX     MplsLdpIdentifier
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The identifier of local lsr used to identify a session."
+            ::= { zxr10LdpSessEntry 1 } 
+                
+zxr10LdpSessPeerId  OBJECT-TYPE
+            SYNTAX     MplsLdpIdentifier
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The identifier of peer lsr used to identify a session."
+            ::= { zxr10LdpSessEntry 2 } 
+            
+zxr10LdpSessHelloNumber  OBJECT-TYPE
+            SYNTAX     Unsigned32
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The hello adjacency numbers of the session. "
+            ::= { zxr10LdpSessEntry 3 } 
+            
+zxr10LdpSessKeepAlive  OBJECT-TYPE
+            SYNTAX     Unsigned32
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The time show how long the session should be keep alive 
+                    if no ldp message or the session disappeared. "
+            ::= { zxr10LdpSessEntry 4 } 
+            
+zxr10LdpSessCurBkoff  OBJECT-TYPE
+            SYNTAX     Unsigned32
+            MAX-ACCESS read-only
+            STATUS     current      
+            DESCRIPTION
+                    "The time shows how long the session should wait to 
+                    try to reconnect with peer lsr."
+            ::= { zxr10LdpSessEntry 5 } 
+            
+zxr10LdpSessTcpRetry  OBJECT-TYPE
+            SYNTAX     Unsigned32
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The time of the lsr retry to create a session with peer lsr."
+            ::= { zxr10LdpSessEntry 6 } 
+            
+zxr10LdpSessLife  OBJECT-TYPE
+            SYNTAX     Unsigned32
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The time after the session receive last ldp message."
+            ::= { zxr10LdpSessEntry 7 }    
+
+zxr10LdpSessState  OBJECT-TYPE
+            SYNTAX     INTEGER {
+                 nonexistent(1),
+                 initialized(2),
+                 openrec(3),
+                 opensent(4),
+                 operational(5),
+                 tcpconnawaited(6) }
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "Indicates the status of the session."
+            ::= { zxr10LdpSessEntry 8 } 
+
+zxr10LdpSessIfName  OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The name of the interface about session up or down. And the 
+                    value of object is 'null' When target session sets up."
+            ::= { zxr10LdpSessEntry 9}
+
+zxr10LdpSessionUp  OBJECT-TYPE
+            SYNTAX     TimeStamp
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The value of sysUpTime at the time of the most recent 
+                    change in state of session from openrec(3) or opensent(4) 
+                    to operational(5).
+                    If no such changes have occurred since the last
+                    re-initialization of the local management subsystem,
+                    then this object contains a zero value."
+            ::= { zxr10LdpSessEntry 10 }              
+
+zxr10LdpSessionDown  OBJECT-TYPE
+            SYNTAX     TimeStamp
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The value of sysUpTime at the time of the most recent 
+                    change in state of session from operational(5) to nonexistent(1).
+                    If no such changes have occurred since the last
+                    re-initialization of the local management subsystem,
+                    then this object contains a zero value."
+            ::= { zxr10LdpSessEntry 11 } 
+
+zxr10LdpSessionDownReason OBJECT-TYPE
+            SYNTAX        INTEGER { 
+                            null (0),
+                            holdExpired (1), 
+                            connectionExpired (2),
+                            allAdjacenciesDown (3),
+                            badTLV (4),
+                            badPDU (5),
+                            connectionError (6),
+                            connectionReset (7),
+                            peerSentNotification (8),
+                            unexpectedEOF (9),
+                            clearneighbor (10),
+                            initError (11),
+                            gracefulRestartAbort (12),
+                            cliCommand (13),
+                            unknown (14) }
+            MAX-ACCESS    read-only
+            STATUS        current
+            DESCRIPTION
+            "The reason why the session transitioned from operational to 
+            nonexistent state. 
+            Can be one of the following:
+            unknown reason, hold time expired, connection time expired, 
+            all adjacencies down,  received bad tlv, received bad pdu, 
+            connection error, connection reset, received notification 
+            from peer, received unexpected end-of-file, clear mpls ldp, 
+            error during initialization, graceful restart was aborted or 
+            client command.
+            If no such changes have occurred since the last re-initialization 
+            of the local management subsystem, then this object contains a 
+            zero value."
+            ::= { zxr10LdpSessEntry 12 }
+           
+--*************definition of LsrAttr object***************              
+zxr10LdpLsrId OBJECT-TYPE
+            SYNTAX     IpAddress
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The router id of the LSR."
+            ::= { zxr10LdpLsrAttrObjects 1 } 
+
+zxr10LdpInstanceName OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The name of the VPN instance."
+            ::= { zxr10LdpLsrAttrObjects 2 } 
+
+zxr10LdpMplsIp OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "Show if the mpls ldp is up."
+            ::= { zxr10LdpLsrAttrObjects 3 } 
+
+zxr10LdpTrap OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-create
+            STATUS     current
+            DESCRIPTION
+                    "If the value of this object is 1,
+                     then the function of Ldp Trap is
+                     enable."
+            ::= { zxr10LdpLsrAttrObjects 4 }
+            
+zxr10LdpAccessFecACL OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The ACL name about LDP fec filter."
+            ::= { zxr10LdpLsrAttrObjects 5 }
+            
+zxr10LdpAccessFecBgp OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the value of this object is 1,
+                     then access bgp route as fec."
+            ::= { zxr10LdpLsrAttrObjects 6 }
+            
+zxr10LdpAccessFecHost OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the value of this object is 1,
+                     then access host route as fec only."
+            ::= { zxr10LdpLsrAttrObjects 7 }
+            
+zxr10LdpDirectHelloHoldTime OBJECT-TYPE
+            SYNTAX     Unsigned32(0..65535)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "LDP discovery direct hello holdtime.
+                    
+                     A value of 0 means the default,
+                     which is 15 seconds for Link Hellos
+                     and 45 seconds for Targeted Hellos.
+                     A value of 65535 indicates an
+                     infinite hello hold time."
+            ::= { zxr10LdpLsrAttrObjects 8 }
+            
+zxr10LdpDirectHelloInterTime OBJECT-TYPE
+            SYNTAX     Unsigned32(0..65535)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "LDP discovery direct hello interval.
+                    
+                     A value of 0 means the default,
+                     which is 5 seconds for Link Hellos
+                     and 15 seconds for Targeted Hellos.
+                     A value of 65535 indicates an
+                     infinite hello interval time."
+            ::= { zxr10LdpLsrAttrObjects 9 }
+            
+zxr10LdpTargetHelloHoldTime OBJECT-TYPE
+            SYNTAX     Unsigned32(0..65535)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "LDP discovery target hello holdtime.
+                    
+                     A value of 0 means the default,
+                     which is 15 seconds for Link Hellos
+                     and 45 seconds for Targeted Hellos.
+                     A value of 65535 indicates an
+                     infinite hello hold time."
+            ::= { zxr10LdpLsrAttrObjects 10 }
+            
+zxr10LdpTargetHelloInterTime OBJECT-TYPE
+            SYNTAX     Unsigned32(0..65535)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "LDP discovery target hello interval.
+                    
+                     A value of 0 means the default,
+                     which is 5 seconds for Link Hellos
+                     and 15 seconds for Targeted Hellos.
+                     A value of 65535 indicates an
+                     infinite hello interval time."
+            ::= { zxr10LdpLsrAttrObjects 11 }
+            
+zxr10LdpBackoffInitialTime OBJECT-TYPE
+            SYNTAX     Unsigned32(0..65535)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "Initial session backoff time in seconds.
+                    
+                     A value of 0 means the default,
+                     which is 15 seconds for Initial backoff 
+                     time and 120 seconds for Maximum backoff 
+                     time.
+                     A value of 65535 indicates an
+                     infinite backoff time."
+            ::= { zxr10LdpLsrAttrObjects 12 }   
+
+zxr10LdpBackoffMaximumTime OBJECT-TYPE
+            SYNTAX     Unsigned32(0..65535)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "Maximum session backoff time in seconds.
+                    
+                     A value of 0 means the default,
+                     which is 15 seconds for Initial backoff 
+                     time and 120 seconds for Maximum backoff 
+                     time.
+                     A value of 65535 indicates an
+                     infinite backoff time."
+            ::= { zxr10LdpLsrAttrObjects 13 }
+
+zxr10LdpEgressFor OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "Acl specifying controls on destination prefixes."
+            ::= { zxr10LdpLsrAttrObjects 14 }
+
+zxr10LdpEgressNextHop OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "Acl specifying controls on nexthop."
+            ::= { zxr10LdpLsrAttrObjects 15 }
+
+zxr10LdpConnWithDod OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     obsolete
+            DESCRIPTION
+                    "If the value of this object is 1,
+                    then the LDP connect with dod mode LSR is enable."
+            ::= { zxr10LdpLsrAttrObjects 16 }
+
+zxr10LdpExplicitNull OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the value of this object is 1,
+                    then advertise explicit null label in place of implicit null."
+            ::= { zxr10LdpLsrAttrObjects 17 }
+            
+zxr10LdpExplicitNullFor OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "Acl specifying controls on destination prefixes."
+            ::= { zxr10LdpLsrAttrObjects 18 }
+
+zxr10LdpExplicitNullTo OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "Acl specifying controls on LDP peers."
+            ::= { zxr10LdpLsrAttrObjects 19 }
+
+zxr10LdpHoldTime OBJECT-TYPE
+            SYNTAX     Unsigned32(0..65535)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "LDP session holdtime is set.
+                    
+                    A value of 0 means the default,
+                    which is 15 seconds for session holdtime.
+                    A value of 65535 indicates an
+                    infinite hold time."
+            ::= { zxr10LdpLsrAttrObjects 20 }
+
+zxr10LdpLabelRequestFor OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "ACL name about specify acceptable downstream on demand dest."
+            ::= { zxr10LdpLsrAttrObjects 21 }
+
+zxr10LdpLabelAdvertise OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the value of this object is 1,
+                    then label advertise is enable."
+            ::= { zxr10LdpLsrAttrObjects 22 }
+
+zxr10LdpLabelAdvertiseOldStyle OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the value of this object is 1,
+                    then label advertise use old style(TDP) method for matching prefix acl."
+            ::= { zxr10LdpLsrAttrObjects 23 }
+            
+zxr10LdpStyle OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the value of this object is 1,
+                    then the new style to reset keepalive timer is enable."
+            ::= { zxr10LdpLsrAttrObjects 24 }
+
+zxr10LdpDebugAdvertisements OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the value of this object is 1,
+                    then LDP debug information of label 
+                    and address advertisements could be get."
+            ::= { zxr10LdpLsrAttrObjects 25 }
+
+zxr10LdpDebugBindings OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the value of this object is 1,
+                    then LDP debug information of  Label bindings 
+                    and other label Information base (LIB) changes 
+                    could be get."
+            ::= { zxr10LdpLsrAttrObjects 26 }
+
+zxr10LdpDebugMessagesReceived OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the value of this object is 1,
+                    then LDP debug information of LDP received messages, 
+                    including periodic keep alive could be get."
+            ::= { zxr10LdpLsrAttrObjects 27 }
+            
+zxr10LdpDebugMessagesSent OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the value of this object is 1,
+                    then LDP debug information of LDP sent messages, 
+                    including periodic keep alive could be get."
+            ::= { zxr10LdpLsrAttrObjects 28 }
+
+zxr10LdpDebugSessionIO OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the value of this object is 1,
+                    then LDP debug information of session could be get."
+            ::= { zxr10LdpLsrAttrObjects 29 }
+            
+zxr10LdpDebugSessionStateMachine OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the value of this object is 1,
+                    then LDP debug information of session state machine could be get."
+            ::= { zxr10LdpLsrAttrObjects 30 }
+
+zxr10LdpDebugTransportConnections OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the value of this object is 1,
+                    then LDP debug information of transport and discovery 
+                    connections could be get."
+            ::= { zxr10LdpLsrAttrObjects 31 }
+
+zxr10LdpDebugTransportEvents OBJECT-TYPE
+            SYNTAX     INTEGER{disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the value of this object is 1,
+                    then LDP debug information of transport and discovery 
+                    events could be get."
+            ::= { zxr10LdpLsrAttrObjects 32 }
+
+zxr10LdpInstanceNo OBJECT-TYPE
+            SYNTAX     Unsigned32(0..65535)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The Number of the LDP instance. If the value of this object is 0,
+                     then don't exist LDP public instance"
+            ::= { zxr10LdpLsrAttrObjects 33 }
+
+zxr10LdpRouterIdIf OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The interface selected to prefer for LDP identifier address."
+            ::= { zxr10LdpLsrAttrObjects 34 }           
+-- *******************************************************************
+--   Trap Definitions
+-- *******************************************************************
+
+zxr10LdpNotify  OBJECT IDENTIFIER ::= { zxr10mplsLdpMIB 15 }
+
+zxr10LdpSesUp NOTIFICATION-TYPE
+    OBJECTS  { zxr10LdpRtrid,
+               zxr10LdpSessState,
+               zxr10LdpOutIfName,
+               zxr10LdpInstanceName,
+               zxr10LdpRtridAddrType }
+    STATUS   current
+    DESCRIPTION
+        "The SNMP trap that is generated when the value of 'zxr10MplsLdpSesState'
+     enters the 'operational(5) state."
+    ::= { zxr10LdpNotify 1 }
+
+zxr10LdpSesDown NOTIFICATION-TYPE
+    OBJECTS  { zxr10LdpRtrid,
+               zxr10LdpSessState, 
+               zxr10LdpSesDownReason,
+               zxr10LdpOutIfName,
+               zxr10LdpInstanceName,
+               zxr10LdpRtridAddrType } 
+    STATUS   current
+    DESCRIPTION
+        "The SNMP trap that is generated when the value of 'zxr10MplsLdpSesState'
+    leaves the 'operational(5) state. The value of zxr10LdpSesDownIf is 
+    one of the neighbor's interface. It is the interface associated with
+    the last neighbor when zxr10LdpSesDownReason is allAdjacenciesDown (3)."
+    ::= { zxr10LdpNotify 2 }
+
+zxr10LdpLspUp NOTIFICATION-TYPE
+    OBJECTS  { zxr10LdpLspFec, 
+               zxr10LdpLspFecLen, 
+               zxr10LdpInstanceName,
+               zxr10LdpLspFecAddrType }
+    STATUS   current
+    DESCRIPTION
+        "The SNMP trap that is generated when an LSP comes up."
+    ::= { zxr10LdpNotify 3 }
+
+zxr10LdpLspDown NOTIFICATION-TYPE
+    OBJECTS  { zxr10LdpLspFec,
+               zxr10LdpLspFecLen,
+               zxr10LdpLspDownReason,
+               zxr10LdpInstanceName }
+    STATUS   current
+    DESCRIPTION
+        "The SNMP trap that is generated when the LSP goes down."
+    ::= { zxr10LdpNotify 4 }
+
+zxr10LdpLspPathUp NOTIFICATION-TYPE
+    OBJECTS  { zxr10LdpLspFec,
+               zxr10LdpLspFecLen,
+               zxr10LdpOutIfName,
+               zxr10LdpInstanceName,
+               zxr10LdpLspFecAddrType }
+    STATUS   current
+    DESCRIPTION
+        "An mplsLspPathUp trap signifies that the specified path mplsPathName
+         for the specified LSP mplsLspName came up."
+    ::= { zxr10LdpNotify 5 }
+         
+zxr10LdpLspPathDown NOTIFICATION-TYPE
+    OBJECTS  { zxr10LdpLspFec,
+               zxr10LdpLspFecLen,
+               zxr10LdpOutIfName,
+               zxr10LdpInstanceName,
+               zxr10LdpLspFecAddrType }
+    STATUS   current
+    DESCRIPTION
+        "An mplsLspPathDown trap signifies that the specified path mplsPathName
+         for the specified LSP mplsLspName went down."
+    ::= { zxr10LdpNotify 6 }
+    
+zxr10LdpLspChange NOTIFICATION-TYPE
+    OBJECTS  { zxr10LdpLspFec, 
+               zxr10LdpLspFecLen, 
+               zxr10LdpInstanceName,
+               zxr10LdpLspFecAddrType }
+    STATUS   current
+    DESCRIPTION
+        "An mplsLspChange trap signifies that the specified LSP has switched traffic 
+        to the new active path 'toLspPath'. The LSP maintains up state before and 
+        after the switch over."
+    ::= { zxr10LdpNotify 7 }
+
+    
+--*************zxr10LdpInstCfgTable*************** 
+
+zxr10LdpInstCfgTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10LdpInstCfgEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "Ldp Instance Table. This table contains
+                    one entry per instance table."
+            ::= { zxr10mplsLdpMIB 16 }  
+
+zxr10LdpInstCfgEntry OBJECT-TYPE
+            SYNTAX     Zxr10LdpInstCfgEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The parameter of an instance entity about ldp instance."
+            INDEX { zxr10LdpInstNo }
+            ::= { zxr10LdpInstCfgTable 1 }  
+            
+Zxr10LdpInstCfgEntry ::= SEQUENCE {
+                zxr10LdpInstNo  
+                    Unsigned32,
+                zxr10LdpFilterPaketFor  
+                    DisplayString,
+                zxr10LdpGr    
+                    INTEGER,
+                zxr10LdpGrMaxRecoveryTime
+                    Unsigned32,  
+                zxr10LdpGrNeiLivenessTime
+                    Unsigned32, 
+                zxr10LdpLabelRetentionMode
+                    INTEGER,   
+                zxr10LdpLspControlMode
+                    INTEGER,
+                zxr10LdpTrafficCntAcl
+                    DisplayString,
+                zxr10LdpGlblAutoCfgMode
+                    INTEGER,
+                zxr10LdpV6TrafficCntAcl
+                    DisplayString,
+                zxr10LdpV6GlblAutoCfgMode
+                    INTEGER
+                }   
+
+zxr10LdpInstNo  OBJECT-TYPE
+            SYNTAX     Unsigned32(0..65535)
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The Number of the LDP instance. If the value of this object is 0,
+                     then don't exist LDP public instance"
+            ::= { zxr10LdpInstCfgEntry 1 }
+
+zxr10LdpFilterPaketFor  OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "ACL name about specify filter packet on source address."
+            ::= { zxr10LdpInstCfgEntry 2 }
+
+zxr10LdpGr  OBJECT-TYPE
+            SYNTAX     INTEGER{enable(1),disable(2)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "Show if the mpls ldp graceful-restart is enabled."
+            DEFVAL     {disable}
+            ::= { zxr10LdpInstCfgEntry 3 } 
+
+zxr10LdpGrMaxRecoveryTime  OBJECT-TYPE
+            SYNTAX     Unsigned32(15..600)
+            UNITS      "seconds"
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "LDP session max recovery time is set.
+                    Default is 120 seconds."
+            DEFVAL     {120}
+            ::= { zxr10LdpInstCfgEntry 4 }
+
+zxr10LdpGrNeiLivenessTime OBJECT-TYPE
+            SYNTAX     Unsigned32(5..300)
+            UNITS      "seconds"
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "LDP session keeps its stale label-FEC bindings is set.
+                    Default is 120 seconds."
+            DEFVAL     {120}
+            ::= { zxr10LdpInstCfgEntry 5 }
+
+zxr10LdpLabelRetentionMode OBJECT-TYPE
+            SYNTAX     INTEGER{conservative(1),liberal(2)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "Show the mpls ldp label retention mode."
+            DEFVAL     {liberal}
+            ::= { zxr10LdpInstCfgEntry 6 } 
+
+zxr10LdpLspControlMode OBJECT-TYPE
+            SYNTAX     INTEGER{ordered(1),independent(2)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "Show the mpls ldp lsp control mode."
+            DEFVAL     {independent}
+            ::= { zxr10LdpInstCfgEntry 7 } 
+
+zxr10LdpTrafficCntAcl  OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "ACL name about specify IPv4 fec want to get traffic count."
+            ::= { zxr10LdpInstCfgEntry 8 }
+
+zxr10LdpGlblAutoCfgMode OBJECT-TYPE
+            SYNTAX     INTEGER{enable(1),disable(2)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "Show the mpls ldp IPv4 interface global auto config mode."
+            DEFVAL     {enable}
+            ::= { zxr10LdpInstCfgEntry 9 } 
+
+zxr10LdpV6TrafficCntAcl  OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "ACL name about specify IPv6 fec want to get traffic count."
+            ::= { zxr10LdpInstCfgEntry 10 }
+
+zxr10LdpV6GlblAutoCfgMode OBJECT-TYPE
+            SYNTAX     INTEGER{enable(1),disable(2)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "Show the mpls ldp IPv6 interface global auto config mode."
+            DEFVAL     {enable}
+            ::= { zxr10LdpInstCfgEntry 11 } 
+
+
+--*************zxr10LdpV4IntfCfgTable*************** 
+zxr10LdpV4IntfCfgTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10LdpV4IntfCfgEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "Ipv4 Ldp Interface Table. This table contains
+                    one entry per v4 interface table."
+            ::= { zxr10mplsLdpMIB 17 } 
+            
+zxr10LdpV4IntfCfgEntry OBJECT-TYPE
+            SYNTAX     Zxr10LdpV4IntfCfgEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The parameter of a  v4 interface entity."
+            INDEX { zxr10LdpV4IntfLdpInstNo,zxr10LdpV4IntfName }
+            ::= { zxr10LdpV4IntfCfgTable 1 }
+            
+Zxr10LdpV4IntfCfgEntry ::= SEQUENCE {
+                zxr10LdpV4IntfLdpInstNo            Unsigned32,
+                zxr10LdpV4IntfName                 DisplayString,
+                zxr10LdpV4IntfLblDistributeMode    INTEGER,
+                zxr10LdpV4IntfGtsm                 INTEGER          
+                } 
+                
+zxr10LdpV4IntfLdpInstNo  OBJECT-TYPE
+            SYNTAX     Unsigned32(0..65535)
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The Number of the LDP instance. If the value of this object is 0,
+                     then don't exist LDP public instance"
+            ::= { zxr10LdpV4IntfCfgEntry 1 }
+            
+zxr10LdpV4IntfName OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The name of the interface."
+            ::= { zxr10LdpV4IntfCfgEntry 2}  
+
+zxr10LdpV4IntfLblDistributeMode  OBJECT-TYPE
+            SYNTAX     INTEGER{dod(1),du(2)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The distribution mode of the interface."
+            DEFVAL     {du}
+            ::= { zxr10LdpV4IntfCfgEntry 3 }
+
+zxr10LdpV4IntfGtsm  OBJECT-TYPE
+            SYNTAX     INTEGER{enable(1),disable(2)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The gtsm of the interface."
+            DEFVAL     {disable}
+            ::= { zxr10LdpV4IntfCfgEntry 4 } 
+            
+--*************zxr10LdpV6IntfCfgTable*************** 
+zxr10LdpV6IntfCfgTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10LdpV6IntfCfgEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "Ipv6 Ldp Interface Table. This table contains
+                    one entry per v6 interface table."
+            ::= { zxr10mplsLdpMIB 18 } 
+            
+zxr10LdpV6IntfCfgEntry OBJECT-TYPE
+            SYNTAX     Zxr10LdpV6IntfCfgEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The parameter of a  v6 interface entity."
+            INDEX { zxr10LdpV6IntfLdpInstNo,zxr10LdpV6IntfName }
+            ::= { zxr10LdpV6IntfCfgTable 1 }
+            
+Zxr10LdpV6IntfCfgEntry ::= SEQUENCE {
+                zxr10LdpV6IntfLdpInstNo            Unsigned32,
+                zxr10LdpV6IntfName                 DisplayString,
+                zxr10LdpV6IntfLblDistributeMode    INTEGER              
+                } 
+                
+zxr10LdpV6IntfLdpInstNo  OBJECT-TYPE
+            SYNTAX     Unsigned32(0..65535)
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The Number of the LDP instance. If the value of this object is 0,
+                     then don't exist LDP public instance"
+            ::= { zxr10LdpV6IntfCfgEntry 1 }
+            
+zxr10LdpV6IntfName OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The name of the interface."
+            ::= { zxr10LdpV6IntfCfgEntry 2}  
+
+zxr10LdpV6IntfLblDistributeMode  OBJECT-TYPE
+            SYNTAX     INTEGER{dod(1),du(2)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The distribution mode of the interface."
+            DEFVAL     {du}
+            ::= { zxr10LdpV6IntfCfgEntry 3 }
+
+--*************zxr10LdpGtsmTable*************** 
+zxr10LdpGtsmTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10LdpGtsmEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "Gtsm Table. This table contains
+                    one entry per gtsm table."
+            ::= { zxr10mplsLdpMIB 19 } 
+            
+zxr10LdpGtsmEntry OBJECT-TYPE
+            SYNTAX     Zxr10LdpGtsmEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The parameter of a gtsm entity."
+            INDEX { zxr10LdpGtsmLdpInstNo,zxr10LdpGtsmPeerLsrId }
+            ::= { zxr10LdpGtsmTable 1 }
+            
+Zxr10LdpGtsmEntry ::= SEQUENCE {
+                zxr10LdpGtsmLdpInstNo            Unsigned32,
+                zxr10LdpGtsmPeerLsrId            IpAddress,
+                zxr10LdpGtsmHopCount             Unsigned32         
+                } 
+                
+zxr10LdpGtsmLdpInstNo  OBJECT-TYPE
+            SYNTAX     Unsigned32(0..65535)
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The Number of the LDP instance. If the value of this object is 0,
+                     then don't exist LDP public instance"
+            ::= { zxr10LdpGtsmEntry 1 }
+            
+zxr10LdpGtsmPeerLsrId  OBJECT-TYPE
+            SYNTAX     IpAddress
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The identifier of peer lsr used to identify a session."
+            ::= { zxr10LdpGtsmEntry 2 } 
+            
+zxr10LdpGtsmHopCount OBJECT-TYPE
+            SYNTAX      Unsigned32(1..254)
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION "The gtsm hop count of the ldp hello."
+            ::= { zxr10LdpGtsmEntry 3 }
+
+
+--***********zxr10LdpPeerBfdTable*************
+zxr10LdpPeerBfdTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10LdpPeerBfdEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION "LDP Peer Bfd Table. This table contains
+                    one entry per peer bfd table."
+            ::= { zxr10mplsLdpMIB 20 }
+
+zxr10LdpPeerBfdEntry OBJECT-TYPE
+            SYNTAX     Zxr10LdpPeerBfdEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                "The parameter of a peer bfd entity containing statistics 
+                information about a particular peer bfd."
+            INDEX { zxr10LdpPeerBfdLdpInstNo,zxr10LdpPeerBfdRemoteLsrId }
+            ::= { zxr10LdpPeerBfdTable 1 }
+
+Zxr10LdpPeerBfdEntry ::= SEQUENCE {
+                zxr10LdpPeerBfdLdpInstNo              Unsigned32,
+                zxr10LdpPeerBfdRemoteLsrId            IpAddress,
+                zxr10LdpPeerBfdDelay                  INTEGER,
+                zxr10LdpPeerBfdTime                   Unsigned32    
+            }
+            
+zxr10LdpPeerBfdLdpInstNo  OBJECT-TYPE
+            SYNTAX     Unsigned32(0..65535)
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The Number of the LDP instance. If the value of this object is 0,
+                     then don't exist LDP public instance"
+            ::= { zxr10LdpPeerBfdEntry 1 }
+
+zxr10LdpPeerBfdRemoteLsrId  OBJECT-TYPE
+            SYNTAX     IpAddress
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The identifier of peer lsr used to identify a session."
+            ::= { zxr10LdpPeerBfdEntry 2 } 
+            
+zxr10LdpPeerBfdDelay  OBJECT-TYPE
+            SYNTAX     INTEGER{enable(1),disable(2)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "If the value of this object is 1,
+                     then the Ldp Peer Bfd Creat Delay is enable,
+                     the default delay time is 60 seconds.
+                     IF the value of this object is 2,
+                     then the Ldp Peer Bfd Delay is disable,
+                     Set Ldp Peer Bfd immediately."
+            ::= { zxr10LdpPeerBfdEntry 3 } 
+
+zxr10LdpPeerBfdTime  OBJECT-TYPE
+            SYNTAX     Unsigned32(0..720)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "Set delay time,
+                     the prerequisite is the value of 
+                     zxr10LdpPeerBfdDelay is 1."
+            ::= { zxr10LdpPeerBfdEntry 4 }          
+            
+--*************zxr10LdpV4DisAutoCfgIntTable*************** 
+zxr10LdpV4DisAutoCfgIntTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10LdpV4DisAutoCfgIntEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "Ldp Ipv4 Dis-auto-config Interface Table. This table contains
+                    one entry per v4 dis-auto-config interface table."
+            ::= { zxr10mplsLdpMIB 21 } 
+            
+zxr10LdpV4DisAutoCfgIntEntry OBJECT-TYPE
+            SYNTAX     Zxr10LdpV4DisAutoCfgIntEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The parameter of a v4 dis-auto-config interface entity."
+            INDEX { zxr10LdpV4DisACIntfInstNo,zxr10LdpV4DisACIntfName }
+            ::= { zxr10LdpV4DisAutoCfgIntTable 1 }
+            
+Zxr10LdpV4DisAutoCfgIntEntry ::= SEQUENCE {
+                zxr10LdpV4DisACIntfInstNo          Unsigned32,
+                zxr10LdpV4DisACIntfName            DisplayString        
+                } 
+                
+zxr10LdpV4DisACIntfInstNo  OBJECT-TYPE
+            SYNTAX     Unsigned32(0..65535)
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The Number of the LDP instance. If the value of this object is 0,
+                     then don't exist LDP public instance"
+            ::= { zxr10LdpV4DisAutoCfgIntEntry 1 }
+            
+zxr10LdpV4DisACIntfName OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The name of the dis-auto-config interface."
+            ::= { zxr10LdpV4DisAutoCfgIntEntry 2}  
+             
+--*************zxr10LdpV6DisAutoCfgIntTable*************** 
+zxr10LdpV6DisAutoCfgIntTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10LdpV6DisAutoCfgIntEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "Ldp IPv6 Dis-auto-config Interface Table. This table contains
+                    one entry per V6 dis-auto-config interface table."
+            ::= { zxr10mplsLdpMIB 22 } 
+            
+zxr10LdpV6DisAutoCfgIntEntry OBJECT-TYPE
+            SYNTAX     Zxr10LdpV6DisAutoCfgIntEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The parameter of a V6 dis-auto-config interface entity."
+            INDEX { zxr10LdpV6DisACIntfInstNo,zxr10LdpV6DisACIntfName }
+            ::= { zxr10LdpV6DisAutoCfgIntTable 1 }
+            
+Zxr10LdpV6DisAutoCfgIntEntry ::= SEQUENCE {
+                zxr10LdpV6DisACIntfInstNo          Unsigned32,
+                zxr10LdpV6DisACIntfName            DisplayString        
+                } 
+                
+zxr10LdpV6DisACIntfInstNo  OBJECT-TYPE
+            SYNTAX     Unsigned32(0..65535)
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The Number of the LDP instance. If the value of this object is 0,
+                     then don't exist LDP public instance"
+            ::= { zxr10LdpV6DisAutoCfgIntEntry 1 }
+            
+zxr10LdpV6DisACIntfName OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The name of the dis-auto-config interface."
+            ::= { zxr10LdpV6DisAutoCfgIntEntry 2}  
+            
+--*************zxr10LdpIgpSyncIntTable*************** 
+zxr10LdpIgpSyncIntTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10LdpIgpSyncIntEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "Ldp Enable Igp Synchronization Interface Table. This table contains
+                    one entry per igp sync interface table."
+            ::= { zxr10mplsLdpMIB 23 } 
+            
+zxr10LdpIgpSyncIntEntry OBJECT-TYPE
+            SYNTAX     Zxr10LdpIgpSyncIntEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The parameter of a igp synchronization interface entity."
+            INDEX { zxr10LdpIgpSyncIntfInstNo,zxr10LdpIgpSyncIntfName }
+            ::= { zxr10LdpIgpSyncIntTable 1 }
+            
+Zxr10LdpIgpSyncIntEntry ::= SEQUENCE {
+                zxr10LdpIgpSyncIntfInstNo          Unsigned32,
+                zxr10LdpIgpSyncIntfName            DisplayString        
+                } 
+                
+zxr10LdpIgpSyncIntfInstNo  OBJECT-TYPE
+            SYNTAX     Unsigned32(0..65535)
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The Number of the LDP instance. If the value of this object is 0,
+                     then don't exist LDP public instance"
+            ::= { zxr10LdpIgpSyncIntEntry 1 }
+            
+zxr10LdpIgpSyncIntfName OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The name of enable igp synchronization interface."
+            ::= { zxr10LdpIgpSyncIntEntry 2}  
+            
+ END

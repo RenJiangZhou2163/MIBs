@@ -1,10 +1,10 @@
 -- =================================================================
--- Copyright (C) 2019 by  HUAWEI TECHNOLOGIES. All rights reserved
+-- Copyright (C) 2021 by  HUAWEI TECHNOLOGIES. All rights reserved
 -- 
 -- Description: This mib file is used for management of huawei Class Based
 --              QoS information.
 -- Reference:
--- Version:     V2.43
+-- Version:     V2.50
 -- History:
 --              V1.0 tianli,2004.4.10,publish
 --              V1.1 lizhiyong, 2004-9-14
@@ -75,6 +75,18 @@
 --                  modified by xiejiayou 2019-11-26
 --              v2.43
 --                  modified by nikaiming 2019-11-30
+--              v2.45
+--                  modified by xiejiayou 2020-09-03
+--              v2.46
+--                  modified by hupeng 2020-12-20
+--              v2.47
+--                  modified by qixin 2021-03-29
+--              v2.48
+--                  modified by wangzhijin 2021-07-22
+--              v2.49
+--                  modified by wangzhijin 2021-07-23
+--              v2.50
+--                  modified by wangzhijin 2021-09-03
 -- ==========================================================================
 
     HUAWEI-CBQOS-MIB DEFINITIONS ::= BEGIN
@@ -97,7 +109,7 @@
     
     
         hwCBQoSMIB MODULE-IDENTITY 
-            LAST-UPDATED "201911301104Z"
+            LAST-UPDATED "202109031550Z"
             ORGANIZATION 
                 "Huawei Technologies Co.,Ltd."
             CONTACT-INFO 
@@ -114,6 +126,35 @@
                 for Class Based QoS feature.                    
         
         "
+
+              REVISION "202109031550Z"
+               DESCRIPTION
+                  "MOD hwCBQoSCarDropByteRate"
+
+              REVISION "202107231650Z"
+               DESCRIPTION
+                  "DELETE hwCBQoSPolicyStatClassifierUnmatchedPacketsRate hwCBQoSPolicyStatClassifierUnmatchedBytesRate"
+
+              REVISION "202107211109Z"
+               DESCRIPTION
+                  "ADD hwCBQoSClassifierMatchedPacketRate hwCBQoSClassifierMatchedByteRate hwCBQoSClassifierMatchedPassPacketRate hwCBQoSClassifierMatchedPassByteRate hwCBQoSClassifierMatchedDropPacketRate hwCBQoSClassifierMatchedDropByteRate hwCBQoSCarPassPacketRate hwCBQoSCarPassByteRate hwCBQoSCarDropPacketRate hwCBQoSCarDropByteRate hwCBQoSPolicyUnmatchedPacketsRate hwCBQoSPolicyUnmatchedBytesRate"
+
+              REVISION "202103291942Z"
+               DESCRIPTION
+                  "MOD hwCBQoSMatchRuleStringValue"
+
+              REVISION "202012201750Z"
+               DESCRIPTION
+                  "MOD hwCBQoSMatchRuleType"
+
+              REVISION "202009031750Z"
+               DESCRIPTION
+                  "MOD hwCBQoSMatchRuleType"
+		  
+             REVISION "202007221750Z"
+               DESCRIPTION
+                  "DELETE Invalid space"
+
              REVISION "201911301104Z"
                DESCRIPTION
                   "ADD hwCBQoSPbrInvalidAlarm hwCBQoSPbrInvalidAlarmResume"
@@ -303,7 +344,9 @@
                 tagged-vxlan(38),
                 untagged-vxlan(39),
                 transit-tagged-vxlan(40),
-                transit-untagged-vxlan(41)
+                transit-untagged-vxlan(41),
+                vxlan-qos-local-id(42),
+                ipv6-vxlan-qos-local-id(43)
                 }
 
 -- CarAction
@@ -811,6 +854,8 @@ The value of this object can be match(1) or match-not(2)."
                 untagged-vxlan(39),
                 transit-tagged-vxlan(40),
                 transit-untagged-vxlan(41)
+                vxlan-qos-local-id(42)
+                ipv6-vxlan-qos-local-id(43)
                 This object has no default value.
                 "
             ::= { hwCBQoSMatchRuleCfgInfoEntry 3 }
@@ -824,7 +869,7 @@ The value of this object can be match(1) or match-not(2)."
                 "This object indicates the rule contents. The value range and the default value of the object vary with hwCBQoSMatchRuleType.
 When the supported types are Source-MAC(9) and Destination-MAC(10), 
 the value of this object can be a string of six ASCII characters, 
-which represents a MAC address. For example, abcdef indicates the MAC address 6162-6364-6566.
+which represents a MAC address. For example, abcdef indicates the MAC address 00-e0-fc-12-34-56.
 When the supported types are ipv6-dst-ip(21) and ipv6-src-ip(22), 
 the value of this object is a string of 16 ASCII characters, 
 which represents an IPv6 address. For example, 1111111111111111 indicates an IPv6 address 3131-3131-3131-3131-3131-3131-3131-3131.
@@ -964,11 +1009,11 @@ This object has no default value.
             ::= { hwCBQoSMatchRuleCfgInfoEntry 17 }
 			
         hwCBQoSMatchVxlanVni OBJECT-TYPE
-            SYNTAX Unsigned32 (1..16000000|0)
+            SYNTAX Unsigned32 (1..16777215|0)
             MAX-ACCESS read-create
             STATUS current
             DESCRIPTION
-                "Vxlan VNI, ranges from 1 to 16000000.
+                "Vxlan VNI, ranges from 1 to 16777215.
 		 The invalid value is 0."
             ::= { hwCBQoSMatchRuleCfgInfoEntry 18 }				
 
@@ -7837,6 +7882,14 @@ This object has no default value.
                 hwCBQoSCarDroppedPackets
                     Counter64,
                 hwCBQoSCarDroppedBytes
+                    Counter64,
+                hwCBQoSCarPassPacketRate
+                    Counter64,
+                hwCBQoSCarPassByteRate
+                    Counter64,
+                hwCBQoSCarDropPacketRate
+                    Counter64,
+                hwCBQoSCarDropByteRate
                     Counter64
              }
 
@@ -7983,6 +8036,37 @@ This object has no default value.
                 "This object indicates the number of dropped bytes."
             ::= { hwCBQoSCarStatisticsEntry 26 }
 
+        hwCBQoSCarPassPacketRate OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object indicates the rate of packets passed after CAR processing."
+            ::= { hwCBQoSCarStatisticsEntry 27 }
+
+        hwCBQoSCarPassByteRate OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object indicates the rate of bytes passed after CAR processing."
+            ::= { hwCBQoSCarStatisticsEntry 28 }
+
+        hwCBQoSCarDropPacketRate OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object indicates the rate of packets dropped after CAR processing."
+            ::= { hwCBQoSCarStatisticsEntry 29 }
+
+        hwCBQoSCarDropByteRate OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object indicates the rate of bytes dropped after CAR processing."
+            ::= { hwCBQoSCarStatisticsEntry 30 }
         
 --  policy statics
         hwCBQoSPolicyStatisticsTable OBJECT-TYPE
@@ -8036,7 +8120,11 @@ This object has no default value.
                 hwCBQoSPolicyMatchedDropPacketsRate
                     Counter64,
                 hwCBQoSPolicyMatchedDropBytesRate
-                    Counter64               
+                    Counter64,
+                hwCBQoSPolicyUnmatchedPacketsRate
+                    Counter64,
+                hwCBQoSPolicyUnmatchedBytesRate
+                    Counter64
              }
 
         hwCBQoSPolicyMatchedPackets OBJECT-TYPE
@@ -8087,7 +8175,7 @@ This object has no default value.
             MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
-                "Number of bytes that match the traffic classification policy and pass through"
+                "Number of bytes that match the traffic classification policy and pass through."
             ::= { hwCBQoSPolicyStatisticsEntry 16 }
             
         hwCBQoSPolicyMatchedDropPackets OBJECT-TYPE
@@ -8103,7 +8191,7 @@ This object has no default value.
             MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
-                "Number of bytes that match the traffic classification policy and are discarded"
+                "Number of bytes that match the traffic classification policy and are discarded."
             ::= { hwCBQoSPolicyStatisticsEntry 18 }
             
         hwCBQoSPolicyResetFlag OBJECT-TYPE
@@ -8163,6 +8251,22 @@ This object has no default value.
                 "Rate of bytes that match the traffic classification policy and are discarded"
             ::= { hwCBQoSPolicyStatisticsEntry 25 }
 
+        hwCBQoSPolicyUnmatchedPacketsRate OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object indicates the rate of packets that do not match the traffic classification policy."
+            ::= { hwCBQoSPolicyStatisticsEntry 26 }
+
+        hwCBQoSPolicyUnmatchedBytesRate OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object indicates the rate of bytes that do not match the traffic classification policy."
+            ::= { hwCBQoSPolicyStatisticsEntry 27 }
+
 --  classifier statistics
         hwCBQoSClassifierStatisticsTable OBJECT-TYPE
             SYNTAX SEQUENCE OF HwCBQoSClassifierStatisticsEntry
@@ -8197,6 +8301,18 @@ This object has no default value.
                 hwCBQoSClassifierMatchedDropPackets
                     Counter64,
                 hwCBQoSClassifierMatchedDropBytes
+                    Counter64,
+                hwCBQoSClassifierMatchedPacketRate
+                    Counter64,
+                hwCBQoSClassifierMatchedByteRate
+                    Counter64,
+                hwCBQoSClassifierMatchedPassPacketRate
+                    Counter64,
+                hwCBQoSClassifierMatchedPassByteRate
+                    Counter64,
+                hwCBQoSClassifierMatchedDropPacketRate
+                    Counter64,
+                hwCBQoSClassifierMatchedDropByteRate
                     Counter64
              }
                          
@@ -8257,9 +8373,54 @@ This object has no default value.
                 "Indicates the matched and discarded traffic in bytes."
             ::= { hwCBQoSClassifierStatisticsEntry 10 }            
             
+        hwCBQoSClassifierMatchedPacketRate OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Rate of packets that match the traffic classifier."
+            ::= { hwCBQoSClassifierStatisticsEntry 11 }
+            
+        hwCBQoSClassifierMatchedByteRate OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Rate of bytes that match the traffic classifier."
+            ::= { hwCBQoSClassifierStatisticsEntry 12 }
 
+        hwCBQoSClassifierMatchedPassPacketRate OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Rate of packets that match the traffic classifier and pass through."
+            ::= { hwCBQoSClassifierStatisticsEntry 13 }
 
-        
+        hwCBQoSClassifierMatchedPassByteRate OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Rate of bytes that match the traffic classifier and pass through."
+            ::= { hwCBQoSClassifierStatisticsEntry 14 }
+
+        hwCBQoSClassifierMatchedDropPacketRate OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Rate of packets that match the traffic classification policy and are discarded."
+            ::= { hwCBQoSClassifierStatisticsEntry 15 }
+
+        hwCBQoSClassifierMatchedDropByteRate OBJECT-TYPE
+            SYNTAX Counter64
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Rate of bytes that match the traffic classification policy and are discarded."
+            ::= { hwCBQoSClassifierStatisticsEntry 16 }
+
         
 --  class based policy stat     
         hwCBQoSPolicyStatisticsClassifierTable OBJECT-TYPE
@@ -8442,6 +8603,7 @@ This object has no default value.
             DESCRIPTION
                 "This object indicates the average number of matching and discarded bytes."
             ::= { hwCBQoSPolicyStatisticsClassifierEntry 15 }
+
                                 
 --    Class match statistics in policy on VLAN
     hwCBQoSVlanClassMatchRunInfoTable OBJECT-TYPE
@@ -8824,7 +8986,7 @@ This object has no default value.
             STATUS current
             DESCRIPTION
                 "Class based policy statistics entry."
-            INDEX { hwCBQoSIfApplyMultiPolicyIfIndex , hwCBQoSVlanApplyMultiPolicyVlanId, hwCBQoSIfApplyMultiPolicyDirection, hwCBQoSMultiPolicyStaPolicyIndex, hwCBQoSMultiPolicyStatClassifierIndex }
+            INDEX { hwCBQoSIfApplyMultiPolicyIfIndex, hwCBQoSVlanApplyMultiPolicyVlanId, hwCBQoSIfApplyMultiPolicyDirection, hwCBQoSMultiPolicyStaPolicyIndex, hwCBQoSMultiPolicyStatClassifierIndex }
             ::= { hwCBQoSMultiPolicyStatisticsClassifierTable 1 }
         
         HwCBQoSMultiPolicyStatisticsClassifierEntry ::=
@@ -12875,7 +13037,7 @@ This object has no default value.
             OBJECTS { hwCBQoSCarConformedPackets, hwCBQoSCarConformedBytes, hwCBQoSCarConformedPacketRate, hwCBQoSCarConformedByteRate, hwCBQoSCarExceededPackets, 
                 hwCBQoSCarExceededBytes, hwCBQoSCarExceededPacketRate, hwCBQoSCarExceededByteRate, hwCBQoSCarOverflowPackets, hwCBQoSCarOverflowBytes, 
                 hwCBQoSCarOverflowPacketRate, hwCBQoSCarOverflowByteRate, hwCBQoSCarPassedPackets, hwCBQoSCarPassedBytes, hwCBQoSCarDroppedPackets, 
-                hwCBQoSCarDroppedBytes }
+                hwCBQoSCarDroppedBytes, hwCBQoSCarPassPacketRate, hwCBQoSCarPassByteRate, hwCBQoSCarDropPacketRate, hwCBQoSCarDropByteRate }
             STATUS current
             DESCRIPTION 
                 "This is a optional group of information."
@@ -12884,7 +13046,9 @@ This object has no default value.
         
         hwCBQoSPolicyStatisticsGroup OBJECT-GROUP
             OBJECTS { hwCBQoSPolicyMatchedPackets, hwCBQoSPolicyMatchedBytes, hwCBQoSPolicyUnmatchedPackets, hwCBQoSPolicyUnmatchedBytes, 
-                hwCBQoSPolicyMatchedPassPackets, hwCBQoSPolicyMatchedPassBytes, hwCBQoSPolicyMatchedDropPackets, hwCBQoSPolicyMatchedDropBytes, hwCBQoSPolicyResetFlag }
+                hwCBQoSPolicyMatchedPassPackets, hwCBQoSPolicyMatchedPassBytes, hwCBQoSPolicyMatchedDropPackets, hwCBQoSPolicyMatchedDropBytes, hwCBQoSPolicyResetFlag,
+                hwCBQoSPolicyMatchedPacketsRate, hwCBQoSPolicyMatchedBytesRate, hwCBQoSPolicyMatchedPassPacketsRate, hwCBQoSPolicyMatchedPassBytesRate,
+                hwCBQoSPolicyMatchedDropPacketsRate, hwCBQoSPolicyMatchedDropBytesRate, hwCBQoSPolicyUnmatchedPacketsRate, hwCBQoSPolicyUnmatchedBytesRate}
             STATUS current
             DESCRIPTION 
                 "This is a optional group of information."
@@ -12924,7 +13088,8 @@ This object has no default value.
 
         hwCBQoSClassifierStatisticsGroup OBJECT-GROUP
             OBJECTS { hwCBQoSPolicyClassifierIndex, hwCBQoSClassifierMatchedPackets, hwCBQoSClassifierMatchedBytes, hwCBQoSClassifierMatchedPassPackets, hwCBQoSClassifierMatchedPassBytes, 
-                hwCBQoSClassifierMatchedDropPackets, hwCBQoSClassifierMatchedDropBytes}
+                hwCBQoSClassifierMatchedDropPackets, hwCBQoSClassifierMatchedDropBytes, hwCBQoSClassifierMatchedPacketRate, hwCBQoSClassifierMatchedByteRate, hwCBQoSClassifierMatchedPassPacketRate,
+                hwCBQoSClassifierMatchedPassByteRate, hwCBQoSClassifierMatchedDropPacketRate, hwCBQoSClassifierMatchedDropByteRate}
             STATUS current
             DESCRIPTION 
                 "This is a optional group of information."

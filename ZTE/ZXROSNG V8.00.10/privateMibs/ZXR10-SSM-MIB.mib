@@ -1,0 +1,1432 @@
+--  ******************************************************
+--  $Id: ZXR10-SSM-MIB.mib 2010-09-14$
+--
+--  ZXR10-SSM-MIB.mib: ZXR10 Switch Access List MIB file
+--
+--  Sep. 2010, wangdan 190001
+--
+--  Copyright(c) 2008 by ZTE Corporaton
+--  All rights reservered
+--  ******************************************************
+
+ZXR10-SSM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   OBJECT-TYPE,
+   MODULE-IDENTITY,
+   Integer32,
+   Unsigned32
+        FROM SNMPv2-SMI
+   zxr10
+        FROM ZXR10-SMI
+
+   RowStatus
+        FROM SNMPv2-TC;
+
+   zxr10SSM MODULE-IDENTITY
+            LAST-UPDATED "201903251000Z"
+            ORGANIZATION "ZTE Corporation"
+            CONTACT-INFO
+                "        qu yanxia
+                Tel:
+                E-Mail: qu.yanxia@zte.com.cn
+                "      
+            DESCRIPTION
+                "The MIB module to describe the SSM protocol"
+            REVISION "201903251000Z"
+            DESCRIPTION
+                "
+                modify:zxr10SSMOutClkConfigId zxr10SSMCurOutClockConfigId
+               "
+            REVISION "201506291000Z"
+            DESCRIPTION
+                "
+                modify:zxr10SSMSaPosCfgRowStatus
+               "
+            REVISION "201410201000Z"
+            DESCRIPTION
+                "
+                modify:zxr10SSMAdmCurOutClkQL
+               " 
+            REVISION "201404241200Z"  
+            DESCRIPTION
+                "
+                modify:zxr10SSMCurOutClockState zxr10SSMAdmCurOutClkState 
+                add new enum type unsupported(3)
+               "
+            REVISION "201401081000Z"
+            DESCRIPTION
+                "
+                  zxr10SSMPortConfigEntry
+                  zxr10SSMTransDisableCfgEntry
+                  zxr10SSMOutClkBindCfgEntry
+                  zxr10SSMEdgeLinkCfgEntry
+                  zxr10SSMTransS1CfgEntry
+                  zxr10SSMSaPosCfgEntry
+                  zxr10SSMWtrClkType
+                  zxr10SSM
+                  zxr10SSMStatusInfo
+               "
+            REVISION "201310171555Z"
+            DESCRIPTION
+                "
+                modify:zxr10SSMTransDisableCfgDisable zxr10SSMEdgeLinkCfgEdgeLink
+               "
+            REVISION "201307301000Z"
+            DESCRIPTION
+                "
+                modify:zxr10SSMWtrClkType
+               "
+            REVISION "201306211430Z"
+            DESCRIPTION
+                "
+                modify:zxr10SSMStatusMode
+               "
+            REVISION "201305291630Z"
+            DESCRIPTION
+                "
+                modify:zxr10SSMOutClkBindCfgSubClkType
+               "
+            REVISION "201304201630Z"
+            DESCRIPTION
+                "add:
+                        zxr10SSMEdgeLinkCfgTable
+                        zxr10SSMTransS1CfgTable
+                        zxr10SSMSaPosCfgTable
+                modify: zxr10SSMSyncClkCfgTable zxr10SSMWTRClk zxr10SSMInit
+               "
+            REVISION "201303211630Z"
+            DESCRIPTION
+                "add:     zxr10SSMSyncClkCfgTable
+                          zxr10SSMEdgeLinkCfgTable
+                          zxr10SSMTransS1CfgTable
+                          zxr10SSMTransDisableCfgTable
+                          zxr10SSMSaPosCfgTable
+                          zxr10SSMOutClkCfgTable
+                          zxr10SSMOutClkBindCfgTablez
+                          zxr10SSMShowAdminCurOutClkTable
+                          zxr10SSMWTRClkTable
+                          zxr10SSMInit
+                 modify:  zxr10SSMStatusInfo
+                "
+            ::= { zxr10 304}
+
+    --------------------------------------------------------------------------------
+    -- 1.The table of ssm port config info
+    -------------------------------------------------------------------------------
+    zxr10SSMPortConfigTable        OBJECT-TYPE
+        SYNTAX         SEQUENCE OF Zxr10SSMPortConfigEntry
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+            "This table contains SSM port config entry."
+        ::= { zxr10SSM 1 }
+
+    zxr10SSMPortConfigEntry         OBJECT-TYPE
+        SYNTAX          Zxr10SSMPortConfigEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "This list contains SSM port config parameters
+             and is indexed by zxr10SSMPortConfigClockType,zxr10SSMPortConfigIntName."
+        INDEX  { zxr10SSMPortConfigClockType,zxr10SSMPortConfigIntName }
+        ::= { zxr10SSMPortConfigTable 1 }
+
+    Zxr10SSMPortConfigEntry ::= SEQUENCE {
+        zxr10SSMPortConfigID             Integer32,
+        zxr10SSMPortConfigClockType      INTEGER,
+        zxr10SSMPortConfigIntName        OCTET STRING,
+        zxr10SSMPortConfigPriority       INTEGER,
+        zxr10SSMPortConfigFrame          INTEGER,
+        zxr10SSMPortConfigRecMode        INTEGER,
+        zxr10SSMPortConfigQuality        INTEGER,
+        zxr10SSMPortConfigSendS1Opr      INTEGER,
+        zxr10SSMPortConfigSendS1Value    INTEGER,
+        zxr10SSMPortConfigEdgeLink       INTEGER,
+        zxr10SSMPortConfigLockStatus     INTEGER,
+        zxr10SSMPortConfigWtrStatus      INTEGER,
+        zxr10SSMPortConfigRcvSaPos       INTEGER,
+        zxr10SSMPortConfigSendSaPos      INTEGER,
+        zxr10SSMPortConfigSwitchStatus   INTEGER,
+        zxr10SSMPortConfigLostStatus     INTEGER,
+        zxr10SSMPortConfigRowStatus      RowStatus
+        }
+
+    zxr10SSMPortConfigID        OBJECT-TYPE
+        SYNTAX         Integer32(0..255)
+        MAX-ACCESS     read-only
+        STATUS         obsolete
+        DESCRIPTION
+            "SSM port config ID."
+        ::= { zxr10SSMPortConfigEntry 1}
+
+    zxr10SSMPortConfigClockType          OBJECT-TYPE
+        SYNTAX         INTEGER{
+                            external(1),
+                            line(2),
+                            inner(3),
+                            holdover(4),
+                            tributeline(5),
+                            clk1588(6),
+                            gps(7),
+                            stm(8)
+                        }
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+            "SSM port config clock type."
+        ::= { zxr10SSMPortConfigEntry 2}
+
+     zxr10SSMPortConfigIntName          OBJECT-TYPE
+        SYNTAX         OCTET STRING
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+            "SSM port config interface name."
+        ::= { zxr10SSMPortConfigEntry 3}
+
+    zxr10SSMPortConfigPriority         OBJECT-TYPE
+        SYNTAX         INTEGER(1..255)
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM port config priority."
+        ::= { zxr10SSMPortConfigEntry 4}
+
+    zxr10SSMPortConfigFrame         OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       frame(1),
+                       unframe(2),
+                       null(254)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM port config frame."
+    ::= { zxr10SSMPortConfigEntry 5}
+
+    zxr10SSMPortConfigRecMode         OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       autossm(1),
+                       manualssm(2)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM port config receive mode."
+        ::= { zxr10SSMPortConfigEntry 6}
+
+    zxr10SSMPortConfigQuality         OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       unk(0),
+                       prc(2),
+                       ssua(4),
+                       ssub(8),
+                       sec(11),
+                       dnu(15)
+                      }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM port config quality."
+        ::= { zxr10SSMPortConfigEntry 7}
+
+    zxr10SSMPortConfigSendS1Opr         OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       autossm(1),
+                       manualssm(2),
+                       null(254)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM port config send S1 operation."
+        ::= { zxr10SSMPortConfigEntry 8}
+
+    zxr10SSMPortConfigSendS1Value      OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       unk(0),
+                       prc(2),
+                       ssua(4),
+                       ssub(8),
+                       sec(11),
+                       dnu(15),
+                       null(254)
+                      }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM port config send S1 value."
+        ::= { zxr10SSMPortConfigEntry 9}
+
+    zxr10SSMPortConfigEdgeLink         OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       different(1),
+                       same(2),
+                       null(254)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM port config edge link."
+        ::= { zxr10SSMPortConfigEntry 10}
+
+    zxr10SSMPortConfigLockStatus         OBJECT-TYPE
+        SYNTAX         INTEGER{
+                         inlock(1),
+                         clearlock(2)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM port config lock status."
+        ::= { zxr10SSMPortConfigEntry 11}
+
+    zxr10SSMPortConfigWtrStatus         OBJECT-TYPE
+        SYNTAX         INTEGER{
+                         notinwtr(0),
+                         inwtr(1)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM port config wtr status."
+        ::= { zxr10SSMPortConfigEntry 12}
+
+    zxr10SSMPortConfigRcvSaPos         OBJECT-TYPE
+        SYNTAX         INTEGER(4..8)
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM port config receive sa postion."
+        ::= { zxr10SSMPortConfigEntry 13}
+
+    zxr10SSMPortConfigSendSaPos         OBJECT-TYPE
+        SYNTAX         INTEGER(4..8)
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM port config send sa postion."
+        ::= { zxr10SSMPortConfigEntry 14}
+
+    zxr10SSMPortConfigSwitchStatus        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       autoswitch(1),
+                       forceswitch(2),
+                       manualswitch(3)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM port config switch status."
+        ::= { zxr10SSMPortConfigEntry 15}
+
+    zxr10SSMPortConfigLostStatus         OBJECT-TYPE
+        SYNTAX         INTEGER{
+                         notinlost(0),
+                         inlost(1)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM port config lost status."
+        ::= { zxr10SSMPortConfigEntry 16}
+
+     zxr10SSMPortConfigRowStatus OBJECT-TYPE
+              SYNTAX  RowStatus
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "create or delete ssm sync clock"
+              ::= { zxr10SSMPortConfigEntry 100 }
+
+    -------------------------------------------------------------------------------
+    -- 2.The table of ssm out clock config info
+    -------------------------------------------------------------------------------
+    zxr10SSMOutClkConfigTable        OBJECT-TYPE
+        SYNTAX         SEQUENCE OF Zxr10SSMOutClkConfigEntry
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+            "A table that contains SSM out clock config info."
+    ::= { zxr10SSM 2 }
+
+    zxr10SSMOutClkConfigEntry         OBJECT-TYPE
+        SYNTAX          Zxr10SSMOutClkConfigEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "A list of  entries of SSM out clock config information."
+        INDEX  { zxr10SSMOutClkConfigId }
+    ::= { zxr10SSMOutClkConfigTable 1 }
+
+    Zxr10SSMOutClkConfigEntry ::= SEQUENCE {
+        zxr10SSMOutClkConfigId         Integer32,
+        zxr10SSMOutClkOutPort          OCTET STRING,
+        zxr10SSMOutClkQualityLimit     INTEGER,
+        zxr10SSMOutClkSelectMode       INTEGER,
+        zxr10SSMOutClkClkType          INTEGER,
+        zxr10SSMOutClkConfigInterface  OCTET STRING,
+        zxr10SSMOutClkPriority         INTEGER
+        }
+
+    zxr10SSMOutClkConfigId        OBJECT-TYPE
+        SYNTAX         Integer32(0..255)
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The out clock id in the ssm out clock configure table."
+    ::= { zxr10SSMOutClkConfigEntry 1}
+
+    zxr10SSMOutClkOutPort        OBJECT-TYPE
+        SYNTAX         OCTET STRING
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The out port name of the out clock."
+    ::= { zxr10SSMOutClkConfigEntry 2}
+
+    zxr10SSMOutClkQualityLimit        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       unknown(0),
+                       prc(2),
+                       ssua(4),
+                       ssub(8),
+                       sec(11),
+                       dnu(15)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The quality limit value of the out clock. Its default value is 11."
+    ::= { zxr10SSMOutClkConfigEntry 3}
+
+    zxr10SSMOutClkSelectMode        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       priority(1),
+                       qulity(2)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The select mode value of the out clock."
+    ::= { zxr10SSMOutClkConfigEntry 4}
+
+    zxr10SSMOutClkClkType        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                            extclk(1),
+                            line(2),
+                            freerun(3),
+                            clkkeep(4),
+                            tributline(5),
+                            clk1588(6),
+                            gps(7),
+                            stm(8),
+                            curclock(19)
+                        }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The type of the out clock."
+    ::= { zxr10SSMOutClkConfigEntry 5}
+
+    zxr10SSMOutClkConfigInterface      OBJECT-TYPE
+        SYNTAX         OCTET STRING
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The port name of the out clock."
+    ::= { zxr10SSMOutClkConfigEntry 6}
+
+    zxr10SSMOutClkPriority      OBJECT-TYPE
+        SYNTAX         INTEGER(1..255)
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The out priority of the out clock. Its value is 1~N, and its default value is 1."
+    ::= { zxr10SSMOutClkConfigEntry 7}
+
+    --------------------------------------------------------------------------------
+    -- 3.Show Current ssm port info
+    ------------------------------------------------------------------------------
+    zxr10SSMCurClockInfo        OBJECT IDENTIFIER  ::= { zxr10SSM 3 }
+
+    zxr10SSMCurClockType          OBJECT-TYPE
+        SYNTAX         INTEGER{
+                            external(1),
+                            line(2),
+                            inner(3),
+                            holdover(4),
+                            tributeline(5),
+                            clk1588(6),
+                            gps(7),
+                            stm(8)
+                         }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM current clock clock type."
+        ::= { zxr10SSMCurClockInfo 1}
+
+    zxr10SSMCurClockIntName          OBJECT-TYPE
+        SYNTAX         OCTET STRING
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM current clock interface name."
+        ::= { zxr10SSMCurClockInfo 2}
+
+    zxr10SSMCurClockPllStatus     OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       autorun(0),
+                       freeosc(1),
+                       holdover(2),
+                       locked(4),
+                       fastcapture(5),
+                       slowcapture(6),
+                       unlock(7)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM current clock pll status."
+        ::= { zxr10SSMCurClockInfo 3}
+
+    zxr10SSMCurClockSSMEnable           OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       enable(1),
+                       disable(2)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM current clock SSM enable."
+    ::= { zxr10SSMCurClockInfo 4}
+
+    zxr10SSMCurClockSwitchStatus    OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       autoswitch(1),
+                       forceswitch(2),
+                       manualswitch(3)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM current clock switch status."
+        ::= { zxr10SSMCurClockInfo 5}
+
+    zxr10SSMCurClockQuality         OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       unk(0),
+                       prc(2),
+                       ssua(4),
+                       ssub(8),
+                       sec(11),
+                       dnu(15),
+                       null(254)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM current clock quality."
+    ::= { zxr10SSMCurClockInfo 6}
+
+    --------------------------------------------------------------------------------
+    -- 4.The table of current ssm out clock info
+    -------------------------------------------------------------------------------
+    zxr10SSMCurOutClockTable        OBJECT-TYPE
+        SYNTAX         SEQUENCE OF Zxr10SSMCurOutClockEntry
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+            "A table that contains current SSM out clock info."
+    ::= { zxr10SSM 4 }
+
+    zxr10SSMCurOutClockEntry         OBJECT-TYPE
+        SYNTAX          Zxr10SSMCurOutClockEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "A list of  entries of SSM out clock config information."
+        INDEX  { zxr10SSMCurOutClockConfigId }
+    ::= { zxr10SSMCurOutClockTable 1 }
+
+    Zxr10SSMCurOutClockEntry ::= SEQUENCE {
+        zxr10SSMCurOutClockConfigId   Integer32,
+      --zxr10SSMCurOutClockId         Integer32,
+        zxr10SSMCurOutClockType       INTEGER,
+        zxr10SSMCurOutClockOutPort    OCTET STRING,
+        zxr10SSMCurOutClockInterface  OCTET STRING,
+        zxr10SSMCurOutClockState      INTEGER,
+        zxr10SSMCurOutClockMode       INTEGER,
+        zxr10SSMCurOutClockQuality    INTEGER
+        }
+
+    zxr10SSMCurOutClockConfigId        OBJECT-TYPE
+        SYNTAX         Integer32
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The out clock id in current ssm out clock configure table."
+    ::= { zxr10SSMCurOutClockEntry 1}
+
+   -- zxr10SSMCurOutClockId        OBJECT-TYPE
+   --     SYNTAX         Integer32
+   --     MAX-ACCESS     read-only
+   --    STATUS         current
+   --     DESCRIPTION
+   --         "The current out clock id in the current ssm out clock table."
+   -- ::= { zxr10SSMCurOutClockEntry 2}
+
+    zxr10SSMCurOutClockType        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                            extclk(1),
+                            line(2),
+                            freerun(3),
+                            clkkeep(4),
+                            tributline(5),
+                            clk1588(6),
+                            gps(7),
+                            stm(8),
+                            curclock(19)
+                        }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The current out clock type in the current ssm out clock table."
+    ::= { zxr10SSMCurOutClockEntry 3}
+
+    zxr10SSMCurOutClockOutPort        OBJECT-TYPE
+        SYNTAX         OCTET STRING
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The current out port name of the current out clock."
+    ::= { zxr10SSMCurOutClockEntry 4}
+
+    zxr10SSMCurOutClockInterface        OBJECT-TYPE
+        SYNTAX         OCTET STRING
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The port name of the current out clock."
+    ::= { zxr10SSMCurOutClockEntry 5}
+
+    zxr10SSMCurOutClockState        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       enable(1),
+                       disable(2),
+                       unsupported(3)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The state of the current out clock."
+    ::= { zxr10SSMCurOutClockEntry 6}
+
+    zxr10SSMCurOutClockMode        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       priority(1),
+                       quality(2)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The mode of the current out clock."
+    ::= { zxr10SSMCurOutClockEntry 7}
+
+    zxr10SSMCurOutClockQuality      OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       unknown(0),
+                       prc(2),
+                       ssua(4),
+                       ssub(8),
+                       sec(11),
+                       dnu(15)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The quality of the current out clock."
+    ::= { zxr10SSMCurOutClockEntry 8}
+
+    --------------------------------------------------------------------------------
+    -- 5.The ssm clock switch info
+    --------------------------------------------------------------------------------
+    zxr10SSMClkSwitchInfo        OBJECT IDENTIFIER  ::= { zxr10SSM 5 }
+
+    zxr10SSMClkSwitchStatus       OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       autoswitch(1),
+                       forceswitch(2),
+                       manualswitch(3),
+                       null(254)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM clock switch status."
+        ::= { zxr10SSMClkSwitchInfo 1}
+
+    zxr10SSMClkSwitchIntName        OBJECT-TYPE
+        SYNTAX         OCTET STRING
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM clock switch interface name."
+        ::= { zxr10SSMClkSwitchInfo 2}
+
+    zxr10SSMClkSwitchClkType        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                            external(1),
+                            line(2),
+                            inner(3),
+                            holdover(4),
+                            tributeline(5),
+                            clk1588(6),
+                            gps(7),
+                            stm(8),
+                            null(254)
+                          }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM clock switch clock type."
+        ::= { zxr10SSMClkSwitchInfo 3}
+
+    -------------------------------------------------------------------------------
+    -- 6.The ssm status info
+    -------------------------------------------------------------------------------
+    zxr10SSMStatusInfo        OBJECT IDENTIFIER  ::= { zxr10SSM 6 }
+
+    zxr10SSMStatusEnable        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       enable(1),
+                       disable(2)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM status enable."
+    ::= { zxr10SSMStatusInfo 1}
+
+    zxr10SSMStatusMode        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       ssm(1),
+                       expssm(2)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM status mode."
+    ::= { zxr10SSMStatusInfo 2}
+
+    zxr10SSMStatusStation        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                           no(0),
+                           yes(1)
+                           }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM status station."
+    ::= { zxr10SSMStatusInfo 3}
+
+    zxr10SSMStatusStationID        OBJECT-TYPE
+        SYNTAX         INTEGER(1..7)
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM status station ID."
+    ::= { zxr10SSMStatusInfo 4}
+
+    zxr10SSMStatusIDProtect        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       yes(1),
+                       no(2)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM status ID protect"
+    ::= { zxr10SSMStatusInfo 5}
+
+    zxr10SSMStatusQlUnknown        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       yes(1),
+                       no(2)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM status quality unknown."
+    ::= { zxr10SSMStatusInfo 6}
+
+    zxr10SSMStatusSecQl        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       unk(0),
+                       prc(2),
+                       ssua(4),
+                       ssub(8),
+                       sec(11)
+                     }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM status sec quality."
+    ::= { zxr10SSMStatusInfo 7}
+
+    zxr10SSMStatusWtrTime        OBJECT-TYPE
+        SYNTAX         INTEGER(0..12)
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "SSM status wtr time,waiting interval for clock recover after clearing alarms."
+    ::= { zxr10SSMStatusInfo 8}
+
+     zxr10SSMStatusQLLimit OBJECT-TYPE
+              SYNTAX  INTEGER{
+                       enable(1),
+                       disable(2)
+                       }
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "Enable the SSM local quality limit"
+              DEFVAL   {2}
+              ::= { zxr10SSMStatusInfo 9 }
+
+    -- the ssm enable/disable transmitting s1 configure table,support get\set\create
+
+    zxr10SSMTransDisableCfgTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10SSMTransDisableCfgEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing disable transmit s1 information."
+              ::= { zxr10SSM 7 }
+
+     zxr10SSMTransDisableCfgEntry OBJECT-TYPE
+              SYNTAX  Zxr10SSMTransDisableCfgEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information about the disable transmit s1 of SSM."
+              INDEX   {
+                          zxr10SSMTransDisableCfgIfName,zxr10SSMTransDisableCfgClkType
+                      }
+              ::= { zxr10SSMTransDisableCfgTable 1 }
+
+     Zxr10SSMTransDisableCfgEntry ::=
+              SEQUENCE {
+                  zxr10SSMTransDisableCfgIfName
+                      OCTET STRING,
+                  zxr10SSMTransDisableCfgClkType
+                      INTEGER,
+                  zxr10SSMTransDisableCfgDisable
+                      INTEGER,
+                  zxr10SSMTransDisableCfgRowStatus
+                        RowStatus
+              }
+
+     zxr10SSMTransDisableCfgIfName OBJECT-TYPE
+              SYNTAX  OCTET STRING (SIZE (1..31))
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The SSM sync clock interface name"
+              ::= { zxr10SSMTransDisableCfgEntry 1 }
+
+     zxr10SSMTransDisableCfgClkType OBJECT-TYPE
+              SYNTAX  INTEGER{
+                            line(2)
+                        }
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The SSM sync clock type."
+              ::= { zxr10SSMTransDisableCfgEntry 2 }
+
+     zxr10SSMTransDisableCfgDisable OBJECT-TYPE
+              SYNTAX  INTEGER{
+                            disable(2)
+                        }
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "Enable/Disable transmit s1."
+              ::= { zxr10SSMTransDisableCfgEntry 3 }
+
+     zxr10SSMTransDisableCfgRowStatus OBJECT-TYPE
+              SYNTAX  RowStatus
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "create or delete ssm transmit s1 sync clock"
+              ::= { zxr10SSMTransDisableCfgEntry 100 }
+
+    -- the ssm out clock configure table,support get\set\create
+
+    zxr10SSMOutClkCfgTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10SSMOutClkCfgEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing SSM out clock information."
+              ::= { zxr10SSM 8 }
+
+     zxr10SSMOutClkCfgEntry OBJECT-TYPE
+              SYNTAX  Zxr10SSMOutClkCfgEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "SSM out clock information."
+              INDEX   {
+                          zxr10SSMOutClkCfgIfName
+                      }
+              ::= { zxr10SSMOutClkCfgTable 1 }
+
+     Zxr10SSMOutClkCfgEntry ::=
+              SEQUENCE {
+                  zxr10SSMOutClkCfgIfName
+                      OCTET STRING,
+                  zxr10SSMOutClkCfgQLLimit
+                      INTEGER,
+                  zxr10SSMOutClkCfgOutMode
+                      INTEGER,
+                  zxr10SSMOutClkCfgBits
+                      INTEGER,
+                  zxr10SSMOutClkCfgRowStatus
+                        RowStatus
+              }
+
+     zxr10SSMOutClkCfgIfName OBJECT-TYPE
+              SYNTAX  OCTET STRING (SIZE (1..31))
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The SSM out clock interface name"
+              ::= { zxr10SSMOutClkCfgEntry 1 }
+
+     zxr10SSMOutClkCfgQLLimit OBJECT-TYPE
+              SYNTAX  INTEGER{
+                       unknown(1),
+                       prc(2),
+                       ssua(4),
+                       ssub(8),
+                       sec(11)
+                       }
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The SSM out clock quality limit."
+              DEFVAL   {11}
+              ::= { zxr10SSMOutClkCfgEntry 2 }
+
+     zxr10SSMOutClkCfgOutMode OBJECT-TYPE
+              SYNTAX  INTEGER{
+                       priority(1),
+                       quality(2)
+                       }
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The SSM out clock mode."
+              DEFVAL   {1}
+              ::= { zxr10SSMOutClkCfgEntry 3 }
+
+     zxr10SSMOutClkCfgBits OBJECT-TYPE
+              SYNTAX  INTEGER{
+                       twombits(1),
+                       twomhz(2)
+                       }
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The SSM out clock bits."
+              DEFVAL   {1}
+              ::= { zxr10SSMOutClkCfgEntry 4 }
+
+     zxr10SSMOutClkCfgRowStatus OBJECT-TYPE
+              SYNTAX  RowStatus
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "create or delete ssm out clock"
+              ::= { zxr10SSMOutClkCfgEntry 100 }
+
+    -- the ssm out clock bind configure table,support get\set\create
+
+    zxr10SSMOutClkBindCfgTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10SSMOutClkBindCfgEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing SSM out clock bind information."
+              ::= { zxr10SSM 9 }
+
+     zxr10SSMOutClkBindCfgEntry OBJECT-TYPE
+              SYNTAX  Zxr10SSMOutClkBindCfgEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "SSM out clock bind information."
+              INDEX   {
+                          zxr10SSMOutClkBindCfgIfName,zxr10SSMOutClkBindCfgSubIfName,zxr10SSMOutClkBindCfgSubClkType
+                      }
+              ::= { zxr10SSMOutClkBindCfgTable 1 }
+
+     Zxr10SSMOutClkBindCfgEntry ::=
+              SEQUENCE {
+                  zxr10SSMOutClkBindCfgIfName
+                      OCTET STRING,
+                  zxr10SSMOutClkBindCfgSubIfName
+                      OCTET STRING,
+                  zxr10SSMOutClkBindCfgSubClkType
+                      INTEGER,
+                  zxr10SSMOutClkBindCfgPriority
+                      INTEGER,
+                  zxr10SSMOutClkBindCfgRowStatus
+                        RowStatus
+              }
+
+     zxr10SSMOutClkBindCfgIfName OBJECT-TYPE
+              SYNTAX  OCTET STRING (SIZE (1..31))
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The SSM out clock interface name"
+              ::= { zxr10SSMOutClkBindCfgEntry 1 }
+
+     zxr10SSMOutClkBindCfgSubIfName OBJECT-TYPE
+              SYNTAX  OCTET STRING (SIZE (0..31))
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The SSM out clock bind interface name."
+              ::= { zxr10SSMOutClkBindCfgEntry 2 }
+
+     zxr10SSMOutClkBindCfgSubClkType OBJECT-TYPE
+              SYNTAX  INTEGER{
+                            extclk(1),
+                            line(2),
+                            tributline(5),
+                            clk1588(6),
+                            gps(7),
+                            stm(8),
+                            curclock(19)
+                        }
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The SSM out clock bind clock type."
+              ::= { zxr10SSMOutClkBindCfgEntry 3 }
+
+     zxr10SSMOutClkBindCfgPriority OBJECT-TYPE
+              SYNTAX  INTEGER(1..255)
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The SSM out clock priority."
+              DEFVAL   {255}
+              ::= { zxr10SSMOutClkBindCfgEntry 4 }
+
+     zxr10SSMOutClkBindCfgRowStatus OBJECT-TYPE
+              SYNTAX  RowStatus
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "create or delete ssm out clock bind"
+              ::= { zxr10SSMOutClkBindCfgEntry 100 }
+
+    --------------------------------------------------------------------------------
+    -- The table of show admin current ssm out clock info
+    -------------------------------------------------------------------------------
+    zxr10SSMAdmCurOutClkTable        OBJECT-TYPE
+        SYNTAX         SEQUENCE OF Zxr10SSMAdmCurOutClkEntry
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+            "A table that contains current SSM out clock info."
+    ::= { zxr10SSM 10 }
+
+    zxr10SSMAdmCurOutClkEntry         OBJECT-TYPE
+        SYNTAX          Zxr10SSMAdmCurOutClkEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "A list of current SSM out clock information."
+        INDEX  { zxr10SSMAdmCurOutClkIfName }
+    ::= { zxr10SSMAdmCurOutClkTable 1 }
+
+    Zxr10SSMAdmCurOutClkEntry ::= SEQUENCE {
+        zxr10SSMAdmCurOutClkIfName     OCTET STRING,
+        zxr10SSMAdmCurOutClkSubClkType INTEGER,
+        zxr10SSMAdmCurOutClkSubIfName  OCTET STRING,
+        zxr10SSMAdmCurOutClkState      INTEGER,
+        zxr10SSMAdmCurOutClkMode       INTEGER,
+        zxr10SSMAdmCurOutClkQL         INTEGER
+        }
+
+    zxr10SSMAdmCurOutClkIfName        OBJECT-TYPE
+        SYNTAX         OCTET STRING (SIZE (1..31))
+        MAX-ACCESS     not-accessible
+        STATUS         current
+        DESCRIPTION
+            "The external clock name of the current out clock."
+    ::= { zxr10SSMAdmCurOutClkEntry 1}
+
+    zxr10SSMAdmCurOutClkSubClkType        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                            extclk(1),
+                            line(2),
+                            freerun(3),
+                            clkkeep(4),
+                            tributline(5),
+                            clk1588(6),
+                            gps(7),
+                            stm(8),
+                            curclock(19)
+                        }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The clock type in the current ssm out clock table."
+    ::= { zxr10SSMAdmCurOutClkEntry 2}
+
+    zxr10SSMAdmCurOutClkSubIfName        OBJECT-TYPE
+        SYNTAX         OCTET STRING (SIZE (0..31))
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The clock name of the current out clock."
+    ::= { zxr10SSMAdmCurOutClkEntry 3}
+
+    zxr10SSMAdmCurOutClkState        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       enable(1),
+                       disable(2),
+                       unsupported(3)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The state of the current out clock."
+        DEFVAL   {2}
+    ::= { zxr10SSMAdmCurOutClkEntry 4}
+
+    zxr10SSMAdmCurOutClkMode        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       priority(1),
+                       quality(2)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The mode of the current out clock."
+        DEFVAL   {1}
+    ::= { zxr10SSMAdmCurOutClkEntry 5}
+
+    zxr10SSMAdmCurOutClkQL      OBJECT-TYPE
+        SYNTAX         INTEGER{
+                       unknown(1),
+                       prc(2),
+                       ssua(4),
+                       ssub(8),
+                       sec(11),
+                       dnu(15),
+                       null(254)
+                       }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The quality of the current out clock."
+        DEFVAL   {15}
+    ::= { zxr10SSMAdmCurOutClkEntry 6}
+
+    --------------------------------------------------------------------------------
+    -- The wtr-time operate, the value of read is invalid,only write is valid
+    -------------------------------------------------------------------------------
+    zxr10SSMWTRClk        OBJECT IDENTIFIER    ::= { zxr10SSM 11 }
+
+    zxr10SSMWTRClkIfName        OBJECT-TYPE
+        SYNTAX         OCTET STRING (SIZE (0..31))
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The interface name of the wtr sync clock,only write access is valid."
+    ::= { zxr10SSMWTRClk 1}
+
+    zxr10SSMWtrClkType        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                            extclk(1),
+                            line(2),
+                            tributline(5),
+                            clk1588(6),
+                            gps(7),
+                            stm(8)
+                        }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The clock type of the wtr sync clock,only write access is valid."
+    ::= { zxr10SSMWTRClk 2}
+
+    zxr10SSMWTRFlag        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                            clearall(1),
+                            clear(2)
+                        }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "The flag of clear wtr sync clock,clear all or clear one clock.
+            Only flag should be setted when clear all,when clear one clock,
+            the all arrtibutions must be setted,only write access is valid."
+    ::= { zxr10SSMWTRClk 3}
+
+    --------------------------------------------------------------------------------
+    -- 4.The ssm initial
+    -------------------------------------------------------------------------------
+
+    zxr10SSMInit        OBJECT-TYPE
+        SYNTAX         INTEGER{
+                            initial(1),
+                            ready(2)
+                        }
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+            "Initial all SSM attribution,the value 1 means to execute initialization.
+             read access has no actual importance."
+    ::= { zxr10SSM 12}
+
+
+    -- the ssm edgelink clock configure table,support get\set\create
+
+    zxr10SSMEdgeLinkCfgTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10SSMEdgeLinkCfgEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing SSM edge link information."
+              ::= { zxr10SSM 13 }
+
+     zxr10SSMEdgeLinkCfgEntry OBJECT-TYPE
+              SYNTAX  Zxr10SSMEdgeLinkCfgEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information about the edge link of SSM."
+              INDEX   {
+                          zxr10SSMEdgeLinkCfgIfName,zxr10SSMEdgeLinkCfgClkType
+                      }
+              ::= { zxr10SSMEdgeLinkCfgTable 1 }
+
+     Zxr10SSMEdgeLinkCfgEntry ::=
+              SEQUENCE {
+                  zxr10SSMEdgeLinkCfgIfName
+                      OCTET STRING,
+                  zxr10SSMEdgeLinkCfgClkType
+                      INTEGER,
+                  zxr10SSMEdgeLinkCfgEdgeLink
+                      INTEGER,
+                  zxr10SSMEdgeLinkCfgRowStatus
+                        RowStatus
+              }
+
+     zxr10SSMEdgeLinkCfgIfName OBJECT-TYPE
+              SYNTAX  OCTET STRING (SIZE (1..31))
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The SSM edge link clock interface name"
+              ::= { zxr10SSMEdgeLinkCfgEntry 1 }
+
+     zxr10SSMEdgeLinkCfgClkType OBJECT-TYPE
+              SYNTAX  INTEGER{
+                            line(2)
+                        }
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The SSM edge link clock type."
+              ::= { zxr10SSMEdgeLinkCfgEntry 2 }
+
+     zxr10SSMEdgeLinkCfgEdgeLink OBJECT-TYPE
+              SYNTAX  INTEGER{
+                            otherdevice(1)
+                        }
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The SSM sync clock is or not other device."
+              ::= { zxr10SSMEdgeLinkCfgEntry 3 }
+
+     zxr10SSMEdgeLinkCfgRowStatus OBJECT-TYPE
+              SYNTAX  RowStatus
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "create or delete ssm edge link clock"
+              ::= { zxr10SSMEdgeLinkCfgEntry 100}
+
+    -- the ssm transmit s1 configure table,support get\set\create
+
+    zxr10SSMTransS1CfgTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10SSMTransS1CfgEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing SSM trasmit s1 information."
+              ::= { zxr10SSM 14 }
+
+     zxr10SSMTransS1CfgEntry OBJECT-TYPE
+              SYNTAX  Zxr10SSMTransS1CfgEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information about the transmit s1 of SSM."
+              INDEX   {
+                          zxr10SSMTransS1CfgIfName,zxr10SSMTransS1CfgClkType
+                      }
+              ::= { zxr10SSMTransS1CfgTable 1 }
+
+     Zxr10SSMTransS1CfgEntry ::=
+              SEQUENCE {
+                  zxr10SSMTransS1CfgIfName
+                      OCTET STRING,
+                  zxr10SSMTransS1CfgClkType
+                      INTEGER,
+                  zxr10SSMTransS1CfgOpr
+                      INTEGER,
+                  zxr10SSMTransS1CfgS1
+                      INTEGER,
+                  zxr10SSMTransS1CfgRowStatus
+                        RowStatus
+              }
+
+     zxr10SSMTransS1CfgIfName OBJECT-TYPE
+              SYNTAX  OCTET STRING (SIZE (1..31))
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The SSM sync clock interface name."
+              ::= { zxr10SSMTransS1CfgEntry 1 }
+
+     zxr10SSMTransS1CfgClkType OBJECT-TYPE
+              SYNTAX  INTEGER{
+                            external(1),
+                            line(2),
+                            stm(8)
+                        }
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The SSM sync clock type."
+              ::= { zxr10SSMTransS1CfgEntry 2 }
+
+     zxr10SSMTransS1CfgOpr OBJECT-TYPE
+              SYNTAX  INTEGER{
+                            autossm(1),
+                            manualssm(2)
+                        }
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The transmit S1 operation."
+              DEFVAL   {1}
+              ::= { zxr10SSMTransS1CfgEntry 3 }
+
+     zxr10SSMTransS1CfgS1 OBJECT-TYPE
+              SYNTAX  INTEGER{
+                       unk(1),
+                       prc(2),
+                       ssua(4),
+                       ssub(8),
+                       sec(11),
+                       dnu(15)
+                      }
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The S1 value for fixed transmitting."
+              DEFVAL   {15}
+              ::= { zxr10SSMTransS1CfgEntry 4 }
+
+     zxr10SSMTransS1CfgRowStatus OBJECT-TYPE
+              SYNTAX  RowStatus
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "create or delete ssm trasmit s1 setting clock"
+              ::= { zxr10SSMTransS1CfgEntry 100 }
+
+    -- the ssm sa position configure table of external clock,support get\set\create
+
+    zxr10SSMSaPosCfgTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF Zxr10SSMSaPosCfgEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing SSM sa position information."
+              ::= { zxr10SSM 15 }
+
+     zxr10SSMSaPosCfgEntry OBJECT-TYPE
+              SYNTAX  Zxr10SSMSaPosCfgEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "SSM sa position."
+              INDEX   {
+                          zxr10SSMSaPosCfgIfName
+                      }
+              ::= { zxr10SSMSaPosCfgTable 1 }
+
+     Zxr10SSMSaPosCfgEntry ::=
+              SEQUENCE {
+                  zxr10SSMSaPosCfgIfName
+                      OCTET STRING,
+                  zxr10SSMSaPosCfgSaRcv
+                      INTEGER,
+                  zxr10SSMSaPosCfgSaSend
+                      INTEGER,
+                  zxr10SSMSaPosCfgRowStatus
+                        RowStatus
+              }
+
+     zxr10SSMSaPosCfgIfName OBJECT-TYPE
+              SYNTAX  OCTET STRING (SIZE (1..31))
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The SSM external interface name."
+              ::= { zxr10SSMSaPosCfgEntry 1 }
+
+     zxr10SSMSaPosCfgSaRcv OBJECT-TYPE
+              SYNTAX  INTEGER(4..8)
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The SSM sa receive position."
+              DEFVAL   {4}
+              ::= { zxr10SSMSaPosCfgEntry 2 }
+
+     zxr10SSMSaPosCfgSaSend OBJECT-TYPE
+              SYNTAX  INTEGER(4..8)
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The SSM sa send position."
+              DEFVAL   {4}
+              ::= { zxr10SSMSaPosCfgEntry 3 }
+
+     zxr10SSMSaPosCfgRowStatus OBJECT-TYPE
+              SYNTAX  RowStatus
+              MAX-ACCESS  read-create
+              STATUS  obsolete
+              DESCRIPTION
+                      "create or delete ssm sa position clock."
+              ::= { zxr10SSMSaPosCfgEntry 100}
+
+   END

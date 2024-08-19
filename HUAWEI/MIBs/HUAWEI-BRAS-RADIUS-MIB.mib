@@ -1,12 +1,14 @@
 -- =================================================================
--- Copyright (C) 2020 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- Copyright (C) 2021 by  HUAWEI TECHNOLOGIES. All rights reserved.
 --
 -- Description:HUAWEI-BRAS-RADIUS-MIB
 -- Reference:
--- Version: V2.43
+-- Version: V2.49
 -- History:
 --         v1.1
 --         modified by huangjun 2009-12-08
+--         modified by z00586255 2021-04-14
+--         modified by z00586255 2021-04-19
 -- =================================================================
     HUAWEI-BRAS-RADIUS-MIB DEFINITIONS ::= BEGIN
 
@@ -25,7 +27,7 @@
             FROM IPV6-TC;
 
     hwBRASRadius MODULE-IDENTITY
-        LAST-UPDATED "202002041620Z"
+        LAST-UPDATED "202104191550Z"
         ORGANIZATION
              "Huawei Technologies Co.,Ltd."
         CONTACT-INFO
@@ -35,8 +37,32 @@
         People's Republic of China
         Website: http://www.huawei.com
         Email: support@huawei.com "
+        DESCRIPTION 
+        "Rollback the modification of enum node."
+        REVISION     "202104191550Z"
 
-        DESCRIPTION
+       DESCRIPTION
+            "Modify value of enum node."
+       REVISION "202104141537Z"
+
+       DESCRIPTION
+            "Add hwRadiusUpmngInstance. "
+       REVISION "202101131109Z"
+
+
+       DESCRIPTION
+            "Modify hwBrasRadiusServerType to hwRadiusServerTypeAlarm."
+       REVISION "202101081206Z"
+
+       DESCRIPTION
+            "Add hwBrasRadiusServerType,hwRadiusServerGroupDown, hwRadiusServerGroupUp, hwRadiusServerGroupDownCp,hwRadiusServerGroupUpCp."
+       REVISION "202101061206Z"
+        
+       DESCRIPTION
+            "Replace the master MPU of hwRadiusThreshold and hwRadiusThresholdCp  with the main control board."
+       REVISION "202005161700Z"
+       
+       DESCRIPTION
             "Delete hwRadiusSocketType, hwRadiusLocalIp, hwRadiusLocalVPN, hwRadiusLocalPort, hwRadiusSocketFailReason, hwRadiusCreateSocketFailAlarm, hwRadiusCreateSocketFailResume."
         REVISION "202002041620Z"
 
@@ -2819,7 +2845,7 @@
             MAX-ACCESS accessible-for-notify
             STATUS current
             DESCRIPTION
-                "This object indicates the master MPU memory usage threshold over which the system stops caching RADIUS accounting packets.
+                "This object indicates the main control board memory usage threshold over which the system stops caching RADIUS accounting packets.
                 "
             ::= { hwRadiusTrapObject 5 }
 
@@ -2892,7 +2918,7 @@
             MAX-ACCESS accessible-for-notify
             STATUS current
             DESCRIPTION
-                "This object indicates the master MPU memory usage threshold over which the system stops caching RADIUS accounting packets.
+                "This object indicates the main control board memory usage threshold over which the system stops caching RADIUS accounting packets.
                 "
             ::= { hwRadiusTrapObject 13 }
 
@@ -2904,6 +2930,21 @@
                 "This object indicates the form of a equipment."
             ::= { hwRadiusTrapObject 14 }
 
+        hwRadiusServerTypeAlarm OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (1..15))
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "This object indicates the server type. The values are as follows: 1. Authentication 2. Accounting"
+            ::= { hwRadiusTrapObject 15 }
+
+        hwRadiusUpmngInstance OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (1..15))
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "This object indicates the upmng-instance name"
+            ::= { hwRadiusTrapObject 16 }
 
         hwRadiusTrapsDefine OBJECT IDENTIFIER ::= { hwRadiusMIBTrap 2 }
 
@@ -2984,6 +3025,7 @@
             DESCRIPTION
                 "This object indicates that the RADIUS authentication server is Down."
             ::= { hwRadiusServerTraps 11 }
+
         hwRadiusCachePacketThresholdCpAlarm NOTIFICATION-TYPE
             OBJECTS {hwRadiusMaxCachePacketsCp,hwRadiusThresholdCp,hwRadiusInstanceIdCp}
             STATUS current
@@ -2997,6 +3039,34 @@
             DESCRIPTION
                 "This object indicates that the number of cached packets falls below the lower alarm threshold."
             ::= { hwRadiusServerTraps 13 }
+
+       hwRadiusServerGroupDown NOTIFICATION-TYPE
+            OBJECTS {hwRadiusGroupName, hwRadiusServerTypeAlarm}
+            STATUS current
+            DESCRIPTION
+                "This object indicates that all the configured servers in the RADIUS server group are down."
+            ::= { hwRadiusServerTraps 14 }
+
+        hwRadiusServerGroupUp NOTIFICATION-TYPE
+            OBJECTS {hwRadiusGroupName, hwRadiusServerTypeAlarm}
+            STATUS current
+            DESCRIPTION
+                "This object indicates that one of the configured servers in the RADIUS server group is up."
+            ::= { hwRadiusServerTraps 15 }
+
+        hwRadiusServerGroupDownCp NOTIFICATION-TYPE
+            OBJECTS {hwRadiusUpmngInstance,hwRadiusGroupName,hwRadiusServerTypeAlarm}
+            STATUS current
+            DESCRIPTION
+                "This object indicates that all the configured servers in the RADIUS server group are down in cp."
+            ::= { hwRadiusServerTraps 16 }
+
+        hwRadiusServerGroupUpCp NOTIFICATION-TYPE
+            OBJECTS {hwRadiusUpmngInstance,hwRadiusGroupName,hwRadiusServerTypeAlarm}
+            STATUS current
+            DESCRIPTION
+                "This object indicates that one of the configured servers in the RADIUS server group is up in cp."
+            ::= { hwRadiusServerTraps 17 }
 
     --  ============== conformance information ==============
         hwRadiusConformance OBJECT IDENTIFIER ::= { hwBRASRadius 3 }

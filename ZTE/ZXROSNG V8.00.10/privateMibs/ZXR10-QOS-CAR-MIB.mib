@@ -1,0 +1,436 @@
+--*****************************************************************
+--ZXR10-QOS-CAR-MIB
+--OAM
+--2011-8-5 9:35
+--
+--
+--Copyright (c) 1985-2013 by ZTE Corp.
+--All rights reserved.
+--*****************************************************************
+
+ZXR10-QOS-CAR-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE,NOTIFICATION-TYPE,
+        Unsigned32, Integer32, enterprises, IpAddress
+                FROM SNMPv2-SMI 
+        MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+                FROM SNMPv2-CONF
+        DisplayString,MacAddress,TEXTUAL-CONVENTION,RowStatus
+                FROM SNMPv2-TC
+        zxr10,zxr10RosngMIB
+                FROM ZXR10-SMI;
+
+zxr10QosCarMIB MODULE-IDENTITY
+        LAST-UPDATED  "201701091530Z"
+        ORGANIZATION  "ZTE Corporation"
+        CONTACT-INFO
+            "       Hu Jun
+            Tel:    +86-25-52870000
+            E-Mail: hu.jun11@zte.com.cn "
+        DESCRIPTION   "The MIB module to describe the QoS Car protocol."  
+         
+        REVISION      "201701091530Z"
+        DESCRIPTION    "Modify the mib file by adding inner and outer flag."
+
+        REVISION      "201410311530Z"
+        DESCRIPTION    "Modify the mib file based on criterion."
+
+        REVISION      "201409040850Z"
+        DESCRIPTION    "Modify the mib file based on criterion."
+
+        REVISION      "201402201842Z"
+        DESCRIPTION    "Modify the mib file based on criterion."
+
+        REVISION      "201401141500Z"
+        DESCRIPTION    "Add new leaf nodes.
+                       Modify the mib file based on criterion."
+
+        REVISION      "201312041000Z"
+        DESCRIPTION    "Add new leaf nodes.
+                       Modify the mib file based on criterion."
+
+        REVISION      "201309160834Z"
+        DESCRIPTION    "Add new leaf nodes.
+                       Modify the mib file based on criterion."
+        
+        REVISION      "201307161500Z"
+        DESCRIPTION   "Add new leaf nodes.
+                       Modify the mib file based on criterion."
+
+        REVISION      "201106270000Z"
+        DESCRIPTION   "add:   zxr10QosCarMIB
+                       Initial version of this MIB module."
+        ::= { zxr10QosMIBObjects 1 }
+
+zxr10QosMIBObjects  OBJECT IDENTIFIER ::= { zxr10RosngMIB 30 }
+
+--*****************************************************************
+--*****************************************************************
+--zIfCarTable  rate-limit on the interface
+--*****************************************************************
+zIfCarTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZIfCarEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "IF_CAR Table"
+        ::= { zxr10QosCarMIB 1  }
+
+zIfCarEntry OBJECT-TYPE
+        SYNTAX   ZIfCarEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "rate-limit on the interface"
+        INDEX {zIfCarInterfaceName,
+               zIfCarDirection,
+               zIfCarProtocol,
+               zIfCarMatchType1,
+               zIfCarMatchValueString,
+               zIfCarMatchValueWord32,
+               zIfCarMatchValueRange,
+               zIfCarMatchType2,
+               zIfCarMatchValueRange2,
+               zIfCarMatchValue2Word32 }
+        ::= { zIfCarTable 1 }
+
+ZIfCarEntry ::=
+        SEQUENCE {
+                zIfCarInterfaceName                               
+                    DisplayString,
+                zIfCarDirection                                   
+                    INTEGER,
+                zIfCarProtocol                                    
+                    INTEGER,
+                zIfCarMatchType1                                  
+                    INTEGER,
+                zIfCarMatchValueString                            
+                    DisplayString,
+                zIfCarMatchValueWord32                            
+                    Unsigned32,
+                zIfCarMatchValueRange                             
+                    DisplayString,
+                zIfCarMatchType2                                  
+                    INTEGER,
+                zIfCarMatchValueRange2                            
+                    DisplayString,
+                zIfCarMatchValue2Word32                           
+                    Unsigned32,
+                zIfCarCir                                         
+                    Unsigned32,
+                zIfCarCbs                                         
+                    Unsigned32,
+                zIfCarPir                                         
+                    Unsigned32,
+                zIfCarPbs                                         
+                    Unsigned32,
+                zIfCarEbs                                         
+                    Unsigned32,
+                zIfCarGreenActionFlag                             
+                    Unsigned32,
+                zIfCarGreenActionValue                            
+                    Unsigned32,
+                zIfCarYellowActionFlag                            
+                    Unsigned32,
+                zIfCarYellowActionValue                           
+                    Unsigned32,
+                zIfCarRedActionFlag                               
+                    Unsigned32,
+                zIfCarRedActionValue                              
+                    Unsigned32,
+                zIfCarStatShareFlg
+                    Unsigned32,
+                zIfCarColorMode
+                    INTEGER,
+                zIfCarGreenActionValue2
+                    Unsigned32,
+                zIfCarYellowActionValue2
+                    Unsigned32,
+                zIfCarRedActionValue2
+                    Unsigned32,
+                zIfCarGreen8021pInOutFlag
+                     Unsigned32,
+                zIfCarYellow8021pInOutFlag
+                     Unsigned32,
+                zIfCarRed8021pInOutFlag
+                     Unsigned32
+        }            
+
+zIfCarInterfaceName OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "interface name"
+        ::= { zIfCarEntry  1  }
+
+zIfCarDirection OBJECT-TYPE
+        SYNTAX   INTEGER{in(1),out(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Rate limit on direction"
+        ::= { zIfCarEntry  2  }
+
+zIfCarProtocol OBJECT-TYPE
+        SYNTAX   INTEGER{ipany(1),ipv4(2),ipv6(3)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Rate limit based on protocol"
+        ::= { zIfCarEntry  3  }
+
+zIfCarMatchType1 OBJECT-TYPE
+        SYNTAX   INTEGER{localport(1),unicast(2),broadcast(3),
+                         unknown(4),ipv4_access_list(5),ipv6_access_list(6),
+                         dscp(7),mpls_exp(8),precedence(9),inner_vlan(10),
+                         outer_vlan(11),inner_8021p(12),outer_8021p(13),
+                         multicast(14),link_access_list(15),qos_group(16),
+                         unknown-unicast(17),unknown-multicast(18)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "match_type:
+                 localport         Match local port
+                 unicast           Match unicast, only for VPLS
+                 broadcast         Match broadcast, only for VPLS
+                 unknown           Match unknown, only for VPLS
+                 ipv4_access_list  Match IPv4 access list
+                 ipv6_access_list  Match IPv6 access list
+                 dscp              MATCH DSCP 
+                 mpls_exp          Match MPLS-EXP
+                 precedence        Match IP precedence
+                 inner_vlan        Match inner VLAN ID
+                 inner_8021p       Match inner 802.1p value
+                 multicast         Match multicast, only for VPLS
+                 link_access_list  Match link access list
+                 qos_group         Match qos-group number
+                 unknown-unicast   Match unknown unicast, only for VPLS
+                 unknown-multicast Match unknown multicast, only for VPLS"
+        ::= { zIfCarEntry  4  }
+
+zIfCarMatchValueString OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "WORD IPv4/IPv6 access list string."
+        ::= { zIfCarEntry  5  }
+
+zIfCarMatchValueWord32 OBJECT-TYPE
+        SYNTAX   Unsigned32(0..16000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-16000> qos-group number
+                 <0-63>    DSCP value 
+                 <0-7>     IP precedence value
+                 <0-7>     MPLS-EXP value
+                 <0-7>     Match inner 802.1p value" 
+        ::= { zIfCarEntry  6  }
+
+zIfCarMatchValueRange OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE (0..255))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-4094> Match inner VLAN ID(max num:4;spacing mark:,)
+                "
+        ::= { zIfCarEntry  7  }
+
+zIfCarMatchType2 OBJECT-TYPE
+        SYNTAX   INTEGER{localport(1),unicast(2),broadcast(3),
+                         unknown(4),ipv4_access_list(5),ipv6_access_list(6),
+                         dscp(7),mpls_exp(8),precedence(9),inner_vlan(10),
+                         outer_vlan(11),inner_8021p(12),outer_8021p(13)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "match type:
+                 outer_8021p Match outer 802.1p value.
+                 outer_vlan  Match outer VLAN ID.
+                 "
+        ::= { zIfCarEntry  8  }
+
+zIfCarMatchValueRange2 OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE (0..255))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<1-4094> Match outer VLAN ID(max num:4;spacing mark:,)
+                "
+        ::= { zIfCarEntry  9  }
+
+zIfCarMatchValue2Word32 OBJECT-TYPE
+        SYNTAX   Unsigned32(0..7)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "<0-7> Match outer 802.1p value"
+        ::= { zIfCarEntry  10  }
+
+zIfCarCir OBJECT-TYPE
+        SYNTAX   Unsigned32(0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Committed information rate"
+        ::= { zIfCarEntry  11  }
+
+zIfCarCbs OBJECT-TYPE
+        SYNTAX   Unsigned32(0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Committed burst size.
+                Mark: the data is based on the diffrent project"
+        ::= { zIfCarEntry  12  }
+
+zIfCarPir OBJECT-TYPE
+        SYNTAX   Unsigned32(0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Peak information rate"
+        ::= { zIfCarEntry  13  }
+
+zIfCarPbs OBJECT-TYPE
+        SYNTAX   Unsigned32(0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Peak burst size.
+                Mark: the data is based on the diffrent project"
+        ::= { zIfCarEntry  14  }
+
+zIfCarEbs OBJECT-TYPE
+        SYNTAX   Unsigned32(0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Exceed burst size"
+        ::= { zIfCarEntry  15  }
+
+zIfCarGreenActionFlag OBJECT-TYPE
+        SYNTAX   Unsigned32(0..255)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Action to packets that conform to the rate limit"
+        ::= { zIfCarEntry  16  }
+
+zIfCarGreenActionValue OBJECT-TYPE
+        SYNTAX   Unsigned32(0..63)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Action value"
+        ::= { zIfCarEntry  17  }
+
+zIfCarYellowActionFlag OBJECT-TYPE
+        SYNTAX   Unsigned32(0..255)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Action to packets that exceed the rate limit"
+        ::= { zIfCarEntry  18  }
+
+zIfCarYellowActionValue OBJECT-TYPE
+        SYNTAX   Unsigned32(0..63)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Action value"
+        ::= { zIfCarEntry  19  }
+
+zIfCarRedActionFlag OBJECT-TYPE
+        SYNTAX   Unsigned32(0..255)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Action to packets that violate the rate limit"
+        ::= { zIfCarEntry  20  }
+
+zIfCarRedActionValue OBJECT-TYPE
+        SYNTAX   Unsigned32(0..63)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Action value."
+        ::= { zIfCarEntry  21  }  
+        
+zIfCarStatShareFlg OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "The flag of statistical-share.
+                0:  Statistical-share is not configured
+                1:  Statistical-share is configured"
+        ::= { zIfCarEntry  22  }
+
+zIfCarColorMode  OBJECT-TYPE  
+       SYNTAX   INTEGER{blind(1),aware(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Color mode type:
+                 blind : Color-Blind mode
+                 aware : Color-Aware mode"
+        ::= { zIfCarEntry  23  }
+ 
+zIfCarGreenActionValue2 OBJECT-TYPE
+        SYNTAX   Unsigned32(0..63)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Action value"
+        ::= { zIfCarEntry  24  }
+ 
+zIfCarYellowActionValue2 OBJECT-TYPE
+        SYNTAX   Unsigned32(0..63)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Action value"
+        ::= { zIfCarEntry  25  }
+
+zIfCarRedActionValue2 OBJECT-TYPE
+        SYNTAX   Unsigned32(0..63)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "Action value."
+        ::= { zIfCarEntry  26  } 
+        
+zIfCarGreen8021pInOutFlag OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "inner or outer flag.
+                 0 is outer flag.
+                 1 is inner and outer flag."
+        ::= { zIfCarEntry  27  }  
+        
+zIfCarYellow8021pInOutFlag OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "inner or outer flag.
+                 0 is outer flag.
+                 1 is inner and outer flag."
+        ::= { zIfCarEntry  28  } 
+ 
+zIfCarRed8021pInOutFlag OBJECT-TYPE
+        SYNTAX   Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "inner or outer flag.
+                 0 is outer flag.
+                 1 is inner and outer flag."
+        ::= { zIfCarEntry  29  }
+END

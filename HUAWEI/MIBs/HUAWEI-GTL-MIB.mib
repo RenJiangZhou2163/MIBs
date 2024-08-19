@@ -1,9 +1,9 @@
 -- ==================================================================
--- Copyright (C) 2019 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- Copyright (C) 2021 by  HUAWEI TECHNOLOGIES. All rights reserved.
 -- 
 -- Description: HUAWEI GTL MIB
 -- Reference:
--- Version: V2.26
+-- Version: V2.30
 -- History:
 -- <author>,  <date>,  <contents>
 -- WangHaiwei   2007-1-16
@@ -27,7 +27,7 @@
                 FROM SNMPv2-SMI;
 
         hwGtl MODULE-IDENTITY 
-            LAST-UPDATED "201907221000Z"        -- July 22, 2019 at 10:00 GMT
+            LAST-UPDATED "202107131214Z"        -- July 13, 2021 at 12:14 GMT
             ORGANIZATION 
                 "Huawei Technologies Co.,Ltd."
             CONTACT-INFO 
@@ -41,6 +41,18 @@
             DESCRIPTION 
                 "The private mib file includes the general extent 
                 information of the device.hwDatacomm(25).htGtl(142)"
+
+            REVISION     "202107131214Z"                                                                                    
+            DESCRIPTION  "V2.30, Add the hwGtlNextStartup"
+            
+            REVISION     "202102191441Z"                                                                                    
+            DESCRIPTION  "V2.29, Add the hwGtlLicenseRevokeTicket, hwGtlMachineESN, hwGtlMachineESNChanged"
+
+            REVISION     "202007171441Z"                                                                                    
+            DESCRIPTION  "V2.28, Add the hwGtlCloudNearDeadline"
+
+            REVISION     "202007031441Z"                                                                                    
+            DESCRIPTION  "V2.27, Add the hwGtlItemExpire,hwGtlItemNearExpire"
 
             REVISION     "201907221000Z"                                                                                    
             DESCRIPTION  "V2.26, Modify the description of hwGtlItemTable"
@@ -474,6 +486,30 @@
             "License SnS end date."
         ::= { hwGtlMibObjects 15 }
 
+        hwGtlLicenseRevokeTicket OBJECT-TYPE
+        SYNTAX     OCTET STRING (SIZE (1..136))
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION
+            "License revoke ticket."
+        ::= { hwGtlMibObjects 16 }
+
+        hwGtlMachineESN OBJECT-TYPE
+        SYNTAX     OCTET STRING (SIZE (1..2056))
+        MAX-ACCESS accessible-for-notify
+        STATUS     current
+        DESCRIPTION
+            "License revoke ticket."
+        ::= { hwGtlMibObjects 17 }
+
+        hwGtlNextStartup OBJECT-TYPE
+            SYNTAX     OCTET STRING (SIZE (5..127))
+            MAX-ACCESS read-write
+            STATUS     current
+            DESCRIPTION
+                "The license file for the next startup."
+            ::= { hwGtlMibObjects 18 }
+
         hwGtlNotifications OBJECT IDENTIFIER ::= { hwGtl 2 }
 
         hwGtlDefaultValue NOTIFICATION-TYPE
@@ -785,6 +821,55 @@
                 "The alarm indicating that the SnS is near deadline is cleared."
             ::= { hwGtlNotifications 44}
 
+        hwGtlItemNearExpire NOTIFICATION-TYPE
+            OBJECTS { hwGtlChassisID }
+            STATUS current
+            DESCRIPTION 
+                "The alarm indicates that the SnS of the cloud-based license sales item has expired."
+            ::= { hwGtlNotifications 45}
+
+        hwGtlItemNearExpireResume NOTIFICATION-TYPE
+            OBJECTS { hwGtlChassisID }
+            STATUS current
+            DESCRIPTION 
+                "The alarm indicating that the SnS of the cloud-based license sales item has expired is cleared."
+            ::= { hwGtlNotifications 46}
+
+        hwGtlItemExpire NOTIFICATION-TYPE
+            OBJECTS { hwGtlChassisID }
+            STATUS current
+            DESCRIPTION 
+                "The alarm indicates that the SnS of the cloud-based license sales item expires."
+            ::= { hwGtlNotifications 47}
+
+        hwGtlItemExpireResume NOTIFICATION-TYPE
+            OBJECTS { hwGtlChassisID }
+            STATUS current
+            DESCRIPTION 
+                "The alarm indicating that the SnS of the cloud-based license sales item expires is cleared."
+            ::= { hwGtlNotifications 48}
+
+        hwGtlCloudNearDeadline NOTIFICATION-TYPE
+            OBJECTS { hwGtlRemainTime }
+            STATUS current
+            DESCRIPTION 
+                "Notification represents the cloud license is near deadline."
+            ::= { hwGtlNotifications 49}
+
+        hwGtlCloudNearDeadlineCleared NOTIFICATION-TYPE
+            OBJECTS { hwGtlRemainTime }
+            STATUS current
+            DESCRIPTION 
+                "The alarm indicating that the cloud license is near deadline is cleared."
+            ::= { hwGtlNotifications 50}
+
+        hwGtlMachineESNChanged NOTIFICATION-TYPE
+            OBJECTS { hwGtlLicenseRevokeTicket, hwGtlMachineESN }
+            STATUS current
+            DESCRIPTION 
+                "The alarm indicating the license is revoked because the ESN is changed."
+            ::= { hwGtlNotifications 51}
+
 --    Conformance information            
         hwGtlConformance OBJECT IDENTIFIER ::= { hwGtl 3 }
 
@@ -803,14 +888,14 @@
 
         hwGtlObjectGroup OBJECT-GROUP
             OBJECTS { hwGtlDefaultValueReason, hwGtlResourceItem, hwGtlFeatureName, hwGtlRemainTime, hwGtlVerifyCode, 
-                      hwGtlActive, hwGtlShowActLCSName, hwGtlItemName, hwGtlItemControlValue, hwGtlItemUsedValue, hwGtlItemDescription, hwGtlItemState, hwGtlItemExpireDay, hwGtlItemTrialRemainTime, hwGtlItemTrialResRemainTime, hwGtlChassisID, hwGtlBoardID, hwGtlAbnormalReason, hwGtlStackItemName, hwGtlStackItemControlValue, hwGtlStackItemUsedValue, hwGtlStackItemDescription, hwGtlStackItemState, hwGtlStackItemExpireDay, hwGtlLicensePreviousState, hwGtlLicenseState, hwGtlSnsEndDate}
+                      hwGtlActive, hwGtlShowActLCSName, hwGtlItemName, hwGtlItemControlValue, hwGtlItemUsedValue, hwGtlItemDescription, hwGtlItemState, hwGtlItemExpireDay, hwGtlItemTrialRemainTime, hwGtlItemTrialResRemainTime, hwGtlChassisID, hwGtlBoardID, hwGtlAbnormalReason, hwGtlStackItemName, hwGtlStackItemControlValue, hwGtlStackItemUsedValue, hwGtlStackItemDescription, hwGtlStackItemState, hwGtlStackItemExpireDay, hwGtlLicensePreviousState, hwGtlLicenseState, hwGtlSnsEndDate, hwGtlLicenseRevokeTicket, hwGtlMachineESN, hwGtlNextStartup}
             STATUS current
             DESCRIPTION 
                 "The GTL attribute group."
             ::= { hwGtlGroups 1 }
 
         hwGtlNotificationGroup NOTIFICATION-GROUP
-            NOTIFICATIONS { hwGtlDefaultValue, hwGtlResourceUsedUp, hwGtlNearDeadline, hwGtlLicenseVerifyFailed, hwGtlExpired, hwGtlItemMismatch, hwGtlDefaultValueCleared, hwGtlNearDeadlineCleared, hwGtlItemMismatchCleared, hwGtlResourceUsedUpCleared, hwGtlLicenseNotCommeral, hwGtlEmergencyStart, hwGtlEmergencyStop, hwGtlTrialFeatureEnable, hwGtlTrialFeatureDisable, hwGtlTrialFeatureNearDeadline, hwGtlTrialFeatureNearDeadlineCleared, hwGtlResourceOverload, hwGtlResourceOverloadCleared, hwGtlEsnMismatch, hwGtlEsnMismatchCleared, hwGtlItemInactive, hwGtlItemInactiveCleared, hwGtlInitial, hwGtlInitialCleared, hwGtlFunctionInactive, hwGtlFunctionInactiveCleared, hwGtlResourceLack, hwGtlResourceLackCleared, hwGtlAbnormal, hwGtlAbnormalCleared,  hwGtlTrialResFeatureEnable, hwGtlTrialResFeatureDisable, hwGtlFeatureFunInactive, hwGtlFeatureFunInactiveCleared, hwGtlLicenseStateChange,hwGtlSnsNearExpire,hwGtlSnsNearExpireCleared,hwGtlSnsExpire,hwGtlSnsExpireCleared }
+            NOTIFICATIONS { hwGtlDefaultValue, hwGtlResourceUsedUp, hwGtlNearDeadline, hwGtlLicenseVerifyFailed, hwGtlExpired, hwGtlItemMismatch, hwGtlDefaultValueCleared, hwGtlNearDeadlineCleared, hwGtlItemMismatchCleared, hwGtlResourceUsedUpCleared, hwGtlLicenseNotCommeral, hwGtlEmergencyStart, hwGtlEmergencyStop, hwGtlTrialFeatureEnable, hwGtlTrialFeatureDisable, hwGtlTrialFeatureNearDeadline, hwGtlTrialFeatureNearDeadlineCleared, hwGtlResourceOverload, hwGtlResourceOverloadCleared, hwGtlEsnMismatch, hwGtlEsnMismatchCleared, hwGtlItemInactive, hwGtlItemInactiveCleared, hwGtlInitial, hwGtlInitialCleared, hwGtlFunctionInactive, hwGtlFunctionInactiveCleared, hwGtlResourceLack, hwGtlResourceLackCleared, hwGtlAbnormal, hwGtlAbnormalCleared,  hwGtlTrialResFeatureEnable, hwGtlTrialResFeatureDisable, hwGtlFeatureFunInactive, hwGtlFeatureFunInactiveCleared, hwGtlLicenseStateChange,hwGtlSnsNearExpire,hwGtlSnsNearExpireCleared,hwGtlSnsExpire,hwGtlSnsExpireCleared,hwGtlItemNearExpire,hwGtlItemNearExpireResume,hwGtlItemExpire,hwGtlItemExpireResume, hwGtlCloudNearDeadline, hwGtlCloudNearDeadlineCleared, hwGtlMachineESNChanged }
             STATUS current
             DESCRIPTION 
                 "The notification group."

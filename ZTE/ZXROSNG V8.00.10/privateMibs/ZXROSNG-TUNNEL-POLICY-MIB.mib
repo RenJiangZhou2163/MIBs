@@ -1,0 +1,523 @@
+ZXROSNG-TUNNEL-POLICY-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE,
+    MODULE-IDENTITY, Unsigned32,IpAddress          FROM SNMPv2-SMI
+    Ipv6Address                                    FROM IPV6-TC
+    TEXTUAL-CONVENTION,DisplayString                     FROM SNMPv2-TC
+    zxr10RosngMIB                                        FROM ZXR10-SMI;
+
+zxTunnelPolicyMIB   MODULE-IDENTITY
+
+    LAST-UPDATED  "201610171600Z"  -- 17 Oct 2016
+    ORGANIZATION  "IETF Operations and Management Area"
+    CONTACT-INFO  "
+                  "
+    DESCRIPTION   "This MIB module provides commonly used textual
+                   conventions for tunel policy.
+
+                   Copyright (C) The Internet Society (2003).  This
+                   version of this MIB module is part of RFC 3595,
+                   see the RFC itself for full legal notices.
+                  "
+    -- Revision History
+  REVISION "201610171600Z"
+        DESCRIPTION
+                "modify: 
+                         zxTunnelPolicyInstTunnelSelectType      add SYNTAX INTEGER{greTunnel(4))
+                         zxTunnelPolicyPWSelectResultSelectType  add SYNTAX INTEGER{greTunnel(4))
+                         zxTunnelPolicyPWSelectResultLspType     add SYNTAX INTEGER(greTunnel(4))
+                         zxTunnelPolicyVRFSelectResultSelectType add SYNTAX INTEGER{greTunnel(4))
+                         zxTunnelPolicyVRFSelectResultLspType    add SYNTAX INTEGER(greTunnel(4))
+                         zxTunnelPolicyVRFNh6SelRstType          add SYNTAX INTEGER{greTunnel(5))
+                         zxTunnelPolicyVRFNh6SelLspType          add SYNTAX INTEGER(greTunnel(5))
+                         "
+   REVISION "201404141000Z"
+        DESCRIPTION
+                "add:Ipv6Address  FROM IPV6-TC   in IMPORTS
+                     zxTunnelPolicyVRFNh6SelRstTable  
+                     "
+    REVISION "201311111600Z"
+        DESCRIPTION
+                "modify: 
+                         zxTunnelPolicyInstTunnelSelectType      add SYNTAX INTEGER{teEcmp(4))
+                         zxTunnelPolicyPWSelectResultSelectType  add SYNTAX INTEGER{teEcmp(4))
+                         zxTunnelPolicyPWSelectResultLspType     add SYNTAX  INTEGER(teEcmp(4))
+
+                         zxTunnelPolicyVRFSelectResultSelectType add SYNTAX INTEGER{teEcmp(4))
+                         zxTunnelPolicyVRFSelectResultLspType    add SYNTAX INTEGER(teEcmp(4))
+
+                  add:   zxTunnelPolicyInstTeEcmpGroupId in ZxTunnelPolicyInstEntry
+                         zxTunnelPolicyInstRmpName       in ZxTunnelPolicyInstEntry
+                         zxTunnelPolicyPWSelRstEcmpGrpId in ZxTunnelPolicyPWSelectResultEntry
+                         zxTunnelPolicyVRFSelRstEcmpGrp  in ZxTunnelPolicyVRFSelectResultEntry
+                         "
+
+    REVISION      "200308280000Z"  -- 28 August 2003
+    DESCRIPTION   "Initial version"
+
+    ::= { zxr10RosngMIB 203 }
+
+
+--*************************************************************************
+--  zxTunnelPolicyInstTable
+--*************************************************************************
+
+zxTunnelPolicyInstTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ZxTunnelPolicyInstEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "tunnel policy instance info."
+    ::= { zxTunnelPolicyMIB 1 }
+
+zxTunnelPolicyInstEntry OBJECT-TYPE
+    SYNTAX      ZxTunnelPolicyInstEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "An entry containing management information applicable to a
+            tunnel policy instance."
+    INDEX   { zxTunnelPolicyInstName }
+    ::= { zxTunnelPolicyInstTable 1 }
+
+ZxTunnelPolicyInstEntry ::=
+    SEQUENCE {
+        zxTunnelPolicyInstName                   DisplayString,
+        zxTunnelPolicyInstTunnelSelectType       INTEGER,
+        zxTunnelPolicyInstDisableFallBack        INTEGER,
+        zxTunnelPolicyInstAutoCreate             INTEGER,
+        zxTunnelPolicyInstSelSeq                 INTEGER,
+        zxTunnelPolicyInstTeTunnelName           DisplayString,
+        zxTunnelPolicyInstTeEcmpGroupId          Unsigned32,
+        zxTunnelPolicyInstRmpName                DisplayString
+    }
+
+
+zxTunnelPolicyInstName OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(1..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "tunnel policy name."
+    ::= { zxTunnelPolicyInstEntry 1 }
+
+zxTunnelPolicyInstTunnelSelectType OBJECT-TYPE
+    SYNTAX      INTEGER{auto(0),mplsTe(1),prefer(2),teEcmp(3),greTunnel(4)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "tunnel policy select type."
+    ::= { zxTunnelPolicyInstEntry 2 }
+
+zxTunnelPolicyInstDisableFallBack OBJECT-TYPE
+    SYNTAX      INTEGER{disableFallBack(1), enableFallBack(0)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "disable fall back."
+    ::= { zxTunnelPolicyInstEntry 3 }
+
+zxTunnelPolicyInstAutoCreate OBJECT-TYPE
+    SYNTAX      INTEGER{autoCreate(1), notAutoCreate(0)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "auto creat."
+    ::= { zxTunnelPolicyInstEntry 4 }
+
+
+zxTunnelPolicyInstSelSeq OBJECT-TYPE
+    SYNTAX      INTEGER{teFirstLdpSecond(0), ldpFirstTeSecond(1)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "select sequence."
+    ::= { zxTunnelPolicyInstEntry 5 }
+
+zxTunnelPolicyInstTeTunnelName OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(1..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "tunnel interface name."
+    ::= { zxTunnelPolicyInstEntry 6 }
+
+zxTunnelPolicyInstTeEcmpGroupId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "te ecmp group id."
+    ::= { zxTunnelPolicyInstEntry 7 }
+ 
+zxTunnelPolicyInstRmpName OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(1..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "route map name."
+    ::= { zxTunnelPolicyInstEntry 8 }
+--*************************************************************************
+--  zxTunnelPolicyPWSelectResultTable
+--*************************************************************************
+zxTunnelPolicyPWSelectResultTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ZxTunnelPolicyPWSelectResultEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "pw tunnel policy select result info.."
+    ::= { zxTunnelPolicyMIB 2 }
+
+zxTunnelPolicyPWSelectResultEntry OBJECT-TYPE
+    SYNTAX      ZxTunnelPolicyPWSelectResultEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "An entry containing management information applicable to a
+            tunnel policy select result info."
+    INDEX   { zxTunnelPolicyPWSelectResultPwName} 
+              
+    ::= { zxTunnelPolicyPWSelectResultTable 1 }
+
+ZxTunnelPolicyPWSelectResultEntry ::=
+    SEQUENCE {
+        zxTunnelPolicyPWSelectResultPwName                       DisplayString,
+        zxTunnelPolicyPWSelectResultTeTunnelName                 DisplayString,
+        zxTunnelPolicyPWSelectResultTeTunnelId                   Unsigned32,
+        zxTunnelPolicyPWSelectResultBandwidth                    Unsigned32,
+        zxTunnelPolicyPWSelectResultTunnelPolicyExistFlag        INTEGER,
+        zxTunnelPolicyPWSelectResultTunnelPolicyName             DisplayString,
+        zxTunnelPolicyPWSelectResultSelectType                   INTEGER,
+        zxTunnelPolicyPWSelectResultLspType                      INTEGER,
+        zxTunnelPolicyPWSelRstEcmpGrpId                          Unsigned32
+    }
+
+
+zxTunnelPolicyPWSelectResultPwName OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(1..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "pw name."
+    ::= { zxTunnelPolicyPWSelectResultEntry 1 }
+
+zxTunnelPolicyPWSelectResultTeTunnelName OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(1..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "te tunnel name."
+    ::= { zxTunnelPolicyPWSelectResultEntry 2 }
+
+zxTunnelPolicyPWSelectResultTeTunnelId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "te tunnel id."
+    ::= { zxTunnelPolicyPWSelectResultEntry 3 }
+  
+zxTunnelPolicyPWSelectResultBandwidth OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "pw bandwidth."
+    ::= { zxTunnelPolicyPWSelectResultEntry 4 }
+
+zxTunnelPolicyPWSelectResultTunnelPolicyExistFlag OBJECT-TYPE
+    SYNTAX      INTEGER{notExist(0),exist(1)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "tunnel policy instance existing flag."
+    ::= { zxTunnelPolicyPWSelectResultEntry 5 }
+  
+zxTunnelPolicyPWSelectResultTunnelPolicyName OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(1..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "tunnel-policy name."
+    ::= { zxTunnelPolicyPWSelectResultEntry 6 }
+  
+zxTunnelPolicyPWSelectResultSelectType OBJECT-TYPE
+    SYNTAX      INTEGER{auto(0),mplsTe(1),prefer(2),teEcmp(3), greTunnel(4)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "tunnel policy select type."
+    ::= { zxTunnelPolicyPWSelectResultEntry 7 }
+  
+zxTunnelPolicyPWSelectResultLspType OBJECT-TYPE
+    SYNTAX      INTEGER{none(0),te(1),ldp(2),teEcmp(3),greTunnel(4)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "lsp type."
+    ::= { zxTunnelPolicyPWSelectResultEntry 8 }
+    
+zxTunnelPolicyPWSelRstEcmpGrpId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "te ecmp group id."
+    ::= { zxTunnelPolicyPWSelectResultEntry 9 }
+
+--*************************************************************************
+--  zxTunnelPolicyVRFSelectResultTable
+--*************************************************************************
+
+zxTunnelPolicyVRFSelectResultTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ZxTunnelPolicyVRFSelectResultEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "pw tunnel policy select result info.."
+    ::= { zxTunnelPolicyMIB 3 }
+
+zxTunnelPolicyVRFSelectResultEntry OBJECT-TYPE
+    SYNTAX      ZxTunnelPolicyVRFSelectResultEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "An entry containing management information applicable to a
+            tunnel policy select result info."
+    INDEX   { zxTunnelPolicyVRFSelectResultVrfName,
+        zxTunnelPolicyVRFSelectResultPeer} 
+              
+    ::= { zxTunnelPolicyVRFSelectResultTable 1 }
+
+ZxTunnelPolicyVRFSelectResultEntry ::=
+    SEQUENCE {
+        zxTunnelPolicyVRFSelectResultVrfName                      DisplayString,
+        zxTunnelPolicyVRFSelectResultPeer                         IpAddress,
+        zxTunnelPolicyVRFSelectResultTeTunnelName                 DisplayString,
+        zxTunnelPolicyVRFSelectResultTeTunnelId                   Unsigned32,
+        zxTunnelPolicyVRFSelectResultBandwidth                    Unsigned32,
+        zxTunnelPolicyVRFSelectResultTunnelPolicyExistFlag        INTEGER,
+        zxTunnelPolicyVRFSelectResultTunnelPolicyName             DisplayString,
+        zxTunnelPolicyVRFSelectResultSelectType                   INTEGER,
+        zxTunnelPolicyVRFSelectResultLspType                      INTEGER,
+        zxTunnelPolicyVRFSelRstEcmpGrp                            Unsigned32
+    }
+
+
+zxTunnelPolicyVRFSelectResultVrfName OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(1..32))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "VRF name."
+    ::= { zxTunnelPolicyVRFSelectResultEntry 1 }
+  
+zxTunnelPolicyVRFSelectResultPeer OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "VRF peer ip."
+    ::= { zxTunnelPolicyVRFSelectResultEntry 2 }
+
+zxTunnelPolicyVRFSelectResultTeTunnelName OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(1..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "te tunnel name."
+    ::= { zxTunnelPolicyVRFSelectResultEntry 3 }
+
+zxTunnelPolicyVRFSelectResultTeTunnelId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "te tunnel id."
+    ::= { zxTunnelPolicyVRFSelectResultEntry 4 }
+  
+zxTunnelPolicyVRFSelectResultBandwidth OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "VRF bandwidth."
+    ::= { zxTunnelPolicyVRFSelectResultEntry 5 }
+
+zxTunnelPolicyVRFSelectResultTunnelPolicyExistFlag OBJECT-TYPE
+    SYNTAX      INTEGER{notExist(0),exist(1)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "tunnel policy instance existing flag."
+    ::= { zxTunnelPolicyVRFSelectResultEntry 6 }
+  
+zxTunnelPolicyVRFSelectResultTunnelPolicyName OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(1..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "tunnel-policy name."
+    ::= { zxTunnelPolicyVRFSelectResultEntry 7 }
+  
+zxTunnelPolicyVRFSelectResultSelectType OBJECT-TYPE
+    SYNTAX      INTEGER{auto(0),mplsTe(1),prefer(2),teEcmp(3), greTunnel(4)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "tunnel policy select type."
+    ::= { zxTunnelPolicyVRFSelectResultEntry 8 }
+  
+zxTunnelPolicyVRFSelectResultLspType OBJECT-TYPE
+    SYNTAX      INTEGER{none(0),te(1),ldp(2),teEcmp(3),greTunnel(4)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "lsp type."
+    ::= { zxTunnelPolicyVRFSelectResultEntry 9 }
+  
+zxTunnelPolicyVRFSelRstEcmpGrp OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "te ecmp group id."
+    ::= { zxTunnelPolicyVRFSelectResultEntry 10 }
+
+--*************************************************************************
+--  zxTunnelPolicyVRFNh6SelRstTable
+--*************************************************************************
+
+zxTunnelPolicyVRFNh6SelRstTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ZxTunnelPolicyVRFNh6SelRstEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A table that contains the information of the VRF nexthop is ipv6 address 
+    using tunnel policy select result."
+    ::= { zxTunnelPolicyMIB 4 }
+
+zxTunnelPolicyVRFNh6SelRstEntry OBJECT-TYPE
+    SYNTAX      ZxTunnelPolicyVRFNh6SelRstEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A list of objects containing information applicable to a
+      tunnel policy selecting result."
+    INDEX   { zxTunnelPolicyNh6SelRstVrfName,
+              zxTunnelPolicyNh6SelRstVrfPeer}
+
+    ::= { zxTunnelPolicyVRFNh6SelRstTable 1 }
+
+ZxTunnelPolicyVRFNh6SelRstEntry ::=
+    SEQUENCE {
+        zxTunnelPolicyNh6SelRstVrfName          DisplayString,
+        zxTunnelPolicyNh6SelRstVrfPeer          Ipv6Address,
+        zxTunnelPolicyVRFNh6SelRstTeName        DisplayString,
+        zxTunnelPolicyVRFNh6SelRstTnlId         Unsigned32,
+        zxTunnelPolicyVRFNh6SelRstBandth        Unsigned32,
+        zxTunnelPolicyVRFNh6InsExistFlag        INTEGER,
+        zxTunnelPolicyVRFNh6InstName            DisplayString,
+        zxTunnelPolicyVRFNh6SelRstType          INTEGER,
+        zxTunnelPolicyVRFNh6SelLspType          INTEGER,
+        zxTunnelPolicyVRFNh6SelEcmpGrpId        Unsigned32
+    }
+
+
+zxTunnelPolicyNh6SelRstVrfName OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(1..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The name of the VRF which applies tunnel policy."
+    ::= { zxTunnelPolicyVRFNh6SelRstEntry 1 }
+
+zxTunnelPolicyNh6SelRstVrfPeer OBJECT-TYPE
+    SYNTAX      Ipv6Address
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "The ipv6 address of the neighbor of the VRF which applies tunnel
+       policy."
+    ::= { zxTunnelPolicyVRFNh6SelRstEntry 2 }
+
+zxTunnelPolicyVRFNh6SelRstTeName OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(1..31))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The name of the TE tunnel which the VRF selects with tunnel
+        policy."
+    ::= { zxTunnelPolicyVRFNh6SelRstEntry 3 }
+
+zxTunnelPolicyVRFNh6SelRstTnlId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The ID of the TE tunnel which the VRF selects with tunnel policy."
+    ::= { zxTunnelPolicyVRFNh6SelRstEntry 4 }
+
+zxTunnelPolicyVRFNh6SelRstBandth OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The bandwidth of TE that the VRF requires."
+    ::= { zxTunnelPolicyVRFNh6SelRstEntry 5 }
+
+zxTunnelPolicyVRFNh6InsExistFlag OBJECT-TYPE
+    SYNTAX      INTEGER{notExist(1),exist(2)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "To indicate that the tunnel policy instance exists or not.
+             notExist(1):The tunnel policy instance does not exist.
+             exist(2) : The tunnel policy instance exists."
+    ::= { zxTunnelPolicyVRFNh6SelRstEntry 6 }
+
+zxTunnelPolicyVRFNh6InstName OBJECT-TYPE
+    SYNTAX      DisplayString(SIZE(1..63))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The name of the tunnel policy's instance which the VRF selects."
+    ::= { zxTunnelPolicyVRFNh6SelRstEntry 7 }
+
+zxTunnelPolicyVRFNh6SelRstType OBJECT-TYPE
+    SYNTAX      INTEGER{auto(1),mplsTe(2),prefer(3),teEcmp(4), greTunnel(5)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "To indicate the tunnel policy type.
+             auto(1): auto tunnel policy.
+             mplsTe(2):fixed TE tunnel for tunnel policy.
+             prefer(3):fixed TE tunnel as preference,if down, select others.
+             teEcmp(4):fixed TE ecmp id for tunnel policy.
+             greTunnel(5):fixed GRE tunnel for tunnel policy."
+    ::= { zxTunnelPolicyVRFNh6SelRstEntry 8 }
+
+zxTunnelPolicyVRFNh6SelLspType OBJECT-TYPE
+    SYNTAX      INTEGER{none(1),te(2),ldp(3),teEcmp(4),greTunnel(5)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "To indicate the lsp type of the tunnel which the tunnel policy 
+            selects for the VRF. 
+             none(1): select none.
+             te(2):select a TE tunnel for the VRF.
+             ldp(3):select LDP lsp for the VRF.
+             teEcmp(4):select te ecmp for the VRF.
+             greTunnel(5):select GRE tunnel for the VRF."
+    ::= { zxTunnelPolicyVRFNh6SelRstEntry 9 }
+
+zxTunnelPolicyVRFNh6SelEcmpGrpId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The TE ecmp(Equal-cost multi-path) group ID that tunnel policy 
+            selects for the VRF."
+    ::= { zxTunnelPolicyVRFNh6SelRstEntry 10 }
+END

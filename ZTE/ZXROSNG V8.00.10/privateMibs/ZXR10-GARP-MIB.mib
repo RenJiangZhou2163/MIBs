@@ -1,0 +1,322 @@
+--  *****************************************************************
+-- Name:  zxr10-garp-mib  
+-- Brief: ZXR10 GARP config and query MIB file  
+-- Time:  July. 2013, xiaguibin10102488
+-- Copyright (c) 2013 by ZTE corporation. 
+-- All rights reserved.
+-- *****************************************************************
+
+ZXR10-GARP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Integer32,
+    enterprises        FROM SNMPv2-SMI
+    MacAddress,
+    DisplayString,      
+    TEXTUAL-CONVENTION FROM SNMPv2-TC; 
+           
+    zxr10GarpMIB MODULE-IDENTITY
+        LAST-UPDATED "201401060911Z"  -- 2014-01-06 09:11 
+        ORGANIZATION "ZTE Corporation"
+        CONTACT-INFO
+           "
+            Name:  Xia guibin
+            Tel:   +86-25-52870000
+            Email: xia.guibin@zte.com.cn
+           "
+        DESCRIPTION
+            "The MIB module to describe GARP/GVRP protocol." 
+            
+        REVISION "201401060911Z"  
+        DESCRIPTION
+            "1.MAX-ACCESS of leaf zxr10GarpPortCfgRegMode is changed from read-write to read-only.
+             2.MAX-ACCESS of leaf zxr10GvrpGlobalStatus is changed from read-write to read-only
+             3.MAX-ACCESS of leaf zxr10GvrpPortCfgStatus is changed from read-write to read-only"
+               
+        REVISION "201310211000Z"      
+        DESCRIPTION   "Initial version of this MIB module"
+        ::= { zxr10RosngMIB 507 }  
+
+    zte           OBJECT IDENTIFIER ::={enterprises 3902}
+    zxr10         OBJECT IDENTIFIER ::={zte 3}
+    zxr10RosngMIB OBJECT IDENTIFIER ::={zxr10 6000}  
+      
+    GvrpEnabledStatus ::= TEXTUAL-CONVENTION
+    STATUS current
+        DESCRIPTION   "A simple status value for the object, 
+                       1 for disable, 2 for enable."
+        SYNTAX INTEGER 
+        {  
+            disabled(1),
+            enabled(2)
+        }
+          
+    PortRegModeStatus ::= TEXTUAL-CONVENTION
+    STATUS current
+        DESCRIPTION   "Port GARP registration mode: 1 for normal, 
+                       2 for forbidden, 3 for fixed."
+        SYNTAX INTEGER 
+        { 
+            normal(1),
+            forbidden(2),
+            fixed(3)
+        } 
+ 
+    -- -------------------------------------------------------------
+    -- groups in the ZXR10-GARP-MIB
+    -- -------------------------------------------------------------
+    zxr10GarpGlobalObjects   OBJECT IDENTIFIER ::= { zxr10GarpMIB 1 }
+    zxr10GarpObjects         OBJECT IDENTIFIER ::= { zxr10GarpMIB 2 }  
+    zxr10GvrpGlobalObjects   OBJECT IDENTIFIER ::= { zxr10GarpMIB 3 }
+    zxr10GvrpObjects         OBJECT IDENTIFIER ::= { zxr10GarpMIB 4 }
+    zxr10GarpNotifications   OBJECT IDENTIFIER ::= { zxr10GarpMIB 5 }
+    zxr10GarpConformance     OBJECT IDENTIFIER ::= { zxr10GarpMIB 6 } 
+
+    --=======================================================================
+    --1. zxr10GarpGlobalObjects group
+    --======================================================================= 
+    zxr10GarpConfigTable OBJECT IDENTIFIER ::= { zxr10GarpGlobalObjects 1 }
+
+    zxr10GarpHoldTime OBJECT-TYPE
+        SYNTAX      Integer32 (1..3275) 
+        UNITS       "100 ms"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The GARP hold time value, ZTE corporation privated."  
+        DEFVAL      {1}   
+        ::= { zxr10GarpConfigTable 1 } 
+
+    zxr10GarpJoinTime OBJECT-TYPE
+        SYNTAX      Integer32 (1..3275) 
+        UNITS       "100 ms"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The GARP join time value, IEEE 802.1Q/D11 Section 12.10.2.1." 
+        DEFVAL      {2}     
+        ::= { zxr10GarpConfigTable 2 } 
+
+    zxr10GarpLeaveTime OBJECT-TYPE
+        SYNTAX      Integer32 (1..3275)
+        UNITS       "100 ms"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The GARP leave time value, IEEE 802.1Q/D11 Section 12.10.2.2." 
+        DEFVAL      {6}    
+        ::= { zxr10GarpConfigTable 3 } 
+
+    zxr10GarpLeaveAllTime OBJECT-TYPE
+        SYNTAX      Integer32 (1..3275) 
+        UNITS       "100 ms"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The GARP leave all time value, IEEE 802.1Q/D11 Section 12.10.2.2." 
+        DEFVAL      {100}     
+        ::= { zxr10GarpConfigTable 4 } 
+
+    --=======================================================================
+    --2. zxr10GarpObjects group
+    --=======================================================================     
+    zxr10GarpPortCfgTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10GarpPortCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The table contain information controlling GARP configuration 
+             for a port on the device."
+        ::= { zxr10GarpObjects 1 }
+
+    zxr10GarpPortCfgEntry OBJECT-TYPE
+        SYNTAX      Zxr10GarpPortCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Information controlling GARP configuration for a port 
+             on the device. This is indexed by Zxr10GarpPortEntry."
+        INDEX   { zxr10GarpPortCfgName }
+        ::= { zxr10GarpPortCfgTable 1 }
+             
+    Zxr10GarpPortCfgEntry ::=
+        SEQUENCE {
+            zxr10GarpPortCfgName
+                DisplayString,
+            zxr10GarpPortCfgRegMode
+                PortRegModeStatus
+        }
+    
+    zxr10GarpPortCfgName  OBJECT-TYPE
+        SYNTAX      DisplayString 
+        MAX-ACCESS  not-accessible 
+        STATUS      current
+        DESCRIPTION
+            "The port name."
+        ::= { zxr10GarpPortCfgEntry 1 }
+        
+    zxr10GarpPortCfgRegMode  OBJECT-TYPE
+        SYNTAX      PortRegModeStatus 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The registration mode of port: normal, forbidden, fixed."
+        DEFVAL      {normal}
+        ::= { zxr10GarpPortCfgEntry 2 }
+
+    --=======================================================================
+    --3. zxr10GvrpGlobalObjects group
+    --=======================================================================  
+    zxr10GvrpConfigTable  OBJECT IDENTIFIER ::= { zxr10GvrpGlobalObjects 1 }
+
+    zxr10GvrpGlobalStatus OBJECT-TYPE
+        SYNTAX      GvrpEnabledStatus
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The administrative status requested by management for GVRP. 
+             The value enabled(2) indicates that GVRP should be enabled 
+             on this device, on all ports for which it has not been 
+             specifically disabled. When disabled(1), GVRP is disabled on 
+             all ports and all GVRP packets will be forwarded transparently. 
+             This object affects all GVRP Applicant and Registrar 
+             state machines. A transition from disabled(1) to enabled(2) 
+             will cause a reset of all GVRP state machines on all ports."
+        DEFVAL      {disabled}
+        ::= { zxr10GvrpConfigTable 1 } 
+ 
+    --=======================================================================
+    --4. zxr10GvrpObjects group
+    --=======================================================================  
+    zxr10GvrpPortCfgTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10GvrpPortCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The table contain information controlling GVRP configuration
+             for a port on the device."
+        ::= { zxr10GvrpObjects 1 }
+
+    zxr10GvrpPortCfgEntry OBJECT-TYPE
+        SYNTAX      Zxr10GvrpPortCfgEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Information controlling GVRP configuration for a port 
+             on the device. This is indexed by zxr10GvrpPortCfgName."
+        INDEX   { zxr10GvrpPortCfgName }
+        ::= { zxr10GvrpPortCfgTable 1 }
+             
+    Zxr10GvrpPortCfgEntry ::=
+        SEQUENCE {
+            zxr10GvrpPortCfgName
+                DisplayString,
+            zxr10GvrpPortCfgStatus
+                GvrpEnabledStatus
+         }
+    
+    zxr10GvrpPortCfgName  OBJECT-TYPE
+        SYNTAX      DisplayString 
+        MAX-ACCESS  not-accessible 
+        STATUS      current
+        DESCRIPTION
+            "The port name."
+        ::= { zxr10GvrpPortCfgEntry 1 } 
+        
+     zxr10GvrpPortCfgStatus  OBJECT-TYPE
+        SYNTAX      GvrpEnabledStatus 
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The state of GVRP operation on this port. The value enabled(2) 
+             indicates that GVRP is enabled on this port, as long as 
+             zxr10GvrpGlobalStatus is also enabled for this device. 
+             When disabled(1) but zxr10GvrpGlobalStatus is still enabled 
+             for the device, GVRP is disabled on this port: 
+             any GVRP packets received will be silently discarded and 
+             no GVRP registrations will be propagated from other ports. 
+             This object affects all GVRP Applicant and 
+             Registrar state machines on this port.
+             A transition from disabled(1) to enabled(2) will cause 
+             a reset of all GVRP state machines on this port."
+        DEFVAL      {disabled}
+        ::= { zxr10GvrpPortCfgEntry 2 } 
+
+    zxr10GvrpPortStatTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10GvrpPortStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The table contain the GVRP statistic information query for 
+             a port on the device."
+        ::= { zxr10GvrpObjects 2 }
+
+    zxr10GvrpPortStatEntry OBJECT-TYPE
+        SYNTAX      Zxr10GvrpPortStatEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The GVRP statistic information query for a port on the device. 
+             This is indexed by zxr10GvrpPortStatName."
+        INDEX   { zxr10GvrpPortStatName }
+        ::= { zxr10GvrpPortStatTable 1 }
+             
+    Zxr10GvrpPortStatEntry ::=
+        SEQUENCE {
+            zxr10GvrpPortStatName
+                DisplayString,
+            zxr10GvrpPortStatFailedReg
+                Integer32,  
+            zxr10GvrpPortStatLastPduOrigin 
+                MacAddress,
+            zxr10GvrpPortStatLearnedVlan
+                OCTET STRING
+         }
+
+     zxr10GvrpPortStatName  OBJECT-TYPE
+        SYNTAX      DisplayString 
+        MAX-ACCESS  not-accessible 
+        STATUS      current
+        DESCRIPTION
+            "The port name."
+        ::= { zxr10GvrpPortStatEntry 1 } 
+
+     zxr10GvrpPortStatFailedReg  OBJECT-TYPE
+        SYNTAX      Integer32 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The total number of failed GVRP registrations, for any reason,
+             on this port."
+        ::= { zxr10GvrpPortStatEntry 2 }
+      
+    zxr10GvrpPortStatLastPduOrigin  OBJECT-TYPE
+        SYNTAX      MacAddress 
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The source MAC address of the last GVRP message received on 
+             this port."
+        ::= { zxr10GvrpPortStatEntry 3 }
+ 
+    zxr10GvrpPortStatLearnedVlan OBJECT-TYPE
+        SYNTAX      OCTET STRING (SIZE(0..512))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The VLAN information which learned by GVRP in this port. 
+             VLAN information is organized by BitMap."
+        ::= { zxr10GvrpPortStatEntry 4 }  
+        
+        
+    --=======================================================================
+    --5. zxr10GarpNotifications group
+    --======================================================================= 
+ 
+    --=======================================================================
+    --6. zxr10GarpConformance group
+    --======================================================================= 
+        
+END

@@ -1,8 +1,8 @@
 -- =============================================================================
--- Copyright (C) 2020 by HUAWEI SYMANTEC TECHNOLOGIES. All rights reserved.  
+-- Copyright (C) 2021 by HUAWEI SYMANTEC TECHNOLOGIES. All rights reserved.  
 -- Description: The MIB is designed to get IPSec tunnels' statistic information. 
 -- Reference: Huawei Enterprise MIB
--- Version: V1.16
+-- Version: V1.21
 -- History: 
 --          V1.0 The initial version created by LiShengbai 90004270. 
 -- =============================================================================
@@ -21,7 +21,7 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
 
 	            
 	hwIpsec MODULE-IDENTITY 
-	        LAST-UPDATED "202004151500Z"        --Aug 8, 2018 at 17:00 GMT
+	        LAST-UPDATED "202106181210Z"        --June 18, 2021 at 10:00 GMT
 	        ORGANIZATION 
 	            "Huawei Technologies Co.,Ltd."
 	        CONTACT-INFO 
@@ -31,8 +31,22 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
                People's Republic of China
                Website: http://www.huawei.com
                Email: support@huawei.com"
-
-			            DESCRIPTION 
+				   DESCRIPTION
+                               "V1.21 add add hwIPSecTrapOprPri."
+                               REVISION    "202106181210Z"
+	               DESCRIPTION
+                               "V1.20 add add hwIPSecLowSecurityLevel."
+                               REVISION    "202105121000Z"
+	               DESCRIPTION 
+                               "V1.19 add add hwIPSecGlobalBytesPerSecondIn, hwIPSecGlobalBytesPerSecondOut."
+                               REVISION    "202103231000Z"
+                       DESCRIPTION 
+                               "V1.18 fix syntax errors."
+                               REVISION    "202008281500Z"
+                       DESCRIPTION 
+                               "V1.17 fix syntax errors."
+                               REVISION    "202007161500Z"
+                       DESCRIPTION 
                                "V1.16 add hwIPSecTrapTunnelDstIPMask, hwIPSecTrapRouteNextHope."
                                REVISION    "202004151500Z"
 
@@ -106,7 +120,7 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
 -- ===============================================
 	    
 	-- 1.3.6.1.4.1.2011
-	huawei OBJECT IDENTIFIER ::= { enterprises 2011 }
+	huawei OBJECT IDENTIFIER ::= { enterprises 56813 }
 	
 	-- 1.3.6.1.4.1.2011.6
 	huaweiUtility OBJECT IDENTIFIER ::= { huawei 6 }
@@ -415,6 +429,21 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
 		DESCRIPTION
 			"Total Number of IPSec Phase1 tunnels."
 		::= { hwIPSecGlobalStats 37 }
+	hwIPSecGlobalBytesPerSecondIn OBJECT-TYPE
+                SYNTAX Counter64 
+              MAX-ACCESS read-only
+              STATUS current
+              DESCRIPTION
+              "Incoming encrypted IPsec packet rate, in bytes/s."
+               ::= { hwIPSecGlobalStats 38 }
+
+	hwIPSecGlobalBytesPerSecondOut OBJECT-TYPE
+              SYNTAX Counter64 
+              MAX-ACCESS read-only
+              STATUS current
+              DESCRIPTION
+               "Outgoing encrypted IPsec packet rate, in bytes/s."
+              ::= { hwIPSecGlobalStats 39 }
 
 -- ===============================================
 -- Begin the table of hwIPSecTunnelConfigTable.
@@ -450,9 +479,9 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
 	            	hwIPSecTunnelRuleId
         			Gauge32,
         		hwIPSecTunnelDstIP
-        			IpAddress,     
+        			OCTET STRING,     
 	            	hwIPSecTunnelInsideIP
-        			IpAddress,
+        			OCTET STRING,
         		hwIPSecTunnelRemotePort
         			Gauge32,
         	        hwIPSecTunnelCpuID
@@ -482,7 +511,7 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
         		hwIPSecTunnelIfVrfIndex
         			Gauge32,
         		hwIPSecTunnelSrcIP
-        			IpAddress,
+        			OCTET STRING,
         		hwIPSecTunnelSpeedLimitIn
         			Gauge32,
         		hwIPSecTunnelSpeedLimitOut
@@ -504,11 +533,11 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
                                        hwIPSecTunnelPolicyAlias
         			OCTET STRING,
         		hwIPSecTunnelDstIPv6
-        			Ipv6Address,
+        			OCTET STRING,
         		hwIPSecTunnelInsideIPv6
-        			Ipv6Address,
+        			OCTET STRING,
         		hwIPSecTunnelSrcIPv6
-        			Ipv6Address
+        			OCTET STRING
  			}
 
 	-- 1.3.6.1.4.1.2011.6.122.26.2.1.1
@@ -545,7 +574,7 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
         	::= { hwIPSecTunnelConfigEntry 4 }
    
     	hwIPSecTunnelDstIP OBJECT-TYPE
-        	SYNTAX IpAddress 
+        	SYNTAX OCTET STRING (SIZE (1..128)) 
         	MAX-ACCESS read-only
         	STATUS current
         	DESCRIPTION
@@ -553,7 +582,7 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
         	::= { hwIPSecTunnelConfigEntry 5 }
     
     	hwIPSecTunnelInsideIP OBJECT-TYPE
-        	SYNTAX IpAddress 
+        	SYNTAX OCTET STRING (SIZE (1..128)) 
         	MAX-ACCESS read-only
         	STATUS current
         	DESCRIPTION
@@ -683,7 +712,7 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
         	::= { hwIPSecTunnelConfigEntry 20 }
 
     	hwIPSecTunnelSrcIP OBJECT-TYPE
-        	SYNTAX IpAddress 
+        	SYNTAX OCTET STRING (SIZE (1..128)) 
         	MAX-ACCESS read-only
         	STATUS current
         	DESCRIPTION
@@ -776,7 +805,7 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
         	::= { hwIPSecTunnelConfigEntry 31 }
         	
     	hwIPSecTunnelDstIPv6 OBJECT-TYPE
-        	SYNTAX Ipv6Address 
+        	SYNTAX OCTET STRING (SIZE (1..128)) 
         	MAX-ACCESS read-only
         	STATUS current
         	DESCRIPTION
@@ -784,15 +813,15 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
         	::= { hwIPSecTunnelConfigEntry 32 }
         	
     	hwIPSecTunnelInsideIPv6 OBJECT-TYPE
-        	SYNTAX Ipv6Address 
+        	SYNTAX OCTET STRING (SIZE (1..128)) 
         	MAX-ACCESS read-only
         	STATUS current
         	DESCRIPTION
-            		"Intranet IPv6 address of the peer end during remote access.."
+            		"Intranet IPv6 address of the peer end during remote access."
         	::= { hwIPSecTunnelConfigEntry 33 }
 
     	hwIPSecTunnelSrcIPv6 OBJECT-TYPE
-        	SYNTAX Ipv6Address 
+        	SYNTAX OCTET STRING (SIZE (1..128)) 
         	MAX-ACCESS read-only
         	STATUS current
         	DESCRIPTION
@@ -1391,7 +1420,7 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
         	MAX-ACCESS accessible-for-notify
         	STATUS current
         	DESCRIPTION
-            		"The role in IKE negtiation."
+            		"The role in IKE negotiation."
         	::= { hwIPSecTrapObject 15 }
 
        hwIPSecTrapTunnelDstIPMask OBJECT-TYPE
@@ -1407,8 +1436,17 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
         	MAX-ACCESS accessible-for-notify
         	STATUS current
         	DESCRIPTION
-            "Ipsec opr route next hope."
+            "Ipsec opr route nexthop."
         	::= { hwIPSecTrapObject 17 }
+		
+	   hwIPSecTrapOprPri OBJECT-TYPE
+            SYNTAX Gauge32
+        	MAX-ACCESS accessible-for-notify
+        	STATUS current
+        	DESCRIPTION
+            "Ipsec opr route priority."
+        	::= { hwIPSecTrapObject 18 }
+
 -- ===============================================
 -- definition of traps.      
 -- ===============================================
@@ -1513,7 +1551,7 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
 		        }
 		STATUS     current
 		DESCRIPTION
-		     "Send the message when an IKE SA is reset ."
+		     "Send the message when an IKE SA is reset."
 		::= { hwIPSecNotifications 7 }	     
 		
 	hwIPSecIPSecReset NOTIFICATION-TYPE
@@ -1522,13 +1560,13 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
 		        }
 		STATUS     current
 		DESCRIPTION
-		     "Send the message when an IPSec SA is reset ."
+		     "Send the message when an IPSec SA is reset."
 		::= { hwIPSecNotifications 8 }	 
 		             
 	hwIPSecTunnelReachMax NOTIFICATION-TYPE
 	STATUS     current
 	DESCRIPTION
-	     "Send the message when IPSec Tunnel Number will Be Reach Max ."
+	     "Send the message when IPSec Tunnel Number will Be Reach Max."
 	::= { hwIPSecNotifications 9 }
 	
 	hwIPSecTunnelReachMaxAtOnce NOTIFICATION-TYPE
@@ -1540,7 +1578,7 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
 	hwIKEPeerReachMax NOTIFICATION-TYPE
 	STATUS     current
 	DESCRIPTION
-	     "Send the message when IKE Peer Number will Be Reach Max ."
+	     "Send the message when IKE Peer Number will Be Reach Max."
 	::= { hwIPSecNotifications 11 }       
 	
 	hwIKEPeerReachMaxAtOnce NOTIFICATION-TYPE
@@ -1587,12 +1625,28 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
 	     "Send the message when IPSec Tunnel Number Has Been Reached Max ."
 	::= { hwIPSecNotifications 15 }
 
-	hwIPSecOPRRouteMissed NOTIFICATION-TYPE
-        OBJECTS { hwIPSecTrapTunnelDstIP, hwIPSecTrapTunnelDstIPMask, hwIPSecTrapRouteNextHope, hwIPSecTrapIfIndex, hwIPSecVsysName}
-	    STATUS     current
-	    DESCRIPTION
-	    "Send the message when opr route inject failed."
-	    ::= { hwIPSecNotifications 16 }
+        hwIPSecOPRRouteMissed NOTIFICATION-TYPE
+        OBJECTS { hwIPSecTrapTunnelDstIP, hwIPSecTrapTunnelDstIPMask, hwIPSecTrapRouteNextHope, hwIPSecTrapIfIndex, hwIPSecVsysName, hwIPSecTrapOprPri}
+	STATUS     current
+	DESCRIPTION
+	"Send the message when opr route inject failed."
+	::= { hwIPSecNotifications 16 }
+
+	hwIPSecLowSecurityLevel NOTIFICATION-TYPE
+	STATUS     current
+	DESCRIPTION
+	    "The security level of pkcs1 is low."
+	::= { hwIPSecNotifications 17 }
+
+	hwIPSecWeakEncr NOTIFICATION-TYPE
+		OBJECTS {
+                  hwIPSecTrapTunnelDstIP,
+                  hwIPSecTrapIfName    
+		        }
+	STATUS     current
+	DESCRIPTION
+	    "The ipsec sa encryption-algorithm is not GCM mode."
+	::= { hwIPSecNotifications 18 }
 
 -- ===============================================
 -- Begin the table of hwIPSecGdoiStatsTable.
@@ -1833,7 +1887,9 @@ HUAWEI-SECURITY-IPSEC-MIB DEFINITIONS ::= BEGIN
 			hwIPSecGlobalSaeSucc,
 			hwIPSecGlobalSoftwareSucc,
 			hwIPSecGlobalConnectionRate,
-			hwIPSecGlobalTotalPhase1Num
+			hwIPSecGlobalTotalPhase1Num,
+                        hwIPSecGlobalBytesPerSecondIn,
+                        hwIPSecGlobalBytesPerSecondOut
 									
 			}
 		STATUS current

@@ -1,0 +1,222 @@
+        ZXR10-MSTATIC-MIB DEFINITIONS ::= BEGIN
+           
+   IMPORTS
+       MODULE-IDENTITY, OBJECT-TYPE, 
+       Unsigned32,  
+       IpAddress           
+          FROM SNMPv2-SMI         -- [RFC2578]
+       TimeStamp         
+          FROM SNMPv2-TC          -- [RFC2579]   
+      enterprises                      
+          FROM SNMPv2-SMI;
+
+ipMstaticMIB MODULE-IDENTITY
+    LAST-UPDATED "200811240000Z" -- 24 November 2008
+    ORGANIZATION "ZTE Corporation"
+    CONTACT-INFO "ZTE Corporation 
+         Nanjing Institute of ZTE Corporation  
+         No.68 Zijinghua Rd. Yuhuatai District, Nanjing, China
+         Tel: +86-25-52870000" 
+         
+    DESCRIPTION
+            "The MIB module for management of IP Static Multicast routing.
+            This MIB module is a private MIB."    
+            
+    REVISION     "200811240000Z" -- 24 November 2008
+    DESCRIPTION  " This MIB module is a private MIB,the object defined as 
+                  follows:
+             
+                 o  This MIB module includes a table of IP Mstatic Routing
+                    Table.
+                                            
+                 o  This MIB module includes a table of IP Mstatic Oif Routing 
+                    Table.
+                                        
+                 o  This MIB module includes objects that are specifies the 
+                    amount of SG and XG route entry." 
+                    
+  ::= { zxr10 881 }
+                    
+    zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+    zxr10 OBJECT IDENTIFIER ::= { zte 3}
+--
+-- Top-level structure of the MIB
+--
+ipMstatic      OBJECT IDENTIFIER ::= { ipMstaticMIB 1 }
+
+ipMstaticRouteSGCount OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The amount of SG route entry of static multicast."
+    ::= { ipMstatic 3 }
+
+ipMstaticRouteXGCount OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The amount of XG route entry of static multicast."
+    ::= { ipMstatic 4 } 
+    
+--
+--
+--  The IP Mstatic Routing Table
+--  
+-- 
+ipMstaticRouteTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF IpMstaticRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current          
+    DESCRIPTION
+            "The (conceptual) table containing multicast routing
+            information for source address、destination address、
+            input interface address and uptime ."
+    ::= { ipMstatic 1 }   
+    
+ipMstaticRouteEntry OBJECT-TYPE
+    SYNTAX     IpMstaticRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) containing the multicast routing
+            information for IP datagrams from a particular source and
+            addressed to a particular IP multicast group address.
+
+            OIDs are limited to 128 sub-identifiers, but this limit
+            is not enforced by the syntax of this entry."
+    INDEX      { 
+                  ipMstaticRouteSourceAddr,
+                  ipMstaticRouteGroupAddr}
+    ::= { ipMstaticRouteTable 1 }
+
+IpMstaticRouteEntry ::= SEQUENCE {    
+    ipMstaticRouteSourceAddr        IpAddress,
+    ipMstaticRouteGroupAddr         IpAddress,
+    ipMstaticRouteIifAddr           IpAddress,
+    ipMstaticRouteTimeStamp         TimeStamp
+} 
+
+ipMstaticRouteSourceAddr  OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The static IP multicast source address."
+            
+    ::= { ipMstaticRouteEntry 1 }    
+    
+ipMstaticRouteGroupAddr  OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The static IP multicast group address."
+            
+    ::= { ipMstaticRouteEntry 2 }      
+
+ipMstaticRouteIifAddr  OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The address of interface on which IP datagrams sent by 
+             certain sources to certain multicast address are received." 
+                      
+    ::= { ipMstaticRouteEntry 3 }   
+
+ipMstaticRouteTimeStamp  OBJECT-TYPE
+    SYNTAX     TimeStamp
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The value of sysUpTime at which the multicast routing
+            information represented by this entry was learned by the
+            router."
+            
+    ::= { ipMstaticRouteEntry 4 }     
+    
+--
+--
+--  The IP Mstatic Oif Routing Table
+--     
+-- 
+ipMstaticOifRouteTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF IpMstaticOifRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table containing multicast routing
+            information for source address、destination address、the 
+            index and address of output interface."
+            
+    ::= { ipMstatic 2 }   
+    
+ipMstaticOifRouteEntry OBJECT-TYPE
+    SYNTAX     IpMstaticOifRouteEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) containing the multicast routing
+            information for IP datagrams from a particular source and
+            addressed to a particular IP multicast group address.
+
+            OIDs are limited to 128 sub-identifiers, but this limit
+            is not enforced by the syntax of this entry."           
+            
+    INDEX      { 
+                  ipMstaticRouteOifSourceAddr,
+                  ipMstaticRouteOifGroupAddr,
+                  ipMstaticRouteOifIndex}
+    ::= { ipMstaticOifRouteTable 1 }
+
+IpMstaticOifRouteEntry ::= SEQUENCE {    
+    ipMstaticRouteOifSourceAddr        IpAddress,
+    ipMstaticRouteOifGroupAddr         IpAddress,
+    ipMstaticRouteOifIndex          Unsigned32,
+    ipMstaticRouteOifAddr           IpAddress
+}      
+
+
+ipMstaticRouteOifSourceAddr  OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The static IP multicast source address."
+            
+    ::= { ipMstaticOifRouteEntry 1 }    
+    
+ipMstaticRouteOifGroupAddr  OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The static IP multicast group address."
+            
+    ::= { ipMstaticOifRouteEntry 2 }      
+
+ipMstaticRouteOifIndex  OBJECT-TYPE
+    SYNTAX     Unsigned32
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The outindex of interface on which IP datagrams from certain 
+             sources to certain multicast address are sent from."
+             
+    ::= { ipMstaticOifRouteEntry 3 }   
+
+ipMstaticRouteOifAddr  OBJECT-TYPE
+    SYNTAX     IpAddress
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The address of interface on which IP datagrams from certain 
+             sources to certain multicast address are sent from."
+             
+    ::= { ipMstaticOifRouteEntry 4 }      
+
+        END
+    
+

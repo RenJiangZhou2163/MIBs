@@ -1,0 +1,1450 @@
+-- company power MIB
+
+--
+-- { iso org(3) dod(6) internet(1) private(4) enterprises(1) company(2111)
+-- products(1) ups(1)
+--
+-- ==============================================================================================
+
+
+companyMIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+  enterprises 
+     FROM RFC1155-SMI
+  MODULE-IDENTITY, OBJECT-TYPE,  OBJECT-IDENTITY
+     FROM SNMPv2-SMI
+  DisplayString
+     FROM SNMPv2-TC
+  TRAP-TYPE
+     FROM RFC-1215
+  PositiveInteger,  NonNegativeInteger
+     FROM UPS-MIB;
+  
+
+  companyMIB MODULE-IDENTITY
+       LAST-UPDATED "20100560000Z"
+       ORGANIZATION "company Power Technology"
+       CONTACT-INFO  " "
+              
+       DESCRIPTION
+               "The MIB module to describe UPS"
+
+
+  
+       ::= { enterprises 21111 }
+
+
+
+products        OBJECT IDENTIFIER ::= { companyMIB   1 }
+ups             OBJECT IDENTIFIER ::= { products 1 }
+inverter        OBJECT IDENTIFIER ::= { products 2 }
+charger         OBJECT IDENTIFIER ::= { products 3 }
+ATS             OBJECT IDENTIFIER ::= { products 4 }
+UPSwithPV       OBJECT IDENTIFIER ::= { products 5 }
+UPSlink         OBJECT IDENTIFIER ::= { products 6 }
+
+upsIdent        OBJECT IDENTIFIER ::= { UPSlink 1 }
+upsRating       OBJECT IDENTIFIER ::= { UPSlink 2 }
+upsBattery      OBJECT IDENTIFIER ::= { UPSlink 3 }
+upsInput        OBJECT IDENTIFIER ::= { UPSlink 4 }
+upsOutput       OBJECT IDENTIFIER ::= { UPSlink 5 }
+upsBypass       OBJECT IDENTIFIER ::= { UPSlink 6 }
+upsTest         OBJECT IDENTIFIER ::= { UPSlink 7 }
+upsControl      OBJECT IDENTIFIER ::= { UPSlink 8 }
+agentConfig     OBJECT IDENTIFIER ::= { UPSlink 9 }
+commConfig      OBJECT IDENTIFIER ::= { UPSlink 10 }
+upsConfig       OBJECT IDENTIFIER ::= { UPSlink 11 }
+upsTraps        OBJECT IDENTIFIER ::= { UPSlink 12 }
+extend          OBJECT IDENTIFIER ::= { UPSlink 13 }
+
+---=======================================================
+---upsIdent 
+--- prefix =upsId
+---========================================================
+
+upsIdManufacturer OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+           "The name of the UPS manufacturer."
+       ::= { upsIdent 1 }
+
+upsIdProtocol OBJECT-TYPE
+      SYNTAX INTEGER {
+         unknown(-1),
+         1KVA(60),
+         2KVA(61),
+         3KVA(62),
+         6KVA(63),
+         10KVA(64),
+         6KVA Rack(65),
+         10KVA Rack(66),
+         APC(67)
+     }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+          "The UPS Protocol id.
+    1KVA: SP1K,SP1KL           P60
+    2KVA: SP2K,SP2KL           P61
+    3KVA: SP3K,SP3KL           P62
+    6KVA: SP6K,SP6KL           P63
+    10KVA: SP10K,SP10KL        P64
+    6KVA Rack: SPR6K,SPR6KL    P65
+    10KVA Rack: SPR10K,SPR10KL P66
+     APC:		       P67
+"
+      ::= { upsIdent 2 }
+
+upsIdModelName OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..15))
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+   	 "The UPS Model designation."
+      ::= { upsIdent 3 }
+
+upsIdSerialNumber OBJECT-TYPE
+      SYNTAX DisplayString (SIZE(0..31))
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+          "The UPS serial no."
+      ::= { upsIdent 4 }
+
+upsIdName OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..31))
+       ACCESS read-write
+       STATUS     mandatory
+       DESCRIPTION
+               "A string identifying the UPS.  This object should be
+               set by the administrator."
+       ::= { upsIdent 5 }
+
+upsIdFWVersion OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..31))
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "Main CPU firmware version."
+       ::= { upsIdent 6 }
+
+
+upsIdUPSIdentification OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..31))
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "UPS identification."
+       ::= { upsIdent 7 }
+--===========================================================================
+--upsRating 
+--prefix =upsRat
+--the rating info of ups
+--==========================================================================
+upsRatinVoltage OBJECT-TYPE
+    SYNTAX     NonNegativeInteger
+    UNITS      "0.1 Volt DC"
+    ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The rating input voltage of UPS"
+    ::= { upsRating 1 }
+
+upsRatoutVoltage OBJECT-TYPE
+    SYNTAX     NonNegativeInteger
+    UNITS      "0.1 Volt DC"
+    ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The rating output voltage of UPS"
+    ::= { upsRating 2 }
+
+upsRatoutFrequency OBJECT-TYPE
+    SYNTAX     NonNegativeInteger
+    UNITS      "0.1 HZ"
+    ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The rating output frequency of UPS"
+    ::= { upsRating 3 }
+
+upsRatoutCurrent OBJECT-TYPE
+    SYNTAX     NonNegativeInteger
+    UNITS      "0.1 Amp DC"
+    ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The rating output current of UPS"
+    ::= { upsRating 4 }
+
+upsRatoutApparentPower OBJECT-TYPE
+    SYNTAX     NonNegativeInteger
+    UNITS      "0.1 VA"
+    ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The rating output apparent power of UPS"
+    ::= { upsRating 5 }
+
+upsRatBatVoltage OBJECT-TYPE
+    SYNTAX     NonNegativeInteger
+    UNITS      "0.1 vol"
+    ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The rating battery voltage of UPS"
+    ::= { upsRating 6 }
+
+
+
+-- ===========================================================================
+-- upsBattery   
+-- prefix = upsBat
+-- The Battery group.
+-- est=estimated
+-- ===========================================================================
+
+upsBatStatus OBJECT-TYPE
+     SYNTAX     INTEGER {
+           unknown(1),
+           batteryNormal(2),
+           batteryLow(3),
+           batteryDepleted(4),
+           batteryDischarging(5),
+           batteryFailure(6),
+           batteryReplace(7),
+	   batterysilence(8)
+     }
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+               "The indication of the status in the UPS system's batteries.
+           unknown(1),
+           batteryNormal(2),
+           batteryLow(3),
+           batteryDepleted(4),
+           batteryDischarging(5),
+           batteryFailure(6),
+           batteryReplace(7),
+	   batterysilence(8)"
+     ::= { upsBattery 1 }
+
+
+
+upsBatSecondsOnBattery OBJECT-TYPE
+     SYNTAX INTEGER
+     UNITS      "seconds"
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+        "If the unit is on battery power, the elapsed time
+        since the UPS last switched to battery power, or the
+        time since the network management subsystem was last
+        restarted, whichever is less.  -1 shall be returned
+        if the unit is not on battery power.
+        UNITS      seconds"
+     ::= { upsBattery 2 }
+
+upsBatEstMinutesRemaining OBJECT-TYPE
+     SYNTAX INTEGER
+     UNITS      "minutes"
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+        "An estimate of the time to battery charge depletion
+        under the present load conditions if the utility power
+        is off and remains off, or if it were to be lost and
+        remain off."
+     ::= { upsBattery 3 }
+
+upsBatEstChargeRemaining OBJECT-TYPE
+    SYNTAX     INTEGER (0..100)
+    UNITS      "percent"
+    ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "An estimate of the battery charge remaining expressed
+            as a percent of full charge."
+    ::= { upsBattery 4 }
+
+upsBatPBatVoltage OBJECT-TYPE
+    SYNTAX     NonNegativeInteger
+    UNITS      "0.1 Volt DC"
+    ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The magnitude of the  present Positive battery voltage."
+    ::= { upsBattery 5 }
+
+upsBatPBatCurrent OBJECT-TYPE
+    SYNTAX     INTEGER
+    UNITS      "0.1 Amp DC"
+    ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The positive battery present  current."
+    ::= { upsBattery 6 }
+
+
+upsBatTemperature OBJECT-TYPE
+    SYNTAX     INTEGER
+    UNITS      "degrees 0.1 Centigrade"
+    ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The ambient temperature at or near the UPS Battery
+            casing."
+    ::= { upsBattery 7 }
+
+upsBatNumberInSeries OBJECT-TYPE
+   SYNTAX     PositiveInteger
+   ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+            "The number of battery in series."
+    ::= { upsBattery 8 }
+
+
+upsBatNumberInParallel OBJECT-TYPE
+   SYNTAX     PositiveInteger
+   ACCESS read-only
+   STATUS     current
+   DESCRIPTION
+            "The number of battery in Parallel."
+    ::= { upsBattery 9 }
+
+
+-- ===========================================================================
+-- upsInput
+-- prefix = upsIn
+-- Input group.
+-- ===========================================================================
+
+upsInLineBads OBJECT-TYPE
+    SYNTAX     NonNegativeInteger
+    ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "A count of the number of times the input entered an
+            out-of-tolerance condition as defined by the
+            manufacturer.  This count is incremented by one each
+            time the input transitions from zero out-of-tolerance
+            lines to one or more input lines out-of-tolerance."
+    ::= { upsInput 1 }
+
+
+upsInTtlApparentPower OBJECT-TYPE
+    SYNTAX NonNegativeInteger
+    UNITS     "0.1VA"   
+    ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "Total input apparent power ."
+    ::= { upsInput 2 }
+
+upsInTtlTruePower OBJECT-TYPE
+    SYNTAX NonNegativeInteger
+    UNITS     "0.1WT"
+    ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "Total input active(true) power ."
+    ::= { upsInput 3 }
+
+
+
+upsInNumLines OBJECT-TYPE
+    SYNTAX     NonNegativeInteger
+    ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "The number of input lines utilized in this device.
+            This variable indicates the number of rows in the
+            input table."
+    ::= { upsInput 4 }
+
+
+upsInTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF UpsInEntry 
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "A list of input table entries.  The number of entries
+         is given by the value of upsInputNumLines."
+    ::= { upsInput  5 }
+
+upsInEntry OBJECT-TYPE
+    SYNTAX  UpsInEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "An entry containing information applicable to a
+         particular input line."
+    INDEX { upsInLineIndex    }
+    ::= { upsInTable  1 }
+
+UpsInEntry ::=
+    SEQUENCE {
+             upsInLineIndex      PositiveInteger,
+             upsInFrequency      NonNegativeInteger,
+             upsInVoltage        NonNegativeInteger,
+             upsInCurrent        NonNegativeInteger,
+             upsInApparentPower  NonNegativeInteger,
+             upsInTruePower      NonNegativeInteger
+             upsInPowerFactor    NonNegativeInteger,
+             upsInLineVoltage    NonNegativeInteger
+             }
+
+upsInLineIndex OBJECT-TYPE
+     SYNTAX INTEGER (0..10)
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The number of output lines"
+     ::= { upsInEntry 1 }
+
+upsInFrequency OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 Hertz"
+       ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present input frequency."
+       ::= { upsInEntry 2 }
+
+upsInVoltage OBJECT-TYPE
+     SYNTAX INTEGER
+     UNITS      "0.1 Volts"
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The input utility line voltage ."
+     ::= { upsInEntry 3 }
+
+upsInCurrent OBJECT-TYPE
+     SYNTAX INTEGER
+     UNITS   "0.1Amp"
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The magnitude of the present input current "
+     ::= { upsInEntry 4 }
+
+
+  
+upsInApparentPower OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS     "0.1VA"
+       ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the present input Apparent power."
+       ::= { upsInEntry 5 }
+
+upsInTruePower OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS     "0.1Watts"
+       ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the present input true power."
+       ::= { upsInEntry 6 }
+
+upsInPowerFactor OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS     "0.01"
+       ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Input  true power/apparent power factor "
+       ::= { upsInEntry 7 }
+
+upsInLineVoltage OBJECT-TYPE
+     SYNTAX INTEGER
+     UNITS      "0.1 Volts"
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The input utility line voltage .
+	    if upsInLineIndex =1, upsInLineVoltage = Line voltage of RS phase;
+	    if upsInLineIndex =2, upsInLineVoltage = Line voltage of ST phase;
+	    if upsInLineIndex =3, upsInLineVoltage = Line voltage of TR phase."
+     ::= { upsInEntry 8 }
+-- ===========================================================================
+-- upsOutput
+-- prefix= upsOut
+-- Output group
+-- ===========================================================================
+
+upsOutSource OBJECT-TYPE
+     SYNTAX     INTEGER {
+           other(1),
+           none(2),
+           normal(3),
+           bypass(4),
+           battery(5),
+           booster(6),
+           reducer(7),
+           batterytest(8),
+           fault(9),
+           HE-ECO_mode(10),
+           converter_mode(11)
+     }
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The present source of output power.  The enumeration
+             none(2) indicates that there is no source of output
+             power (and therefore no output power), for example,
+             the system has opened the output breaker.==UPS standby mode
+           other(1),
+           none(2),
+           normal(3),
+           bypass(4),
+           battery(5),
+           booster(6),
+           reducer(7),
+           batterytest(8),
+           fault(9),
+           HE-ECO_mode(10),
+           converter_mode(11)
+          "
+     ::= { upsOutput 1 }
+
+upsOutFrequency OBJECT-TYPE
+     SYNTAX INTEGER
+     UNITS      "0.01 Hertz"
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The current output frequency of the UPS system 
+	 UNITS      0.01 Hertz"
+     ::= { upsOutput 2 }
+
+
+upsOutTtlApparentPower OBJECT-TYPE
+    SYNTAX NonNegativeInteger
+    UNITS     "0.1VA"
+    ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "Total output apparent power ."
+    ::= { upsOutput 3 }
+
+upsOutTtlTruePower OBJECT-TYPE
+    SYNTAX NonNegativeInteger
+    UNITS     "0.1Watts"
+    ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+            "Total output active(true) power ."
+    ::= { upsOutput 4 }
+
+
+upsOutTtlPercentLoad OBJECT-TYPE
+     SYNTAX INTEGER (0..1000)
+     UNITS      "0.1 percent"
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The percentage of the UPS power capacity presently
+             being used on this output line, i.e., the greater of
+             the percent load of true power capacity and the
+             percent load of VA."
+     ::= { upsOutput 5 }
+
+upsOutNumLines OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The number of output lines utilized in this device.
+          This variable indicates the number of rows in the
+          output table."
+     ::= { upsOutput 6 }
+
+upsOutTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF UpsOutEntry 
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "A list of output table entries.  The number of
+         entries is given by the value of upsOutputNumLines."
+    ::= { upsOutput  7 }
+
+upsOutLockPhaseStatus OBJECT-TYPE
+   SYNTAX INTEGER {
+     lockFault(0),
+     lockOK(1)
+   }
+   ACCESS read-only
+   STATUS current
+   DESCRIPTION
+     "lock phase status
+     lockFault(0),
+     lockOK(1)"
+  ::= { upsOutput  8 }
+  
+upsOutUPSStatus OBJECT-TYPE
+       SYNTAX DisplayString (SIZE(0..8))
+       ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+           "The value with a two-digit hexadecimal coded message.
+	   		status[0-1]: UPS status, Sending the ASCII character uppercase Q causes the UPS to respond
+	   		status[2-3]: State Register, Sending the ASCII character ~ causes the UPS to respond
+	   		status[4-5]: Trip1 Register, Sending the ASCII character ' (apostrophe) causes the UPS to respond
+            status[6-7]: Trip Register, Sending the ASCII character 8 causes the UPS to respond"
+       ::= { upsOutput  9 }
+
+
+upsOutEntry OBJECT-TYPE
+    SYNTAX  UpsOutEntry 
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "An entry containing information applicable to a
+         particular output line."
+    INDEX { upsOutLineIndex      }
+    ::= { upsOutTable  1 }
+
+UpsOutEntry ::=
+    SEQUENCE {
+             upsOutLineIndex      PositiveInteger,
+             upsOutVoltage        NonNegativeInteger,
+             upsOutCurrent        NonNegativeInteger,
+             upsOutApparentPower  NonNegativeInteger,
+             upsOutTruePower      NonNegativeInteger, 
+             upsOutPowerFactor    NonNegativeInteger
+             upsOutPercentLoad    INTEGER,
+             upsOutLineVoltage    NonNegativeInteger
+             }
+
+upsOutLineIndex OBJECT-TYPE
+     SYNTAX INTEGER (0..10)
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The output line identifier."
+     ::= { upsOutEntry 1 }
+
+upsOutVoltage OBJECT-TYPE
+     SYNTAX INTEGER
+     UNITS      "0.1 Volts"
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The output voltage of the UPS system."
+     ::= { upsOutEntry 2 }
+
+upsOutCurrent OBJECT-TYPE
+     SYNTAX INTEGER
+     UNITS      "0.01 Amp"
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The output current of the UPS system"
+     ::= { upsOutEntry 3 }
+
+upsOutApparentPower OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS     "0.1VA"
+       ACCESS    read-only
+       STATUS     current
+       DESCRIPTION
+               "The present output apparent power."
+       ::= { upsOutEntry 4 }
+
+upsOutTruePower OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS   "0.1Watts"
+       ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present output true power."
+      ::= { upsOutEntry 5 }
+
+upsOutPowerFactor OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS     "0.01"
+       ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Output true power/apparent power factor "
+       ::= { upsOutEntry 6 }
+
+upsOutPercentLoad OBJECT-TYPE
+     SYNTAX INTEGER (0..1000)
+     UNITS      "0.1 percent"
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The percentage of the UPS power capacity presently
+             being used on this output line, i.e., the greater of
+             the percent load of true power capacity and the
+             percent load of VA."
+     ::= { upsOutEntry 7 }
+
+upsOutLineVoltage OBJECT-TYPE
+     SYNTAX INTEGER
+     UNITS      "0.1 Volts"
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The output line voltage of the UPS system.
+            if upsOutLineIndex =1, upsOutLineVoltage = Line voltage of RS phase;
+	    if upsOutLineIndex =2, upsOutLineVoltage = Line voltage of ST phase;
+	    if upsOutLineIndex =3, upsOutLineVoltage = Line voltage of TR phase."
+     ::= { upsOutEntry 8 }
+-- ===========================================================================
+-- upsBypass
+-- prefix =upsBy
+-- ===========================================================================
+
+upsByFrequency OBJECT-TYPE
+     SYNTAX INTEGER
+     UNITS      "0.1 Hertz"
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The present bypass frequency."
+     ::= { upsBypass 1 }
+
+
+
+upsByNumLines OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The number of bypass lines utilized in this device.
+             This entry indicates the number of rows in the bypass
+             table."
+     ::= { upsBypass 2 }
+
+
+upsByTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF UpsByEntry 
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "A list of bypass table entries.  The number of
+         entries is given by the value of upsBypassNumLines."
+    ::= { upsBypass  3 }
+
+upsByEntry OBJECT-TYPE
+    SYNTAX  UpsByEntry 
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+           "An entry containing information applicable to a
+               particular bypass input."
+    INDEX { upsByLineIndex }
+    ::= { upsByTable  1 }
+
+UpsByEntry ::=
+    SEQUENCE {
+             upsByLineIndex          PositiveInteger,
+             upsByVoltage            NonNegativeInteger,
+             upsByCurrent            NonNegativeInteger,
+             upsByPower              NonNegativeInteger
+             }
+
+upsByLineIndex OBJECT-TYPE
+     SYNTAX INTEGER (0..65535)
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The bypass line identifier."
+     ::= { upsByEntry 1 }
+
+upsByVoltage OBJECT-TYPE
+     SYNTAX INTEGER
+     UNITS      "0.1 Volts"
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The present bypass voltage."
+     ::= { upsByEntry 2 }
+
+upsByCurrent OBJECT-TYPE
+     SYNTAX INTEGER
+     UNITS      "0.1 RMS Amp"
+     ACCESS read-only
+     STATUS current
+     DESCRIPTION
+         "The present bypass current."
+     ::= { upsByEntry 3 }
+
+upsByPower OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1Watts"
+       ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present true power conveyed by the bypass."
+       ::= { upsByEntry 4 }
+
+-- ===========================================================================
+-- upsTest
+-- prefix=upsTst
+-- ===========================================================================
+
+
+upsTstBatteryTest OBJECT-TYPE
+        SYNTAX INTEGER {
+            none(1),
+            battTest10sec(2),
+            battTestUntilLow(3),
+            battTestWithTime(4),       
+            battTestCancelTest(5),
+            battTestClearInfo(6)
+            
+        }
+        ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "This object specify the battery test type and initiate
+                 battery test. If battTestWithTime selected, the test
+                 time is refer to upsTestBatteryTestTime.
+	    none(1),
+            battTest10sec(2),
+            battTestUntilLow(3),
+            battTestWithTime(4),       
+            battTestCancelTest(5),
+            battTestClearInfo(6)"
+     ::= { upsTest 1 }
+
+upsTstBatteryTestResult OBJECT-TYPE
+        SYNTAX  INTEGER {
+                donePassed(1),
+                doneWarning(2),
+                doneError(3),
+                aborted(4),
+                inProgress(5),
+                noTestsInitiated(6)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+         "The results of the current or last UPS diagnostics
+               test performed.  The values for donePassed(1),
+               doneWarning(2), and doneError(3) indicate that the
+               test completed either successfully, with a warning, or
+               with an error, respectively.  The value aborted(4) is
+               returned for tests which are aborted by setting the
+               value of upsTestId to upsTestAbortTestInProgress.
+               Tests which have not yet concluded are indicated by
+               inProgress(5).  The value noTestsInitiated(6)
+               indicates that no previous test results are available,
+               such as is the case when no tests have been run since
+               the last reinitialization of the network management
+               subsystem and the system has no provision for non-
+               volatile storage of test results."
+     ::= { upsTest 2 }
+
+
+
+upsTstBatteryTestStartTime OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(19..19))
+        ACCESS read-only
+        STATUS current
+        DESCRIPTION
+         "The value of the time the test in progress was initiated,
+          or, if no test is in progress, the time the previous test
+          was initiated. If the value of upsTestBatteryTestResult
+          is noTestsInitiated(6), upsTestStartTime has the value
+          01/01/1970 00:00:00. format is (MM/DD/YYYY hh:mm:ss)"
+     ::= { upsTest 3 }
+
+
+upsTstBatterySettingTime OBJECT-TYPE
+        SYNTAX INTEGER (00..99)
+        UNITS      "1 minute"
+        ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "The object specify the test time for battery test, the unit is minute "
+     ::= { upsTest 4 }
+
+-- ===========================================================================
+-- upsControl
+-- prefix=upsCtl
+-- ===========================================================================
+
+
+upsCtlShutdownDelay OBJECT-TYPE
+        SYNTAX INTEGER (-2..2147483648)
+        UNITS "seconds" 
+        ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "The delay in seconds the UPS remains on after being told
+                 to turn off. if value=-2 cancel shutdown, if value=-1 donothing,
+                 value=0 shutdown ups immediately"
+        ::= { upsControl 1 }
+
+
+upsCtlShutdownOnBattMode OBJECT-TYPE
+        SYNTAX INTEGER 
+        ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "turn off the UPS at battery mode.
+                 if value=1 will shutdown UPS"
+        ::= { upsControl 2 }
+
+upsCtlStartupAfterDelay OBJECT-TYPE
+    SYNTAX     INTEGER (-1..2147483648)
+    UNITS      "0.1 Hour"
+    ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+            "Setting this object will start the output after the
+            indicated number tenths of an hour, including starting the
+            UPS, if necessary.  -1 mean not startup. "
+            
+    ::= { upsControl 3 }
+
+
+
+upsCtlbuzzer OBJECT-TYPE
+   SYNTAX INTEGER {
+     on(1),
+     off(2)
+   }
+   ACCESS read-write
+   STATUS     current
+   DESCRIPTION 
+      "Setting this object to 'on' or 'off' to enable or disable buzzer"
+
+   ::= { upsControl 4 }
+
+
+
+upsCtlRemoteControlUPS OBJECT-TYPE
+   SYNTAX INTEGER {
+      on(1),
+      off(2)
+    }
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION
+       "Setting this object to turn 'on' or 'off' UPS " 
+
+  ::= { upsControl 5 }
+
+upsCtlResetConfigure OBJECT-TYPE
+   SYNTAX INTEGER {
+     none(0),
+     reset(1)
+   }
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION
+      " reset all configure para to default."
+    ::= { upsControl 6 }
+
+
+--===========================================================================
+--
+-- agentConfig
+-- prefix=agent
+-- ===========================================================================
+
+
+agentConfigDatetime OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (19..19))
+        ACCESS read-write
+        STATUS current
+        DESCRIPTION
+                "The datetime in agent, format is (MM/DD/YYYY hh:mm:ss)"
+        ::= { agentConfig 1 }
+
+
+
+
+---======================================================================
+-- commConfig
+-- prefix =comm
+---======================================================================
+
+commBaudRate OBJECT-TYPE
+   SYNTAX   INTEGER {
+	B1200(1),
+        B2400(2),
+        B4800(3),
+        B9600(4),
+   	B19200(5)
+   }
+   ACCESS   read-write
+   STATUS   current
+   DESCRIPTION
+          "The UPS communicate baudrate"
+    ::= { commConfig 1 }
+
+
+
+commDatabits OBJECT-TYPE
+   SYNTAX  INTEGER  (8..9)
+    
+   ACCESS  read-write
+   STATUS  current
+   DESCRIPTION 
+          "The UPS communicate data bits"
+   ::= { commConfig 2 }
+
+
+commStopbits OBJECT-TYPE
+   SYNTAX INTEGER (1..2)
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION 
+         "The UPS communicate stop bits "
+   
+  ::= { commConfig 3 }
+
+commParity OBJECT-TYPE
+   SYNTAX INTEGER {
+       none(0),
+       odd(1),
+       even(2)
+    }
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION
+       "The UPS communicate Parity "
+  ::= { commConfig 4 }
+
+commTimeout OBJECT-TYPE
+   SYNTAX INTEGER (100..1000)
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        "The UPS communicate timeout"
+    ::= { commConfig 5 }
+        
+ 
+--===========================================================================
+--
+-- upsConfig
+--prefix=upsCfg
+-- ===========================================================================
+ 
+upsCfgAlarmbypass OBJECT-TYPE
+    SYNTAX INTEGER {
+         disable(0), 
+         enable(1),
+	 notsupport(2)
+         
+       }
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION 
+       "Setting this object enable /disable alarm bypass mode"
+
+    ::= { upsConfig 1 }
+  
+upsCfgAlarmbattery OBJECT-TYPE
+   SYNTAX INTEGER {
+         disable(0),
+         enable(1),
+	 notsupport(2)
+    }   
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+      "Setting this object enable/disable alarm battery mode"
+
+   ::= { upsConfig 2 }
+
+upsCfgAutoReboot OBJECT-TYPE
+    SYNTAX     INTEGER {
+         disable(0),
+         enable(1),
+	 notsupport(2)
+    }
+    ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+            "Setting this object enable/disable auto reboot"
+    ::= { upsConfig 3 }
+
+
+upsCfgBypasswhenupsoff OBJECT-TYPE
+   SYNTAX INTEGER {
+      disable(0),
+      enable(1),
+      notsupport(2)
+   }
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION 
+      "Setting this object start/stop bypass when ups off"
+   ::= { upsConfig 4 }
+
+   
+upsCfgConvertermode OBJECT-TYPE 
+   SYNTAX INTEGER {
+      disable(0),
+      enable(1),
+	 notsupport(2)
+   }
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION
+       "Setting this object to enable/disable converter mode "
+
+   ::= { upsConfig 5 }
+
+
+upsCfgECOmode OBJECT-TYPE
+   SYNTAX INTEGER {
+     disable(0),
+     enable(1),
+	 notsupport(2)
+   }
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION
+     "Setting this object to enable/disable ECO mode"
+  ::= { upsConfig 6 }
+
+
+upsCfgGreenPowerFunction OBJECT-TYPE
+   SYNTAX INTEGER {
+     disable(0),
+     enable(1),
+	 notsupport(2)
+   }
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION
+     "Setting this object to enable/disable green power function"
+  ::= { upsConfig 7 }
+
+
+upsCfgColdstart OBJECT-TYPE
+   SYNTAX INTEGER {
+       disable(0),
+      enable(1),
+	 notsupport(2)
+       
+   }
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION
+      "Setting this object to cold start ups"
+  ::= { upsConfig  8 }
+
+
+upsCfgBypassNotAllowed OBJECT-TYPE
+   SYNTAX INTEGER {
+         disable(0),
+      enable(1),
+	 notsupport(2)
+       
+   }
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION
+      "Setting this object to enable/disable bypass mode"
+  ::= { upsConfig  9 }
+
+upsCfgBatNumInParallel OBJECT-TYPE 
+   SYNTAX INTEGER (1..99)
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION 
+      "Battery numbers in parallel (battery numbers setting)"
+   ::= { upsConfig 10 }
+   
+
+upsCfgBatNumInSeries OBJECT-TYPE 
+   SYNTAX INTEGER (1..20)
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION 
+      "Battery numbers in series (battery numbers setting)"
+   ::= { upsConfig 11 }
+   
+
+
+upsCfgBypassmaxvoltage OBJECT-TYPE
+   SYNTAX INTEGER
+   UNITS      "1 Volts"
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION
+      "set the bypass voltage high loss point.
+       the range of values see upsCfgBypassmaxvoltRange object"
+
+   ::= { upsConfig 12 }
+
+
+upsCfgBypassminvoltage OBJECT-TYPE
+   SYNTAX INTEGER
+   UNITS      "1 Volts"
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION
+      "set the bypass voltage low loss point.
+      the range of values see upsCfgBypassminvoltRange object"
+   ::= { upsConfig 13 }
+
+
+upsCfgBypassmaxfrequency OBJECT-TYPE
+   SYNTAX INTEGER (510..700) -- ( 510..600 ,610..700)
+   UNITS      "0.1 Hertz"
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION
+      "Bypass mode max frequency ,for 50 HZ (510..600) for 60HZ (610..700)"
+   ::= { upsConfig 14 }
+
+
+
+upsCfgBypassminfrequency OBJECT-TYPE
+   SYNTAX INTEGER (400..590) --(400..490,500..590)
+   UNITS      "0.1 Hertz"
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION
+      "Bypass mode min frequency, for 50HZ (400..490) for 60Hz (500..590)"
+   ::= { upsConfig 15 }
+
+
+
+upsCfgECOmaxvoltage OBJECT-TYPE
+   SYNTAX INTEGER (10..3000)
+   UNITS      "0.1 Volts"
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION
+      "ECO mode max voltage"
+
+   ::= { upsConfig 16 }
+
+upsCfgECOminvoltage OBJECT-TYPE
+   SYNTAX INTEGER (10..3000)
+   UNITS      "0.1 Volts"
+   ACCESS read-write
+   STATUS current
+   DESCRIPTION
+      "ECO mode min voltage"
+   ::= { upsConfig 17 }
+
+
+upsCfgAlarm OBJECT-TYPE
+      SYNTAX INTEGER {
+         disable(0),
+         enable(1),
+	 notsupport(2)
+      }
+      ACCESS read-write
+      STATUS current
+      DESCRIPTION
+          "Enable/disable alarm."
+      ::= { upsConfig 18 }
+
+upsCfgBattReplaceDate OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..31))
+       ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "set battery replacement date.
+		the format: mm/dd/yy (month,day,year)"
+       ::= { upsConfig 19 }
+
+upsCfgBattUnitCapcity OBJECT-TYPE
+       SYNTAX     INTEGER
+       ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "set unit battery capacity.
+		SP6K, SP10K only support  the below setting
+			7, 9,10,12,17,26,40,65,100 
+		SP1K, SP2K Only Support the below Setting 7
+		SP3K support the below setting 9 "
+       ::= { upsConfig 20 }
+
+upsCfgAudibleAlarmMode OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(1))
+       ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "set Audible alarm mode.
+		'0': Audible alarm is sounded immediately upon failure of utility and for low battery condition 
+                'T': Alarm is not sounded until utility failure has lasted for more than 30 seconds. Low battery warning operates normally 
+                'L': Alarm is sounded for low battery conditions only 
+                'N': Audible alarm is disabled under all conditions."
+
+       ::= { upsConfig 21 }
+
+upsCfgAudibleAlarmModeRange OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(1..32))
+       ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "get Audible alarm mode range."
+       ::= { upsConfig 22 }
+
+upsCfgShutdownDelayTime OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "seconds"
+       ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "set UPS shutdown delay "
+       ::= { upsConfig 23 }
+
+upsCfgShutdownDelayTimeRange OBJECT-TYPE
+       SYNTAX      DisplayString (SIZE(1..32))
+       ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "get UPS shutdown delay range"
+       ::= { upsConfig 24 }
+
+upsCfgTurnOnDelayTime OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "seconds"
+       ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "set UPS turn on delay time "
+       ::= { upsConfig 25 }
+
+upsCfgTurnOnDelayTimeRange OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(1..32))
+       ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "get UPS turn on range"
+       ::= { upsConfig 26 }
+
+upsCfgBypassmaxvoltRange OBJECT-TYPE
+   SYNTAX DisplayString (SIZE(1..32))
+   ACCESS read-only
+   STATUS current
+   DESCRIPTION
+      "get the range of the bypass voltage high loss point."
+
+   ::= { upsConfig 27 }
+
+
+upsCfgBypassminvoltRange OBJECT-TYPE
+   SYNTAX DisplayString (SIZE(1..32))
+   ACCESS read-only
+   STATUS current
+   DESCRIPTION
+      "get the range of the bypass voltage low loss point."
+   ::= { upsConfig 28 }
+-- ===========================================================================
+-- upsTraps
+-- prefix = upsTraps
+-- Traps group
+-- ===========================================================================
+
+   -- This section defines the well-known notifications sent by
+   -- UPS agents.
+     
+   -- this traps use one share trap-node for send traps ,the trap-node vlaue between 1 and 127.
+   -- the share trap-node name is trapleafnodev1v2;
+
+-- if failure or warning  occur ,traps send immediately , if question not resolved,agent will resend  every 4 seconds.
+-- info only send once 
+   
+trapleafnodev103 OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (16..16))
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "The share trap-node for send all traps,snmpcard V1-03 and later use this trap-node
+	 char trap[16];
+	 trap[0]: trap[0]=1,fault trap ; trap[0]=0,warn trap"
+    ::= { upsTraps 998 }
+
+
+--===============================================================================
+--extend          
+--===============================================================================
+
+extendWorkTemperature OBJECT-TYPE
+  SYNTAX INTEGER (-2200..2200)
+  UNITS     "degrees 0.1 Centigrade"
+  ACCESS read-only
+  STATUS current
+  DESCRIPTION
+    "The temperature of work environment"
+  ::= { extend 1 }
+
+extendWorkhumidity OBJECT-TYPE
+  SYNTAX INTEGER (0..100)
+  UNITS "percent"
+  ACCESS read-only
+  STATUS current
+  DESCRIPTION
+    "The humidity of work environment"
+  ::= { extend 2 }
+
+
+extendSmokeScope OBJECT-TYPE
+  SYNTAX INTEGER (0..1000000)
+  UNITS "%/FOOT"
+  ACCESS read-only
+  STATUS current
+  DESCRIPTION
+    "The smokeScope of work environment"
+  ::= { extend 3 }
+
+
+extendEMDAlarm1 OBJECT-TYPE
+  SYNTAX INTEGER {
+     on(1),
+     off(0)
+   }
+  ACCESS read-only
+  STATUS current
+  DESCRIPTION
+    "Environment  detector alarm 1"
+  ::= { extend 4 } 
+
+extendEMDAlarm2 OBJECT-TYPE
+  SYNTAX INTEGER {
+     on(1),
+     off(0)
+   }
+  ACCESS read-only
+  STATUS current
+  DESCRIPTION
+    "Environment  detector alarm 2"
+  ::= { extend 5 } 
+
+
+extendEMDAlarm3 OBJECT-TYPE
+  SYNTAX INTEGER {
+     on(1),
+     off(0)
+   }
+  ACCESS read-only
+  STATUS current
+  DESCRIPTION
+    "Environment  detector alarm 3"
+  ::= { extend 6 } 
+
+extendEMDAlarm4 OBJECT-TYPE
+  SYNTAX INTEGER {
+     on(1),
+     off(0)
+   }
+  ACCESS read-only
+  STATUS current
+  DESCRIPTION
+    "Environment  detector alarm 4"
+  ::= { extend 7 } 
+
+END

@@ -1,8 +1,8 @@
 -- ============================================================================
--- Copyright (C) 2020 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- Copyright (C) 2021 by  HUAWEI TECHNOLOGIES. All rights reserved.
 -- Description:   The mib is used to manage AP on AC, include AP device notify, AP type,  AP objects etc.
 -- Reference: 
--- Version: V1.67
+-- Version: V1.79
 -- ============================================================================
 -- Module definition
 
@@ -16,11 +16,11 @@
 			IpAddress, Integer32, Unsigned32, Counter64, OBJECT-TYPE,
 			MODULE-IDENTITY, NOTIFICATION-TYPE
 				FROM SNMPv2-SMI
-               			MacAddress, RowStatus, DateAndTime
+			MacAddress, RowStatus, DateAndTime
 				FROM SNMPv2-TC;
 		--1.3.6.1.4.1.2011.6.139.13
 		hwWlanAp MODULE-IDENTITY
-			LAST-UPDATED"202003301856Z"		-- Mar 30, 2020 at 18:56 GMT	   
+			LAST-UPDATED"202106231004Z"		-- Jun 23, 2021 at 10:04 GMT
 			ORGANIZATION 
 				"Huawei Technologies Co.,Ltd."
 			CONTACT-INFO 
@@ -30,8 +30,55 @@
 				   People's Republic of China
 				   Website: http://www.huawei.com
 				   Email: support@huawei.com"
+			DESCRIPTION
+				"V1.79, add node hwWlanAcCfgCountryCode "
+            REVISION "202106231004Z"		-- Jun 23, 2021 at 10:04 GMT
+			DESCRIPTION
+				"V1.78, add hwApCPETunnelSpecFullTrap, hwApCPETunnelSpecFullRestoreTrap, hwWlanApTunnelNum"
+            REVISION "202012092043Z"		-- Dec 9, 2020 at 20:43 GMT
+
+				   
+			DESCRIPTION
+				"V1.77, add hwApTypeInfoInconsistentTrap"
+            REVISION "202010301000Z"		-- Oct 30, 2020 at 10:00 GMT
+
+			DESCRIPTION
+				"V1.76, add hwApRTUDemoLicenseExpireTrap, hwWlanRTURemainDays"
+            REVISION "202010171629Z"		-- Oct 17, 2020 at 16:29 GMT
+			
+			DESCRIPTION
+				"V1.75, add hwApServiceInterruptAlertTrap, hwApServiceInterruptAlertResumeTrap, hwAlertReason, hwRemainTime"
+            REVISION "202009301110Z"		-- Sept 30, 2020 at 11:10 GMT
+
+		        DESCRIPTION 
+				"V1.74, update hwWlanApPowerInsufficientImpact"
+            REVISION "202009281700Z"		-- Sept 28, 2020 at 17:00 GMT
+			
 			DESCRIPTION 
-				"V1.66, update the type of hwWlanApTypeRadioType"
+				"V1.73, update the value of hwApPowerInsufficientTrap, hwApPowerInsufficientResumeTrap, hwWlanAPPoeWorkmode, hwWlanAPPoeWorkmode, hwWlanIDIndexedAPPoeWorkmode, hwWlanIDIndexedAPPoeExpectedWorkmode"
+            REVISION "202008101934Z"		-- August 10, 2020 at 19:34 GMT
+			
+			DESCRIPTION 
+				"V1.72, add hwApLoopbackDetectTrap, hwApLoopbackDetectRestoreTrap, update the value of hwWlanApWiredPortState "
+            REVISION "202008061934Z"		-- July 27, 2020 at 10:32 GMT
+			
+			DESCRIPTION 
+				"V1.71, add hwApOpticalVoltageTooHighTrap hwApOpticalVoltageTooHighRestoreTrap hwApOpticalVoltageTooLowTrap hwApOpticalVoltageTooLowRestoreTrap hwApOpticalCurrentTooHighTrap hwApOpticalCurrentTooHighRestoreTrap hwApOpticalCurrentTooLowTrap hwApOpticalCurrentTooLowRestoreTrap"
+            REVISION "202007271032Z"		-- July 27, 2020 at 10:32 GMT
+			
+			DESCRIPTION 
+				"V1.70, update the type of hwWlanIDIndexedApRtuStatus "
+            REVISION "202007031444Z"		-- July 3, 2020 at 14:44 GMT
+				   
+			DESCRIPTION 
+				"V1.69, update the type of hwWlanIDIndexedApRtuStatus "
+            REVISION "202006281109Z"		-- Jun 28, 2020 at 11:09 GMT		   
+			
+			DESCRIPTION 
+				"V1.68, add hwApExistNeedReconnectTrap, hwApExistNeedReconnectResumeTrap, hwWlanIDIndexedApRadioMode, hwWlanIDIndexedApRtuStatus"
+            REVISION "202005182006Z"		-- May 18, 2020 at 20:06 GMT
+			DESCRIPTION 
+				"V1.67, update the type of hwWlanApTypeRadioType"
             REVISION "202003301856Z"		-- Mar 30, 2020 at 18:56 GMT	   
 		    DESCRIPTION 
 				"V1.66, update the type of hwWlanApTypeRadioType"
@@ -491,7 +538,7 @@
 
 		--1.3.6.1.4.1.2011.6.139.13.1.1.29
 		hwApNotSupportCountryCodeTrap NOTIFICATION-TYPE
-			OBJECTS { hwWlanApMac, hwWlanApName, hwWlanApCfgCountryCode, hwWlanApId }
+			OBJECTS { hwWlanApMac, hwWlanApName, hwWlanApCfgCountryCode, hwWlanApId, hwWlanAcCfgCountryCode }
 			STATUS current
 			DESCRIPTION 
 				"This object indicates that the country code is not supported."
@@ -1052,14 +1099,14 @@
 			::= { hwWlanApTrap 93 }
 			
 		hwApPowerInsufficientTrap NOTIFICATION-TYPE
-		        OBJECTS { hwWlanApMac, hwWlanApName, hwApPowerWorkMode, hwApExpectPowerWorkMode, hwWlanApId }
+		        OBJECTS { hwWlanApMac, hwWlanApName, hwApPowerWorkMode, hwApExpectPowerWorkMode, hwWlanApId, hwWlanApPowerInsufficientImpact }
 			STATUS current
 			DESCRIPTION 
 				"This alarm is generated when the AP power supply is insufficient."
 			::= { hwWlanApTrap 94 }
 			
 		hwApPowerInsufficientResumeTrap NOTIFICATION-TYPE
-		        OBJECTS { hwWlanApMac, hwWlanApName, hwApPowerWorkMode, hwApExpectPowerWorkMode, hwWlanApId }
+		        OBJECTS { hwWlanApMac, hwWlanApName, hwApPowerWorkMode, hwApExpectPowerWorkMode, hwWlanApId, hwWlanApPowerInsufficientImpact }
 			STATUS current
 			DESCRIPTION 
 				"This alarm is generated when the AP power supply insufficient resume."
@@ -1293,7 +1340,153 @@
 				"This alarm is generated when the AP power resume from invalid situation."
 			::= { hwWlanApTrap 124 }
 
--- 1.3.6.1.4.1.2011.6.139.13.1.2		
+		-- 1.3.6.1.4.1.2011.6.139.13.1.1.125
+		hwApExistNeedReconnectTrap NOTIFICATION-TYPE
+			STATUS current
+			DESCRIPTION 
+				"This alarm is generated when some APs need to be reconnected."
+			::= { hwWlanApTrap 125 }
+
+		-- 1.3.6.1.4.1.2011.6.139.13.1.1.126
+		hwApExistNeedReconnectResumeTrap NOTIFICATION-TYPE
+			STATUS current
+			DESCRIPTION 
+				"This alarm is generated when no AP needs to be reconnected."
+			::= { hwWlanApTrap 126 }
+		--1.3.6.1.4.1.2011.6.139.13.1.1.127
+		hwApOpticalVoltageTooHighTrap NOTIFICATION-TYPE
+			OBJECTS { hwWlanApMac, hwWlanApName, hwWlanApIfIndex, hwWlanApOpticalVoltage, hwApEntityPhysicalName, 
+				hwWlanApId }
+			STATUS current
+			DESCRIPTION 
+				"This object indicates that the Voltage of an AP's optical module is too High."
+			::= { hwWlanApTrap 127 }
+
+		--1.3.6.1.4.1.2011.6.139.13.1.1.128
+		hwApOpticalVoltageTooHighRestoreTrap NOTIFICATION-TYPE
+			OBJECTS { hwWlanApMac, hwWlanApName, hwWlanApIfIndex, hwWlanApOpticalVoltage, hwApEntityPhysicalName, 
+				hwWlanApId }
+			STATUS current
+			DESCRIPTION 
+				"This object indicates that the Voltage of an AP's optical module restores to the normal range."
+			::= { hwWlanApTrap 128 }
+		--1.3.6.1.4.1.2011.6.139.13.1.1.129
+		hwApOpticalVoltageTooLowTrap NOTIFICATION-TYPE
+			OBJECTS { hwWlanApMac, hwWlanApName, hwWlanApIfIndex, hwWlanApOpticalVoltage, hwApEntityPhysicalName, 
+				hwWlanApId }
+			STATUS current
+			DESCRIPTION 
+				"This object indicates that the Voltage of an AP's optical module is too low."
+			::= { hwWlanApTrap 129 }
+
+		--1.3.6.1.4.1.2011.6.139.13.1.1.130
+		hwApOpticalVoltageTooLowRestoreTrap NOTIFICATION-TYPE
+			OBJECTS { hwWlanApMac, hwWlanApName, hwWlanApIfIndex, hwWlanApOpticalVoltage, hwApEntityPhysicalName, 
+				hwWlanApId }
+			STATUS current
+			DESCRIPTION 
+				"This object indicates that the Voltage of an AP's optical module restores to the normal range."
+			::= { hwWlanApTrap 130 }
+		--1.3.6.1.4.1.2011.6.139.13.1.1.131
+		hwApOpticalCurrentTooHighTrap NOTIFICATION-TYPE
+			OBJECTS { hwWlanApMac, hwWlanApName, hwWlanApIfIndex, hwWlanApOpticalCurrent, hwApEntityPhysicalName, 
+				hwWlanApId }
+			STATUS current
+			DESCRIPTION 
+				"This object indicates that the Current of an AP's optical module is too high."
+			::= { hwWlanApTrap 131 }
+
+		--1.3.6.1.4.1.2011.6.139.13.1.1.132
+		hwApOpticalCurrentTooHighRestoreTrap NOTIFICATION-TYPE
+			OBJECTS { hwWlanApMac, hwWlanApName, hwWlanApIfIndex, hwWlanApOpticalCurrent, hwApEntityPhysicalName, 
+				hwWlanApId }
+			STATUS current
+			DESCRIPTION 
+				"This object indicates that the Current of an AP's optical module restores to the normal range."
+			::= { hwWlanApTrap 132 }
+		--1.3.6.1.4.1.2011.6.139.13.1.1.133
+		hwApOpticalCurrentTooLowTrap NOTIFICATION-TYPE
+			OBJECTS { hwWlanApMac, hwWlanApName, hwWlanApIfIndex, hwWlanApOpticalCurrent, hwApEntityPhysicalName, 
+				hwWlanApId }
+			STATUS current
+			DESCRIPTION 
+				"This object indicates that Current of an AP's optical module is too low."
+			::= { hwWlanApTrap 133 }
+
+		--1.3.6.1.4.1.2011.6.139.13.1.1.134
+		hwApOpticalCurrentTooLowRestoreTrap NOTIFICATION-TYPE
+			OBJECTS { hwWlanApMac, hwWlanApName, hwWlanApIfIndex, hwWlanApOpticalCurrent, hwApEntityPhysicalName, 
+				hwWlanApId }
+			STATUS current
+			DESCRIPTION 
+				"This object indicates that the Current of an AP's optical module restores to the normal range."
+			::= { hwWlanApTrap 134 }
+			
+		--1.3.6.1.4.1.2011.6.139.13.1.1.135
+		hwApLoopbackDetectTrap NOTIFICATION-TYPE
+			OBJECTS { hwWlanApMac, hwWlanApName, hwWlanApIfIndex, hwApEntityPhysicalName, 
+				hwWlanApId }
+			STATUS current
+			DESCRIPTION 
+				"This object indicates that the wired port detected a loop and blocked itself."
+			::= { hwWlanApTrap 135 }
+		
+		--1.3.6.1.4.1.2011.6.139.13.1.1.136
+		hwApLoopbackDetectRestoreTrap NOTIFICATION-TYPE
+			OBJECTS { hwWlanApMac, hwWlanApName, hwWlanApIfIndex, hwApEntityPhysicalName, 
+				hwWlanApId }
+			STATUS current
+			DESCRIPTION 
+				"This object indicates that the blocked port has recovered."
+			::= { hwWlanApTrap 136 }
+
+		-- 1.3.6.1.4.1.2011.6.139.13.1.1.137
+		hwApServiceInterruptAlertTrap NOTIFICATION-TYPE
+			OBJECTS { hwAlertReason, hwRemainTime }
+			STATUS current
+			DESCRIPTION 
+				"This alarm will be generated when the AP service is unavailable after a period of time."
+			::= { hwWlanApTrap 137 }
+
+		-- 1.3.6.1.4.1.2011.6.139.13.1.1.138
+		hwApServiceInterruptAlertResumeTrap NOTIFICATION-TYPE
+			STATUS current
+			DESCRIPTION 
+				"This alarm will be generated when the AP service is available."
+			::= { hwWlanApTrap 138 }
+
+		-- 1.3.6.1.4.1.2011.6.139.13.1.1.139
+		hwApRTUDemoLicenseExpireTrap NOTIFICATION-TYPE
+			OBJECTS { hwWlanApMac, hwWlanApName, hwWlanApId, hwWlanRTURemainDays }
+			STATUS current
+			DESCRIPTION 
+				"This alarm will be generated when the AP RTU license is near deadline."
+			::= { hwWlanApTrap 139 }
+
+		-- 1.3.6.1.4.1.2011.6.139.13.1.1.140
+		hwApTypeInfoInconsistentTrap NOTIFICATION-TYPE
+			STATUS current
+			DESCRIPTION 
+				"This alarm is generated when APs of the same type report different AP type attributes."
+			::= { hwWlanApTrap 140 }
+			
+
+		-- 1.3.6.1.4.1.2011.6.139.13.1.1.141
+		hwApCPETunnelSpecFullTrap NOTIFICATION-TYPE
+			OBJECTS { hwWlanApMac, hwWlanApName, hwWlanApTunnelNum, hwWlanApId }
+			STATUS current
+			DESCRIPTION 
+				"This alarm is generated when reached the maximum number of CPE tunnels on the AP."
+			::= { hwWlanApTrap 141 }
+
+		-- 1.3.6.1.4.1.2011.6.139.13.1.1.142
+		hwApCPETunnelSpecFullRestoreTrap NOTIFICATION-TYPE
+			OBJECTS { hwWlanApMac, hwWlanApName, hwWlanApTunnelNum, hwWlanApId }
+			STATUS current
+			DESCRIPTION 
+				"This alarm is generated when the number of CPE tunnels on the AP falls below the maximum value."
+			::= { hwWlanApTrap 142 }
+
 		-- 1.3.6.1.4.1.2011.6.139.13.1.2
 		hwWlanApTrapObjects OBJECT IDENTIFIER ::= { hwWlanApTrapInfo 2 }
 
@@ -1964,7 +2157,78 @@
 			DESCRIPTION
 				"This object indicates the AP temperature type."
 			::= { hwWlanApTrapObjects 73 }
+
+		-- 1.3.6.1.4.1.2011.6.139.13.1.2.74
+		hwWlanApPowerInsufficientImpact OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..64))
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"This object indicates the impact of AP power insufficient."
+			::= { hwWlanApTrapObjects 74 }
 			
+		-- 1.3.6.1.4.1.2011.6.139.13.1.2.75
+		hwWlanApOpticalVoltage OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION 
+				"Voltage of an AP's optical module."
+			::= { hwWlanApTrapObjects 75 }
+
+		-- 1.3.6.1.4.1.2011.6.139.13.1.2.76
+		hwWlanApOpticalCurrent OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION 
+				"Current of an AP's optical module."
+			::= { hwWlanApTrapObjects 76 }
+
+		-- 1.3.6.1.4.1.2011.6.139.13.1.2.77
+		hwAlertReason OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..256))
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"This object indicates the AP service interruption reason."
+			::= { hwWlanApTrapObjects 77 }
+
+		-- 1.3.6.1.4.1.2011.6.139.13.1.2.78
+		hwRemainTime OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..256))
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"This object indicates the AP service remaining time."
+			::= { hwWlanApTrapObjects 78 }
+
+		-- 1.3.6.1.4.1.2011.6.139.13.1.2.79
+		hwWlanRTURemainDays OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"This object indicates the AP RTU license remaining days."
+			::= { hwWlanApTrapObjects 79 }
+			
+		--1.3.6.1.4.1.2011.6.139.13.1.2.80
+		hwWlanApTunnelNum OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION 
+				"The number of CPE tunnel allowed to associate with an AP."
+			::= { hwWlanApTrapObjects 80 }
+		--1.3.6.1.4.1.2011.6.139.13.1.2.81
+		hwWlanAcCfgCountryCode OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION 
+				"AC config country code."
+			::= { hwWlanApTrapObjects 81 }
+
 		--1.3.6.1.4.1.2011.6.139.13.2
 		hwWlanApTypeObjects OBJECT IDENTIFIER ::= { hwWlanAp 2 }
 
@@ -3594,7 +3858,9 @@
 				af(1),
 				at(2),
 				bt(3),
-				invalid(4)
+				invalid(4),
+				bt60(5),
+				bt90(6)
 				}
 			MAX-ACCESS read-only
 			STATUS current
@@ -3609,7 +3875,9 @@
 				af(1),
 				at(2),
 				bt(3),
-				invalid(4)
+				invalid(4),
+				bt60(5),
+				bt90(6)
 				}
 			MAX-ACCESS read-only
 			STATUS current
@@ -3638,8 +3906,8 @@
 		hwWlanAPPowerSupplyState OBJECT-TYPE
 			SYNTAX INTEGER
 				{
-				full(1),
-				disabled(2),
+				normal(1),
+				insufficient(2),
 				limited(3),
                 invalid(4)
 				}
@@ -3783,6 +4051,9 @@
 				{
 				down(1) ,
 				up(2) ,
+				adminshutdown(3) ,
+				stpshutdown(4) ,
+				block(5) ,
 				unknown(-1)
 				}
 			MAX-ACCESS read-only
@@ -4356,7 +4627,7 @@
 			MAX-ACCESS not-accessible
 			STATUS current
 			DESCRIPTION 
-				"This object indicates the MAC address of the STA who fails to go online."
+				"This object indicates the MAC address of the AP who fails to go online."
 			::= { hwWlanApOnlineFailEntry 1 }
 
 		 --1.3.6.1.4.1.2011.6.139.13.3.8.1.2
@@ -4365,7 +4636,7 @@
 			MAX-ACCESS read-only
 			STATUS current
 			DESCRIPTION 
-				"This object indicates the latest time when the STA fails to go online."
+				"This object indicates the latest time when the AP fails to go online."
 			::= { hwWlanApOnlineFailEntry 2 }
 
 		 --1.3.6.1.4.1.2011.6.139.13.3.8.1.3
@@ -4374,7 +4645,7 @@
 			MAX-ACCESS read-only
 			STATUS current
 			DESCRIPTION 
-				"This object indicates the reason for the latest STA online failure."
+				"This object indicates the reason for the latest AP online failure."
 			::= { hwWlanApOnlineFailEntry 3 }
 
 		 --1.3.6.1.4.1.2011.6.139.13.3.8.1.4
@@ -4383,7 +4654,7 @@
 			MAX-ACCESS read-write
 			STATUS current
 			DESCRIPTION 
-				"This object indicates that online failure records of STAs are deleted based on MAC addresses."
+				"This object indicates that online failure records of APs are deleted based on MAC addresses."
 			::= { hwWlanApOnlineFailEntry 4 }
 		
 		-- 1.3.6.1.4.1.2011.6.139.13.3.8.1.5
@@ -4690,6 +4961,10 @@
 				hwWlanIDIndexedApZoneName
 					OCTET STRING,
 				hwWlanIDIndexedApDataLinkState
+					INTEGER,
+				hwWlanIDIndexedApRtuStatus
+					INTEGER,
+				hwWlanIDIndexedApRadioMode
 					INTEGER
 			 }
 		-- 1.3.6.1.4.1.2011.6.139.13.3.10.1.1
@@ -5359,7 +5634,9 @@
 				af(1),
 				at(2),
 				bt(3),
-				invalid(4)
+				invalid(4),
+				bt60(5),
+				bt90(6)
 				}
 			MAX-ACCESS read-only
 			STATUS current
@@ -5374,7 +5651,9 @@
 				af(1),
 				at(2),
 				bt(3),
-				invalid(4)
+				invalid(4),
+				bt60(5),
+				bt90(6)
 				}
 			MAX-ACCESS read-only
 			STATUS current
@@ -5581,7 +5860,44 @@
 			STATUS current
 			DESCRIPTION
 				"This object indicates the state of an AP data link."
-			::= { hwWlanIDIndexedApEntry 99 }	
+			::= { hwWlanIDIndexedApEntry 99 }
+		
+		-- 1.3.6.1.4.1.2011.6.139.13.3.10.1.100
+		hwWlanIDIndexedApRtuStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				downloading(1),
+				active(2),
+				notActive(3),
+				invalidLicense(4),
+				flashMemoryNotEnough(5),
+				notSupport(6),
+				noLicenseOnAP(7),
+				noLicenseOnAC(8),
+				invalidStatus(255)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"This object indicates the AP RTU status."
+			::= { hwWlanIDIndexedApEntry 100 }
+		
+		-- 1.3.6.1.4.1.2011.6.139.13.3.10.1.101
+		hwWlanIDIndexedApRadioMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				twoRadioStandard(1),
+				twoRadio5gEnhanced(2),
+				twoRadio2gEnhanced(3),
+				threeRadio(4),
+				twoRadioIndependentScan(5),
+				notSupport(255)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"This object indicates the actual radio switch-mode of AP."
+			::= { hwWlanIDIndexedApEntry 101 }
 
 		-- 1.3.6.1.4.1.2011.6.139.13.3.11
 		hwWlanApOnlineFailReasonTable OBJECT-TYPE
@@ -5744,7 +6060,7 @@
 			hwWlanCrcPortID, hwWlanApArpAttackDropNum, hwWlanApFaultID, hwWlanApIfIndex, hwWlanApFaultInfo, 
 			hwWlanApSoftWareVersion, hwRadioUploadRemoteCaptureResult, hwWlanApRadioID, hwWlanApCpuOverloadDescInfo, hwWlanApOpticalTxPower, hwWlanSlotNum,
 			hwApPoePdPriority, hwApPoePortPriority, hwApPoeCurConsumPower, hwApPoeConsumPowerThreshold, hwApFanIndex, hwApEntityPhysicalName, hwApStorageIndex, hwApStorageName,
-			hwWlanApOpticalFaultID, hwWlanBLEMacAddr, hwPowerOffReason }
+			hwWlanApOpticalFaultID, hwWlanBLEMacAddr, hwPowerOffReason, hwWlanAcCfgCountryCode }
 			STATUS current
 			DESCRIPTION 
 				"Description."
@@ -5799,36 +6115,3 @@
 --
 -- HUAWEI-WLAN-AP-MIB.mib
 --
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

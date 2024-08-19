@@ -1,0 +1,105 @@
+program sncMonsvrstatus
+
+option +r;
+option -c;
+
+%{
+#include	<stdio.h>
+#include	<limits.h>
+
+#define		CAGATEWAY_SERVER_FAULT		1
+#define		CHANNEL_SERVER_FAULT		2
+#define		DATA_SERVER_FAULT			4
+#define		BACKUP_SERVER_FAULT			8
+#define		WEB_SERVER_FAULT			16
+#define		MCR_TEMP_WARNING			32
+#define		COMP_TEMP_WARNING			64
+#define		MDSPLUS_SERVER_FAULT		128
+#define		CAGATEWAY2_SERVER_FAULT		256
+
+	void print_binary ( unsigned int u )
+	{
+		unsigned int c = ~0u - ( ~0u >> 1 );
+
+		while ( c != 0 )
+		{
+			if ( ( u & c ) != 0 ) printf ("1");
+			else printf ("0");
+			c = c >> 1;
+		};
+		printf ("\n");
+	};
+
+}%
+
+
+int			server_fault;
+assign		server_fault	to	"ICS_PINGCHECK";
+monitor		server_fault;
+
+int			server_status;
+%%/*assign		server_status	to "CCS_EIP_INTL_SERVER";*/
+assign		server_status	to "ICS_SVRCHECK";
+
+evflag		ef_svr_fault;
+sync		server_fault	ef_svr_fault;
+
+ss SVR_Fault
+{
+	state init
+	{
+		when(TRUE)
+		{
+			efClear(ef_svr_fault);
+		}state changevalue
+	}
+	state normal
+	{
+		when(efTestAndClear(ef_svr_fault))
+		{
+			print_binary (server_status);
+		}state normal
+	}
+	state changevalue
+	{
+		when(efTestAndClear(ef_svr_fault) && server_fault!=0)
+		{
+			pvGet(server_status);
+			pvGet(server_fault);
+			%%if((pVar->server_fault&CAGATEWAY_SERVER_FAULT) == 0)
+				server_status &= ~CAGATEWAY_SERVER_FAULT;
+			%%else if((pVar->server_fault&CAGATEWAY_SERVER_FAULT) == 1)
+				server_status |= CAGATEWAY_SERVER_FAULT;
+			%%else if((pVar->server_fault&CHANNEL_SERVER_FAULT) == 0)
+				server_status &= ~CHANNEL_SERVER_FAULT;
+			%%else if((pVar->server_fault&CHANNEL_SERVER_FAULT) == 1)
+				server_status |= CHANNEL_SERVER_FAULT;
+			%%else if((pVar->server_fault&DATA_SERVER_FAULT) == 0)
+				server_status &= ~DATA_SERVER_FAULT;
+			%%else if((pVar->server_fault&DATA_SERVER_FAULT) == 1)
+				server_status |= DATA_SERVER_FAULT;
+			%%else if((pVar->server_fault&BACKUP_SERVER_FAULT) == 0)
+				server_status &= ~BACKUP_SERVER_FAULT;
+			%%else if((pVar->server_fault&BACKUP_SERVER_FAULT) == 1)
+				server_status |= BACKUP_SERVER_FAULT;
+			%%else if((pVar->server_fault&WEB_SERVER_FAULT) == 0)
+				server_status &= ~WEB_SERVER_FAULT;
+			%%else if((pVar->server_fault&WEB_SERVER_FAULT) == 1)
+				server_status |= WEB_SERVER_FAULT;
+			%%else if((pVar->server_fault&MDSPLUS_SERVER_FAULT) == 0)
+				server_status &= ~MDSPLUS_SERVER_FAULT;
+			%%else if((pVar->server_fault&MDSPLUS_SERVER_FAULT) == 1)
+				server_status |= MDSPLUS_SERVER_FAULT;
+			%%else if((pVar->server_fault&CAGATEWAY2_SERVER_FAULT) == 0)
+				printf("SERVER Value 1\n");
+				%%/*server_status &= ~CAGATEWAY2_SERVER_FAULT;*/
+			%%else if((pVar->server_fault&CAGATEWAY2_SERVER_FAULT) == 1)
+				printf("SERVER Value 2\n");
+				%%/*server_status |= CAGATEWAY2_SERVER_FAULT;*/
+
+			print_binary (server_fault);
+			print_binary (server_status);
+			pvPut(server_status);
+		}state normal
+	}
+}

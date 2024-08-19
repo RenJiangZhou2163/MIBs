@@ -1,9 +1,9 @@
 -- =================================================================
--- Copyright (C) 2020 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- Copyright (C) 2021 by  HUAWEI TECHNOLOGIES. All rights reserved.
 --
 -- DESCRIPTION:  HUAWEI-AAA-MIB
 -- Reference:  
--- Version: V4.45
+-- Version: V5.00
 -- History:
 --         v3.04
 --         modified by huangjun 2009-12-08
@@ -132,6 +132,18 @@
 --         modified by w00466301 2020-01-17
 --         modified by z00385571 2020-03-06
 --         modified by w00539529 2020-03-13
+--         modified by w00539529 2020-04-30
+--         modified by cwx777841 2020-08-08
+--         modified by w00416141 2020-09-29
+--         modified by l00566851 2020-11-26
+--         modified by xwx926043 2021-01-04
+--         modified by w00416141 2021-02-04
+--         modified by w00416141 2021-03-03
+--         modified by z00586255 2021-04-14
+--         modified by xwx926043 2021-04-16
+--         modified by z00586255 2021-04-19
+--         modified by z30004099 2021-07-22
+--         modified by z00346464 2021-09-03
 -- =================================================================
 
     HUAWEI-AAA-MIB DEFINITIONS ::= BEGIN
@@ -150,7 +162,7 @@
                 FROM IPV6-TC;
 
         hwAaa MODULE-IDENTITY 
-            LAST-UPDATED "202003131616Z"
+            LAST-UPDATED "202109031700Z"
             ORGANIZATION "Huawei Technologies Co.,Ltd."
             CONTACT-INFO 
                 "Huawei Industrial Base
@@ -159,6 +171,82 @@
                  People's Republic of China
                  Website: http://www.huawei.com
                  Email: support@huawei.com"
+
+             DESCRIPTION
+             "Modify hwDomainAcctRspFailuresNum,hwDomainAcctRequestsRcvNum,hwDomainAcctRspSuccessNum,hwDomainAuthenAcceptsNum,hwDomainAuthenRejectsNum,hwDomainAuthenRequestsRcvNum."
+             REVISION    "202109031700Z"
+
+             DESCRIPTION
+             "Add hwPassChangeOfflineEnable"
+             REVISION    "202107111700Z"
+
+             DESCRIPTION
+             "Modify the datatype of hwAccessIdleCutTime, hwAccessTimeLimit and hwAAAAccessIdleCutTime."
+             REVISION    "202106241521Z"
+
+             DESCRIPTION
+             "Rollback the modification of enum node."
+             REVISION    "202104192006Z"
+
+             DESCRIPTION
+             "Modify the description of hwAuthorCmdLevel, hwAuthorCmdMode and hwAuthorCmdRowStatus."
+             REVISION    "202104161015Z"
+
+             DESCRIPTION
+             "Modify the value of enum type"
+             REVISION    "202104141143Z"
+
+             DESCRIPTION
+             "Modify the description of hwPevlanStatTable"
+             REVISION    "202103031222Z"
+
+             DESCRIPTION
+             "Add mib table hwPevlanStatTable"
+             REVISION    "202102042012Z"
+
+             DESCRIPTION
+             "Change the unit of hwAccessEntry and hwAAAAccessEntry from kbps to kbit/s."
+             REVISION    "202101040935Z"
+
+            DESCRIPTION
+             "Modify the description of hwSlotConnectNumMaxOnlineNum"
+             REVISION    "202011261700Z"
+
+            DESCRIPTION
+             "Modify hwCachetoFTPFail, hwHDtoFTPFail"
+             REVISION    "202011131700Z"
+
+             DESCRIPTION
+             "Modify the max value of hwSlotConnectNumSlot, hwSlotCardConnectNumSlot and hwSlotAccessUserStatSlot from 199999 to 2147483647"
+             REVISION    "202009291725Z"
+
+             DESCRIPTION
+             "Add hwAcctIpSeparate"
+             REVISION    "202009111700Z"
+
+             DESCRIPTION
+             "Modify hwAAADomainIPV6PoolPosition, hwAAADomainIPPoolPosition"
+             REVISION    "202008221700Z"
+
+             DESCRIPTION
+             "Modify hwIPv6PoolLowerLimitWarningThreshold,hwPoolLowerLimitWarningThreshold"
+             REVISION    "202008080930Z"
+
+             DESCRIPTION
+             "Modify hwAAADomainIPV6PoolPosition"
+             REVISION    "202007161100Z"
+
+             DESCRIPTION
+             "Modify hwAAAAccessTimeLimit"
+             REVISION    "202007101700Z"
+            
+             DESCRIPTION
+             "Modify hwAAADomainIPV6PoolTable, hwAAADomainIPV6PoolEntry, hwAAADomainIPV6PoolName, hwAAADomainIPV6PoolIndex, hwAAADomainIPV6PoolPosition"
+             REVISION    "202007031200Z"
+
+             DESCRIPTION
+             "Modify hwServiceSchemeIdleCutTime, hwServiceSchemeIdleCutFlow"
+             REVISION    "202003131616Z"
 
              DESCRIPTION
              "add hwServerNoRespAcct, hwServerNoRespAuthor"
@@ -1055,7 +1143,9 @@
                 hwAcctRowStatus
                     RowStatus,
                 hwAcctRealTimeIntervalUnit
-                    INTEGER    
+                    INTEGER,
+                hwAcctIpSeparate
+                    INTEGER
              }
 
         hwAcctSchemeName OBJECT-TYPE
@@ -1130,7 +1220,21 @@
             STATUS current
             DESCRIPTION
                "The value of this object indicates the unit for real time accounting." 
-            ::= {hwAcctSchemeEntry 7}   
+            ::= {hwAcctSchemeEntry 7} 
+  
+        hwAcctIpSeparate OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                    false(0),
+                    true(1)
+                }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The mode of carrying IP in accounting packets.
+                 false(0): all ip,
+                 true(1): single ip. default is 0."
+            ::= { hwAcctSchemeEntry 8 } 
 
         hwDomainTable OBJECT-TYPE
             SYNTAX SEQUENCE OF HwDomainEntry
@@ -2351,17 +2455,17 @@
                     hwDomainPPPoENum
                         Integer32,
                     hwDomainAuthenRequestsRcvNum     
-                        Integer32,
+                        Unsigned32,
                     hwDomainAuthenAcceptsNum     
-                        Integer32,
+                        Unsigned32,
                     hwDomainAuthenRejectsNum 
-                        Integer32,
+                        Unsigned32,
                     hwDomainAcctRequestsRcvNum 
-                        Integer32,
+                        Unsigned32,
                     hwDomainAcctRspSuccessNum 
-                        Integer32,
+                        Unsigned32,
                     hwDomainAcctRspFailuresNum 
-                        Integer32,
+                        Unsigned32,
                     hwDomainIPv6AddressTotalNum
                         Integer32,
                     hwDomainIPv6AddressUsedNum     
@@ -2558,7 +2662,7 @@
                 ::= { hwDomainStatEntry 14 }   
                 
             hwDomainAuthenRequestsRcvNum OBJECT-TYPE
-                SYNTAX Integer32
+                SYNTAX Unsigned32
                 MAX-ACCESS read-only
                 STATUS current
                 DESCRIPTION
@@ -2567,7 +2671,7 @@
                 ::= { hwDomainStatEntry 15 }      
                         
             hwDomainAuthenAcceptsNum OBJECT-TYPE
-                SYNTAX Integer32 
+                SYNTAX Unsigned32
                 MAX-ACCESS read-only
                 STATUS current
                 DESCRIPTION
@@ -2576,7 +2680,7 @@
                 ::= { hwDomainStatEntry 16 }       
                         
             hwDomainAuthenRejectsNum OBJECT-TYPE
-                SYNTAX Integer32 
+                SYNTAX Unsigned32
                 MAX-ACCESS read-only
                 STATUS current
                 DESCRIPTION
@@ -2585,7 +2689,7 @@
                 ::= { hwDomainStatEntry 17 }    
             
             hwDomainAcctRequestsRcvNum OBJECT-TYPE
-                SYNTAX Integer32 
+                SYNTAX Unsigned32
                 MAX-ACCESS read-only
                 STATUS current
                 DESCRIPTION
@@ -2594,7 +2698,7 @@
                 ::= { hwDomainStatEntry 18 }    
                         
             hwDomainAcctRspSuccessNum OBJECT-TYPE
-                SYNTAX Integer32 
+                SYNTAX Unsigned32
                 MAX-ACCESS read-only
                 STATUS current
                 DESCRIPTION
@@ -2603,7 +2707,7 @@
                 ::= { hwDomainStatEntry 19 } 
                                     
             hwDomainAcctRspFailuresNum OBJECT-TYPE
-                SYNTAX Integer32 
+                SYNTAX Unsigned32 
                 MAX-ACCESS read-only
                 STATUS current
                 DESCRIPTION
@@ -4007,6 +4111,16 @@
                 "
             ::= { hwAAASettingEntry 65 }
 
+     hwPassChangeOfflineEnable OBJECT-TYPE
+            SYNTAX Integer32 (0..1)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "
+                 The administrator account change password and log out. 
+                "
+            ::= { hwAAASettingEntry 66 }
+
         hwAAAStat OBJECT IDENTIFIER ::= { hwAAAMibObjects 14 }
 
         hwAAAStatEntry OBJECT IDENTIFIER ::= { hwAAAStat 1 }
@@ -4381,11 +4495,11 @@
                 hwAccessIfIdleCut
                     TruthValue,
                 hwAccessIdleCutTime
-                    Integer32,
+                    Unsigned32,
                 hwAccessIdleCutFlow
                     Integer32,
                 hwAccessTimeLimit
-                    Integer32,
+                    Unsigned32,
                 hwAccessTotalFlow64Limit
                     Counter64,
                 hwAccessStartTime
@@ -4654,7 +4768,7 @@
             ::= { hwAccessEntry 18 }
 
         hwAccessIdleCutTime OBJECT-TYPE
-            SYNTAX Integer32
+            SYNTAX Unsigned32
             MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
@@ -4672,7 +4786,7 @@
             ::= { hwAccessEntry 20 }
 
         hwAccessTimeLimit OBJECT-TYPE
-            SYNTAX Integer32
+            SYNTAX Unsigned32
             MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
@@ -4756,7 +4870,7 @@
             MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
-                "This object indicates the average upstream traffic rate, in kbps.
+                "This object indicates the average upstream traffic rate, in kbit/s.
 "
             ::= { hwAccessEntry 45 }
 
@@ -4765,7 +4879,7 @@
             MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
-                "This object indicates the peak upstream traffic rate, in kbps.
+                "This object indicates the peak upstream traffic rate, in kbit/s.
 "
             ::= { hwAccessEntry 46 }
 
@@ -4793,7 +4907,7 @@
             MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
-                "This object indicates the average downstream traffic rate, in kbps.
+                "This object indicates the average downstream traffic rate, in kbit/s.
 "
             ::= { hwAccessEntry 49 }
 
@@ -4802,7 +4916,7 @@
             MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
-                "This object indicates the peak downstream traffic rate, in kbps.
+                "This object indicates the peak downstream traffic rate, in kbit/s.
 "
             ::= { hwAccessEntry 50 }
 
@@ -7774,7 +7888,6 @@ This object indicates the clear alarm when the number of users on the board fall
                 "
             ::= { hwLAMTraps 3 }
         hwCachetoFTPFail NOTIFICATION-TYPE
-            OBJECTS { hwHdFreeamount,hwHdWarningThreshold }
             STATUS current
             DESCRIPTION
                 "
@@ -7787,7 +7900,6 @@ This object indicates the clear alarm when the number of users on the board fall
                 "
             ::= { hwLAMTraps 4 }
      hwHDtoFTPFail NOTIFICATION-TYPE
-            OBJECTS { hwHdFreeamount,hwHdWarningThreshold }
             STATUS current
             DESCRIPTION
                 "
@@ -8372,7 +8484,7 @@ This object indicates the clear alarm when the number of users on the board fall
                         }
 
                     hwSlotConnectNumSlot OBJECT-TYPE
-                        SYNTAX Integer32 (0..199999)
+                        SYNTAX Integer32 (0..2147483647)
                         MAX-ACCESS read-only
                         STATUS current
                         DESCRIPTION
@@ -8395,7 +8507,7 @@ This object indicates the clear alarm when the number of users on the board fall
                         MAX-ACCESS read-only
                         STATUS current
                         DESCRIPTION
-                            "This object indicates the maximum number of users who go online from the board after the device is started.
+                            "This object indicates the maximum number of users who go online (including users who are going online and users who are going offline) from the board after the device is started.
 "
                         ::= { hwSlotConnectNumEntry 3 }   
                     hwSlotConnectNumMaxOnlineAcctReadyNum OBJECT-TYPE
@@ -8499,7 +8611,7 @@ This object indicates the clear alarm when the number of users on the board fall
                         }
 
                     hwSlotCardConnectNumSlot OBJECT-TYPE
-                        SYNTAX Integer32 (0..199999)
+                        SYNTAX Integer32 (0..2147483647)
                         MAX-ACCESS read-only
                         STATUS current
                         DESCRIPTION
@@ -8959,7 +9071,7 @@ This object indicates the clear alarm when the number of users on the board fall
                             hwServiceSchemeIdleCutTime
                                  Integer32,
                             hwServiceSchemeIdleCutFlow  
-                                 Integer32, 
+                                 Unsigned32, 
                             hwServiceSchemeDnsFirst
                                  IpAddress, 
                             hwServiceSchemeDnsSecond
@@ -9016,7 +9128,7 @@ This object indicates the clear alarm when the number of users on the board fall
                        ::= { hwServiceSchemeEntry 12 }
     
                    hwServiceSchemeIdleCutTime OBJECT-TYPE                      
-                      SYNTAX Integer32 (0..120)                          
+                      SYNTAX Integer32 (0..1440)                          
                       MAX-ACCESS read-write                           
                       STATUS current                           
                       DESCRIPTION                           
@@ -9024,12 +9136,12 @@ This object indicates the clear alarm when the number of users on the board fall
                       ::= { hwServiceSchemeEntry 13 }                           
                                                 
                   hwServiceSchemeIdleCutFlow OBJECT-TYPE                      
-                     SYNTAX Integer32 (0..768000)                       
+                     SYNTAX Unsigned32(0..4294967295)                      
                      MAX-ACCESS read-write                           
                      STATUS current                           
                      DESCRIPTION                           
-                     "The flow of idle interval, in Kbytes/min."        
-                     ::= { hwServiceSchemeEntry 14 }  
+                     "The flow of idle interval, in Kbytes."        
+                     ::= { hwServiceSchemeEntry 14 }
                    
                   hwServiceSchemeDnsFirst OBJECT-TYPE
                      SYNTAX IpAddress
@@ -9439,7 +9551,7 @@ This object indicates the clear alarm when the number of users on the board fall
              }
                       
         hwSlotAccessUserStatSlot OBJECT-TYPE
-            SYNTAX Integer32 (0..199999)
+            SYNTAX Integer32 (0..2147483647)
             MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
@@ -9590,7 +9702,7 @@ This object indicates the clear alarm when the number of users on the board fall
 
         hwPoolLowerLimitWarningThreshold OBJECT-TYPE
             SYNTAX Integer32(0..99|255)
-            MAX-ACCESS read-write
+            MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
                 "The IP lower limit warning threshold."
@@ -9599,7 +9711,7 @@ This object indicates the clear alarm when the number of users on the board fall
      
         hwIPv6PoolLowerLimitWarningThreshold OBJECT-TYPE
             SYNTAX Integer32(0..99|255)
-            MAX-ACCESS read-write
+            MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
                 "The IPv6 lower limit warning threshold."
@@ -10877,7 +10989,7 @@ This object indicates the clear alarm when the number of users on the board fall
             MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
-                "authorization cmd level"
+                "authorization command level"
             ::= { hwAuthorCmdEntry 1 }
                               
         hwAuthorCmdMode OBJECT-TYPE
@@ -10891,7 +11003,7 @@ This object indicates the clear alarm when the number of users on the board fall
             MAX-ACCESS read-create
             STATUS current
             DESCRIPTION
-                "authorization cmd method
+                "authorization command method
                 "
             ::= { hwAuthorCmdEntry 2 }
             
@@ -10900,7 +11012,7 @@ This object indicates the clear alarm when the number of users on the board fall
             MAX-ACCESS read-create
             STATUS current
             DESCRIPTION
-                "The authorization cmd method status, only supporting add or delete."
+                "The authorization command method status, only supporting add or delete."
             ::= { hwAuthorCmdEntry 3 }      
             
             
@@ -11117,7 +11229,7 @@ This object indicates the clear alarm when the number of users on the board fall
                  ::= { hwAAADomainIPPoolEntry 3 }                 
        
        hwAAADomainIPPoolPosition OBJECT-TYPE
-                 SYNTAX Integer32(1..1024)
+                 SYNTAX Integer32(1..4096)
                  MAX-ACCESS read-write
                  STATUS current
                  DESCRIPTION
@@ -13604,7 +13716,7 @@ This object indicates the clear alarm when the number of users on the board fall
             MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
-                "This object indicates the average upstream traffic rate, in kbps.
+                "This object indicates the average upstream traffic rate, in kbit/s.
 "
             ::= { hwAAAPwifAccessEntry 45 }
 
@@ -14554,11 +14666,11 @@ This object indicates the clear alarm when the number of users on the board fall
                 hwAAAAccessIfIdleCut
                     TruthValue,
                 hwAAAAccessIdleCutTime
-                    Integer32,
+                    Unsigned32,
                 hwAAAAccessIdleCutFlow
                     Integer32,
                 hwAAAAccessTimeLimit
-                    Integer32,
+                    Unsigned32,
                 hwAAAAccessTotalFlow64LimitHigh
                     Unsigned32,
                 hwAAAAccessTotalFlow64LimitLow
@@ -14805,7 +14917,7 @@ This object indicates the clear alarm when the number of users on the board fall
             ::= { hwAAAAccessEntry 18 }
 
         hwAAAAccessIdleCutTime OBJECT-TYPE
-            SYNTAX Integer32
+            SYNTAX Unsigned32
             MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
@@ -14821,7 +14933,7 @@ This object indicates the clear alarm when the number of users on the board fall
             ::= { hwAAAAccessEntry 20 }
 
         hwAAAAccessTimeLimit OBJECT-TYPE
-            SYNTAX Integer32
+            SYNTAX Unsigned32
             MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
@@ -14906,7 +15018,7 @@ This object indicates the clear alarm when the number of users on the board fall
             MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
-                "up committed information rate(Kbps)"
+                "up committed information rate(kbit/s)"
             ::= { hwAAAAccessEntry 45 }
 
         hwAAAAccessCARUpPIR OBJECT-TYPE
@@ -14914,7 +15026,7 @@ This object indicates the clear alarm when the number of users on the board fall
             MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
-                "up peak information rate(Kbps)"
+                "up peak information rate(kbit/s)"
             ::= { hwAAAAccessEntry 46 }
 
          hwAAAAccessCARUpCBS OBJECT-TYPE
@@ -14939,7 +15051,7 @@ This object indicates the clear alarm when the number of users on the board fall
             MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
-                "down committed information rate(Kbps)"
+                "down committed information rate(kbit/s)"
             ::= { hwAAAAccessEntry 49 }
 
         hwAAAAccessCARDnPIR OBJECT-TYPE
@@ -14947,7 +15059,7 @@ This object indicates the clear alarm when the number of users on the board fall
             MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
-                "down peak information rate(Kbps)"
+                "down peak information rate(kbit/s)"
             ::= { hwAAAAccessEntry 50 }
 
         hwAAAAccessCARDnCBS OBJECT-TYPE
@@ -15463,7 +15575,165 @@ This object indicates the clear alarm when the number of users on the board fall
                 "Total number of dual-stack access users in a user type on the UP."
             ::= { hwAAACuUserTypeStatEntry 5 }
 
-   --======                          
+        hwAAADomainIPV6PoolTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwAAADomainIPV6PoolEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The IPV6 pool of domain table."
+            ::= { hwAAAMibObjects 83 }
+
+        hwAAADomainIPV6PoolEntry OBJECT-TYPE
+            SYNTAX HwAAADomainIPV6PoolEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The IPV6 pool of domain entry."
+            INDEX { hwDomainName,hwAAADomainIPV6PoolName }
+            ::= { hwAAADomainIPV6PoolTable 1 }
+
+       HwAAADomainIPV6PoolEntry ::=
+            SEQUENCE {
+                hwAAADomainIPV6PoolName OCTET STRING,
+                hwAAADomainIPV6PoolIndex Unsigned32 ,
+                hwAAADomainIPV6PoolConstantIndex Unsigned32 ,
+                hwAAADomainIPV6PoolPosition Unsigned32 
+            }
+
+        hwAAADomainIPV6PoolName OBJECT-TYPE
+            SYNTAX OCTET STRING(SIZE (1..32))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The IPV6 pool name."
+            ::= { hwAAADomainIPV6PoolEntry 1 }
+
+        hwAAADomainIPV6PoolIndex OBJECT-TYPE
+            SYNTAX Unsigned32 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The IPV6 pool index."
+            ::= { hwAAADomainIPV6PoolEntry 2 }
+
+        hwAAADomainIPV6PoolConstantIndex OBJECT-TYPE
+            SYNTAX Unsigned32 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The IPV6 pool constant index."
+            ::= { hwAAADomainIPV6PoolEntry 3 }
+
+        hwAAADomainIPV6PoolPosition OBJECT-TYPE
+            SYNTAX Unsigned32(1..4096)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The IPV6 pool position in domain."
+            ::= { hwAAADomainIPV6PoolEntry 4 }
+
+          hwPevlanStatTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwPevlanStatEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The BRAS user access statistics with pevlan specified."
+            ::= { hwAAAMibObjects 84 }
+
+        hwPevlanStatEntry OBJECT-TYPE
+            SYNTAX HwPevlanStatEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The BRAS user access statistics with pevlan specified."
+            INDEX { hwPevlanId }
+            ::= { hwPevlanStatTable 1 }
+
+       HwPevlanStatEntry ::=
+            SEQUENCE {
+                hwPevlanId Unsigned32,
+                hwNormalUserNum Unsigned32 ,
+                hwRuiLocalUserNum Unsigned32 ,
+                hwRuiRemoteUserNum Unsigned32 ,
+                hwRadiusAuthenUserNum Unsigned32,
+                hwRadiusProxyAuthenUserNum Unsigned32 ,
+                hwNoAuthenUserNum Unsigned32 ,
+                hwLocalAuthenUserNum Unsigned32 ,
+                hwTotalUserNum Unsigned32 
+            }
+
+        hwPevlanId OBJECT-TYPE
+            SYNTAX Unsigned32 (0..4094)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The pevlan Id. The value 0 indicates that the BRAS user access packet does not carry the VLAN information."
+            ::= { hwPevlanStatEntry 1 }
+
+        hwNormalUserNum OBJECT-TYPE
+            SYNTAX Unsigned32 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Specifies the number of normal BRAS users with pevlan specified."
+            ::= { hwPevlanStatEntry 2 }
+
+        hwRuiLocalUserNum OBJECT-TYPE
+            SYNTAX Unsigned32 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Specifies the number of rui local BRAS users with pevlan specified."
+            ::= { hwPevlanStatEntry 3 }
+
+        hwRuiRemoteUserNum OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Specifies the number of rui remote BRAS users with pevlan specified."
+            ::= { hwPevlanStatEntry 4 }
+
+        hwRadiusAuthenUserNum OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Specifies the number of RADIUS authenticated BRAS users with pevlan specified."
+            ::= { hwPevlanStatEntry 5 }
+
+        hwRadiusProxyAuthenUserNum OBJECT-TYPE
+            SYNTAX Unsigned32 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Specifies the number of BRAS users passing RADIUS proxy authentication with pevlan specified. "
+            ::= { hwPevlanStatEntry 6 }
+
+        hwNoAuthenUserNum OBJECT-TYPE
+            SYNTAX Unsigned32 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Specifies the number of unauthenticated BRAS users with pevlan specified."
+            ::= { hwPevlanStatEntry 7 }
+
+        hwLocalAuthenUserNum OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Specifies the number of BRAS users passing local authentication with pevlan specified."
+            ::= { hwPevlanStatEntry 8 }
+
+        hwTotalUserNum OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Specifies the number of total BRAS users with pevlan specified."
+            ::= { hwPevlanStatEntry 9 }
+ --======                          
            
             --  ============== conformance information ==============
         hwAaaConformance OBJECT IDENTIFIER ::= { hwAaa 5 }
@@ -15623,7 +15893,7 @@ This object indicates the clear alarm when the number of users on the board fall
                       hwGlobalAuthEventPreAuthUserGroup,hwTriggerLoose,hwOfflineSpeedNumber, hwAuthorModifyMode, 
                       hwLocalRetryInterval, hwLocalRetryTime, hwLocalBlockTime, hwRemoteRetryInterval, hwRemoteRetryTime, 
                       hwRemoteBlockTime, hwBlockDisable, hwTotalAuthReqNumPortal, hwTotalAuthReqNumMac, hwTotalAuthReqNumDot1x, hwChgPswVertifyFlag, hwLamPswComplexityCheckMethod,
-                      hwRemoteAccessRetryInterval, hwRemoteAccessRetryTime, hwRemoteAccessBlockTime, hwRemoteAdminRetryInterval, hwRemoteAdminRetryTime, hwRemoteAdminBlockTime}
+                      hwRemoteAccessRetryInterval, hwRemoteAccessRetryTime, hwRemoteAccessBlockTime, hwRemoteAdminRetryInterval, hwRemoteAdminRetryTime, hwRemoteAdminBlockTime, hwPassChangeOfflineEnable}
             STATUS current
             DESCRIPTION 
                 "The AAA setting group configuration."
@@ -16081,8 +16351,8 @@ This object indicates the clear alarm when the number of users on the board fall
   		DESCRIPTION
   			"The access users profile." 
   			::= { hwAaaObjectGroups 68 }  
-
-        --  ============== conformance information define end ==============  
+ 
+       --  ============== conformance information define end ==============  
 
     
     END

@@ -1,0 +1,228 @@
+# 
+# XGS-600 Stream protocol file
+#
+# jhlee@ibs.re.kr
+#
+# 
+Terminator = CR;
+ReplyTimeout = 1000;
+ReadTimeout = 300;
+
+sw-rev 
+{
+    out "#\$105";
+    in ">%s";
+    ExtraInput = Ignore;
+}
+
+
+#
+# System Reset 
+# command   Return
+# #aa06     >
+#
+rst 
+{
+    out "#\$106";
+    in ">";
+    ExtraInput = Ignore;
+}
+
+
+
+# #
+# # CNV or AUX calibrate 
+# # command   Return
+# # #aaA1CNV     >
+# # #aaA1AUX
+# calibrateCNV 
+# {
+#     out "#\$1A1CNV";
+#     in ">";
+#     ExtraInput = Ignore;
+# #    @mismatch {
+# #        in ">%s";
+# #    }
+# }
+
+# calibrateAUX 
+# {
+#     out "#\$1A1AUX";
+#     in ">";
+#     ExtraInput = Ignore;
+# #     @mismatch {
+# #         in ">%s";
+# #     }
+# }
+
+
+# setAtmValue
+# {
+#     out "#\$1A3%e";
+#     in  ">";
+#     ExtraInput = Ignore;
+#     @mismatch {
+#         in ">%s";
+#     }
+# }
+
+read-xgs
+{
+    out "#\$101";
+    in ">%(\$2Slot0.VAL)2s"
+    "%(\$2Slot1.VAL)2s"
+    "%(\$2Slot2.VAL)2s"
+    "%(\$2Slot3.VAL)2s"
+    "%(\$2Slot4.VAL)2s"
+    "%(\$2Slot5.VAL)2s";   
+    ExtraInput = Ignore;
+
+}
+
+
+## Pressure Unit
+##
+##
+
+getPresUnit
+{
+    out "#\$113";
+    in  ">%d";
+    ExtraInput = Ignore;
+}
+
+## #0010 > Torr
+## #0011 > mBar
+## #0012 > Pascal
+# 
+# If Set command returns ">", it must be "in" in protocol definition
+# Thursday, June 18 22:20:45 KST 2015, jhlee
+#
+setPresUnit
+{
+    out "#\$1%{10|11|12}";
+    in ">";
+#    ExtraInput = Ignore;
+    @init {out "#\$113"; in ">%d"; }
+}
+
+
+
+## Lockout 
+## >00 : OFF
+## >01 : ON
+getLockout
+{
+    out "#\$122";
+    in  ">%d";
+    ExtraInput = Ignore;
+}
+
+setLockout
+{
+    out "#\$1%{20|21}";
+    in ">";
+    ExtraInput = Ignore;
+}
+
+
+
+#
+# How can I put these ugly pressure reading function
+# in more general way..... 
+# Friday, June 19 19:54:10 KST 2015, jhlee
+#
+
+
+
+readPressHFIG1 
+{
+    out "#\$102UHFIG1";
+    in ">%e";
+    @mismatch {
+        in ">%(\$2)s";
+    }
+}
+
+# If there is no Convection sensor detected,
+# "readpress returns 'OPEN'. 
+# So, we need the mismatch to pass them into string
+# Sunday, June 21 18:45:33 KST 2015, jhlee
+
+readPressCNV1 
+{
+    out "#\$102UCNV1";
+    in ">%e";
+    @mismatch {
+        in ">%(\$2)s";
+    }
+}
+
+
+readPressCNV2 
+{
+    out "#\$102UCNV2";
+    in ">%e";
+    @mismatch {
+        in ">%(\$2)s";
+    }
+}
+
+# If there is no AUX board, 
+# it returns ?FF message.
+# so, we don't need ">". 
+# It must be verified when an AUX board is installed.
+# Monday, June 22 08:55:16 KST 2015, jhlee
+
+readPressAUX1
+{
+    out "#\$102UAUX1";
+    in ">%e";
+    @mismatch {
+        in "%(\$2)s";
+    }
+}
+
+readPressAUX2
+{
+    out "#\$102UAUX2";
+    in ">%e";
+    @mismatch {
+        in "%(\$2)s";
+    }
+}
+
+
+# The below code came from HumanTec's work
+# of the vacuum control system testbed.
+#
+# Just keep it if we need to add additional 
+# functionalities into the protocol file
+#
+# Friday, June 19 19:52:15 KST 2015, jhlee 
+#
+# read_setpoint_st {
+#     out "#\$103";
+#     in ">00%x";
+# }
+
+# set_setpoint {
+#     out "#\$15E\$2%d";
+# }
+
+# read_setpoint {
+#     out "#\$15F%d";
+#     in ">%d";
+# }
+
+# set_setpoint_val {
+#     out "#\$16UHFIG111.000E-2";
+# }
+
+# set_setpoint_delay_on {
+#     out "#\$1C%d%.1f";
+# }
+
+# set_setpoint_delay_off {
+#     out "#\$1D%d%.1f";
+# }

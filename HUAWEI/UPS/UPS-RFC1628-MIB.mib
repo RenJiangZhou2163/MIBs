@@ -1,0 +1,1658 @@
+UPS-RFC-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+       MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+       OBJECT-IDENTITY, Counter32, Gauge32, Integer32
+           FROM SNMPv2-SMI
+       DisplayString, TimeStamp, TimeInterval, TestAndIncr, TextualConvention,
+         AutonomousType
+           FROM SNMPv2-TC
+       MODULE-COMPLIANCE, OBJECT-GROUP
+           FROM SNMPv2-CONF;
+
+org            OBJECT IDENTIFIER ::= { iso 3 }  --  "iso" = 1
+dod            OBJECT IDENTIFIER ::= { org 6 }
+internet       OBJECT IDENTIFIER ::= { dod 1 }
+mgmt           OBJECT IDENTIFIER ::= { internet 2 }
+mib-2          OBJECT IDENTIFIER ::= { mgmt 1 }
+
+   upsMIB MODULE-IDENTITY
+       LAST-UPDATED "9402230000Z"
+       ORGANIZATION "IETF UPS MIB Working Group"
+       CONTACT-INFO
+              "        Jeffrey D. Case
+                Postal: SNMP Research, Incorporated
+                        3001 Kimberlin Heights Road
+                        Knoxville, TN  37920
+                        US
+                   Tel: +1 615 573 1434
+                   Fax: +1 615 573 9197
+
+                E-mail: case@snmp.com"
+       DESCRIPTION
+               "The MIB module to describe Uninterruptible Power
+               Supplies."
+       ::= { mib-2 33 }
+
+   PositiveInteger ::= TEXTUAL-CONVENTION
+       DISPLAY-HINT "d"
+       STATUS       current
+       DESCRIPTION
+               "This data type is a non-zero and non-negative value."
+       SYNTAX       INTEGER (1..2147483647)
+
+   NonNegativeInteger ::= TEXTUAL-CONVENTION
+       DISPLAY-HINT "d"
+       STATUS       current
+       DESCRIPTION
+               "This data type is a non-negative value."
+       SYNTAX       INTEGER (0..2147483647)
+
+   upsObjects            OBJECT IDENTIFIER ::= { upsMIB 1 }
+   
+   --
+   -- The Device Identification group.
+   --      All objects in this group except for upsIdentName and
+   --      upsIdentAttachedDevices are set at device initialization
+   --      and remain static.
+   --
+
+   upsIdent              OBJECT IDENTIFIER ::= { upsObjects 1 }
+
+   upsIdentManufacturer OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..31))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The name of the UPS manufacturer."
+       ::= { upsIdent 1 }
+
+   upsIdentModel OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..63))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The UPS Model designation."
+       ::= { upsIdent 2 }
+
+   upsIdentUPSSoftwareVersion OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..63))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The UPS firmware/software version(s).  This variable
+               may or may not have the same value as
+               upsIdentAgentSoftwareVersion in some implementations."
+       ::= { upsIdent 3 }
+
+   upsIdentAgentSoftwareVersion OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..63))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The UPS agent software version.  This variable may or
+               may not have the same value as
+               upsIdentUPSSoftwareVersion in some implementations."
+       ::= { upsIdent 4 }
+
+   upsIdentName OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..63))
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "A string identifying the UPS.  This object should be
+               set by the administrator."
+       ::= { upsIdent 5 }
+
+   upsIdentAttachedDevices OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..63))
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "A string identifying the devices attached to the
+               output(s) of the UPS.  This object should be set by
+               the administrator."
+       ::= { upsIdent 6 }
+
+
+   --
+   -- Battery Group
+   --
+
+   upsBattery            OBJECT IDENTIFIER ::= { upsObjects 2 }
+
+   upsBatteryStatus OBJECT-TYPE
+       SYNTAX     INTEGER {
+           unknown(1),
+           batteryNormal(2),
+           batteryLow(3),
+           batteryDepleted(4)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This function is not fully supported.A value of batteryLow 
+			   indicates that the battery voltage is low.  A value of  
+			   unknown indicates that the battery is not connecttd. 
+			   The value of  batteryDepleted is not supported."
+       ::= { upsBattery 1 }
+
+   upsSecondsOnBattery OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "seconds"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "If the unit is on battery power, the elapsed time
+               since the UPS last switched to battery power, or the
+               time since the network management subsystem was last
+               restarted, whichever is less.  Zero shall be returned
+               if the unit is not on battery power."
+       ::= { upsBattery 2 }
+
+   upsEstimatedMinutesRemaining OBJECT-TYPE
+       SYNTAX     PositiveInteger
+       UNITS      "minutes"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "An estimate of the time to battery charge depletion
+               under the present load conditions if the utility power
+               is off and remains off, or if it were to be lost and
+               remain off."
+       ::= { upsBattery 3 }
+
+   upsEstimatedChargeRemaining OBJECT-TYPE
+       SYNTAX     INTEGER (0..100)
+       UNITS      "percent"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "An estimate of the battery charge remaining expressed
+               as a percent of full charge."
+       ::= { upsBattery 4 }
+
+   upsBatteryVoltage OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 Volt DC"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the present battery voltage."
+       ::= { upsBattery 5 }
+
+   upsBatteryCurrent OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "0.1 Amp DC"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present battery current."
+       ::= { upsBattery 6 }
+
+   upsBatteryTemperature OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "degrees Centigrade"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The ambient temperature at or near the UPS Battery 
+			   casing.When the battery temperature sensor is not 
+			   connected，the value is invalid."
+       ::= { upsBattery 7 }
+
+
+   --
+   -- Input Group
+   --
+
+   upsInput              OBJECT IDENTIFIER ::= { upsObjects 3 }
+
+   upsInputLineBads OBJECT-TYPE
+       SYNTAX     Counter32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "A count of the number of times the input entered an
+               out-of-tolerance condition as defined by the
+               manufacturer.  This count is incremented by one each
+               time the input transitions from zero out-of-tolerance
+               lines to one or more input lines out-of-tolerance."
+       ::= { upsInput 1 }
+
+
+   upsInputNumLines OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The number of input lines utilized in this device.
+               This variable indicates the number of rows in the
+               input table."
+       ::= { upsInput 2 }
+
+   upsInputTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF UpsInputEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "A list of input table entries.  The number of entries
+               is given by the value of upsInputNumLines."
+       ::= { upsInput 3 }
+
+   upsInputEntry OBJECT-TYPE
+       SYNTAX     UpsInputEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "An entry containing information applicable to a
+               particular input line."
+       INDEX { upsInputLineIndex }
+       ::= { upsInputTable 1 }
+
+   UpsInputEntry ::= SEQUENCE {
+       upsInputLineIndex   PositiveInteger,
+       upsInputFrequency   NonNegativeInteger,
+       upsInputVoltage     NonNegativeInteger,
+       upsInputCurrent     NonNegativeInteger,
+       upsInputTruePower   NonNegativeInteger
+   }
+
+   upsInputLineIndex OBJECT-TYPE
+       SYNTAX     PositiveInteger
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "The input line identifier."
+       ::= { upsInputEntry 1 }
+
+   upsInputFrequency OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 Hertz"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present input frequency."
+       ::= { upsInputEntry 2 }
+
+   upsInputVoltage OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the present input voltage."
+       ::= { upsInputEntry 3 }
+
+   upsInputCurrent OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsInputEntry 4 }
+
+   upsInputTruePower OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "Watts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsInputEntry 5 }
+
+
+   --
+   -- The Output group.
+   --
+
+   upsOutput             OBJECT IDENTIFIER ::= { upsObjects 4 }
+
+   upsOutputSource OBJECT-TYPE
+       SYNTAX     INTEGER {
+           other(1),
+           none(2),
+           normal(3),
+           bypass(4),
+           battery(5),
+           booster(6),
+           reducer(7)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present source of output power.  The enumeration
+               none(2) indicates that there is no source of output
+               power (and therefore no output power), for example,
+               the system has opened the output breaker."
+       ::= { upsOutput 1 }
+
+   upsOutputFrequency OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 Hertz"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present output frequency."
+       ::= { upsOutput 2 }
+
+   upsOutputNumLines OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The number of output lines utilized in this device.
+               This variable indicates the number of rows in the
+               output table."
+       ::= { upsOutput 3 }
+
+   upsOutputTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF UpsOutputEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "A list of output table entries.  The number of
+               entries is given by the value of upsOutputNumLines."
+       ::= { upsOutput 4 }
+
+   upsOutputEntry OBJECT-TYPE
+       SYNTAX     UpsOutputEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "An entry containing information applicable to a
+               particular output line."
+       INDEX { upsOutputLineIndex }
+       ::= { upsOutputTable 1 }
+
+   UpsOutputEntry ::= SEQUENCE {
+       upsOutputLineIndex   PositiveInteger,
+       upsOutputVoltage     NonNegativeInteger,
+       upsOutputCurrent     NonNegativeInteger,
+       upsOutputPower       NonNegativeInteger,
+       upsOutputPercentLoad INTEGER
+   }
+
+   upsOutputLineIndex OBJECT-TYPE
+       SYNTAX     PositiveInteger
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "The output line identifier."
+       ::= { upsOutputEntry 1 }
+
+   upsOutputVoltage OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present output voltage."
+       ::= { upsOutputEntry 2 }
+
+   upsOutputCurrent OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present output current."
+       ::= { upsOutputEntry 3 }
+
+   upsOutputPower OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "Watts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present output true power."
+       ::= { upsOutputEntry 4 }
+
+   upsOutputPercentLoad OBJECT-TYPE
+       SYNTAX     INTEGER (0..200)
+       UNITS      "percent"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The percentage of the UPS power capacity presently
+               being used on this output line, i.e., the greater of
+               the percent load of true power capacity and the
+               percent load of VA."
+       ::= { upsOutputEntry 5 }
+
+
+
+   --
+   -- The Bypass group.
+   --
+
+   upsBypass             OBJECT IDENTIFIER ::= { upsObjects 5 }
+
+   upsBypassFrequency OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 Hertz"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present bypass frequency."
+       ::= { upsBypass 1 }
+
+   upsBypassNumLines OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The number of bypass lines utilized in this device.
+               This entry indicates the number of rows in the bypass
+               table."
+       ::= { upsBypass 2 }
+
+   upsBypassTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF UpsBypassEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "A list of bypass table entries.  The number of
+               entries is given by the value of upsBypassNumLines."
+       ::= { upsBypass 3 }
+
+   upsBypassEntry OBJECT-TYPE
+       SYNTAX     UpsBypassEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "An entry containing information applicable to a
+               particular bypass input."
+       INDEX { upsBypassLineIndex }
+       ::= { upsBypassTable 1 }
+
+   UpsBypassEntry ::= SEQUENCE {
+       upsBypassLineIndex  PositiveInteger,
+       upsBypassVoltage    NonNegativeInteger,
+       upsBypassCurrent    NonNegativeInteger,
+       upsBypassPower      NonNegativeInteger
+   }
+
+   upsBypassLineIndex OBJECT-TYPE
+       SYNTAX     PositiveInteger
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "The bypass line identifier."
+       ::= { upsBypassEntry 1 }
+
+   upsBypassVoltage OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present bypass voltage."
+       ::= { upsBypassEntry 2 }
+
+   upsBypassCurrent OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsBypassEntry 3 }
+
+   upsBypassPower OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "Watts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsBypassEntry 4 }
+
+
+   --
+   -- The Alarm group.
+   --
+
+   upsAlarm              OBJECT IDENTIFIER ::= { upsObjects 6 }
+
+   upsAlarmsPresent OBJECT-TYPE
+       SYNTAX     Gauge32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present number of active alarm conditions."
+       ::= { upsAlarm 1 }
+
+   upsAlarmTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF UpsAlarmEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "A list of alarm table entries.  The table contains
+               zero, one, or many rows at any moment, depending upon
+               the number of alarm conditions in effect.  The table
+               is initially empty at agent startup.  The agent
+               creates a row in the table each time a condition is
+               detected and deletes that row when that condition no
+               longer pertains.  The agent creates the first row with
+               upsAlarmId equal to 1, and increments the value of
+               upsAlarmId each time a new row is created, wrapping to
+               the first free value greater than or equal to 1 when
+               the maximum value of upsAlarmId would otherwise be
+               exceeded.  Consequently, after multiple operations,
+               the table may become sparse, e.g., containing entries
+               for rows 95, 100, 101, and 203 and the entries should
+               not be assumed to be in chronological order because
+               upsAlarmId might have wrapped.
+
+               Alarms are named by an AutonomousType (OBJECT
+               IDENTIFIER), upsAlarmDescr, to allow a single table to
+               reflect well known alarms plus alarms defined by a
+               particular implementation, i.e., as documented in the
+               private enterprise MIB definition for the device.  No
+               two rows will have the same value of upsAlarmDescr,
+               since alarms define conditions.  In order to meet this
+               requirement, care should be taken in the definition of
+               alarm conditions to insure that a system cannot enter
+               the same condition multiple times simultaneously.
+
+               The number of rows in the table at any given time is
+               reflected by the value of upsAlarmsPresent."
+       ::= { upsAlarm 2 }
+
+   upsAlarmEntry OBJECT-TYPE
+       SYNTAX     UpsAlarmEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "An entry containing information applicable to a
+               particular alarm."
+       INDEX { upsAlarmId }
+       ::= { upsAlarmTable 1 }
+
+   UpsAlarmEntry ::= SEQUENCE {
+       upsAlarmId          PositiveInteger,
+       upsAlarmDescr       AutonomousType,
+       upsAlarmTime        TimeStamp
+   }
+
+   upsAlarmId OBJECT-TYPE
+       SYNTAX     PositiveInteger
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "A unique identifier for an alarm condition.  This
+               value must remain constant."
+       ::= { upsAlarmEntry 1 }
+
+   upsAlarmDescr OBJECT-TYPE
+       SYNTAX     AutonomousType
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "A reference to an alarm description object.  The
+               object referenced should not be accessible, but rather
+               be used to provide a unique description of the alarm
+               condition."
+       ::= { upsAlarmEntry 2 }
+
+   upsAlarmTime OBJECT-TYPE
+       SYNTAX     TimeStamp
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The value of sysUpTime when the alarm condition was
+               detected.  If the alarm condition was detected at the
+               time of agent startup and presumably existed before
+               agent startup, the value of upsAlarmTime shall equal
+               0."
+       ::= { upsAlarmEntry 3 }
+
+
+   --
+   -- Well known alarm conditions.
+   --
+
+   upsWellKnownAlarms    OBJECT IDENTIFIER ::= { upsAlarm 3 }
+   upsAlarmBatteryBad OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "A alarm about battery is occurred."
+       ::= { upsWellKnownAlarms  1 }
+
+   upsAlarmOnBattery OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "The UPS is drawing power from the batteries."
+       ::= { upsWellKnownAlarms  2 }
+
+   upsAlarmLowBattery OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "The battery voltage is low."
+       ::= { upsWellKnownAlarms  3 }
+
+
+   upsAlarmDepletedBattery OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "This trap is not supported."
+       ::= { upsWellKnownAlarms  4 }
+
+   upsAlarmTempBad OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "A temperature is out of tolerance."
+       ::= { upsWellKnownAlarms  5 }
+
+   upsAlarmInputBad OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "An input condition is out of tolerance."
+       ::= { upsWellKnownAlarms  6 }
+
+   upsAlarmOutputBad OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "An output condition (other than OutputOverload) is
+               out of tolerance."
+       ::= { upsWellKnownAlarms  7 }
+
+   upsAlarmOutputOverload OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "The output load exceeds the UPS output capacity."
+       ::= { upsWellKnownAlarms  8 }
+
+   upsAlarmOnBypass OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "The Bypass is presently engaged on the UPS."
+       ::= { upsWellKnownAlarms  9 }
+
+   upsAlarmBypassBad OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "The Bypass is out of tolerance."
+       ::= { upsWellKnownAlarms 10 }
+
+   upsAlarmOutputOffAsRequested OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "The UPS has shutdown as requested, i.e., the output
+               is off."
+       ::= { upsWellKnownAlarms 11 }
+
+   upsAlarmUpsOffAsRequested OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "This trap is not supported."
+       ::= { upsWellKnownAlarms 12 }
+
+   upsAlarmChargerFailed OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "An uncorrected problem has been detected within the
+               UPS charger subsystem."
+       ::= { upsWellKnownAlarms 13 }
+
+   upsAlarmUpsOutputOff OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "The output of the UPS is in the off state."
+       ::= { upsWellKnownAlarms 14 }
+
+   upsAlarmUpsSystemOff OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "This trap is not supported."
+       ::= { upsWellKnownAlarms 15 }
+   upsAlarmFanFailure OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "The failure of one or more fans in the UPS has been
+               detected."
+       ::= { upsWellKnownAlarms 16 }
+
+   upsAlarmFuseFailure OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "This trap is not supported."
+       ::= { upsWellKnownAlarms 17 }
+
+   upsAlarmGeneralFault OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "A general fault in the UPS has been detected."
+       ::= { upsWellKnownAlarms 18 }
+
+   upsAlarmDiagnosticTestFailed OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "This trap is not supported."
+       ::= { upsWellKnownAlarms 19 }
+
+   upsAlarmCommunicationsLost OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "This trap is not supported."
+       ::= { upsWellKnownAlarms 20 }
+
+   upsAlarmAwaitingPower OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "This trap is not supported."
+       ::= { upsWellKnownAlarms 21 }
+
+   upsAlarmShutdownPending OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "This trap is not supported."
+       ::= { upsWellKnownAlarms 22 }
+
+   upsAlarmShutdownImminent OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "This trap is not supported."
+       ::= { upsWellKnownAlarms 23 }
+
+   upsAlarmTestInProgress OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "This trap is not supported."
+       ::= { upsWellKnownAlarms 24 }
+
+   upsAlarmParallel OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "A alarm about ups parallel system is occurred."
+       ::= { upsWellKnownAlarms 25 }
+
+
+   --
+   -- The Test Group
+   --
+
+   upsTest               OBJECT IDENTIFIER ::= { upsObjects 7 }
+
+   upsTestId OBJECT-TYPE
+       SYNTAX     OBJECT IDENTIFIER
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsTest 1 }
+
+   upsTestSpinLock OBJECT-TYPE
+       SYNTAX     TestAndIncr
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsTest 2 }
+
+   upsTestResultsSummary OBJECT-TYPE
+       SYNTAX     INTEGER {
+           donePass(1),
+           doneWarning(2),
+           doneError(3),
+           aborted(4),
+           inProgress(5),
+           noTestsInitiated(6)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsTest 3 }
+
+   upsTestResultsDetail OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..255))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsTest 4 }
+
+   upsTestStartTime OBJECT-TYPE
+       SYNTAX     TimeStamp
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsTest 5 }
+
+   upsTestElapsedTime OBJECT-TYPE
+       SYNTAX     TimeInterval
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsTest 6 }
+
+   --
+   -- Well known tests.
+   --
+
+   upsWellKnownTests     OBJECT IDENTIFIER ::= { upsTest 7 }
+
+
+   upsTestNoTestsInitiated OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "This Trap is not supported."
+       ::= { upsWellKnownTests  1 }
+
+   upsTestAbortTestInProgress OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "This Trap is not supported."
+       ::= { upsWellKnownTests  2 }
+
+   upsTestGeneralSystemsTest OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "This Trap is not supported."
+       ::= { upsWellKnownTests  3 }
+
+   upsTestQuickBatteryTest OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "This Trap is not supported."
+       ::= { upsWellKnownTests  4 }
+
+   upsTestDeepBatteryCalibration OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "This Trap is not supported."
+       ::= { upsWellKnownTests  5 }
+
+
+   --
+   -- The Control group.
+   --
+
+   upsControl            OBJECT IDENTIFIER ::= { upsObjects 8 }
+
+   upsShutdownType OBJECT-TYPE
+       SYNTAX     INTEGER {
+           output(1),
+           system(2)
+       }
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsControl 1 }
+
+   upsShutdownAfterDelay OBJECT-TYPE
+       SYNTAX     INTEGER (-1..2147483648)
+       UNITS      "seconds"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsControl 2 }
+
+   upsStartupAfterDelay OBJECT-TYPE
+       SYNTAX     INTEGER (-1..2147483648)
+       UNITS      "seconds"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsControl 3 }
+
+   upsRebootWithDuration OBJECT-TYPE
+       SYNTAX     INTEGER (-1..300)
+       UNITS      "seconds"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsControl 4 }
+
+   upsAutoRestart OBJECT-TYPE
+       SYNTAX     INTEGER {
+           on(1),
+           off(2)
+       }
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsControl 5 }
+
+
+   --
+   -- The Configuration group.
+   --
+
+   upsConfig             OBJECT IDENTIFIER ::= { upsObjects 9 }
+
+   upsConfigInputVoltage OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsConfig 1 }
+
+   upsConfigInputFreq OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 Hertz"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsConfig 2 }
+
+   upsConfigOutputVoltage OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsConfig 3 }
+
+   upsConfigOutputFreq OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 Hertz"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsConfig 4 }
+
+   upsConfigOutputVA OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "Volt-Amps"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsConfig 5 }
+
+   upsConfigOutputPower OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "Watts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsConfig 6 }
+
+   upsConfigLowBattTime OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "minutes"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsConfig 7 }
+
+   upsConfigAudibleStatus OBJECT-TYPE
+       SYNTAX     INTEGER {
+           disabled(1),
+           enabled(2),
+           muted(3)
+       }
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsConfig 8 }
+
+   upsConfigLowVoltageTransferPoint OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsConfig 9 }
+
+   upsConfigHighVoltageTransferPoint OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+       ::= { upsConfig 10 }
+
+
+   --
+   -- notifications, i.e., traps
+   --
+   upsTraps              OBJECT IDENTIFIER ::= { upsMIB 2 }
+
+   -- This section defines the well-known notifications sent by
+   -- UPS agents.
+   -- Care must be taken to insure that no particular notification
+   -- is sent to a single receiving entity more often than once
+   -- every five seconds.
+
+   upsTrapOnBattery NOTIFICATION-TYPE
+       OBJECTS { upsEstimatedMinutesRemaining, upsSecondsOnBattery,
+                 upsConfigLowBattTime }
+       STATUS  current
+       DESCRIPTION
+               "The UPS is operating on battery power.  This trap is
+			   persistent and is resent at one minute intervals until
+			   the UPS either turns off or is no longer running on
+			   battery.
+			   At power restored，this trap is sent once."
+     ::= { upsTraps 1 }
+
+   upsTrapTestCompleted NOTIFICATION-TYPE
+       OBJECTS { upsTestId, upsTestSpinLock,
+                 upsTestResultsSummary, upsTestResultsDetail,
+                 upsTestStartTime, upsTestElapsedTime }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported. A value 0 is returned."
+     ::= { upsTraps 2 }
+
+   upsTrapAlarmEntryAdded NOTIFICATION-TYPE
+       OBJECTS { upsAlarmId, upsAlarmDescr }
+       STATUS  current
+       DESCRIPTION
+               "This trap is sent each time an alarm is inserted into
+			   to the alarm table.  It is sent on the insertion of all
+			   alarms."
+     ::= { upsTraps 3 }
+
+   upsTrapAlarmEntryRemoved NOTIFICATION-TYPE
+       OBJECTS { upsAlarmId, upsAlarmDescr }
+       STATUS  current
+       DESCRIPTION
+               "This trap is sent each time an alarm is removed from
+			   the alarm table.  It is sent on the removal of all
+			   alarms."
+     ::= { upsTraps 4 }
+
+
+   --
+   -- conformance information
+   --
+   upsConformance        OBJECT IDENTIFIER ::= { upsMIB 3 }
+
+   upsCompliances        OBJECT IDENTIFIER ::= { upsConformance 1 }
+
+
+   --
+   -- compliance statements
+   --
+
+      upsSubsetCompliance MODULE-COMPLIANCE
+       STATUS     current
+       DESCRIPTION
+
+               "This feature is not supported."
+       MODULE -- this module
+           MANDATORY-GROUPS  { upsSubsetIdentGroup,
+                     upsSubsetBatteryGroup, upsSubsetInputGroup,
+                     upsSubsetOutputGroup, upsSubsetAlarmGroup,
+                     upsSubsetControlGroup, upsSubsetConfigGroup }
+
+       OBJECT     upsBatteryStatus
+       SYNTAX     INTEGER {
+           batteryNormal(2),
+           batteryLow(3)
+       }
+       DESCRIPTION
+               "Support of the values unknown(1) and
+               batteryDepleted(4) is not required."
+
+       OBJECT     upsAlarmDescr
+
+
+       DESCRIPTION
+               "Support of all `well known' alarm types is not
+               required.  The well known alarm types which must be
+               supported are: upsAlarmOnBattery, upsAlarmLowBattery,
+               upsAlarmInputBad, upsAlarmUpsOutputOff,
+               upsAlarmUpsSystemOff, and upsAlarmTestInProgress."
+
+       OBJECT     upsOutputSource
+       SYNTAX     INTEGER {
+           normal(2),
+           battery(4)
+       }
+       DESCRIPTION
+               "Support of the values other(1), none(2), bypass(4),
+               booster(6) and reducer(7) is not required."
+
+       OBJECT     upsShutdownType
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required, i.e., compliant
+               systems need not support more than one shutdown type."
+
+       OBJECT     upsAutoRestart
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required, i.e., compliant
+               systems need not support more than one restart type."
+
+       OBJECT     upsConfigInputVoltage
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required."
+
+       OBJECT     upsConfigInputFreq
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required."
+
+       OBJECT     upsConfigOutputVoltage
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required."
+
+       OBJECT     upsConfigOutputFreq
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required."
+
+
+
+
+       ::= { upsCompliances 1 }
+
+   upsBasicCompliance MODULE-COMPLIANCE
+       STATUS     current
+       DESCRIPTION
+
+               "This feature is not supported."
+       MODULE -- this module
+           MANDATORY-GROUPS { upsBasicIdentGroup,
+                     upsBasicBatteryGroup, upsBasicInputGroup,
+                     upsBasicOutputGroup, upsBasicAlarmGroup,
+                     upsBasicTestGroup, upsBasicControlGroup,
+                     upsBasicConfigGroup }
+
+
+       OBJECT     upsAlarmDescr
+       DESCRIPTION
+               "Support of all `well known' alarm types is not
+               required.  The well known alarm types which must be
+               supported are: upsAlarmOnBattery, upsAlarmLowBattery,
+               upsAlarmDepletedBattery, upsAlarmTempBad,
+               upsAlarmInputBad, upsAlarmOutputOverload,
+               upsAlarmOnBypass, upsAlarmBypassBad,
+               upsAlarmOutputOffAsRequested,
+               upsAlarmUpsOffAsRequested, upsAlarmUpsOutputOff,
+               upsAlarmUpsSystemOff, upsAlarmGeneralFault,
+               upsAlarmDiagnosticTestFailed,
+               upsAlarmCommunicationsLost, upsAlarmShutdownPending,
+               and upsAlarmTestInProgress."
+
+       OBJECT     upsTestId
+       DESCRIPTION
+               "Support of all `well known' test types is not
+               required.  If no tests are supported, then the only
+               well known test type which must be supported is
+               upsTestNoTestsInitiated."
+
+       OBJECT     upsOutputSource
+       SYNTAX     INTEGER {
+           normal(2),
+           battery(4)
+       }
+       DESCRIPTION
+               "Support of the values other(1), none(2), bypass(4),
+               booster(6) and reducer(7) is not required."
+
+           GROUP upsBasicBypassGroup
+
+
+           DESCRIPTION
+               "The upsBasicBypassGroup is only required for UPSs
+               that have a Bypass present."
+       OBJECT     upsShutdownType
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required, i.e., compliant
+               systems need not support more than one shutdown type."
+
+       OBJECT     upsAutoRestart
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required, i.e., compliant
+               systems need not support more than one restart type."
+
+       OBJECT     upsConfigInputVoltage
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required."
+
+       OBJECT     upsConfigInputFreq
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required."
+
+       OBJECT     upsConfigOutputVoltage
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required."
+
+       OBJECT     upsConfigOutputFreq
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required."
+
+       OBJECT     upsConfigLowBattTime
+       DESCRIPTION
+               "Implementation of all possible values may be onerous
+               for some systems.  Consequently, not all possible
+               values must be supported.  However, at least two
+               different manufacturer-selected values must be
+               supported."
+
+       ::= { upsCompliances 2 }
+
+   upsFullCompliance MODULE-COMPLIANCE
+       STATUS     current
+       DESCRIPTION
+
+               "This feature is not supported."
+       MODULE -- this module
+           MANDATORY-GROUPS { upsFullIdentGroup, upsFullBatteryGroup,
+                     upsFullInputGroup, upsFullOutputGroup,
+                     upsFullAlarmGroup, upsFullTestGroup,
+                     upsFullControlGroup, upsFullConfigGroup }
+
+       OBJECT     upsAlarmDescr
+       DESCRIPTION
+               "Support of all `well known' alarm types is not
+               required.  The well known alarm types which must be
+               supported are: upsAlarmBatteryBad, upsAlarmOnBattery,
+               upsAlarmLowBattery, upsAlarmDepletedBattery,
+               upsAlarmTempBad, upsAlarmInputBad, upsAlarmOnBypass,
+               upsAlarmBypassBad, upsAlarmOutputOffAsRequested,
+               upsAlarmUpsOffAsRequested, upsAlarmUpsOutputOff,
+               upsAlarmUpsSystemOff, upsAlarmGeneralFault,
+               upsAlarmDiagnosticTestFailed,
+               upsAlarmCommunicationsLost, upsAlarmShutdownPending,
+               and upsAlarmTestInProgress."
+
+       OBJECT     upsTestId
+       DESCRIPTION
+               "Support of all `well known' test types is not
+               required.  The well known test types which must be
+               supported are: upsTestNoTestsInitiated,
+               upsTestGeneralSystemsTest, and
+               upsTestQuickBatteryTest."
+
+       OBJECT     upsOutputSource
+       SYNTAX     INTEGER {
+           normal(2),
+           battery(4)
+       }
+       DESCRIPTION
+               "Support of the values other(1), none(2), bypass(4),
+               booster(6) and reducer(7) is not required."
+
+           GROUP upsFullBypassGroup
+           DESCRIPTION
+               "The upsFullBypassGroup is only required for UPSs that
+               have a Bypass present."
+
+       OBJECT     upsShutdownType
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required, i.e., compliant
+
+               systems need not support more than one shutdown type."
+
+       OBJECT     upsAutoRestart
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required, i.e., compliant
+               systems need not support more than one restart type."
+
+       OBJECT     upsConfigInputVoltage
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required."
+
+       OBJECT     upsConfigInputFreq
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required."
+
+       OBJECT     upsConfigOutputVoltage
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required."
+
+       OBJECT     upsConfigOutputFreq
+       MIN-ACCESS read-only
+       DESCRIPTION
+               "Read-write access is not required."
+
+       OBJECT     upsConfigLowBattTime
+       DESCRIPTION
+               "Implementation of all possible values may be onerous
+               for some systems.  Consequently, not all possible
+               values must be supported.  However, at least two
+               different manufacturer-selected values must be
+               supported."
+
+       ::= { upsCompliances 3 }
+
+
+   --
+   -- units of conformance
+   --
+
+   -- summary at a glance:
+
+   --                                      subset  basic   adv
+   --upsIdentManufacturer                  x       x       x
+   --upsIdentModel                         x       x       x
+
+   --upsIdentUPSSoftwareVersion                    x       x
+   --upsIdentAgentSoftwareVersion          x       x       x
+   --upsIdentName                          x       x       x
+   --upsIdentAttachedDevices               x               x
+   --
+   --upsBatteryStatus                      x       x       x  notes
+   --upsSecondsOnBattery                   x       x       x
+   --upsEstimatedMinutesRemaining                          x
+   --upsEstimatedChargeRemaining                           x
+   --upsBatteryVoltage
+   --upsBatteryCurrent
+   --upsBatteryTemperature
+   --
+   --upsInputLineBads                      x       x       x
+   --upsInputNumLines                              x       x
+   --upsInputFrequency                             x       x
+   --upsInputVoltage                               x       x
+   --upsInputCurrent
+   --upsInputTruePower
+   --
+   --upsOutputSource                       x       x       x  notes
+   --upsOutputFrequency                            x       x
+   --upsOutputNumLines                             x       x
+   --upsOutputVoltage                              x       x
+   --upsOutputCurrent                                      x
+   --upsOutputPower                                        x
+   --upsOutputPercentLoad                                  x
+   --
+   --
+   --upsBypassFrequency                            x       x  notes
+   --upsBypassNumLines                             x       x
+   --upsBypassVoltage                              x       x
+   --upsBypassCurrent
+   --upsBypassPower
+   --
+   --
+   --upsAlarmsPresent                      x       x       x
+   --upsAlarmDescr                         x       x       x  notes
+   --upsAlarmTime                          x       x       x
+   --
+   --upsTestId                                     x       x  notes
+   --upsTestSpinLock                               x       x
+   --upsTestResultsSummary                         x       x
+   --upsTestResultsDetail                          x       x
+   --upsTestStartTime                              x       x
+   --upsTestElapsedTime                            x       x
+   --
+   --upsShutdownType                       x       x       x  notes
+   --upsShutdownAfterDelay                 x       x       x
+   --upsStartupAfterDelay                          x       x
+   --upsRebootWithDuration                         x       x
+   --upsAutoRestart                        x       x       x  notes
+   --
+   --upsConfigInputVoltage                 x       x       x  notes
+   --upsConfigInputFreq                    x       x       x  notes
+   --upsConfigOutputVoltage                x       x       x  notes
+   --upsConfigOutputFreq                   x       x       x  notes
+   --upsConfigOutputVA                     x       x       x
+   --upsConfigOutputPower                  x       x       x
+   --upsConfigLowBattTime                          x       x  notes
+   --upsConfigAudibleStatus                        x       x
+   --upsConfigLowVoltageTransferPoint
+   --upsConfigHighVoltageTransferPoint
+
+
+   -- units of conformance
+   upsGroups             OBJECT IDENTIFIER ::= { upsConformance 2 }
+
+   upsSubsetGroups       OBJECT IDENTIFIER ::= { upsGroups 1 }
+
+   upsSubsetIdentGroup OBJECT-GROUP
+       OBJECTS { upsIdentManufacturer, upsIdentModel,
+                 upsIdentAgentSoftwareVersion, upsIdentName,
+                 upsIdentAttachedDevices }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsSubsetGroups 1 }
+
+   upsSubsetBatteryGroup OBJECT-GROUP
+       OBJECTS { upsBatteryStatus, upsSecondsOnBattery }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsSubsetGroups 2 }
+
+   upsSubsetInputGroup OBJECT-GROUP
+
+     OBJECTS { upsInputLineBads }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsSubsetGroups 3 }
+
+   upsSubsetOutputGroup OBJECT-GROUP
+       OBJECTS { upsOutputSource }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsSubsetGroups 4 }
+
+
+   -- { upsSubsetGroups 5 } is reserved for
+   -- future use (upsSubsetBypassGroup)
+
+   upsSubsetAlarmGroup OBJECT-GROUP
+       OBJECTS { upsAlarmsPresent, upsAlarmDescr, upsAlarmTime }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsSubsetGroups 6 }
+
+   -- { upsSubsetGroups 7 } is reserved for
+   -- future use (upsSubsetTestGroup)
+
+   upsSubsetControlGroup OBJECT-GROUP
+       OBJECTS { upsShutdownType, upsShutdownAfterDelay,
+                     upsAutoRestart }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsSubsetGroups 8 }
+
+   upsSubsetConfigGroup OBJECT-GROUP
+       OBJECTS { upsConfigInputVoltage, upsConfigInputFreq,
+                 upsConfigOutputVoltage, upsConfigOutputFreq,
+                 upsConfigOutputVA, upsConfigOutputPower }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsSubsetGroups 9 }
+
+
+   upsBasicGroups        OBJECT IDENTIFIER ::= { upsGroups 2 }
+
+   upsBasicIdentGroup OBJECT-GROUP
+       OBJECTS { upsIdentManufacturer, upsIdentModel,
+                 upsIdentUPSSoftwareVersion,
+                 upsIdentAgentSoftwareVersion, upsIdentName }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsBasicGroups 1 }
+
+   upsBasicBatteryGroup OBJECT-GROUP
+       OBJECTS { upsBatteryStatus, upsSecondsOnBattery }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsBasicGroups 2 }
+
+   upsBasicInputGroup OBJECT-GROUP
+       OBJECTS { upsInputLineBads, upsInputNumLines,
+                 upsInputFrequency, upsInputVoltage }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsBasicGroups 3 }
+
+   upsBasicOutputGroup OBJECT-GROUP
+       OBJECTS { upsOutputSource, upsOutputFrequency,
+                 upsOutputNumLines, upsOutputVoltage }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsBasicGroups 4 }
+
+   upsBasicBypassGroup OBJECT-GROUP
+       OBJECTS { upsBypassFrequency, upsBypassNumLines,
+                 upsBypassVoltage }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsBasicGroups 5 }
+
+   upsBasicAlarmGroup OBJECT-GROUP
+       OBJECTS { upsAlarmsPresent, upsAlarmDescr, upsAlarmTime }
+       STATUS  current
+       DESCRIPTION
+
+               "This feature is not supported."
+       ::= { upsBasicGroups 6 }
+
+   upsBasicTestGroup OBJECT-GROUP
+       OBJECTS { upsTestId, upsTestSpinLock,
+                 upsTestResultsSummary, upsTestResultsDetail,
+                 upsTestStartTime, upsTestElapsedTime }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsBasicGroups 7 }
+
+   upsBasicControlGroup OBJECT-GROUP
+       OBJECTS { upsShutdownType, upsShutdownAfterDelay,
+                 upsStartupAfterDelay, upsRebootWithDuration,
+                 upsAutoRestart }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsBasicGroups 8 }
+
+   upsBasicConfigGroup OBJECT-GROUP
+       OBJECTS { upsConfigInputVoltage, upsConfigInputFreq,
+                 upsConfigOutputVoltage, upsConfigOutputFreq,
+                 upsConfigOutputVA, upsConfigOutputPower,
+                 upsConfigLowBattTime, upsConfigAudibleStatus }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsBasicGroups 9 }
+
+
+
+   upsFullGroups         OBJECT IDENTIFIER ::= { upsGroups 3 }
+
+   upsFullIdentGroup OBJECT-GROUP
+       OBJECTS { upsIdentManufacturer, upsIdentModel,
+                 upsIdentUPSSoftwareVersion,
+                 upsIdentAgentSoftwareVersion, upsIdentName,
+                 upsIdentAttachedDevices }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsFullGroups 1 }
+
+   upsFullBatteryGroup OBJECT-GROUP
+       OBJECTS { upsBatteryStatus, upsSecondsOnBattery,
+                 upsEstimatedMinutesRemaining,
+                 upsEstimatedChargeRemaining }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsFullGroups 2 }
+
+   upsFullInputGroup OBJECT-GROUP
+       OBJECTS { upsInputLineBads, upsInputNumLines,
+                 upsInputFrequency, upsInputVoltage }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsFullGroups 3 }
+
+   upsFullOutputGroup OBJECT-GROUP
+       OBJECTS { upsOutputSource, upsOutputFrequency,
+                 upsOutputNumLines, upsOutputVoltage,
+                 upsOutputCurrent, upsOutputPower,
+                 upsOutputPercentLoad }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsFullGroups 4 }
+
+   upsFullBypassGroup OBJECT-GROUP
+       OBJECTS { upsBypassFrequency, upsBypassNumLines,
+                 upsBypassVoltage }
+       STATUS  current
+       DESCRIPTION
+
+               "This feature is not supported."
+       ::= { upsFullGroups 5 }
+
+   upsFullAlarmGroup OBJECT-GROUP
+       OBJECTS { upsAlarmsPresent, upsAlarmDescr, upsAlarmTime }
+       STATUS  current
+       DESCRIPTION
+
+               "This feature is not supported."
+       ::= { upsFullGroups 6 }
+
+   upsFullTestGroup OBJECT-GROUP
+       OBJECTS { upsTestId, upsTestSpinLock,
+                 upsTestResultsSummary, upsTestResultsDetail,
+                 upsTestStartTime, upsTestElapsedTime }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsFullGroups 7 }
+
+   upsFullControlGroup OBJECT-GROUP
+       OBJECTS { upsShutdownType, upsShutdownAfterDelay,
+                 upsStartupAfterDelay, upsRebootWithDuration,
+                 upsAutoRestart }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsFullGroups 8 }
+
+   upsFullConfigGroup OBJECT-GROUP
+       OBJECTS { upsConfigInputVoltage, upsConfigInputFreq,
+                 upsConfigOutputVoltage, upsConfigOutputFreq,
+                 upsConfigOutputVA, upsConfigOutputPower,
+                 upsConfigLowBattTime, upsConfigAudibleStatus }
+       STATUS  current
+       DESCRIPTION
+               "This feature is not supported."
+       ::= { upsFullGroups 9 }
+
+   END
+

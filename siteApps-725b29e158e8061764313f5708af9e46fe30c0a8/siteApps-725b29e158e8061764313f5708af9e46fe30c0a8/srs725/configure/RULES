@@ -1,0 +1,21 @@
+# RULES
+
+include $(CONFIG)/RULES
+
+# Library should be rebuilt because LIBOBJS may have changed.
+$(LIBNAME): ../Makefile
+
+# Local rules
+
+# Install streamdevice protocol files in $(TOP)/proto
+# MD 1/2011
+
+PROTO_FILES = $(PROTO:%=$(INSTALL_LOCATION)/proto/%)
+
+$(PROTO_FILES) : \
+$(INSTALL_LOCATION)/proto/%.proto: ../%.proto
+	@[ -d $(dir $@) ] || install -d $(dir $@)
+	@echo "Install PROTO $@"
+	install -m 644 $< $@
+
+build: $(PROTO_FILES)

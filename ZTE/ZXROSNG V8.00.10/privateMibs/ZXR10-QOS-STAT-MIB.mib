@@ -1,0 +1,353 @@
+--*****************************************************************
+--ZXR10-QOS-STAT-MIB
+--OAM
+--2013-9-10 16:35
+--
+--
+--Copyright (c) 1985-2013 by ZTE Corp.
+--All rights reserved.
+--*****************************************************************
+
+ZXR10-QOS-STAT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Unsigned32, Counter64,enterprises,IpAddress 
+        FROM SNMPv2-SMI
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF
+    DisplayString, MacAddress, TEXTUAL-CONVENTION, RowStatus
+        FROM SNMPv2-TC
+    zxr10,zxr10RosngMIB        
+        FROM ZXR10-SMI;
+
+zxr10QosStatMIB MODULE-IDENTITY
+        LAST-UPDATED "201608020910Z"
+        ORGANIZATION "ZTE Corporation"
+        CONTACT-INFO
+            "       Hu Jun
+            Tel:    +86-25-52870000
+            E-Mail: hu.jun11@zte.com.cn "
+        DESCRIPTION
+            "The MIB module to describe the QOS Stats info." 
+        REVISION      "201608020910Z"
+        DESCRIPTION   "Modify the mib file by adding statistic info as follow:
+                       zxr10QosStatPacketsOutRate
+                       zxr10QosStatPacketsDropRate
+                       zxr10QosStatTotalBytesOut
+                       zxr10QosStatTotalBytesDrop
+                       zxr10QosStatTotalFlowBytes
+                       zxr10QosStatTotalFlowPackets"           
+        REVISION      "201507230910Z"
+        DESCRIPTION   "Modify the mib file by adding Tail drop and WRED statistic info."     
+        REVISION "201503091100Z"
+        DESCRIPTION 
+            "Add zxr10QosStatBytesTotalRate"                
+        REVISION "201310181640Z"
+        DESCRIPTION 
+            "Add zxr10QosStatMIB and 
+             Initial version of this MIB module.
+             "
+        ::= { zxr10QosMIBObjects 5 }
+        
+             
+zxr10QosMIBObjects    OBJECT IDENTIFIER ::= { zxr10RosngMIB 30}        
+
+--******************************************************
+--    Following objects are defined.   
+--****************************************************** 
+zxr10QosStatGlobalObjects   OBJECT IDENTIFIER ::= { zxr10QosStatMIB 1}
+zxr10QosStatObjects         OBJECT IDENTIFIER ::= { zxr10QosStatMIB 2}  
+zxr10QosStatNotifications   OBJECT IDENTIFIER ::= { zxr10QosStatMIB 3}
+zxr10QosStatConformance     OBJECT IDENTIFIER ::= { zxr10QosStatMIB 4}     
+
+--******************************************************
+--    zxr10QosStatTable   
+--****************************************************** 
+
+zxr10QosStatTable  OBJECT-TYPE
+          SYNTAX  SEQUENCE OF Zxr10QosStatEntry
+          MAX-ACCESS  not-accessible
+          STATUS  current
+          DESCRIPTION
+                   "QoS statistics table"
+          ::= { zxr10QosStatObjects 1 }
+
+zxr10QosStatEntry  OBJECT-TYPE
+          SYNTAX  Zxr10QosStatEntry
+          MAX-ACCESS  not-accessible
+          STATUS  current
+          DESCRIPTION
+                  "Information of QoS statistics.
+                   Display the statistics data from
+                   leaf node to root node."
+          INDEX  { 
+                    zxr10QosStatIntfName,
+                    zxr10QosStatIntfDir,
+                    zxr10QosStatPolicyNameL0,
+                    zxr10QosStatPolicyNameL1,
+                    zxr10QosStatPolicyNameL2,
+                    zxr10QosStatPolicyNameL3,
+                    zxr10QosStatClassNameL0,
+                    zxr10QosStatClassNameL1,
+                    zxr10QosStatClassNameL2,    
+                    zxr10QosStatClassNameL3               
+                  }
+          ::= { zxr10QosStatTable 1 }
+
+Zxr10QosStatEntry ::=
+          SEQUENCE {
+                    zxr10QosStatIntfName
+                         DisplayString,
+                    zxr10QosStatIntfDir
+                         INTEGER,
+                    zxr10QosStatPolicyNameL0
+                         DisplayString,
+                    zxr10QosStatPolicyNameL1
+                         DisplayString,
+                    zxr10QosStatPolicyNameL2
+                         DisplayString,
+                    zxr10QosStatPolicyNameL3
+                         DisplayString,
+                    zxr10QosStatClassNameL0
+                         DisplayString,
+                    zxr10QosStatClassNameL1
+                         DisplayString,
+                    zxr10QosStatClassNameL2
+                         DisplayString,
+                    zxr10QosStatClassNameL3
+                         DisplayString,
+                    zxr10QosStatTotalPacketsOut
+                         Counter64,
+                    zxr10QosStatTotalPacketsDrop
+                         Counter64,
+                    zxr10QosStatBytesOutRate
+                         Counter64,
+                    zxr10QosStatBytesDropRate
+                         Counter64,     
+                    zxr10QosStatBytesTotalRate
+                         Counter64,                       
+                    zxr10QosStatBytesTailDrop
+                         Counter64,
+                    zxr10QosStatPacketsTailDrop
+                         Counter64,
+                    zxr10QosStatBytesWREDDrop
+                         Counter64,
+                    zxr10QosStatPacketsWREDDrop
+                         Counter64,
+                    zxr10QosStatPacketsOutRate
+                         Counter64,
+                    zxr10QosStatPacketsDropRate
+                         Counter64,      
+                    zxr10QosStatTotalBytesOut
+                         Counter64,
+                    zxr10QosStatTotalBytesDrop
+                         Counter64,
+                    zxr10QosStatTotalFlowBytes
+                         Counter64,
+                    zxr10QosStatTotalFlowPackets
+                         Counter64          
+                       }
+
+      
+zxr10QosStatIntfName  OBJECT-TYPE
+        SYNTAX  DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible 
+        STATUS  current
+        DESCRIPTION
+                 "The name of interface."
+        ::= { zxr10QosStatEntry 1 }
+              
+zxr10QosStatIntfDir  OBJECT-TYPE
+            SYNTAX  INTEGER{input(1),output(2)}
+            MAX-ACCESS  not-accessible 
+            STATUS  current
+            DESCRIPTION
+                    "The direction based on interface."
+            ::= { zxr10QosStatEntry 2 } 
+              
+zxr10QosStatPolicyNameL0  OBJECT-TYPE
+            SYNTAX  DisplayString(SIZE(0..31))
+            MAX-ACCESS  not-accessible 
+            STATUS  current
+            DESCRIPTION
+                    "The policy-map name of first level."
+            ::= { zxr10QosStatEntry 3 } 
+             
+zxr10QosStatPolicyNameL1  OBJECT-TYPE
+            SYNTAX  DisplayString(SIZE(0..31))
+            MAX-ACCESS  not-accessible 
+            STATUS  current
+            DESCRIPTION
+                    "The policy-map name of second level."
+            ::= { zxr10QosStatEntry 4 } 
+              
+zxr10QosStatPolicyNameL2  OBJECT-TYPE
+            SYNTAX  DisplayString(SIZE(0..31))
+            MAX-ACCESS  not-accessible 
+            STATUS  current
+            DESCRIPTION
+                    "The policy-map name of third level."
+            ::= { zxr10QosStatEntry 5 } 
+              
+zxr10QosStatPolicyNameL3  OBJECT-TYPE
+            SYNTAX  DisplayString(SIZE(0..31))
+            MAX-ACCESS  not-accessible 
+            STATUS  current
+            DESCRIPTION
+                    "The policy-map name of fourth level."
+            ::= { zxr10QosStatEntry 6 } 
+              
+zxr10QosStatClassNameL0  OBJECT-TYPE
+            SYNTAX  DisplayString(SIZE(0..31))
+            MAX-ACCESS  not-accessible 
+            STATUS  current
+            DESCRIPTION
+                    "The class name of first level."
+            ::= { zxr10QosStatEntry 7 }
+             
+zxr10QosStatClassNameL1  OBJECT-TYPE
+            SYNTAX  DisplayString(SIZE(0..31))
+            MAX-ACCESS  not-accessible 
+            STATUS  current
+            DESCRIPTION
+                    "The class name of second level."
+            ::= { zxr10QosStatEntry 8 }
+            
+zxr10QosStatClassNameL2  OBJECT-TYPE
+            SYNTAX  DisplayString(SIZE(0..31))
+            MAX-ACCESS  not-accessible 
+            STATUS  current
+            DESCRIPTION
+                    "The class name of third level."
+            ::= { zxr10QosStatEntry 9 }
+            
+zxr10QosStatClassNameL3  OBJECT-TYPE
+            SYNTAX  DisplayString(SIZE(0..31))
+            MAX-ACCESS  not-accessible 
+            STATUS  current
+            DESCRIPTION
+                    "The class name of fourth level."
+            ::= { zxr10QosStatEntry 10 }
+            
+zxr10QosStatTotalPacketsOut  OBJECT-TYPE
+            SYNTAX  Counter64
+            MAX-ACCESS  read-only 
+            STATUS  current
+            DESCRIPTION
+                    "The total transmitting packts."
+            ::= { zxr10QosStatEntry 11 }
+
+zxr10QosStatTotalPacketsDrop  OBJECT-TYPE
+            SYNTAX  Counter64
+            MAX-ACCESS  read-only 
+            STATUS  current
+            DESCRIPTION
+                    "The total dropping packts."
+            ::= { zxr10QosStatEntry 12 }
+            
+zxr10QosStatBytesOutRate  OBJECT-TYPE
+     SYNTAX  Counter64    
+     MAX-ACCESS  read-only 
+     STATUS  current
+     DESCRIPTION
+              "The transmitting rate(bps)."
+     ::= { zxr10QosStatEntry 13 }
+
+zxr10QosStatBytesDropRate  OBJECT-TYPE
+     SYNTAX  Counter64
+     MAX-ACCESS  read-only 
+     STATUS  current
+     DESCRIPTION
+            "The dropping rate(bps)."
+     ::= { zxr10QosStatEntry 14 }
+                                     
+zxr10QosStatBytesTotalRate  OBJECT-TYPE
+     SYNTAX  Counter64
+     MAX-ACCESS  read-only 
+     STATUS  current
+     DESCRIPTION
+            "The total rate(bps)."
+     ::= { zxr10QosStatEntry 15 }
+     
+zxr10QosStatBytesTailDrop  OBJECT-TYPE
+     SYNTAX  Counter64
+     MAX-ACCESS  read-only 
+     STATUS  current
+     DESCRIPTION
+            "The tail drop(bytes)."
+     ::= { zxr10QosStatEntry 16 }
+
+zxr10QosStatPacketsTailDrop  OBJECT-TYPE
+     SYNTAX  Counter64
+     MAX-ACCESS  read-only 
+     STATUS  current
+     DESCRIPTION
+            "The tail drop(packets)."
+     ::= { zxr10QosStatEntry 17 }
+
+zxr10QosStatBytesWREDDrop  OBJECT-TYPE
+     SYNTAX  Counter64
+     MAX-ACCESS  read-only 
+     STATUS  current
+     DESCRIPTION
+            "The WRED drop(bytes)."
+     ::= { zxr10QosStatEntry 18 }
+
+zxr10QosStatPacketsWREDDrop  OBJECT-TYPE
+     SYNTAX  Counter64
+     MAX-ACCESS  read-only 
+     STATUS  current
+     DESCRIPTION
+            "The WRED drop(packets)."
+     ::= { zxr10QosStatEntry 19 } 
+     
+zxr10QosStatPacketsOutRate  OBJECT-TYPE
+     SYNTAX  Counter64    
+     MAX-ACCESS  read-only 
+     STATUS  current
+     DESCRIPTION
+              "The transmitting rate(pps)."
+     ::= { zxr10QosStatEntry 20 }
+
+zxr10QosStatPacketsDropRate  OBJECT-TYPE
+     SYNTAX  Counter64
+     MAX-ACCESS  read-only 
+     STATUS  current
+     DESCRIPTION
+            "The dropping rate(pps)."
+     ::= { zxr10QosStatEntry 21 }
+                                     
+zxr10QosStatTotalBytesOut  OBJECT-TYPE
+            SYNTAX  Counter64
+            MAX-ACCESS  read-only 
+            STATUS  current
+            DESCRIPTION
+                    "The total transmitting bytes."
+            ::= { zxr10QosStatEntry 22 }
+
+zxr10QosStatTotalBytesDrop  OBJECT-TYPE
+            SYNTAX  Counter64
+            MAX-ACCESS  read-only 
+            STATUS  current
+            DESCRIPTION
+                    "The total dropping bytes."
+            ::= { zxr10QosStatEntry 23 } 
+            
+zxr10QosStatTotalFlowBytes  OBJECT-TYPE
+            SYNTAX  Counter64
+            MAX-ACCESS  read-only 
+            STATUS  current
+            DESCRIPTION
+                    "The total flow bytes."
+            ::= { zxr10QosStatEntry 24 }
+
+zxr10QosStatTotalFlowPackets  OBJECT-TYPE
+            SYNTAX  Counter64
+            MAX-ACCESS  read-only 
+            STATUS  current
+            DESCRIPTION
+                    "The total flow packets."
+            ::= { zxr10QosStatEntry 25 }
+
+END

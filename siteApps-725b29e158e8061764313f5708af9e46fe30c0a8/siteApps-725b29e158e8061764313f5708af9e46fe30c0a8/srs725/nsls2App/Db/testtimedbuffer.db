@@ -1,0 +1,41 @@
+# Test for timedbuffer.c
+#
+# Generates a test signal (sin) and
+# the resulting sum.
+#
+
+record(calc, "$(P)in") {
+  field(SCAN, ".1 second")
+  field(INPA, "$(PINC=0.05)") # phase increment
+  # B is current phase
+  field(CALC, "B:=B+A;SIN(B)")
+  field(PREC, "2")
+  field(FLNK, "$(P)calc")
+}
+
+record(aSub, "$(P)calc") {
+  field(INAM, "InitTimedBuffer")
+  field(SNAM, "ProcTimedBuffer")
+  field(FTA , "DOUBLE") # Input value
+  field(FTB , "DOUBLE") # Time interval (sec)
+  field(FTC , "UCHAR")  # 1==Reset
+  field(FTVA, "DOUBLE") # Sum
+  field(FTVB, "ULONG")  # Invalid Count
+  field(FTVC, "ULONG")  # Total Count
+  field(INPA, "$(P)in")
+  field(INPB, "10")
+  field(INPC, "0")
+  field(OUTA, "$(P)sum PP MSS")
+  field(OUTB, "$(P)cnt:bad PP MSS")
+  field(OUTC, "$(P)cnt:tot PP MSS")
+}
+
+record(ai, "$(P)sum") {
+  field(PREC, "2")
+}
+
+record(longin, "$(P)cnt:bad") {
+}
+
+record(longin, "$(P)cnt:tot") {
+}

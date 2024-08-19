@@ -1,8 +1,8 @@
 -- ===================================================================
--- Copyright (C) 2020 by HUAWEI TECHNOLOGIES. All rights reserved.
+-- Copyright (C) 2021 by HUAWEI TECHNOLOGIES. All rights reserved.
 -- Description:
 -- Reference:
--- Version: V3.16
+-- Version: V3.26
 -- ===================================================================
 HUAWEI-PORT-MIB DEFINITIONS ::= BEGIN
     IMPORTS
@@ -28,7 +28,7 @@ HUAWEI-PORT-MIB DEFINITIONS ::= BEGIN
             FROM HUAWEI-GTL-MIB;
 
     hwPortMIB MODULE-IDENTITY
-        LAST-UPDATED "202005110000Z"
+        LAST-UPDATED "202102240000Z"
         ORGANIZATION "Huawei Technologies Co.,Ltd."
         CONTACT-INFO
             "Huawei Industrial Base
@@ -39,7 +39,53 @@ HUAWEI-PORT-MIB DEFINITIONS ::= BEGIN
                    Email: support@huawei.com"
         DESCRIPTION 
             "The private mib file includes the general extent
-            information of the device.hwDatacomm(157).hwPortMIB" 
+            information of the device.hwDatacomm(157).hwPortMIB"
+
+-- Add revision info here!
+  REVISION "202102240000Z"
+        DESCRIPTION
+        "Add hwOpticalAmplifierGainHigh, hwOpticalAmplifierGainHighResume, hwOpticalAmplifierGainLow, hwOpticalAmplifierGainLowResume."
+
+-- Add revision info here!
+  REVISION "202102240000Z"
+        DESCRIPTION
+        "Add hwFlexEGrpPaddingMismatch, hwFlexEGrpPaddingMismatchResume."
+
+-- Add revision info here!
+  REVISION "202102240000Z"
+        DESCRIPTION
+        "Add hwE1CasAlarm, hwE1CasAlarmResume."
+
+-- Add revision info here!
+  REVISION "202011180000Z"
+        DESCRIPTION
+        "Modify the type of the hwPortSfpNotSupportSingleFiber."
+-- Add revision info here!
+  REVISION "202009210000Z"
+        DESCRIPTION
+        "Modify the type of the hwOtnFecMode."
+-- Add revision info here!
+  REVISION "202007230000Z"
+        DESCRIPTION
+        "Modify hwLastStatisticalPeriodRate and hwCurrentStatisticalPeriodRate."
+-- Add revision info here!
+  REVISION "202007230000Z"
+        DESCRIPTION
+        "Add a space after the period."
+-- Add revision info here!
+  REVISION "202007220000Z"
+        DESCRIPTION
+        "Add a space after the period."
+
+-- Add revision info here!
+  REVISION "202007070000Z"
+        DESCRIPTION
+        "Add hwEthernetCarrierTransitions."
+
+-- Add revision info here!
+  REVISION "202007010000Z"
+        DESCRIPTION
+        "Add hwEthernetSpeedSet enum speed50000(14) speed200000(15) speed400000(16)."
 
 -- Add revision info here!
   REVISION "202005110000Z"
@@ -649,7 +695,10 @@ HUAWEI-PORT-MIB DEFINITIONS ::= BEGIN
         hwEthernetPortMode 
             INTEGER,
         hwEthernetNegotiationMode 
-            INTEGER
+            INTEGER,
+        hwEthernetCarrierTransitions 
+            Integer32
+
         }
 
 
@@ -681,7 +730,7 @@ HUAWEI-PORT-MIB DEFINITIONS ::= BEGIN
 
 
     hwEthernetSpeedSet OBJECT-TYPE
-        SYNTAX INTEGER {other(1),speed10(2),speed100(3),speed1000(4),speed10000(5),speed40000(6),speed20000(7),speed2500(8),speed5000(9),speed100000(10),speed12000(11),speed48000(12),speed25000(13)}
+        SYNTAX INTEGER {other(1),speed10(2),speed100(3),speed1000(4),speed10000(5),speed40000(6),speed20000(7),speed2500(8),speed5000(9),speed100000(10),speed12000(11),speed48000(12),speed25000(13),speed50000(14),speed200000(15),speed400000(16)}
         MAX-ACCESS read-write
         STATUS current
         DESCRIPTION
@@ -883,6 +932,15 @@ HUAWEI-PORT-MIB DEFINITIONS ::= BEGIN
         DESCRIPTION
             "Set negotiation-mode for phy of electronic GE port.The mode is uesed for synchronizing clock. "
         ::= { hwEthernetEntry 40 }
+
+
+    hwEthernetCarrierTransitions OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Number of times the interface state has transitioned from up to down since the time the device restarted. "
+        ::= { hwEthernetEntry 41 }
 
 
     hwPos OBJECT IDENTIFIER ::= { hwPortMIBObjects 2 }
@@ -2391,9 +2449,9 @@ HUAWEI-PORT-MIB DEFINITIONS ::= BEGIN
         hwOutputRateChangeThresholdPercent
             Integer32,
 	hwCurrentStatisticalPeriodRate
-	    Counter64,
+	    Integer32,
 	hwLastStatisticalPeriodRate
-	    Counter64,
+	    Integer32,
         hwPortPhysicalRate
             Integer32,
         hwLicenseType
@@ -2638,7 +2696,7 @@ HUAWEI-PORT-MIB DEFINITIONS ::= BEGIN
 
 
     hwCurrentStatisticalPeriodRate OBJECT-TYPE
-        SYNTAX Counter64 
+        SYNTAX Integer32
         MAX-ACCESS read-only
         STATUS current
         DESCRIPTION
@@ -2647,7 +2705,7 @@ HUAWEI-PORT-MIB DEFINITIONS ::= BEGIN
 
 
     hwLastStatisticalPeriodRate OBJECT-TYPE
-        SYNTAX Counter64 
+        SYNTAX Integer32
         MAX-ACCESS read-only
         STATUS current
         DESCRIPTION
@@ -7573,7 +7631,7 @@ hwPhysicalPortPreFecPowerStatistics OBJECT-TYPE
     
     -- 1.3.6.1.4.1.2011.5.25.157.1.21.1.1.2
     hwOtnFecMode OBJECT-TYPE
-    SYNTAX INTEGER {none(0),standard(1),enhanced(2),enhancedI7(3),enhancedI4(4),lhaulsd(5)}
+    SYNTAX INTEGER {none(0),standard(1),enhanced(2),enhancedI7(3),enhancedI4(4),lhaulsd(5),enhancedpid(8),lhaulsdpid(9)}
     MAX-ACCESS read-write
     STATUS current
     DESCRIPTION
@@ -8761,7 +8819,7 @@ hwPhysicalPortPreFecPowerStatistics OBJECT-TYPE
 			MAX-ACCESS not-accessible
 			STATUS current
 			DESCRIPTION
-				"Link-heartbeat alarm fault info table.The table that contains send
+				"Link-heartbeat alarm fault info table. The table that contains send
 				packets interface and receive packets interface information currently
 				operating on this device."
 			::= { hwLinkHeartbeat 1 }
@@ -12566,6 +12624,79 @@ hwPhysicalPortPreFecPowerStatistics OBJECT-TYPE
             "The speed modes of the FlexE physical interfaces in the FlexEGroup mismatch alarm resume."
           ::= { hwPortNotifications 318 }
 
+-- 1.3.6.1.4.1.2011.5.25.157.2.319
+    hwPortSfpNotSupportSingleFiber NOTIFICATION-TYPE
+        OBJECTS {hwPhysicalPortIfIndex, hwPhysicalPortName}
+        STATUS current
+        DESCRIPTION
+            "Optical modules do not support single-fiber optical modules."
+        ::= { hwPortNotifications 319 }   
+
+        hwE1CasAlarm NOTIFICATION-TYPE
+        OBJECTS {
+        hwPhysicalPortName}
+        STATUS current
+        DESCRIPTION
+        "This object indicates that the number of errored seconds exceeds a specified threshold."
+        ::= { hwPortNotifications 320 }
+
+        hwE1CasAlarmResume NOTIFICATION-TYPE
+        OBJECTS {
+        hwPhysicalPortName}
+        STATUS current
+        DESCRIPTION
+        "This object indicates that the number of errored seconds falls below a specified threshold."
+        ::= { hwPortNotifications 321 }
+
+-- 1.3.6.1.4.1.2011.5.25.157.2.322
+        hwFlexEGrpPaddingMismatch NOTIFICATION-TYPE
+        OBJECTS {hwFlexEGroupIndex, hwFlexEGroupName}
+        STATUS current
+        DESCRIPTION
+        "The padding status of different PHYs in the FlexE group is inconsistent."
+        ::= { hwPortNotifications 322 }
+
+        hwFlexEGrpPaddingMismatchResume NOTIFICATION-TYPE
+        OBJECTS {hwFlexEGroupIndex, hwFlexEGroupName}
+        STATUS current
+        DESCRIPTION
+        "The padding status of different PHYs in the FlexE group is inconsistent."
+        ::= { hwPortNotifications 323 }
+
+		-- 1.3.6.1.4.1.2011.5.25.157.2.324
+	hwOpticalAmplifierGainHigh NOTIFICATION-TYPE
+        OBJECTS {hwPhysicalPortIfIndex, hwPhysicalPortName}
+        STATUS current
+        DESCRIPTION
+            "The gain of the optical module is too high."
+        ::= { hwPortNotifications 324 }
+
+		-- 1.3.6.1.4.1.2011.5.25.157.2.325
+	hwOpticalAmplifierGainHighResume NOTIFICATION-TYPE
+        OBJECTS {hwPhysicalPortIfIndex, hwPhysicalPortName}
+        STATUS current
+        DESCRIPTION
+            "The gain of the optical module too high has resumed."
+        ::= { hwPortNotifications 325 }
+
+		-- 1.3.6.1.4.1.2011.5.25.157.2.326
+	hwOpticalAmplifierGainLow NOTIFICATION-TYPE
+        OBJECTS {hwPhysicalPortIfIndex, hwPhysicalPortName}
+        STATUS current
+        DESCRIPTION
+            "The gain of the optical module is too low."
+        ::= { hwPortNotifications 326 }
+
+		-- 1.3.6.1.4.1.2011.5.25.157.2.327
+	hwOpticalAmplifierGainLowResume NOTIFICATION-TYPE
+        OBJECTS {hwPhysicalPortIfIndex, hwPhysicalPortName}
+        STATUS current
+        DESCRIPTION
+            "The gain of the optical module too low has resumed."
+        ::= { hwPortNotifications 327 }
+
+
+
     hwPortTotalStatistics OBJECT IDENTIFIER ::= { hwPortMIBObjects 25 }
     
 		-- 1.3.6.1.4.1.2011.5.25.157.1.25.1
@@ -12959,7 +13090,8 @@ hwPhysicalPortPreFecPowerStatistics OBJECT-TYPE
             hwEthernetSubinterfaceStatisticEnable,
             hwEthernetJumboframeMaxLength,
             hwEthernetComboType,
-            hwEthernetPortMode
+            hwEthernetPortMode,
+            hwEthernetCarrierTransitions
         }
         STATUS current
         DESCRIPTION
@@ -13353,7 +13485,16 @@ hwPhysicalPortPreFecPowerStatistics OBJECT-TYPE
             hwFlexEGrpNegotiationFail,
             hwFlexEGrpNegotiationFailResume,
             hwFlexEGrpSpeedModeMismatch,
-            hwFlexEGrpSpeedModeMismatchResume
+            hwFlexEGrpSpeedModeMismatchResume,
+            hwPortSfpNotSupportSingleFiber,
+	    hwE1CasAlarm,
+            hwE1CasAlarmResume,
+            hwFlexEGrpPaddingMismatch,
+            hwFlexEGrpPaddingMismatchResume,
+            hwOpticalAmplifierGainHigh,
+            hwOpticalAmplifierGainHighResume,
+            hwOpticalAmplifierGainLow,
+            hwOpticalAmplifierGainLowResume
          }
         STATUS current
         DESCRIPTION

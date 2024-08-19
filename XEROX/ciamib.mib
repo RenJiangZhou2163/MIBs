@@ -1,0 +1,1769 @@
+
+
+            NEST-Config-MIB DEFINITIONS ::= BEGIN
+
+            --
+            -- This MIB document is 'WORK IN PROGRESS' of Novell, Inc.
+            -- As such, it is subject to change, without notice, until
+            -- such time as it is formally released.
+            --
+
+            --
+            -- Last Updated: December 12, 1995
+            --
+
+            IMPORTS
+               enterprises, Counter
+                  FROM RFC1155-SMI
+
+               OBJECT-TYPE
+                  FROM RFC-1212;
+
+            novell       OBJECT IDENTIFIER ::= { enterprises 23 }
+            mibDoc       OBJECT IDENTIFIER ::= { novell 2 }
+            esNEST       OBJECT IDENTIFIER ::= { mibDoc 32 }
+            -- The prefix 'es' in esNEST stands for Embedded Systems.
+
+            -- Note that the NEST Trap MIB "esTrap" is {esNEST 1} and
+            -- therefore is not referenced here.
+
+            -- The branch {esNEST 2} is reserved for future NEST
+            -- Application MIBs, hence not referenced here.
+
+            -- The Generic Configuration esGenericConfig is  
+            -- {esNEST 3} and all the other specific configuration
+            -- tables and groups follow.
+
+            -- Even though not defined here, it should be noted that
+            -- {esNEST 255} is reserved for creating a whole other 
+            -- branch for adding more configuration items if needed.
+
+            esGenericConfig OBJECT IDENTIFIER ::= { esNEST 3 }
+            esSystem        OBJECT IDENTIFIER ::= { esNEST 4 }
+            esSNMP          OBJECT IDENTIFIER ::= { esNEST 5 }
+            esLSL           OBJECT IDENTIFIER ::= { esNEST 6 }
+            esLSLStats      OBJECT IDENTIFIER ::= { esNEST 7 }
+            esMLID          OBJECT IDENTIFIER ::= { esNEST 8 }
+            esSAP           OBJECT IDENTIFIER ::= { esNEST 9 }
+            esIPX           OBJECT IDENTIFIER ::= { esNEST 10 }
+            esSPX           OBJECT IDENTIFIER ::= { esNEST 11 }
+            esReq           OBJECT IDENTIFIER ::= { esNEST 12 }
+            esReqPB         OBJECT IDENTIFIER ::= { esNEST 13 }
+
+            --
+            -- textual conventions
+            --
+
+            DateAndTime ::= OCTET STRING (SIZE (8 | 11))
+            --        A date-time specification for the local time of day.
+            --        This data type is intended to provide a consistent
+            --        method of reporting date information.
+            --
+            --            field  octets  contents                  range
+            --            _____  ______  ________                  _____
+            --              1      1-2   year                      0..65536
+            --                           (in network byte order)
+            --              2       3    month                     1..12
+            --              3       4    day                       1..31
+            --              4       5    hour                      0..23
+            --              5       6    minutes                   0..59
+            --              6       7    seconds                   0..60
+            --                           (use 60 for leap-second)
+            --              7       8    deci-seconds              0..9
+            --              8       9    direction from UTC        "+" / "-"
+            --                           (in ascii notation)
+            --              9      10    hours from UTC            0..11
+            --             10      11    minutes from UTC          0..59
+            --
+            --            Note that if only local time is known, then
+            --            timezone information (fields 8-10) is not present.
+
+
+
+            InternationalDisplayString ::= OCTET STRING
+            --  This data type is used to model textual information in some
+            --  character set.  A network management station should use a local
+            --  algorithm to determine which character set is in use and how it
+            --  should be displayed.  Note that this character set may be encoded
+            --  with more than one octet per symbol, but will most often be NVT
+            --  ASCII.
+
+            -- A node address of a LAN board in network byte order.
+            --
+            NodeAddress         ::= OCTET STRING (SIZE(6))
+
+            ConfigName          ::= OCTET STRING (SIZE(0..48))
+            ServerName          ::= OCTET STRING (SIZE(0..48))
+
+
+            --
+            -- NEST Configuration Subject Table
+            --
+            -- This table is optional
+
+            esCfgSubjectTable OBJECT-TYPE
+               SYNTAX SEQUENCE OF EsCfgSubjectEntry
+               ACCESS not-accessible
+               STATUS mandatory
+               DESCRIPTION
+                      "This table is provided as a means to get all subjects
+                      and items from the NEST Configuration, including custom
+                      configuration items."
+               ::= { esGenericConfig 1 }
+
+            esCfgSubjectEntry OBJECT-TYPE
+               SYNTAX EsCfgSubjectEntry
+               ACCESS not-accessible
+               STATUS mandatory
+               DESCRIPTION
+                      "An entry in the NEST Configuration Subject Table 
+                      describing a single configuraton subject."
+               INDEX  { esCfgSubjectID }
+               ::= { esCfgSubjectTable 1 }
+
+            EsCfgSubjectEntry ::= SEQUENCE {
+                 esCfgSubjectID                 INTEGER,
+                 esCfgSubjectLabel              ConfigName
+               }
+
+            esCfgSubjectID OBJECT-TYPE
+               SYNTAX INTEGER 
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "A unique value for each NEST Configuration subject."
+               ::= { esCfgSubjectEntry 1 }
+
+            esCfgSubjectLabel OBJECT-TYPE
+               SYNTAX ConfigName
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The configuration subject label or name."
+               ::= { esCfgSubjectEntry 2 }
+
+            --
+            -- NEST Configuration Item Table
+            --
+            -- This table is optional
+
+            esCfgItemTable OBJECT-TYPE
+               SYNTAX SEQUENCE OF EsCfgItemEntry
+               ACCESS not-accessible
+               STATUS mandatory
+               DESCRIPTION
+                      "The NEST Configuration Item Table lists the 
+                      configuration items for each and every subject
+                      item in the NEST Configuration Subject
+                      Table."
+               ::= { esGenericConfig 2 }
+
+            esCfgItemEntry OBJECT-TYPE
+               SYNTAX EsCfgItemEntry
+               ACCESS not-accessible
+               STATUS mandatory
+               DESCRIPTION
+                      "An entry in the NEST Configuration Item Table 
+                      describing a single configuraton subject item."
+               INDEX  { esCfgItemSubjectID, esCfgItemID }
+               ::= { esCfgItemTable 1 }
+
+            EsCfgItemEntry ::= SEQUENCE {
+                 esCfgItemSubjectID             INTEGER,
+                 esCfgItemID                    INTEGER,
+                 esCfgItemLabel                 ConfigName,
+                 esCfgItemType                  INTEGER,
+                 esCfgItemTypeQuantifier        INTEGER,
+                 esCfgItemFlags                 INTEGER,
+                 esCfgItemSize                  INTEGER,
+                 esCfgItemNumericHigh           INTEGER,
+                 esCfgItemNumericLow            INTEGER,
+                 esCfgItemString                InternationalDisplayString
+               }
+
+            esCfgItemSubjectID OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "A number that uniquely identifies a NEST Configuration
+                      subject.  The value of this object for a particular 
+                      subject has the same value as the esCfgSubjectID 
+                      object for the same subject."
+               ::= { esCfgItemEntry 1 }
+
+            esCfgItemID OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "An index which uniquely identifies this item within
+                      the subject."
+               ::= { esCfgItemEntry 2 }
+                                      
+            esCfgItemLabel OBJECT-TYPE
+               SYNTAX ConfigName
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The configuration item label or name."
+               ::= { esCfgItemEntry 3 }
+
+            esCfgItemType OBJECT-TYPE
+               SYNTAX INTEGER {
+                           other(1),
+                           unknown(2),
+                           numeric(3),
+                           string(4),
+                           arrayOfBytes(5),
+                           password(6)
+                      }
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "This object indicates what type of value this item
+                      is."
+               ::= { esCfgItemEntry 4 }
+
+            esCfgItemTypeQuantifier OBJECT-TYPE
+               SYNTAX INTEGER {
+                           other(1),
+                           unknown(2),
+                           signed(3),
+                           unsigned(4),
+                           character(5),
+                           boolean(6),
+                           date(7),
+                           delay(8),
+                           radioButton(9),
+                           textPassword(10),
+                           nestPassword(11),
+                           string16(12)
+                      }
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "A value that further quantifies the esCfgItemType.
+                      Possible values for type numeric are: signed, 
+                      unsigned, character, boolean, date(32 bits), delay,
+                      and radioButton.  Possible values for type passwword 
+                      are textPassword and nestPassword.  For values of 
+                      type string and arrayOfBytes the value should be
+                      unknown."
+               ::= { esCfgItemEntry 5 }
+
+            esCfgItemFlags OBJECT-TYPE
+               SYNTAX INTEGER 
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "This value indicates the nature of the item and
+                      possibly how to display the item.
+
+                      The value is a bit mask as 
+                      follows:
+                         Nature of item
+                            NO_FLAGS                     0
+                            FLAG_IS_READ            0x0001  
+                            FLAG_IS_WRITE           0x0002  
+                            FLAG_DYNAMIC            0x0004
+                            FLAG_UNICODE            0x8000
+                         display characteristics
+                            Time and delay flags for numeric values only:
+                               FLAG_SHOWEDIT_YEAR      0x0400
+                               FLAG_SHOWEDIT_MONTH     0x0200
+                               FLAG_SHOWEDIT_DAY       0x0100
+                               FLAG_SHOWEDIT_HOURS     0x0080
+                               FLAG_SHOWEDIT_MINUTES   0x0040
+                               FLAG_SHOWEDIT_SECONDS   0x0020
+                               FLAG_SHOWEDIT_FULLTIME (0x07E0) 
+                               FLAG_SHOWEDIT_MILLISEC  0x0010
+                            If type numeric boolean then value is a bit 
+                            mask as follows:
+                               FLAG_SHOW_YES_NO        0x0010
+                               FLAG_SHOW_ON_OFF        0x0020
+                            If type numeric then the following values will 
+                            tell if it is a slider and what kind of slider 
+                            it is:
+                               FLAG_SHOW_AS_SLIDER     0x1000  
+                               FLAG_SHOW_VALUE         0x1010
+                               FLAG_SLIDER_REVERSED    0x1020
+                               FLAG_SLIDER_HORIZONTAL  0x1040
+                            Pull down Flags for Radio Buttons only:
+                               FLAG_PULL_DOWN          0x1000"
+               ::= { esCfgItemEntry 6 }
+
+            esCfgItemSize OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The size of the value in bytes."
+               ::= { esCfgItemEntry 7 }
+
+            esCfgItemNumericHigh OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The current high order 4 bytes if the item type is
+                      numeric, Zero otherwise. This value is only valid for 
+                      NEST versions that support eight byte numeric values."
+               ::= { esCfgItemEntry 8 }
+
+            esCfgItemNumericLow OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The current low order 4 bytes if the item type is 
+                      numeric, Zero otherwise."
+               ::= { esCfgItemEntry 9 }
+
+            esCfgItemString OBJECT-TYPE
+               SYNTAX InternationalDisplayString
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "This value depends on the type field.  If the type is
+                      a string or an array of bytes then this value is set.  
+                      If the value is of numeric type and is also of type
+                      radio button then the value is the string describing
+                      the radio button.  In all other cases the value will
+                      be the zero-length string.  Also if the value is of
+                      type password, then the value will be the zero-length
+                      string.  Passwords are not displayed."
+               ::= { esCfgItemEntry 10 }
+
+            --
+            -- NEST Configuration Item Extended Table
+            --
+            -- This table is optional
+
+            esCfgItemExtendedTable OBJECT-TYPE
+               SYNTAX SEQUENCE OF EsCfgItemExtendedEntry
+               ACCESS not-accessible
+               STATUS mandatory
+               DESCRIPTION
+                      "The NEST Configuration Item Extended Table lists 
+                      the configuration items extended objects for each and
+                      every subject item in the NEST Configuration Subject
+                      Table."
+               ::= { esGenericConfig 3 }
+
+            esCfgItemExtendedEntry OBJECT-TYPE
+               SYNTAX EsCfgItemExtendedEntry
+               ACCESS not-accessible
+               STATUS mandatory
+               DESCRIPTION
+                      "An entry in the NEST Configuration Item Extended Table 
+                      describing a single configuraton items extended 
+                      objects."
+               INDEX  { esCfgItemExtendedSubjectID, esCfgItemExtendedID }
+               ::= { esCfgItemExtendedTable 1 }
+
+            EsCfgItemExtendedEntry ::= SEQUENCE {
+                  esCfgItemExtendedSubjectID     INTEGER,
+                  esCfgItemExtendedID            INTEGER,
+                  esCfgItemMinLow                INTEGER,
+                  esCfgItemMinHigh               INTEGER,
+                  esCfgItemMaxLow                INTEGER,
+                  esCfgItemMaxHigh               INTEGER,
+                  esCfgItemMinLabel              InternationalDisplayString,
+                  esCfgItemMaxOrEditMaskLabel    InternationalDisplayString,
+                  esCfgItemDetailLabel           InternationalDisplayString
+               }
+
+            esCfgItemExtendedSubjectID OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "A number that uniquely identifies a NEST Configuration
+                      subject.  The value of this object for a particular 
+                      subject has the same value as the esCfgSubjectID 
+                      object for the same subject."
+               ::= { esCfgItemExtendedEntry 1 }
+
+            esCfgItemExtendedID OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "A number that uniquely identifies a NEST Configuration
+                      Subject Item.  The value of this object for a particular 
+                      subject item has the same value as the esCfgItemID 
+                      object for the same subject item."
+               ::= { esCfgItemExtendedEntry 2 }
+
+            esCfgItemMinLow OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The low order 4 bytes of the minimum value that the 
+                      item can be, if the item type is numeric.  If the item
+                      is not numeric, then this object will be zero."
+               ::= { esCfgItemExtendedEntry 3 }
+
+            esCfgItemMinHigh OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The high order 4 bytes of the minimum value that the 
+                      item can be, if the item type is numeric.  If the item
+                      is not numeric, then this object will be zero. This 
+                      value is only valid for NEST versions that support 
+                      eight byte numeric values."
+               ::= { esCfgItemExtendedEntry 4 }
+
+            esCfgItemMaxLow OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The low order 4 bytes of the maximum value that the 
+                      item can be, if the item type is numeric.  If the item
+                      is not numeric, then this object will be zero."
+               ::= { esCfgItemExtendedEntry 5 }
+
+            esCfgItemMaxHigh OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The high order 4 bytes of the maximum value that the 
+                      item can be, if the item type is numeric.  If the item
+                      is not numeric, then this object will be zero. This 
+                      value is only valid for NEST versions that support 
+                      eight byte numeric values."
+               ::= { esCfgItemExtendedEntry 6 }
+
+            esCfgItemMinLabel OBJECT-TYPE
+               SYNTAX InternationalDisplayString
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "If the item is a numeric slider, then this object 
+                      indicates the minimum label for the item, otherwise
+                      this object is not applicable and the zero length
+                      string will be given to denote this."
+               ::= { esCfgItemExtendedEntry 7 }
+
+            esCfgItemMaxOrEditMaskLabel OBJECT-TYPE
+               SYNTAX InternationalDisplayString
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "If the item is a numeric slider, then this object is
+                      the maximum label for the item.  If the item is a value
+                      of type string, then this object is that items edit 
+                      mask.  If the item is neither a numeric slider or type 
+                      string, then this object is not applicable and the zero
+                      length string will be given to denote this."
+               ::= { esCfgItemExtendedEntry 8 }
+
+            esCfgItemDetailLabel OBJECT-TYPE
+               SYNTAX InternationalDisplayString
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The detail label for this configuration item.  This
+                      label is optional and may not exist.  If this object
+                      is not applicable, then a zero length string will be
+                      given."
+               ::= { esCfgItemExtendedEntry 9 }
+
+
+            --
+            -- The NetWare Embedded Systems System Group
+            --
+
+            -- The address of the NEST device is found in the ifTable
+            -- of the MIB-II MIB, hence it is redundant to include it here.
+
+            esSystemMaker OBJECT-TYPE
+               SYNTAX ConfigName
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The manufacturer or maker of the NEST device."
+               ::= { esSystem 1 }
+
+            esSystemModel OBJECT-TYPE
+               SYNTAX ConfigName
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The name for the NEST device as provided by the OEM."
+               ::= { esSystem 2 }
+
+            esSystemSerialNumber OBJECT-TYPE
+               SYNTAX ConfigName
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The serial number for the NEST device."
+               ::= { esSystem 3 }
+
+            esSystemName OBJECT-TYPE
+               SYNTAX ConfigName
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "This is the end-user's customized device name."
+               ::= { esSystem 4 }
+
+            esSystemOEMVersionMajor OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The OEM's major version number."
+               ::= { esSystem 5 }
+
+            esSystemOEMVersionMinor OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The OEM's minor version number."
+               ::= { esSystem 6 }
+
+            esSystemOEMVersionRelease OBJECT-TYPE
+               SYNTAX InternationalDisplayString (SIZE(0..1))
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The release of the NEST version running
+                      on this device.  This value should be an ASCII 
+                      character in the range ' ' to  'z'."
+               ::= { esSystem 7 }
+
+            esSystemType OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "This value indicates the type of the NEST device.
+                      A value of zero is returned if the type of the NEST
+                      device is unknown."
+               ::= { esSystem 8 }
+
+            esSystemTime OBJECT-TYPE
+               SYNTAX DateAndTime
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The date and time kept by this NEST device.  This
+                      value also includes the hours from UTC determined by 
+                      the time zone."
+               ::= { esSystem 9 }
+
+            esSystemLastBootTime OBJECT-TYPE
+               SYNTAX DateAndTime
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The time when this NEST device was last restarted."
+               ::= { esSystem 10 }
+
+            esSystemLastConfigTime OBJECT-TYPE
+               SYNTAX DateAndTime
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The time the NEST device was last configured,
+                      if 0, the NEST device has not been configured."
+               ::= { esSystem 11 }
+
+            -- only applicable if config tool resident
+            esSystemConfigPacketSignatures OBJECT-TYPE
+               SYNTAX INTEGER {
+                           notApplicable(1),
+                           configNeverSigns(2),
+                           configSignsOnClientRequest(3),
+                           configSignsIfClientCapable(4),
+                           configMandatesSigning(5)
+                      }
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The security level currently in force for NEST 
+                      configuration extended security."
+               ::= { esSystem 12 }
+
+            -- redundant already in MIB-II MIB 
+            esSystemLocation OBJECT-TYPE
+               SYNTAX ConfigName
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "This field describes where the device is physically
+                      located. You may want to adopt a standard naming 
+                      convention."
+               ::= { esSystem 13 }
+
+            -- redundant already in MIB-II MIB 
+            esSystemContact OBJECT-TYPE
+               SYNTAX ConfigName
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "This field describes who to contact with respect to 
+                      anything pertaining to this device."
+               ::= { esSystem 14 }
+
+            --
+            -- The SNMP Group
+            --
+
+            -- Community names are not available, for security reasons.
+
+            esSNMPVerboseState OBJECT-TYPE
+               SYNTAX INTEGER {
+                      notApplicable(1),
+                      verboseOn(2),
+                      verboseOff(3)
+               }
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "Indicates if verbose messaging is enabled."
+               ::= { esSNMP 1 }
+
+            esSNMPTrapTarget OBJECT-TYPE
+               SYNTAX InternationalDisplayString (SIZE(0..128))
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "A string of addresses, where each address is separated 
+                      by white space.  The first octet of each address 
+                      represents the transport type.  Only the IPX and IP 
+                      transports are supported currently.  The IPX transport 
+                      is indicated by an ASCII zero and the IP transport is 
+                      indicated by an ASCII 1."
+               ::= { esSNMP 2 }
+
+            esSNMPAuthTrapsState OBJECT-TYPE
+               SYNTAX INTEGER {
+                      notApplicable(1),
+                      authTrapsOn(2),
+                      authTrapsOff(3)
+               }
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "Indicates if authentication trap handling is enabled."
+               ::= { esSNMP 3 }
+
+            -- The following two objects esSNMPTrapFilterList and
+            -- esSNMPTrapFilterSeverity facilitate filtering of traps that
+            -- are created by the NESTMessageLog API call only.
+
+            esSNMPTrapFilterList OBJECT-TYPE
+               SYNTAX InternationalDisplayString
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "A string of message IDs, where each ID is exactly 8
+                      bytes. Each byte in ASCII represents a hexadecimal
+                      nibble value of the message ID.  A message ID has two 
+                      parts a two byte component ID and following it, in 
+                      network order, a two byte message ID."
+               ::= { esSNMP 4 }
+
+            esSNMPTrapFilterSeverity OBJECT-TYPE
+               SYNTAX INTEGER {
+                      passEverything(1),
+                      passInfoAndHigher(2),
+                      passWarningAndHigher(3),
+                      passNonFatalAndHigher(4),
+                      passFatalAndHigher(5),
+                      passHigherThanFatal(6)
+               }
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "Indicates at what level to filter traps by severity.
+                      All traps with lesser severity than this level are 
+                      filtered out.  For example, if the value 
+                      passNonFatalAndHigher is selected then only traps of 
+                      severity Non-Fatal and Fatal are forwarded on by SNMP 
+                      services.  If the value passEverything is set, then 
+                      no filtering based on severity will occur."
+               ::= { esSNMP 5 }
+
+            esSNMPGetUser OBJECT-TYPE
+               SYNTAX ConfigName
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The name of the user used for rights when browsing 
+                      through the configuration items in order to create
+                      the tables esCfgItemTable and esCfgItemExtendedTable."
+               ::= { esSNMP 6 }
+
+            esSNMPSetUser OBJECT-TYPE
+               SYNTAX ConfigName
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The name of the user used for rights when setting
+                      NEST configuration items in the esCfgItemTable."
+               ::= { esSNMP 7 }
+
+            --
+            -- The Link Support Layer Group
+            --
+
+            -- management stations should collect LAN statistics through the
+            -- standard MIB II, various Transmission MIBs and Protocol
+            -- MIBs.
+
+            esLSLMaxPacketBufferSize OBJECT-TYPE
+               SYNTAX INTEGER (576..1518)
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The maximum size in bytes of a packet receive buffers."
+               ::= { esLSL 1 }
+
+            esLSLReceiveBuffers OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The current number of packet receive buffers being
+                      used."
+               ::= { esLSL 2 }
+
+            esLSLStackCount OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of protocol stacks supported."
+               ::= { esLSL 3 }
+
+            esLSLMemoryPoolSize OBJECT-TYPE
+               SYNTAX INTEGER (0..65530)
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The LSL memory pool size in bytes."
+               ::= { esLSL 4 }
+
+            -- the number of boards can be found in MIB-II, look at ifTable
+
+            --
+            -- The Link Support Layer Statistics Group
+            --
+            -- This group is optional
+            -- It contains the lesser known statistics about LSL
+
+            --
+            -- LSLStatistics  - esLSLStats Group
+            --
+            -- The following statistics are available
+            --   majorVersion
+            --   minorVersion
+            --   TotalTXPackets;
+            --   GetECBBfrs   
+            --   GetECBFails
+            --   AESEventCounts
+            --   PostpondedEvents
+            --   ECBCxlFails
+            --   ValidBfrsReused
+            --   EnqueuedSendCnt;
+            --   TotalRXPackets;
+            --   UnclaimedPackets
+            --   NumCustom
+            --   ErrorAllocatingMoreReceiveBuffers  
+            --      (NetWare Server only, not in NEST)
+            --   ErrorAllocatingDescription[38]
+            --      (NetWare Server only, not in NEST)
+            --
+            -- We are only instrumenting the statistics that we have
+            -- deemed the most important for a System Administrator to know
+            -- about to manage the NEST device.
+
+
+            esLSLOutPkts OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of packets transmitted from the Link
+                      Support Layer (LSL). The LSL packets in and out counts
+                      can be used to measure the network traffic into and out
+                      of the device."
+               ::= { esLSLStats 1 }
+
+            esLSLInPkts OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of packets received by the Link Support
+                      Layer (LSL).  The LSL packets in and out counts can be
+                      used to measure the network traffic into and out of the
+                      device."
+               ::= { esLSLStats 2 }
+
+            esLSLEnqSendCount OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The Link Support Layer's Enqueued Send Count, this is
+                      the current number of send packets that have been
+                      placed in a send queue."
+               ::= { esLSLStats 3 }
+
+            esLSLUnclaimedPkts OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The Link Support Layer's Unclaimed Packets, the value
+                      indicates packets that have come in with a protocol ID
+                      that is not supported or not found in a board protocol
+                      list. "
+               ::= { esLSLStats 4 }
+
+
+            --
+            -- The Odi Group
+            --
+
+            --
+            -- The MLID Table
+            --
+            -- MLID Contents
+            -- BYTE DriverCFG_MajorVersion;version of config table.
+            -- BYTE DriverCFG_MinorVersion;
+            -- BYTE DriverNodeAddress[6];
+            -- WORD DriverModeFlags;
+            -- WORD DriverBoardNumber;     logical board number assigned by LSL
+            -- WORD DriverBoardInstance;   number of the physical card that 
+            --                             logical card is using
+            -- LONG DriverMaximumSize;     max send or receive packet size
+            -- LONG DriverMaxRecvSize;     max size or best receive size 
+            -- LONG DriverRecvSize;        minimum size or worst receive size
+            -- LONG DriverCardName;
+            -- LONG DriverShortName;
+            -- LONG DriverMediaType;       frame type (string)
+            -- WORD DriverCardID;          IMSP assigned number
+            -- WORD DriverMediaID;         number for link-level envelope
+            -- WORD DriverTransportTime;   line speed
+            -- BYTE DriverMajorVersion;
+            -- BYTE DriverMinorVersion;
+            -- WORD DriverFlags;
+            -- WORD DriverSendRetries;
+            -- WORD DriverSharingFlags;
+            -- WORD DriverSlot;     
+            -- WORD DriverIOPortsAndLengths[4];
+            -- LONG DriverMemoryDecode0;
+            -- WORD DriverLength0;
+            -- LONG DriverMemoryDecode1;
+            -- WORD DriverLength1;
+            -- BYTE DriverInterrupt[2];
+            -- BYTE DriverDMAUsage[2];
+            -- LONG DriverCommandString;
+            -- BYTE DriverLogicalName[18];
+            -- LONG DriverLinearMemory[2];
+            -- WORD DriverChannelNumber;
+    
+    
+            -- Network information and statistics are available in
+            -- MIB-II, and the various transmission and protocol MIBs.
+            --
+
+            -- MLID fields not supported:
+            --   ModeFlags, src routing, frameid, driver flags, send retries,
+            --   sharing flags, driver slot (only applicable if PS/2 or EISA),
+            --   resource tag, command string, and logical name
+            --
+            -- maximum size, max receive size, driver receive size, frame type 
+            -- are in the ifTable of MIB-II
+            -- 
+            -- The frame type in the IfTable is represented by the ifType 
+            -- object which maps ETHERNET II to the ethernet_csmacd ifType and 
+            -- the other three customary Novell frame types to the same ifType 
+            -- iso88023_csmacd.  The ARCnet "NOVELL_RX-NET" is reported as 
+            -- other.  Because of this ambiguity, frame type will be included 
+            -- here.
+
+            esMLIDCount OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of MLID Configuration entries contained in 
+                      device."
+               ::= { esMLID 1 }
+
+            esMLIDTable OBJECT-TYPE
+               SYNTAX SEQUENCE OF EsMLIDEntry
+               ACCESS not-accessible
+               STATUS mandatory
+               DESCRIPTION
+                      "General information about each logical board.
+                      The MLID Configuration Table."
+               ::= { esMLID 2 }
+
+            esMLIDEntry OBJECT-TYPE
+               SYNTAX EsMLIDEntry
+               ACCESS not-accessible
+               STATUS mandatory
+               DESCRIPTION
+                      "An entry in the NEST MLID Table describing a single 
+                      MLID Table instance."
+               INDEX  { esMLIDBoardInstance, esMLIDFrameID }
+               ::= { esMLIDTable 1 }
+
+            EsMLIDEntry ::= SEQUENCE {
+                 esMLIDBoardInstance    INTEGER,
+                 esMLIDFrameID          INTEGER,
+                 esMLIDNodeAddress      NodeAddress,
+                 esMLIDBoardNumber      INTEGER,
+                 esMLIDDescr            InternationalDisplayString,
+                 esMLIDDriverDescr      InternationalDisplayString,
+                 esMLIDLineSpeed        INTEGER,
+                 esMLIDDriverMajorVer   INTEGER,
+                 esMLIDDriverMinorVer   INTEGER,
+                 esMLIDPort1            INTEGER,
+                 esMLIDPort1Len         INTEGER,
+                 esMLIDPort2            INTEGER,
+                 esMLIDPort2Len         INTEGER,
+                 esMLIDMem1             INTEGER,
+                 esMLIDMem1Len          INTEGER,
+                 esMLIDMem2             INTEGER,
+                 esMLIDMem2Len          INTEGER,
+                 esMLIDDMA1             INTEGER,
+                 esMLIDDMA2             INTEGER,
+                 esMLIDInterrupt1       INTEGER,
+                 esMLIDInterrupt2       INTEGER,
+                 esMLIDSlot             INTEGER
+               }
+     
+            esMLIDBoardInstance OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "This field contains the number of the physical card 
+                      that the logical board is using."
+               ::= { esMLIDEntry 1 }
+     
+            esMLIDFrameID OBJECT-TYPE
+               SYNTAX INTEGER {
+                           unknown(1),
+                           virtualLAN(2),
+                           localtalk(3),
+                           ethernet-II(4),
+                           ethernet-8022(5),
+                           tokenring(6),
+                           ethernet-8023(7),
+                           token-8024(8),
+                           novell-PCN2(9),
+                           gnet(10),
+                           pronet10(11),
+                           ethernet-SNAP(12),
+                           tokenring-SNAP(13),
+                           lanpacII(14),
+                           isdn(15),
+                           novell-RxNet(16),
+                           ibmPCN2-8022(17),
+                           ibmPCN2-SNAP(18)
+                      }
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "This is a number used to identify the link-level
+                      envelop used by the MLID.  The ID is associated with
+                      a FrameType string."
+               ::= { esMLIDEntry 2 }
+     
+            esMLIDNodeAddress OBJECT-TYPE
+               SYNTAX NodeAddress
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The boards burnt-in MAC address."
+               ::= { esMLIDEntry 3 }
+     
+            esMLIDBoardNumber OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "This field contains the logical board number assigned
+                      to this LAN by the LSL."
+               ::= { esMLIDEntry 4 }
+     
+            esMLIDDescr OBJECT-TYPE
+               SYNTAX InternationalDisplayString (SIZE(0..128))
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "A description of the hardware for this LAN board.  This
+                      will usually include manufacturer, model, and version
+                      information."
+               ::= { esMLIDEntry 5 }
+     
+            esMLIDDriverDescr OBJECT-TYPE
+               SYNTAX InternationalDisplayString (SIZE(0..128))
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "A textual description of the driver for this adapter,
+                      usually the driver short name.  Usually eight bytes or
+                      less."
+               ::= { esMLIDEntry 6 }
+     
+            esMLIDLineSpeed OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "This field contains the speed of the line driver."
+               ::= { esMLIDEntry 7 }
+     
+            esMLIDDriverMajorVer OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The major version number of the adapter driver."
+               ::= { esMLIDEntry 8 }
+     
+            esMLIDDriverMinorVer OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The minor version number of the adapter driver."
+               ::= { esMLIDEntry 9 }
+     
+            esMLIDPort1 OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The primary I/O port block.  This is the base address
+                      of a block of I/O addresses decoded by the adapter.
+                      The value will be zero if there is no I/O address
+                      associated with this adapter."
+               ::= { esMLIDEntry 10 }
+
+            esMLIDPort1Len OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of I/O ports in the block starting at
+                      esMLIDPort1.  This value is used in conjunction
+                      with esMLIDPort1 to determine the I/O block used
+                      by the adapter.  The value will be zero if there is no
+                      I/O address associated with this adapter."
+               ::= { esMLIDEntry 11 }
+     
+            esMLIDPort2 OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The secondary I/O port block.  This is the base
+                      address of a block of I/O addresses decoded by the
+                      adapter.  The value will be zero if there is no
+                      secondary I/O address associated with this adapter."
+               ::= { esMLIDEntry 12 }
+     
+            esMLIDPort2Len OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of I/O ports in the block starting at
+                      esMLIDPort2.  This value is used in conjunction
+                      with esMLIDPort2 to determine the secondary I/O
+                      block used by the adapter.  The value will be zero if
+                      there is no I/O address associated with this adapter."
+               ::= { esMLIDEntry 13 }
+     
+            esMLIDMem1 OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The primary Memory Address.  This is the base address
+                      of the primary block of memory space decoded by the
+                      adapter. The value will be zero if there is no memory
+                      address associated with this adapter."
+               ::= { esMLIDEntry 14 }
+     
+            esMLIDMem1Len OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The length, in bytes, of the primary memory address
+                      block. From this value and esMLIDMem1, a
+                      determination can be made as to which memory address
+                      ranges are in use by the adapter."
+               ::= { esMLIDEntry 15 }
+
+            esMLIDMem2 OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The secondary Memory Address.  This is the address of
+                      the secondary block of memory space decoded by the
+                      adapter. The value will be zero if there is no
+                      secondary memory address associated with this adapter."
+               ::= { esMLIDEntry 16 }
+
+            esMLIDMem2Len OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The length, in bytes, of the secondary memory address
+                      block. From this value and esMLIDMem2, a
+                      determination can be made as to which memory address
+                      ranges are in use by the adapter."
+               ::= { esMLIDEntry 17 }
+     
+            esMLIDDMA1 OBJECT-TYPE
+               SYNTAX INTEGER (0..255)
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The primary DMA channel used by the adapter. The value
+                      will be 255 if this adapter does not use any DMA
+                      channel."
+               ::= { esMLIDEntry 18 }
+     
+            esMLIDDMA2 OBJECT-TYPE
+               SYNTAX INTEGER (0..255)
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The secondary DMA channel used by the adapter. The
+                      value will be 255 if this adapter does not use a
+                      secondary DMA channel."
+               ::= { esMLIDEntry 19 }
+     
+            esMLIDInterrupt1 OBJECT-TYPE
+               SYNTAX INTEGER (0..255)
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The primary interrupt vector used by the adapter. The
+                      value will be 255 if this adapter does not use any
+                      Interrupt."
+               ::= { esMLIDEntry 20 }
+     
+            esMLIDInterrupt2 OBJECT-TYPE
+               SYNTAX INTEGER (0..255)
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The secondary interrupt vector used by the adapter.
+                      The value will be 255 if this adapter does not use a
+                      secondary Interrupt."
+               ::= { esMLIDEntry 21 }
+     
+            esMLIDSlot OBJECT-TYPE
+               SYNTAX INTEGER (0..65535)
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The slot in which the adapter resides.  The value will
+                      be zero if the slot information is not available on the
+                      platform, such as an ISA based PC, otherwise the value
+                      will be the slot number the adapter resides.  The slot
+                      number starts from 1."
+               ::= { esMLIDEntry 22 }
+     
+            --
+            -- The MLID statistics are represented somewhat in MIB-II
+            --
+
+            --
+            -- The SAP Group
+            --
+            -- This group is optional
+            --
+
+            esSAPAdvertiseHop OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The initial number of HOPs that the NEST device should
+                      report when answering to a SAP request. Some old 
+                      routers assume a value of at least 1 although 0 is
+                      technically correct."
+               ::= { esSAP 1 }
+
+            esSAPQueryRetryCount OBJECT-TYPE
+               SYNTAX INTEGER (0..65535)
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "How many times a query packet should be sent before 
+                       failure."
+               ::= { esSAP 2 }
+
+            esSAPQueryTimeOut OBJECT-TYPE
+               SYNTAX INTEGER 
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of milli-seconds to elapse before timeout
+                      on a SAP Query reply."
+               ::= { esSAP 3 }
+
+            --
+            -- The IPX Group
+            --
+            -- This group is optional
+            -- It contains mainly statistics about IPX
+            --
+
+            esIPXVersionMajor OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The major version number of the IPX stack."
+               ::= { esIPX 1 }
+
+            esIPXVersionMinor OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The minor version number of the IPX stack."
+               ::= { esIPX 2 }
+
+            esIPXConfigSockets OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of sockets currently configured in IPX."
+               ::= { esIPX 3 }
+
+            esIPXOutRequests OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of send packet requests made to IPX."
+               ::= { esIPX 4 }
+
+            esIPXMalformRequests OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of IPX requests that were malformed packets."
+               ::= { esIPX 5 }
+
+            esIPXMaxOpenSockets OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The maximum number of sockets that can be opened at
+                      one time in IPX."
+               ::= { esIPX 6 }
+
+            esIPXNumberOfSocketsOpened OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The most IPX sockets ever opened at one time."
+               ::= { esIPX 7 }
+
+            esIPXOpenSocketFail OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of open socket requests that failed in IPX."
+               ::= { esIPX 8 }
+
+            esIPXListenECB OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of IPX Listen ECB requests made in IPX."
+               ::= { esIPX 9 }
+
+            esIPXCancelECB OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of cancel ECB requests made in IPX."
+               ::= { esIPX 10 }
+
+            esIPXRouterVersionMajor OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The major version number of the IPX Router."
+               ::= { esIPX 11 }
+
+            esIPXRouterVersionMinor OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The minor version number of the IPX Router."
+               ::= { esIPX 12 }
+
+            -- This counter is currently not supported in NEST and will 
+            -- therefore always report a zero.
+            esIPXRouterInTooManyHops OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of IPX packets discarded due to 
+                      exceeding the maximum hop count."
+               ::= { esIPX 13 }
+
+            esIPXRouterInHdrError OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "Indicates the number of IPX packets discarded due
+                      to errors in their headers, including any IPX
+                      header with a size less than the minimum of 30 bytes."
+               ::= { esIPX 14 }
+
+            -- This counter is currently not supported in NEST and will 
+            -- therefore always report a zero.
+            esIPXRouterInAddrError OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of IPX packets discarded because of 
+                      address errors."
+               ::= { esIPX 15 }
+
+            -- This counter is currently not supported in NEST and will 
+            -- therefore always report a zero.
+            esIPXRouterInForwDatagrams OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of IPX packets forwarded."
+               ::= { esIPX 16 }
+
+            -- This counter is currently not supported in NEST and will 
+            -- therefore always report a zero.
+            esIPXRouterInternetBroadcast OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of IPX broadcast packets forwarded."
+               ::= { esIPX 17 }
+
+            -- This counter is currently not supported in NEST and will 
+            -- therefore always report a zero.
+            esIPXRouterNoRoute OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of IPX packets discarded because no 
+                      route was found."
+               ::= { esIPX 18 }
+
+            esIPXRouterDiscard OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "Indicates that the IPX router was unable to get an
+                      ECB and had to discard the packet.  Possible reasons
+                      for failing to get an ECB are: system out of memory
+                      when a new ECB needed to be allocated, ECB list
+                      was empty when it should not have been, and a bad 
+                      socket number was given for the ECB."
+               ::= { esIPX 19 }
+
+            -- This counter is currently not supported in NEST and will 
+            -- therefore always report a zero.
+            esIPXRouterDelivered OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The total number of IPX packets delivered locally,
+                      including packets from local applications."
+               ::= { esIPX 20 }
+
+            -- This counter is currently not supported in NEST and will 
+            -- therefore always report a zero.
+            esIPXRouterUnknownSocket OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of IPX packets discarded because the
+                      destination socket was not open."
+               ::= { esIPX 21 }
+
+            --
+            -- The SPX Group
+            --
+            -- This group is optional
+            -- It contains mainly statistics about SPX
+
+            esSPXVersionMajor OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The major version number of SPX."
+               ::= { esSPX 1 }
+
+            esSPXVersionMinor OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The minor version number of SPX."
+               ::= { esSPX 2 }
+
+            esSPXConnections OBJECT-TYPE
+               SYNTAX INTEGER (1..800)
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of SPX connections."
+               ::= { esSPX 3 }
+
+            esSPXMinimumRetries OBJECT-TYPE
+               SYNTAX INTEGER (1..65535)
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "How many times a SPX packet should be sent before 
+                       failure."
+               ::= { esSPX 4 }
+
+            esSPXAbortTimeOut OBJECT-TYPE
+               SYNTAX INTEGER (1..65535)
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of milli-seconds to elapse before 
+                      abort timeout."
+               ::= { esSPX 5 }
+
+            esSPXListenTimeOut OBJECT-TYPE
+               SYNTAX INTEGER (1..65535)
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of milli-seconds to elapse before 
+                      listen timeout."
+               ::= { esSPX 6 }
+
+            esSPXVerifyTimeOut OBJECT-TYPE
+               SYNTAX INTEGER (1..65535)
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of milli-seconds to elapse before 
+                      verify timeout."
+               ::= { esSPX 7 }
+
+            esSPXMaxConnections OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The maximum of simultaneously opened connections in 
+                      SPX."
+               ::= { esSPX 8 }
+
+            esSPXNumberOfConnectionsOpen OBJECT-TYPE
+               SYNTAX INTEGER
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of connections currently open in SPX."
+               ::= { esSPX 9 }
+
+            esSPXEstablishConnectionRequests OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of SPX Establish Connection requests made 
+                      to SPX."
+               ::= { esSPX 10 }
+
+            esSPXEstablishConnectionFails OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of SPX Establish Connection requests made 
+                      to SPX that failed."
+               ::= { esSPX 11 }
+
+            esSPXListenForConnectionRequests OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of SPX Listen For Connection requests made 
+                      to SPX."
+               ::= { esSPX 12 }
+
+            esSPXListenForConnectionFails OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of SPX Listen For Connection requests made 
+                      to SPX that failed because the SPX Connection Table
+                      was full."
+               ::= { esSPX 13 }
+
+            esSPXSendPacketRequests OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of SPX Send Packet requests made to SPX."
+               ::= { esSPX 14 }
+
+            esSPXNoListenFails OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of SPX No Listen requests made to SPX that
+                      failed."
+               ::= { esSPX 15 }
+
+            esSPXSendPacketFails OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of SPX Send Packet requests made to SPX 
+                      that failed."
+               ::= { esSPX 16 }
+
+            esSPXSendReplyFails OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of SPX Send Reply requests made to SPX 
+                      that failed."
+               ::= { esSPX 17 }
+
+            esSPXAbortedConnectionRequests OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of SPX Connection requests made to SPX 
+                      that were aborted."
+               ::= { esSPX 18 }
+
+            esSPXListenPacketRequests OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "Indicates the number of SPX Listen Packet requests 
+                      made to SPX."
+               ::= { esSPX 19 }
+
+            esSPXListenPacketFails OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of SPX Listen Packet requests made to SPX
+                      that failed because applications have passed SPX a 
+                      packet whose associated ECB is malformed."
+               ::= { esSPX 20 }
+
+            esSPXIncomingPacket OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "Indicates the number of times that an incoming packet
+                      has been given to SPX."
+               ::= { esSPX 21 }
+
+            esSPXIncomingPacketFails OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "The number of times SPX has received and discarded
+                      a packet because the connection ID in the packet was
+                      wrong."
+               ::= { esSPX 22 }
+
+            esSPXIncomingDuplicatePacket OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "Indicates the number of times that SPX has discarded
+                      inbound packets because they were duplicates of 
+                      previously received packets."
+               ::= { esSPX 23 }
+
+            esSPXNoSessionListenECB OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "Indicates the number of times since SPX was loaded
+                      that SPX was forced to discard an inbound 
+                      SPXEstablishConnection packet because SPX lacked a
+                      corresponding SPXListenForConnection ECB."
+               ::= { esSPX 24 }
+
+            esSPXWatchdogDestroySession OBJECT-TYPE
+               SYNTAX Counter
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+                      "Indicates the number of times since SPX was loaded
+                      that the watchdog process destroyed a connection 
+                      because the connection was no longer valid."
+               ::= { esSPX 25 }
+
+            --
+            -- The Requester Group
+            --
+            -- This group is optional and will only be supported if
+            -- the requester is build into NEST
+     
+            esReqPrefServerName OBJECT-TYPE
+               SYNTAX ServerName
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The preferred server name, for default attachment."
+               ::= { esReq 1 }
+     
+            esReqPrefDirectoryTree OBJECT-TYPE
+               SYNTAX InternationalDisplayString
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The name of the NetWare Directory Services tree
+                      preferred.  Actually the SAP name with underscores.
+                      Or, a zero-length string if not applicable."
+               ::= { esReq 2 }
+     
+            esReqDSNameContext OBJECT-TYPE
+               SYNTAX InternationalDisplayString
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The NetWare Directory Services name context.
+                      Or, a zero-length string if not applicable."
+               ::= { esReq 3 }
+
+            esReqIPXChecksums OBJECT-TYPE
+               SYNTAX INTEGER {
+                           noChecksums(1),
+                           computeChecksums(2)
+                      }
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "Controls NCP IPX checksumming."
+               ::= { esReq 4 }
+     
+            esReqPacketSignatures OBJECT-TYPE
+               SYNTAX INTEGER {
+                           notApplicable(1),
+                           deviceNeverSigns(2),
+                           deviceSignsOnClientRequest(3),
+                           deviceSignsIfClientCapable(4),
+                           deviceMandatesSigning(5)
+                      }
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The security level currently in force on this NEST 
+                      device for NCP requests."
+               ::= { esReq 5 }
+
+            --
+            -- The Requester Packet Burst Group
+            --
+            -- This group is optional and will only be supported if
+            -- the requester is build into NEST
+
+            esReqPBState OBJECT-TYPE
+               SYNTAX INTEGER {
+                      notApplicable(1),
+                      packetburstOn(2),
+                      packetburstOff(3)
+                 }
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "Indicates if packet burst is enabled or not."
+               ::= { esReqPB 1 }
+
+            esReqPBBufferCount OBJECT-TYPE
+               SYNTAX INTEGER (8..64)
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "Indicates the number of packet burst buffers."
+               ::= { esReqPB 2 }
+
+            esReqPBReadWindow OBJECT-TYPE
+               SYNTAX INTEGER (3..64)
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The packet burst read window."
+               ::= { esReqPB 3 }
+
+            esReqPBWriteWindow OBJECT-TYPE
+               SYNTAX INTEGER (3..64)
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+                      "The packet burst write window."
+               ::= { esReqPB 4 }
+
+
+            END

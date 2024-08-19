@@ -1,12 +1,15 @@
 -- ==================================================================
--- Copyright (C) 2020 by HUAWEI TECHNOLOGIES. All rights reserved.
+-- Copyright (C) 2021 by HUAWEI TECHNOLOGIES. All rights reserved.
 -- Description:   This MIB is used for defining the HUAWEI private   
 --                extended Multiprotocol Label Switching (MPLS) MIB 
 --                object. All MIB objects are used to describe private
 --                managed objects and trap definitions for MPLS.
 -- Reference:
--- Version: V2.58
+-- Version: V2.61
 -- History:
+-- V2.61 WangLina 2021-08-05, modify for hwP2mpTeSubLspDownAlarm, hwP2mpTeSubLspDownAlarmClear alarm
+-- V2.60 chujianping, 2020-12-9, add for hwMplsChassis
+-- V2.59 chujianping, 2020-11-17, add for hwMplsSlotResTotalCountExceed, hwMplsSlotResTotalCountExceedClear, hwMplsSlot, modify for hwMplsResourceType 
 -- V2.58 wenggang, 2020-01-06, add for hwMplsInsecureAlgorithm,hwMplsInsecureAlgorithmClear,hwMplsFeatureName,hwMplsAlgorithmName
 -- V2.57 xujing, 2019-09-19, add for hwBlockLabelThresholdexceed,hwBlockLabelThresholdexceedClear,hwBlockLabeltotalcountexceed,hwBlockLabeltotalcountexceedClear
 -- V2.56 Kehan Zhang, 2018-12-24,modify for hwMplsTunnelDownReason
@@ -80,7 +83,7 @@
 
         -- 1.3.6.1.4.1.2011.5.25.121
         hwMplsExtendMib MODULE-IDENTITY 
-            LAST-UPDATED "202001061040Z"
+            LAST-UPDATED "202108051040Z"
             ORGANIZATION 
                 "Huawei Technologies Co.,Ltd."
             CONTACT-INFO 
@@ -98,6 +101,15 @@
                  managed objects and trap definitions for MPLS."
 
             --  Revision history
+            REVISION   "202108051040Z"
+            DESCRIPTION "V2.61, add for hwP2mpTeSubLspDownAlarm, hwP2mpTeSubLspDownAlarmClear alarm"
+
+            REVISION   "202001061040Z"
+            DESCRIPTION "V2.59, add for hwMplsChassis."
+
+            REVISION   "202001061040Z"
+            DESCRIPTION "V2.59, add for hwMplsSlotResTotalCountExceed, hwMplsSlotResTotalCountExceedClear, hwMplsSlot, modify for hwMplsResourceType."
+
             REVISION   "202001061040Z"
             DESCRIPTION "V2.58, add the hwMplsInsecureAlgorithm,hwMplsInsecureAlgorithmClear,hwMplsFeatureName,hwMplsAlgorithmName."
 
@@ -2745,6 +2757,46 @@
                 " 
             ::= { hwLspTrap 97 }
 
+--  1.3.6.1.4.1.2011.5.25.121.2.1.98
+       hwMplsSlotResTotalCountExceed NOTIFICATION-TYPE
+            OBJECTS { hwMplsResourceType, hwMplsChassis, hwMplsSlot, hwMplsResourceTotalCount }
+            STATUS current
+            DESCRIPTION
+                "
+                This object indicates that the number of MPLS resources on the interface board has reached the maximum number.
+                "    
+            ::= { hwLspTrap 98 }     
+                                        
+--  1.3.6.1.4.1.2011.5.25.121.2.1.99
+       hwMplsSlotResTotalCountExceedClear NOTIFICATION-TYPE
+            OBJECTS { hwMplsResourceType, hwMplsChassis, hwMplsSlot }
+            STATUS current
+            DESCRIPTION
+                "
+                This object indicates that the number of MPLS resources on the interface board fallen below the recovery number.
+                " 
+            ::= { hwLspTrap 99 }
+
+--   1.3.6.1.4.1.2011.5.25.121.2.1.100
+        hwP2mpTeSubLspDownAlarm NOTIFICATION-TYPE
+            OBJECTS { hwMplsTunnelInterfaceName, hwMplsTunnelLspType, hwMplsP2mpId, hwMplsTunnelDownReason, hwMplsTunnelDownLSRID, hwMplsTunnelDownIfIpAddrType, hwMplsTunnelDownIfIpAddr}
+            STATUS current
+            DESCRIPTION 
+                "
+                This object indicates that the status of the P2MP tunnel sub-lsp changes to down.
+                "
+            ::= { hwLspTrap 100 }
+
+--   1.3.6.1.4.1.2011.5.25.121.2.1.101
+        hwP2mpTeSubLspDownAlarmClear NOTIFICATION-TYPE
+            OBJECTS { hwMplsTunnelInterfaceName, hwMplsTunnelLspType, hwMplsP2mpId, hwMplsTunnelDownReason, hwMplsTunnelDownLSRID, hwMplsTunnelDownIfIpAddrType, hwMplsTunnelDownIfIpAddr}
+            STATUS current
+            DESCRIPTION 
+                "
+                This object indicates that the alarm of the P2MP tunnel sub-lsp was cleared.
+                "
+            ::= { hwLspTrap 101 }
+
 -- 1.3.6.1.4.1.2011.5.25.121.2.2
         hwMplsTrapObjects OBJECT IDENTIFIER ::= { hwMplsExtendTrap 2 }
         
@@ -2977,6 +3029,7 @@
              cspfLink(12),
              cspfNlsa(13),
              cspfSrlg(14),
+             rsvpLsp(15),
              unknown(100)
              }
         MAX-ACCESS     accessible-for-notify
@@ -2998,7 +3051,8 @@
             12.cspfLink(12)                       -Indicates that the resource is cspf link.
             13.cspfNlsa(13)                       -Indicates that the resource is cspf nlsa.
             14.cspfSrlg(14)                       -Indicates that the resource is cspf srlg.
-            15.unknown(100)   -Indicates that the resource type is unknown. "
+            15.rsvpLsp(15)                        -Indicates that the resource is rsvp lsp.
+            16.unknown(100)   -Indicates that the resource type is unknown. "
         ::= { hwMplsTrapObjects 11 }
         
      hwMplsResourceCurrentCount OBJECT-TYPE
@@ -3104,6 +3158,22 @@
             1.md5(1)         -Indicates that the algorithm name is md5.
             2.hmacmd5(2)     -Indicates that the algorithm name is hmacmd5."
         ::= { hwMplsTrapObjects 22 }
+
+        hwMplsSlot OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS     accessible-for-notify
+        STATUS           current
+        DESCRIPTION
+            "Slot ID of an interface board."
+        ::= { hwMplsTrapObjects 23 }
+
+        hwMplsChassis OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS     accessible-for-notify
+        STATUS           current
+        DESCRIPTION
+            "Chassis ID of an interface board."
+        ::= { hwMplsTrapObjects 24 }
             
      hwMplsTunnelFrrConfigChange NOTIFICATION-TYPE
         OBJECTS { hwMplsTunnelIfName, hwMplsTunnelFrrConfigOper }

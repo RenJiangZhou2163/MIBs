@@ -1,0 +1,1862 @@
+ZXR10-IGMP-PIM-SNOOPING-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, 
+    OBJECT-TYPE, 
+    Integer32, Unsigned32 
+        FROM SNMPv2-SMI
+    enterprises, IpAddress
+        FROM SNMPv2-SMI
+    MacAddress, DisplayString, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    zxr10
+        FROM ZXR10-SMI;
+
+    zxr10IgmpSnooping MODULE-IDENTITY
+        LAST-UPDATED "201704011000Z"  
+        ORGANIZATION "ZTE Corporation"
+        CONTACT-INFO
+            "ZTE Corporation 
+             Nanjing Institute of ZTE Corporation
+         
+             No.68 Zijinghua Rd. Yuhuatai District, Nanjing, China"
+        DESCRIPTION
+            "ZXROS SWITCH IGMP/PIM SNOOPING MIB"  
+
+        REVISION  "201704011000Z"   
+        DESCRIPTION     
+            "modify: zxr10IgmpSnoopingMrouterVlan
+                     zxr10IgmpSnoopingNDLVlan
+                     zxr10PimSnoopingHostVlan
+                     zxr10IgmpSnoopingMrouterGuardVlan
+                     zxr10IgmpSnoopingIfConfigVlan"
+        REVISION  "201406161000Z"   
+        DESCRIPTION     
+            "modify: zxr10IgmpSnoopingSubmodeLastMemberQueryInterval"
+        REVISION  "201306251000Z"   
+        DESCRIPTION     
+            "modify: zxr10IgmpSnoopingHostTable
+                     zxr10IgmpSnoopingHostFilterSourceTable"
+        REVISION  "201304021000Z"   
+        DESCRIPTION     
+            "add:    zxr10IgmpSnoopingIfConfigTable
+                     zxr10IgmpSnoopingSummary
+                     zxr10IgmpSnoopingSummarySubmodeTable
+             modify: zxr10IgmpSnoopingSubmodeTable"
+        ::= {  zxr10switch 5}     
+      
+    zxr10switch OBJECT IDENTIFIER ::= { zxr10 102 }
+
+    zxr10IgmpSnoopingGlobal OBJECT IDENTIFIER ::= { zxr10IgmpSnooping 8 }   
+    zxr10IgmpSnoopingSummary OBJECT IDENTIFIER ::= { zxr10IgmpSnooping 13 }
+
+    SubmodeType ::= TEXTUAL-CONVENTION
+        STATUS current
+        DESCRIPTION  "A type value for the submode"
+        SYNTAX       INTEGER{vlan(1),service(2),vpls(3),supervlan(4),vbui(5),
+                           ipglobal(6),vrf(7)}
+
+--IGMP snooping submode configure table       
+    zxr10IgmpSnoopingSubmodeTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IgmpSnoopingSubmodeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping submode configuration table, 
+             IGMP snooping supports submodes such as : VLAN, Service, VPLS, 
+             SUPERVLAN, VBUI, IP-GLOBAL and VRF.
+             Some submodes are not supported now,             
+             but reserved for compatibility."
+        ::= { zxr10IgmpSnooping 1 }   
+        
+    zxr10IgmpSnoopingSubmodeEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IgmpSnoopingSubmodeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping submode entry.   
+             When submode type is VLAN, IP-GLOBAL,
+             index is {submode, submode ID, 0}.  
+             When submode type is VPLS, VBUI and VRF,  
+             index is {submode, 0, VPN name}."
+        INDEX   { zxr10IgmpSnoopingSubmode,
+                  zxr10IgmpSnoopingSubmodeIdx,
+                  zxr10IgmpSnoopingVpnName }
+        ::= { zxr10IgmpSnoopingSubmodeTable 1 }
+        
+    Zxr10IgmpSnoopingSubmodeEntry ::=
+        SEQUENCE {
+            zxr10IgmpSnoopingSubmode
+                SubmodeType,
+            zxr10IgmpSnoopingSubmodeIdx
+                Integer32,   
+            zxr10IgmpSnoopingSubmodeEnable
+                INTEGER,
+            zxr10PimSnoopingSubmodeEnable
+                INTEGER,
+            zxr10IgmpSnoopingSubmodeFastLeave
+                INTEGER,
+            zxr10IgmpSnoopingSubmodeLastMemberQueryInterval
+                Integer32,
+            zxr10IgmpSnoopingSubmodeMaxGroupNum
+                Integer32,
+            zxr10IgmpSnoopingSubmodeGroupNum
+                Integer32,
+            zxr10IgmpSnoopingSubmodeHostTimeOut
+                Integer32,
+            zxr10IgmpSnoopingSubmodeMrouterTimeOut
+                Integer32,
+            zxr10IgmpSnoopingSubmodeQueryEnable
+                INTEGER,
+            zxr10IgmpSnoopingSubmodeQueryVersion
+                INTEGER,
+            zxr10IgmpSnoopingSubmodeWorkMode
+                INTEGER,
+            zxr10IgmpSnoopingSubmodeAclNum
+                Integer32,
+            zxr10IgmpSnoopingSubmodeProxyIpConfigured
+                INTEGER,
+            zxr10IgmpSnoopingSubmodeProxyIp
+                IpAddress,
+            zxr10IgmpSnoopingSubmodeQueryIpConfigured
+                INTEGER,
+            zxr10IgmpSnoopingSubmodeQueryIp
+                IpAddress,
+            zxr10IgmpSnoopingSubmodeExistHostGroupNum
+                Integer32,
+            zxr10IgmpSnoopingSubmodeDropGroupNum
+                Integer32,
+            zxr10IgmpSnoopingSubmodePrejoinGroupNum
+                Integer32,
+            zxr10IgmpSnoopingSubmodeMaxHostGroupNum
+                Integer32,
+            zxr10IgmpSnoopingVpnName
+                DisplayString,
+            zxr10IgmpSnoopingSubmodeAclName
+                DisplayString,
+            zxr10IgmpSnoopingSubmodeNDLFlag   
+                INTEGER,
+            zxr10IgmpSnoopingInstanceIdx
+                Integer32
+    }
+              
+    zxr10IgmpSnoopingSubmode  OBJECT-TYPE
+        SYNTAX   SubmodeType
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Submode type, 1 is VLAN, 2 is Service, 3 is VPLS, 4 is SUPERVLAN, 
+             5 is VBUI, 6 is IP-GLOBAL, 7 is VRF."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 1 }        
+    
+    zxr10IgmpSnoopingSubmodeIdx  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Submode instance ID of VLAN and IP-GLOBAL,
+             if submode is VLAN, it is VLAN ID,             
+             if submode is IP-GLOBAL, it is 1,
+             it is 0 for other submodes."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 2 }  
+   
+    zxr10IgmpSnoopingSubmodeEnable  OBJECT-TYPE
+        SYNTAX   INTEGER{disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Enable/disable IGMP snooping in this instance."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 3 }      
+        
+    zxr10PimSnoopingSubmodeEnable  OBJECT-TYPE
+        SYNTAX   INTEGER{disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Enable/disable PIM snooping in this instance."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 4 }      
+    
+    zxr10IgmpSnoopingSubmodeFastLeave  OBJECT-TYPE
+        SYNTAX    INTEGER{fastLeave(0),slowLeave(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Enable/disable group membership fast leave."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 5 }      
+        
+    zxr10IgmpSnoopingSubmodeLastMemberQueryInterval  OBJECT-TYPE
+        SYNTAX   Integer32 (1..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The Last Member Query Interval is the Max Response 
+             Time inserted into Group-Specific Queries sent in 
+             response to Leave Group messages, and is also the 
+             amount of time between Group-Specific Query messages. 
+             Its minimum value and default value both are 1 second, 
+             maximum value depends on the product."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 6 }      
+        
+    zxr10IgmpSnoopingSubmodeMaxGroupNum  OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Max number of multicast group can access in this instance."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 7 } 
+        
+    zxr10IgmpSnoopingSubmodeGroupNum  OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Number of multicast group access to this instance currently."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 8 }                                                                                   
+
+    zxr10IgmpSnoopingSubmodeHostTimeOut  OBJECT-TYPE
+        SYNTAX   Integer32 (30..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Host aging-time. Default: 260 seconds."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 9 }    
+        
+    zxr10IgmpSnoopingSubmodeMrouterTimeOut  OBJECT-TYPE
+        SYNTAX   Integer32 (30..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Multicast router port aging-time. Default: 260 seconds."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 10 } 
+        
+    zxr10IgmpSnoopingSubmodeQueryEnable  OBJECT-TYPE
+        SYNTAX   INTEGER{disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Enable/disable Querier in this instance."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 11 } 
+        
+    zxr10IgmpSnoopingSubmodeQueryVersion  OBJECT-TYPE
+        SYNTAX   INTEGER{v1(1),v2(2),v3(3)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Querier version: V1, V2 or V3."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 12 }
+        
+    zxr10IgmpSnoopingSubmodeWorkMode  OBJECT-TYPE
+        SYNTAX   INTEGER{proxy(1),transparent(2),router(3)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Work mode: Proxy, Transparent or Router."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 13 }  
+        
+    zxr10IgmpSnoopingSubmodeAclNum  OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ACL number of this instance,it is not supported now, 
+             but reserved for compatibility."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 14 }  
+        
+    zxr10IgmpSnoopingSubmodeProxyIpConfigured  OBJECT-TYPE
+        SYNTAX   INTEGER{no(0),yes(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Proxy IP address is configured or not."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 15 }       
+        
+    zxr10IgmpSnoopingSubmodeProxyIp  OBJECT-TYPE
+        SYNTAX  IpAddress 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "This IP address is used as source IP when sending 
+             IGMP Report and Leave in proxy mode."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 16 } 
+        
+    zxr10IgmpSnoopingSubmodeQueryIpConfigured  OBJECT-TYPE
+        SYNTAX   INTEGER{no(0),yes(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Query IP address is configured or not."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 17 }   
+        
+    zxr10IgmpSnoopingSubmodeQueryIp  OBJECT-TYPE
+        SYNTAX  IpAddress 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "This IP address is used as source IP when sending 
+             IGMP Query. "
+        ::= { zxr10IgmpSnoopingSubmodeEntry 18 } 
+        
+    zxr10IgmpSnoopingSubmodeExistHostGroupNum  OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Number of group which exist IGMP host."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 19 }  
+        
+    zxr10IgmpSnoopingSubmodeDropGroupNum  OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Number of group which configured as drop mode."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 20 } 
+        
+    zxr10IgmpSnoopingSubmodePrejoinGroupNum  OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Number of group which configured as prejoin mode."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 21 }        
+        
+    zxr10IgmpSnoopingSubmodeMaxHostGroupNum  OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Number of group which configured with max host number."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 22 }  
+    
+    zxr10IgmpSnoopingVpnName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+        "Name specified for each configured instance, 
+         only valid when submode type is VPLS, VBUI or VRF."
+         ::= { zxr10IgmpSnoopingSubmodeEntry 23 }
+    
+    zxr10IgmpSnoopingSubmodeAclName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ACL name of this instance."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 24 }   
+
+    zxr10IgmpSnoopingSubmodeNDLFlag  OBJECT-TYPE
+        SYNTAX   INTEGER{no(0),yes(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "All ports are not allowed to learn dynamic mrouter port(s)."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 25 }    
+         
+    zxr10IgmpSnoopingInstanceIdx  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Submode instance ID,
+             if submode is VLAN, it is VLAN ID,
+             if submode is VPLS, it is VPLS ID,
+             if submode is VBUI, it is VBUI ID,
+             if submode is IP-GLOBAL, it is IP-GLOBAL ID,
+             if submode is VRF, it is VRF ID."
+        ::= { zxr10IgmpSnoopingSubmodeEntry 26 }
+           
+--IGMP snooping group table  
+           
+    zxr10IgmpSnoopingGroupTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IgmpSnoopingGroupEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping group table."
+        ::= { zxr10IgmpSnooping 2 }   
+        
+    zxr10IgmpSnoopingGroupEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IgmpSnoopingGroupEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping group entry."
+       INDEX  { zxr10IgmpSnoopingGroupSubmode,
+                zxr10IgmpSnoopingGroupSubmodeIdx,
+                zxr10IgmpSnoopingGroupIpAddr }
+        ::= { zxr10IgmpSnoopingGroupTable 1 }
+    
+    Zxr10IgmpSnoopingGroupEntry ::=
+        SEQUENCE {
+            zxr10IgmpSnoopingGroupSubmode
+                SubmodeType,
+            zxr10IgmpSnoopingGroupSubmodeIdx
+                Integer32, 
+            zxr10IgmpSnoopingGroupIpAddr
+                IpAddress,
+            zxr10IgmpSnoopingGroupDropEnable
+                INTEGER,
+            zxr10IgmpSnoopingGroupPrejoinEnable
+                INTEGER,  
+            zxr10IgmpSnoopingGroupMaxHostNum
+                Integer32, 
+            zxr10IgmpSnoopingGroupHostNum
+                Integer32, 
+            zxr10PimSnoopingGroupHostNum
+                Integer32,          
+            zxr10IgmpSnoopingGroupMac
+                MacAddress           
+    } 
+    
+    zxr10IgmpSnoopingGroupSubmode  OBJECT-TYPE
+        SYNTAX   SubmodeType
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Submode type, 1 is VLAN, 2 is Service, 3 is VPLS, 4 is SUPERVLAN, 
+             5 is VBUI, 6 is IP-GLOBAL, 7 is VRF."
+        ::= { zxr10IgmpSnoopingGroupEntry 1 }        
+    
+    zxr10IgmpSnoopingGroupSubmodeIdx  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Submode instance ID,
+             the value refer to zxr10IgmpSnoopingInstanceIdx."
+        ::= { zxr10IgmpSnoopingGroupEntry 2 }    
+        
+    zxr10IgmpSnoopingGroupIpAddr  OBJECT-TYPE
+        SYNTAX  IpAddress 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Group IP address."
+        ::= { zxr10IgmpSnoopingGroupEntry 3 }   
+                
+    zxr10IgmpSnoopingGroupDropEnable  OBJECT-TYPE
+        SYNTAX   INTEGER{disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Enable/disable drop mode of this group.
+             When it is enabled, the mulitcast flow will be dropped
+             if there is no host in this group."
+        ::= { zxr10IgmpSnoopingGroupEntry 4 }
+        
+    zxr10IgmpSnoopingGroupPrejoinEnable  OBJECT-TYPE
+        SYNTAX   INTEGER{disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Enable/disable prejoin mode of this group.
+             When it is enabled, report will be sent to multicast router
+             even if there is no host in this group."
+        ::= { zxr10IgmpSnoopingGroupEntry 5 }
+        
+    zxr10IgmpSnoopingGroupMaxHostNum  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Max number of IGMP host can access to this group."
+        ::= { zxr10IgmpSnoopingGroupEntry 6 }
+        
+    zxr10IgmpSnoopingGroupHostNum  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Number of IGMP host access to this group currently."
+        ::= { zxr10IgmpSnoopingGroupEntry 7 }  
+        
+    zxr10PimSnoopingGroupHostNum  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Number of PIM host access to this group currently."
+        ::= { zxr10IgmpSnoopingGroupEntry 8 }             
+
+    zxr10IgmpSnoopingGroupMac  OBJECT-TYPE
+        SYNTAX  MacAddress 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Group MAC address."
+        ::= { zxr10IgmpSnoopingGroupEntry 9 }        
+     
+      
+--IGMP snooping host table  
+           
+    zxr10IgmpSnoopingHostTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IgmpSnoopingHostEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping host table."
+        ::= { zxr10IgmpSnooping 3 }   
+        
+    zxr10IgmpSnoopingHostEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IgmpSnoopingHostEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping host entry."
+       INDEX  { zxr10IgmpSnoopingHostSubmode,
+                zxr10IgmpSnoopingHostSubmodeIdx,
+                zxr10IgmpSnoopingGroupIp,
+                zxr10IgmpSnoopingHostType,
+                zxr10IgmpSnoopingHostIndex,
+                zxr10IgmpSnoopingHostVlan,
+                zxr10IgmpSnoopingHostPhyIndex}
+        ::= { zxr10IgmpSnoopingHostTable 1 }
+    
+    Zxr10IgmpSnoopingHostEntry ::=
+        SEQUENCE {
+            zxr10IgmpSnoopingHostSubmode
+                SubmodeType,
+            zxr10IgmpSnoopingHostSubmodeIdx
+                Integer32, 
+            zxr10IgmpSnoopingGroupIp
+                IpAddress,
+            zxr10IgmpSnoopingHostStaticOrDynamic
+                INTEGER,
+            zxr10IgmpSnoopingHostType
+                INTEGER,            
+            zxr10IgmpSnoopingHostIndex
+                Integer32,
+            zxr10IgmpSnoopingHostVlan
+                Integer32,
+            zxr10IgmpSnoopingHostCipIdx
+                Integer32,
+            zxr10IgmpSnoopingHostIntfName   
+                DisplayString,
+            zxr10IgmpSnoopingHostPhyIndex
+                Integer32     
+    }
+    
+    zxr10IgmpSnoopingHostSubmode  OBJECT-TYPE
+        SYNTAX   SubmodeType
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Submode type, 1 is VLAN, 2 is Service, 3 is VPLS, 4 is SUPERVLAN, 
+             5 is VBUI, 6 is IP-GLOBAL, 7 is VRF."
+        ::= { zxr10IgmpSnoopingHostEntry 1 }        
+    
+    zxr10IgmpSnoopingHostSubmodeIdx  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Submode instance ID,
+             the value refer to zxr10IgmpSnoopingInstanceIdx."
+        ::= { zxr10IgmpSnoopingHostEntry 2 }  
+    
+    zxr10IgmpSnoopingGroupIp  OBJECT-TYPE
+        SYNTAX  IpAddress 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Group IP address."
+        ::= { zxr10IgmpSnoopingHostEntry 3 }  
+    
+    zxr10IgmpSnoopingHostStaticOrDynamic  OBJECT-TYPE
+        SYNTAX   INTEGER{dynamic(0),static(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Mode of this host. It is dynamic if learned from IGMP Report, 
+             or is static if configured."
+        ::= { zxr10IgmpSnoopingHostEntry 4 }
+                    
+    zxr10IgmpSnoopingHostType  OBJECT-TYPE
+        SYNTAX   INTEGER{port(0), pw(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Port type of this host, there are 2 types: physical port or PW."
+        ::= { zxr10IgmpSnoopingHostEntry 5 }
+        
+    zxr10IgmpSnoopingHostIndex  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Port/PW index of this host."
+        ::= { zxr10IgmpSnoopingHostEntry 6 }           
+
+    zxr10IgmpSnoopingHostVlan  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "For IPTV or SUPERVLAN hosts, it's user VLAN.
+             For IP-Global or VRF hosts, it's a computed value,
+             the high 16 bits is internal VLAN, 
+             and the low 16 bits is external VLAN.
+             Otherwise, it's equal to submode instance ID."
+        ::= { zxr10IgmpSnoopingHostEntry 7 }  
+        
+    zxr10IgmpSnoopingHostCipIdx  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "CIP index of this host, only valid when the host is in 
+             Service or VPLS, and port type is physical port,it is 
+             not supported now,but reserved for future use."
+        ::= { zxr10IgmpSnoopingHostEntry 8 }     
+    
+    zxr10IgmpSnoopingHostIntfName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "Interface name."
+        ::= { zxr10IgmpSnoopingHostEntry 9 } 
+         
+    zxr10IgmpSnoopingHostPhyIndex   OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical interface index of this host."
+        ::= { zxr10IgmpSnoopingHostEntry 10 }        
+              
+--IGMP snooping mrouter table  
+            
+    zxr10IgmpSnoopingMrouterTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IgmpSnoopingMrouterEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping multicast router port table."
+        ::= { zxr10IgmpSnooping 4 }   
+        
+    zxr10IgmpSnoopingMrouterEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IgmpSnoopingMrouterEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping multicast router entry."
+        INDEX { zxr10IgmpSnoopingMrouterSubmode,
+                zxr10IgmpSnoopingMrouterSubmodeIdx,
+                zxr10IgmpSnoopingMrouterType,
+                zxr10IgmpSnoopingMrouterIndex,
+                zxr10IgmpSnoopingMrouterVlan }        
+        ::= { zxr10IgmpSnoopingMrouterTable 1 }
+    
+    Zxr10IgmpSnoopingMrouterEntry ::=
+        SEQUENCE { 
+            zxr10IgmpSnoopingMrouterSubmode
+                SubmodeType,
+            zxr10IgmpSnoopingMrouterSubmodeIdx
+                Integer32,                   
+            zxr10IgmpSnoopingMrouterStaticOrDynamic
+                INTEGER,
+            zxr10IgmpSnoopingMrouterType
+                INTEGER,            
+            zxr10IgmpSnoopingMrouterIndex
+                Integer32,
+            zxr10IgmpSnoopingMrouterVlan
+                Integer32,
+            zxr10IgmpSnoopingMrouterCipIdx
+                Integer32,
+            zxr10IgmpSnoopingMrouterIntfName
+                DisplayString
+    }
+      
+    zxr10IgmpSnoopingMrouterSubmode  OBJECT-TYPE
+        SYNTAX   SubmodeType
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Submode type, 1 is VLAN, 2 is Service, 3 is VPLS, 4 is SUPERVLAN, 
+             5 is VBUI, 6 is IP-GLOBAL, 7 is VRF."
+        ::= { zxr10IgmpSnoopingMrouterEntry 1 }        
+    
+    zxr10IgmpSnoopingMrouterSubmodeIdx  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Submode instance ID,
+             the value refer to zxr10IgmpSnoopingInstanceIdx."
+        ::= { zxr10IgmpSnoopingMrouterEntry 2 }  
+                  
+    zxr10IgmpSnoopingMrouterStaticOrDynamic  OBJECT-TYPE
+        SYNTAX   INTEGER{dynamic(0),static(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Mode of this port. It is dynamic if learned from IGMP Query, 
+             or is static if configured."
+        ::= { zxr10IgmpSnoopingMrouterEntry 3 }
+                    
+    zxr10IgmpSnoopingMrouterType  OBJECT-TYPE
+        SYNTAX   INTEGER{port(0), pw(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Port type of this port, there are 2 types: physical port or PW."
+        ::= { zxr10IgmpSnoopingMrouterEntry 4 }
+        
+    zxr10IgmpSnoopingMrouterIndex  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Port/PW index of this port."
+        ::= { zxr10IgmpSnoopingMrouterEntry 5 }           
+
+    zxr10IgmpSnoopingMrouterVlan  OBJECT-TYPE
+        SYNTAX  Integer32 (0..4094)
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "VLAN ID which this multicast router port belongs to,
+             it is not supported now,but reserved for future use."
+        ::= { zxr10IgmpSnoopingMrouterEntry 6 } 
+        
+    zxr10IgmpSnoopingMrouterCipIdx  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "CIP index of this port, only valid when the port is in 
+             Service or VPLS, and port type is physical port,it is 
+             not supported now,but reserved for future use."
+        ::= { zxr10IgmpSnoopingMrouterEntry 7 } 
+   
+    zxr10IgmpSnoopingMrouterIntfName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "Interface name."
+        ::= { zxr10IgmpSnoopingMrouterEntry 8 }  
+          
+--IGMP Snooping no dynamic learn port table  
+            
+    zxr10IgmpSnoopingNDLTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IgmpSnoopingNDLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping no-dynamic-learn port table.
+             When it is a no-dynamic-learn port, multicast router port won't 
+             be created even if IGMP Query is received."
+        ::= { zxr10IgmpSnooping 5 }   
+        
+    zxr10IgmpSnoopingNDLEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IgmpSnoopingNDLEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping no-dynamic-learn port entry."
+        INDEX { zxr10IgmpSnoopingNDLSubmode,
+                zxr10IgmpSnoopingNDLSubmodeIdx,
+                zxr10IgmpSnoopingNDLType,
+                zxr10IgmpSnoopingNDLIndex,
+                zxr10IgmpSnoopingNDLVlan }        
+        ::= { zxr10IgmpSnoopingNDLTable 1 }
+    
+    Zxr10IgmpSnoopingNDLEntry ::=
+        SEQUENCE {  
+            zxr10IgmpSnoopingNDLSubmode
+                SubmodeType,
+            zxr10IgmpSnoopingNDLSubmodeIdx
+                Integer32,             
+            zxr10IgmpSnoopingNDLType
+                INTEGER,            
+            zxr10IgmpSnoopingNDLIndex
+                Integer32,
+            zxr10IgmpSnoopingNDLVlan
+                Integer32,
+            zxr10IgmpSnoopingNDLCipIdx
+                Integer32,
+            zxr10IgmpSnoopingNDLIntfName
+                DisplayString
+    }      
+       
+    zxr10IgmpSnoopingNDLSubmode  OBJECT-TYPE
+        SYNTAX   SubmodeType
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Submode type, 1 is VLAN, 2 is Service, 3 is VPLS, 4 is SUPERVLAN, 
+             5 is VBUI, 6 is IP-GLOBAL, 7 is VRF."
+        ::= { zxr10IgmpSnoopingNDLEntry 1 }        
+    
+    zxr10IgmpSnoopingNDLSubmodeIdx  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Submode instance ID,
+             the value refer to zxr10IgmpSnoopingInstanceIdx."
+        ::= { zxr10IgmpSnoopingNDLEntry 2 }    
+        
+    zxr10IgmpSnoopingNDLType  OBJECT-TYPE
+        SYNTAX   INTEGER{port(0), pw(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Port type of this no-dynamic-learn port, 
+             there are 2 types: physical port or PW."
+        ::= { zxr10IgmpSnoopingNDLEntry 3 }
+        
+    zxr10IgmpSnoopingNDLIndex  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Port/PW index of this no-dynamic-learn port."
+        ::= { zxr10IgmpSnoopingNDLEntry 4 }           
+
+    zxr10IgmpSnoopingNDLVlan  OBJECT-TYPE
+        SYNTAX  Integer32 (0..4094)
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "VLAN ID which this no-dynamic-learn port belongs to,it is 
+             not supported now,but reserved for future use."
+        ::= { zxr10IgmpSnoopingNDLEntry 5 } 
+        
+    zxr10IgmpSnoopingNDLCipIdx  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "CIP index of this port, only valid when the port is in 
+             Service or VPLS and port type is physical port,it is 
+             not supported now,but reserved for future use."
+        ::= { zxr10IgmpSnoopingNDLEntry 6 } 
+  
+    zxr10IgmpSnoopingNDLIntfName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "Interface name."
+        ::= { zxr10IgmpSnoopingNDLEntry 7 }  
+          
+--PIM snooping host table  
+           
+    zxr10PimSnoopingHostTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10PimSnoopingHostEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "PIM snooping host table."
+        ::= { zxr10IgmpSnooping 6 }   
+        
+    zxr10PimSnoopingHostEntry  OBJECT-TYPE
+        SYNTAX  Zxr10PimSnoopingHostEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "PIM snooping host entry."
+       INDEX  { zxr10PimSnoopingHostSubmode,
+                zxr10PimSnoopingHostSubmodeIdx,
+                zxr10PimSnoopingGroupIp,
+                zxr10PimSnoopingSourceIp,
+                zxr10PimSnoopingHostType,
+                zxr10PimSnoopingHostIndex,
+                zxr10PimSnoopingHostVlan }
+        ::= { zxr10PimSnoopingHostTable 1 }
+    
+    Zxr10PimSnoopingHostEntry ::=
+        SEQUENCE {
+            zxr10PimSnoopingHostSubmode
+                SubmodeType,
+            zxr10PimSnoopingHostSubmodeIdx
+                Integer32,  
+            zxr10PimSnoopingGroupIp
+                IpAddress,
+            zxr10PimSnoopingSourceIp
+                IpAddress,
+            zxr10PimSnoopingHostType
+                INTEGER,            
+            zxr10PimSnoopingHostIndex
+                Integer32,
+            zxr10PimSnoopingHostVlan
+                Integer32,
+            zxr10PimSnoopingHostCipIdx
+                Integer32                 
+    }
+    
+    zxr10PimSnoopingHostSubmode  OBJECT-TYPE
+        SYNTAX   SubmodeType
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Submode type, 1 is VLAN, 2 is Service, 3 is VPLS, 4 is SUPERVLAN, 
+             5 is VBUI, 6 is IP-GLOBAL, 7 is VRF."
+        ::= { zxr10PimSnoopingHostEntry 1 }        
+    
+    zxr10PimSnoopingHostSubmodeIdx  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Submode instance ID,
+             the value refer to zxr10IgmpSnoopingInstanceIdx."
+        ::= { zxr10PimSnoopingHostEntry 2 }  
+        
+    zxr10PimSnoopingGroupIp  OBJECT-TYPE
+        SYNTAX  IpAddress 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Group IP address."
+        ::= { zxr10PimSnoopingHostEntry 3 }  
+    
+    zxr10PimSnoopingSourceIp  OBJECT-TYPE
+        SYNTAX  IpAddress 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Source IP address."
+        ::= { zxr10PimSnoopingHostEntry 4 }  
+                    
+    zxr10PimSnoopingHostType  OBJECT-TYPE
+        SYNTAX   INTEGER{port(0), pw(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Port type of this host, there are 2 types: physical port or PW."
+        ::= { zxr10PimSnoopingHostEntry 5 }
+        
+    zxr10PimSnoopingHostIndex  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Port/PW index of this host."
+        ::= { zxr10PimSnoopingHostEntry 6 }           
+
+    zxr10PimSnoopingHostVlan  OBJECT-TYPE
+        SYNTAX  Integer32 (0..4094)
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "VLAN ID which this host belongs to,it is 
+             not supported now,but reserved for future use."
+        ::= { zxr10PimSnoopingHostEntry 7 }  
+        
+    zxr10PimSnoopingHostCipIdx  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "CIP index of this host, only valid when the host is in 
+             Service or VPLS and port type is physical port,it is 
+             not supported now,but reserved for future use."
+        ::= { zxr10PimSnoopingHostEntry 8 }  
+               
+ --PIM snooping neigbor table  
+    zxr10PimSnoopingNeighborTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10PimSnoopingNeighborEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "PIM snooping neighbor table."
+        ::= { zxr10IgmpSnooping 7 }   
+        
+    zxr10PimSnoopingNeighborEntry  OBJECT-TYPE
+        SYNTAX  Zxr10PimSnoopingNeighborEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "PIM snooping neighbor entry."
+        INDEX  { zxr10PimSnoopingNeighborId }
+        ::= { zxr10PimSnoopingNeighborTable 1 }
+    
+    Zxr10PimSnoopingNeighborEntry ::=
+        SEQUENCE {
+            zxr10PimSnoopingNeighborSubmode 
+                SubmodeType,
+            zxr10PimSnoopingNeighborSubmodeIdx
+                Integer32,
+            zxr10PimSnoopingNeighborVpnId
+                Integer32,
+            zxr10PimSnoopingNeighborId
+                Integer32,
+            zxr10PimSnoopingNeighborSourceIpAddr
+                IpAddress,
+            zxr10PimSnoopingNeighborPort
+                OCTET STRING
+    }
+    
+    zxr10PimSnoopingNeighborSubmode  OBJECT-TYPE
+        SYNTAX   SubmodeType
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Submode type, 1 is VLAN, 2 is Service, 3 is VPLS, 4 is SUPERVLAN, 
+             5 is VBUI, 6 is IP-GLOBAL, 7 is VRF."
+        ::= { zxr10PimSnoopingNeighborEntry 1 }          
+    
+    zxr10PimSnoopingNeighborSubmodeIdx  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Submode instance ID,
+             the value refer to zxr10IgmpSnoopingInstanceIdx."
+        ::= { zxr10PimSnoopingNeighborEntry 2 }
+        
+    zxr10PimSnoopingNeighborVpnId  OBJECT-TYPE 
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "VPN ID,it is not supported now,but reserved for compatibility."
+        ::= { zxr10PimSnoopingNeighborEntry 3 }        
+        
+    zxr10PimSnoopingNeighborId  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Neighbor ID."
+        ::= { zxr10PimSnoopingNeighborEntry 4 }
+
+    zxr10PimSnoopingNeighborSourceIpAddr  OBJECT-TYPE
+        SYNTAX  IpAddress 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Neighbor source IP address."
+        ::= { zxr10PimSnoopingNeighborEntry 5 }    
+        
+    zxr10PimSnoopingNeighborPort  OBJECT-TYPE
+        SYNTAX  OCTET STRING
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Neighbor port name."
+        ::= { zxr10PimSnoopingNeighborEntry 6 }     
+          
+--IGMP snooping global configure 
+    zxr10IgmpSnoopingGlobalEnable  OBJECT-TYPE
+        SYNTAX   INTEGER{disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Enable/disable IGMP snooping in this device."
+        ::= { zxr10IgmpSnoopingGlobal 1 }    
+        
+    zxr10PimSnoopingGlobalEnable  OBJECT-TYPE
+        SYNTAX   INTEGER{disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Enable/disable PIM snooping in this device."
+        ::= { zxr10IgmpSnoopingGlobal 2 }    
+        
+    zxr10IgmpSnoopingGlobalQuery  OBJECT-TYPE
+        SYNTAX   INTEGER{disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Enable/disable IGMP Queries in this device."
+        ::= { zxr10IgmpSnoopingGlobal 3}    
+        
+    zxr10IgmpSnoopingQueryInterval  OBJECT-TYPE
+        SYNTAX   Integer32 (30..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The Query Interval is the interval between 
+             General Queries sent by the Querier.  
+             Default: 125 seconds."
+        ::= {zxr10IgmpSnoopingGlobal 4 }    
+        
+    zxr10IgmpSnoopingQueryResponseInterval  OBJECT-TYPE
+        SYNTAX   Integer32 (1..255)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The Max Response Time inserted into the periodic General Queries.
+             Default: 100 ticks (1 tick = 100ms)."
+        ::= { zxr10IgmpSnoopingGlobal 5 }     
+        
+    zxr10IgmpSnoopingMulticastLimit  OBJECT-TYPE
+        SYNTAX   Integer32 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The multicast limit number,
+             it is not supported now,but reserved for compatibility."
+        ::= { zxr10IgmpSnoopingGlobal 6 } 
+        
+    zxr10IgmpSnoopingV1PacketDispose  OBJECT-TYPE
+        SYNTAX   INTEGER{accept(0),ignore(1),discard(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The disposal mode of IGMPV1 Report message."
+        ::= { zxr10IgmpSnoopingGlobal 7 }    
+        
+    zxr10IgmpSnoopingV2PacketDispose  OBJECT-TYPE
+        SYNTAX   INTEGER{accept(0),ignore(1),discard(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The disposal mode of IGMPV2 Report/Leave message."
+        ::= { zxr10IgmpSnoopingGlobal 8 }     
+        
+    zxr10IgmpSnoopingV3PacketDispose  OBJECT-TYPE
+        SYNTAX   INTEGER{accept(0),ignore(1),discard(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The disposal mode of IGMPV3 Report message."
+        ::= { zxr10IgmpSnoopingGlobal 9 }      
+        
+ --IGMP snooping MVLAN backup configure table, this table is not supported now, 
+ --but reserved for compatibility    
+    zxr10IgmpSnoopingMvlanBkupTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IgmpSnoopingMvlanBkupEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping MVLAN backup table,this table is 
+             not supported now, but reserved for compatibility."
+        ::= { zxr10IgmpSnooping 9 }   
+        
+    zxr10IgmpSnoopingMvlanBkupEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IgmpSnoopingMvlanBkupEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping MVLAN backup entry."
+        INDEX   { zxr10IgmpSnoopingMasterVlan }
+        ::= { zxr10IgmpSnoopingMvlanBkupTable 1 }
+        
+    Zxr10IgmpSnoopingMvlanBkupEntry ::=
+        SEQUENCE { 
+            zxr10IgmpSnoopingMasterVlan
+                Integer32,              
+            zxr10IgmpSnoopingBackupVlan
+                Integer32,
+            zxr10IgmpSnoopingWorkingVlan
+                Integer32,
+            zxr10IgmpSnoopingMasterStatus
+                INTEGER,
+            zxr10IgmpSnoopingBackupStatus
+                INTEGER,
+            zxr10IgmpSnoopingRestoreMode
+                INTEGER,
+            zxr10IgmpSnoopingRestoreTime
+                Integer32,
+            zxr10IgmpSnoopingSwitchTime
+                Integer32,
+            zxr10IgmpSnoopingSwitchFlag
+                INTEGER,
+            zxr10IgmpSnoopingMasterTrack
+                DisplayString,
+            zxr10IgmpSnoopingBackupTrack
+                DisplayString
+    }     
+     
+    zxr10IgmpSnoopingMasterVlan  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Master VLAN ID."
+        ::= { zxr10IgmpSnoopingMvlanBkupEntry 1 }  
+           
+    zxr10IgmpSnoopingBackupVlan  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Backup VLAN ID."
+        ::= { zxr10IgmpSnoopingMvlanBkupEntry 2 }  
+        
+    zxr10IgmpSnoopingWorkingVlan  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Working VLAN ID."
+        ::= { zxr10IgmpSnoopingMvlanBkupEntry 3 }  
+   
+    zxr10IgmpSnoopingMasterStatus  OBJECT-TYPE
+        SYNTAX   INTEGER{up(0), down(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Detection status of master VLAN. "
+        ::= { zxr10IgmpSnoopingMvlanBkupEntry 4 } 
+        
+    zxr10IgmpSnoopingBackupStatus  OBJECT-TYPE
+        SYNTAX   INTEGER{up(0), down(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Detection status of backup VLAN. "
+        ::= { zxr10IgmpSnoopingMvlanBkupEntry 5 }      
+                
+    zxr10IgmpSnoopingRestoreMode  OBJECT-TYPE
+        SYNTAX   INTEGER{enable(0), disable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Enable/Disable restore mode."            
+        ::= { zxr10IgmpSnoopingMvlanBkupEntry 6 }  
+        
+    zxr10IgmpSnoopingRestoreTime  OBJECT-TYPE    
+        SYNTAX  Integer32 (0..12)              
+        MAX-ACCESS  read-only                   
+        STATUS  current
+        DESCRIPTION
+            "Restore delay time. Default: 5 minutes."   
+        ::= { zxr10IgmpSnoopingMvlanBkupEntry 7 }         
+        
+    zxr10IgmpSnoopingSwitchTime  OBJECT-TYPE
+        SYNTAX  Integer32 (0..1000)         
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Switch delay time. Default: 0 second."        
+        ::= { zxr10IgmpSnoopingMvlanBkupEntry 8 }    
+        
+    zxr10IgmpSnoopingSwitchFlag  OBJECT-TYPE
+        SYNTAX   INTEGER{clear(0), lock(1), force(2), manual(3)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Switch flag of master VLAN."            
+        ::= { zxr10IgmpSnoopingMvlanBkupEntry 9 }          
+        
+    zxr10IgmpSnoopingMasterTrack  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Track session of master VLAN."
+        ::= { zxr10IgmpSnoopingMvlanBkupEntry 10 }  
+        
+    zxr10IgmpSnoopingBackupTrack  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Track session of backup VLAN."
+        ::= { zxr10IgmpSnoopingMvlanBkupEntry 11 }         
+        
+--IGMP snooping host filter source table          
+    zxr10IgmpSnoopingHostFilterSourceTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IgmpSnoopingHostFilterSourceEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping host filter source table. Source filtering 
+             is the ability of a system to report interest in receiving
+             packets *only* from specific source addresses, or from 
+             *all but* specific source addresses, sent to a particular 
+             multicast address. "
+        ::= { zxr10IgmpSnooping 10 }   
+        
+    zxr10IgmpSnoopingHostFilterSourceEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IgmpSnoopingHostFilterSourceEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping host filter source entry."
+        INDEX   { zxr10IgmpSnoopingHostFilterSourceSubmode,
+                  zxr10IgmpSnoopingHostFilterSourceSubmodeIdx,
+                  zxr10IgmpSnoopingHostFilterSourceGroupIp,
+                  zxr10IgmpSnoopingFilterSourceHostType,
+                  zxr10IgmpSnoopingFilterSourceHostIndex,
+                  zxr10IgmpSnoopingFilterSourceHostVlan,
+                  zxr10IgmpSnoopingHostFilterSourceIpAddr,
+                  zxr10IgmpSnoopingHostFilterSourcePhyIndex}
+        ::= { zxr10IgmpSnoopingHostFilterSourceTable 1 }
+        
+    Zxr10IgmpSnoopingHostFilterSourceEntry ::=
+        SEQUENCE { 
+            zxr10IgmpSnoopingHostFilterSourceSubmode
+                SubmodeType,
+            zxr10IgmpSnoopingHostFilterSourceSubmodeIdx
+                Integer32, 
+            zxr10IgmpSnoopingHostFilterSourceGroupIp
+                IpAddress,
+            zxr10IgmpSnoopingFilterSourceHostType
+                INTEGER,            
+            zxr10IgmpSnoopingFilterSourceHostIndex
+                Integer32,
+            zxr10IgmpSnoopingFilterSourceHostVlan
+                Integer32,    
+            zxr10IgmpSnoopingHostFilterSourceMode
+                INTEGER,   
+            zxr10IgmpSnoopingHostFilterSourceIpAddr
+                IpAddress,
+            zxr10IgmpSnoopingHostFilterSourcePhyIndex
+                Integer32
+    }   
+        
+    zxr10IgmpSnoopingHostFilterSourceSubmode  OBJECT-TYPE
+        SYNTAX   SubmodeType
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Submode type, 1 is VLAN, 2 is Service, 3 is VPLS, 4 is SUPERVLAN, 
+             5 is VBUI, 6 is IP-GLOBAL, 7 is VRF."
+        ::= { zxr10IgmpSnoopingHostFilterSourceEntry 1 }        
+    
+    zxr10IgmpSnoopingHostFilterSourceSubmodeIdx  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Submode instance ID,
+             the value refer to zxr10IgmpSnoopingInstanceIdx."
+        ::= { zxr10IgmpSnoopingHostFilterSourceEntry 2 }  
+    
+    zxr10IgmpSnoopingHostFilterSourceGroupIp  OBJECT-TYPE
+        SYNTAX  IpAddress 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Group IP address."
+        ::= { zxr10IgmpSnoopingHostFilterSourceEntry 3 }  
+    
+    zxr10IgmpSnoopingFilterSourceHostType  OBJECT-TYPE
+        SYNTAX   INTEGER{port(0), pw(1)}                      
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Port type of this host, there are 2 types: physical port or PW."      
+        ::= { zxr10IgmpSnoopingHostFilterSourceEntry 4 }
+        
+    zxr10IgmpSnoopingFilterSourceHostIndex  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Port/PW index of this host."
+        ::= { zxr10IgmpSnoopingHostFilterSourceEntry 5 }           
+
+    zxr10IgmpSnoopingFilterSourceHostVlan  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "For IPTV or SUPERVLAN hosts, it's user VLAN.
+             For IP-Global or VRF hosts, it's a computed value,
+             the high 16 bits is internal VLAN, 
+             and the low 16 bits is external VLAN.
+             Otherwise, it's equal to submode instance ID."
+        ::= { zxr10IgmpSnoopingHostFilterSourceEntry 6 } 
+      
+   zxr10IgmpSnoopingHostFilterSourceMode  OBJECT-TYPE
+        SYNTAX  INTEGER{include(0), exclude(1)}  
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Host filter source mode,in INCLUDE mode, reception 
+             of packets sent to the specified multicast address 
+             is requested *only* from those IP source addresses,
+             and in EXCLUDE mode, from all IP source addresses 
+             *except* those IP source addresses."
+        ::= { zxr10IgmpSnoopingHostFilterSourceEntry 7 }           
+
+    zxr10IgmpSnoopingHostFilterSourceIpAddr  OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Host filter source IP address."
+        ::= { zxr10IgmpSnoopingHostFilterSourceEntry 8 } 
+   
+    zxr10IgmpSnoopingHostFilterSourcePhyIndex  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Physical interface index of this host."
+        ::= { zxr10IgmpSnoopingHostFilterSourceEntry 9 }        
+   
+--IGMP snooping multicast router guard configuration table    
+    zxr10IgmpSnoopingMrouterGuardTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IgmpSnoopingMrouterGuardEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping multicast router guard table. When it 
+             is a multicast-router-guard port, IGMP Query will be 
+             discarded when received from this port."
+        ::= { zxr10IgmpSnooping 11 }  
+        
+    zxr10IgmpSnoopingMrouterGuardEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IgmpSnoopingMrouterGuardEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping multicast router guard entry."
+        INDEX   { zxr10IgmpSnoopingMrouterGuardSubmode,
+                  zxr10IgmpSnoopingMrouterGuardSubmodeIdx,
+                  zxr10IgmpSnoopingMrouterGuardType,
+                  zxr10IgmpSnoopingMrouterGuardIndex,
+                  zxr10IgmpSnoopingMrouterGuardVlan }
+        ::= { zxr10IgmpSnoopingMrouterGuardTable 1 }
+        
+    Zxr10IgmpSnoopingMrouterGuardEntry ::=
+        SEQUENCE { 
+            zxr10IgmpSnoopingMrouterGuardSubmode
+                SubmodeType,              
+            zxr10IgmpSnoopingMrouterGuardSubmodeIdx
+                Integer32,
+            zxr10IgmpSnoopingMrouterGuardType
+                INTEGER,
+            zxr10IgmpSnoopingMrouterGuardIndex
+                Integer32,
+            zxr10IgmpSnoopingMrouterGuardVlan
+                Integer32,
+            zxr10IgmpSnoopingMrouterGuardCipIdx
+                Integer32,
+            zxr10IgmpSnoopingMrouterGuardIntfName
+                DisplayString                   
+        }     
+     
+    zxr10IgmpSnoopingMrouterGuardSubmode  OBJECT-TYPE
+        SYNTAX   SubmodeType
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Submode type, 1 is VLAN, 2 is Service, 3 is VPLS, 4 is SUPERVLAN, 
+             5 is VBUI, 6 is IP-GLOBAL, 7 is VRF."
+        ::= { zxr10IgmpSnoopingMrouterGuardEntry 1 }        
+    
+    zxr10IgmpSnoopingMrouterGuardSubmodeIdx  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Submode instance ID,
+             the value refer to zxr10IgmpSnoopingInstanceIdx."
+        ::= { zxr10IgmpSnoopingMrouterGuardEntry 2 }    
+        
+    zxr10IgmpSnoopingMrouterGuardType  OBJECT-TYPE
+        SYNTAX   INTEGER{port(0), pw(1)}             
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Port type of this mrouter-guard port, 
+             there are 2 types: physical port or PW."
+        ::= { zxr10IgmpSnoopingMrouterGuardEntry 3 }
+        
+    zxr10IgmpSnoopingMrouterGuardIndex  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "Port/PW index of this mrouter-guard port."
+        ::= { zxr10IgmpSnoopingMrouterGuardEntry 4 }           
+
+    zxr10IgmpSnoopingMrouterGuardVlan  OBJECT-TYPE
+        SYNTAX  Integer32 (0..4094)
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "VLAN ID which this mrouter-guard port belongs to, 
+             it is not supported now, reserved for future use."
+        ::= { zxr10IgmpSnoopingMrouterGuardEntry 5 } 
+        
+    zxr10IgmpSnoopingMrouterGuardCipIdx  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "CIP index of this port, only valid when the port is in 
+             Service or VPLS and port type is physical port,it is 
+             not supported now, reserved for future use."
+        ::= { zxr10IgmpSnoopingMrouterGuardEntry 6 } 
+  
+    zxr10IgmpSnoopingMrouterGuardIntfName  OBJECT-TYPE       
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "Interface name."
+        ::= { zxr10IgmpSnoopingMrouterGuardEntry 7 }      
+        
+--IGMP snooping interface configuration table    
+    zxr10IgmpSnoopingIfConfigTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IgmpSnoopingIfConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping interface config table. When it 
+             is disabled port, IGMP packet will be 
+             discarded when received from this port."
+        ::= { zxr10IgmpSnooping 12 }  
+        
+    zxr10IgmpSnoopingIfConfigEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IgmpSnoopingIfConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping interface configuration entry."
+        INDEX   { zxr10IgmpSnoopingIfConfigSubmode,
+                  zxr10IgmpSnoopingIfConfigSubmodeIdx,
+                  zxr10IgmpSnoopingIfConfigType,
+                  zxr10IgmpSnoopingIfConfigIndex,
+                  zxr10IgmpSnoopingIfConfigVlan }
+        ::= { zxr10IgmpSnoopingIfConfigTable 1 }
+        
+    Zxr10IgmpSnoopingIfConfigEntry ::=
+        SEQUENCE { 
+            zxr10IgmpSnoopingIfConfigSubmode
+                SubmodeType,              
+            zxr10IgmpSnoopingIfConfigSubmodeIdx
+                Integer32,
+            zxr10IgmpSnoopingIfConfigType
+                INTEGER,
+            zxr10IgmpSnoopingIfConfigIndex
+                Integer32,
+            zxr10IgmpSnoopingIfConfigVlan
+                Integer32,
+            zxr10IgmpSnoopingIfConfigCipIdx
+                Integer32,
+            zxr10IgmpSnoopingIfConfigIntfName
+                DisplayString,
+            zxr10IgmpSnoopingIfConfigEnable
+                INTEGER               
+        }     
+     
+    zxr10IgmpSnoopingIfConfigSubmode  OBJECT-TYPE
+        SYNTAX   SubmodeType
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Submode type, 1 is VLAN, 2 is Service, 3 is VPLS, 4 is SUPERVLAN, 
+             5 is VBUI, 6 is IP-GLOBAL, 7 is VRF."
+        ::= { zxr10IgmpSnoopingIfConfigEntry 1 }        
+    
+    zxr10IgmpSnoopingIfConfigSubmodeIdx  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  not-accessible 
+        STATUS  current
+        DESCRIPTION
+            "Submode instance ID,
+             the value refer to zxr10IgmpSnoopingInstanceIdx."
+        ::= { zxr10IgmpSnoopingIfConfigEntry 2 }    
+        
+    zxr10IgmpSnoopingIfConfigType  OBJECT-TYPE
+        SYNTAX   INTEGER{port(1), pw(2)}             
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Port type of this port, 
+             there are 2 types: physical port or PW."
+        ::= { zxr10IgmpSnoopingIfConfigEntry 3 }
+        
+    zxr10IgmpSnoopingIfConfigIndex  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  not-accessible 
+        STATUS  current
+        DESCRIPTION
+            "Port/PW index of this port."
+        ::= { zxr10IgmpSnoopingIfConfigEntry 4 }           
+
+    zxr10IgmpSnoopingIfConfigVlan  OBJECT-TYPE
+        SYNTAX  Integer32 (0..4094)
+        MAX-ACCESS  not-accessible 
+        STATUS  current
+        DESCRIPTION
+            "VLAN ID which this port belongs to, 
+             it is not supported now, reserved for future use."
+        ::= { zxr10IgmpSnoopingIfConfigEntry 5 } 
+        
+    zxr10IgmpSnoopingIfConfigCipIdx  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "CIP index of this port, only valid when the port is in 
+             Service or VPLS and port type is physical port,it is 
+             not supported now, reserved for future use."
+        ::= { zxr10IgmpSnoopingIfConfigEntry 6 } 
+  
+    zxr10IgmpSnoopingIfConfigIntfName  OBJECT-TYPE       
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "Interface name."
+        ::= { zxr10IgmpSnoopingIfConfigEntry 7 } 
+        
+    zxr10IgmpSnoopingIfConfigEnable  OBJECT-TYPE       
+        SYNTAX   INTEGER{disable(1),enable(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+              "Enable/disable Interface in this instance."
+        ::= { zxr10IgmpSnoopingIfConfigEntry 8 } 
+ 
+ --IGMP snooping summary 
+    zxr10IgmpSnoopingSummaryTotalGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group access currently."
+        ::= { zxr10IgmpSnoopingSummary 1 }
+        
+    zxr10IgmpSnoopingSummaryExistHostGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group which exist IGMP host."
+        ::= { zxr10IgmpSnoopingSummary 2 }  
+        
+    zxr10IgmpSnoopingSummaryDropGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group which configured as drop mode."
+        ::= { zxr10IgmpSnoopingSummary 3 } 
+        
+    zxr10IgmpSnoopingSummaryPrejoinGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group which configured as prejoin mode."
+        ::= { zxr10IgmpSnoopingSummary 4 }
+        
+    zxr10IgmpSnoopingSummaryMaxHostGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group which configured with max host number."
+        ::= { zxr10IgmpSnoopingSummary 5 } 
+ 
+    zxr10IgmpSnoopingSummarySSMGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of source-specific multicast group access currently."
+        ::= { zxr10IgmpSnoopingSummary 6 }
+        
+    zxr10IgmpSnoopingSummaryASMGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of anycast-specific multicast group access currently."
+        ::= { zxr10IgmpSnoopingSummary 7 }  
+        
+    zxr10IgmpSnoopingSummaryTotalHostNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of host access currently."
+        ::= { zxr10IgmpSnoopingSummary 8 }
+        
+    zxr10IgmpSnoopingSummaryDynamicHostNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of dynamic host access currently."
+        ::= { zxr10IgmpSnoopingSummary 9 }  
+
+    zxr10IgmpSnoopingSummaryStaticHostNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of static host access currently."
+        ::= { zxr10IgmpSnoopingSummary 10 }
+  
+    zxr10IgmpSnoopingSummaryTotalMrouterNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast router port access currently."
+        ::= { zxr10IgmpSnoopingSummary 11 }
+        
+    zxr10IgmpSnoopingSummaryDynamicMrouterNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of dynamic multicast router port access currently."
+        ::= { zxr10IgmpSnoopingSummary 12 }  
+
+    zxr10IgmpSnoopingSummaryStaticMrouterNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of static multicast router port access currently."
+        ::= { zxr10IgmpSnoopingSummary 13 }
+
+--IGMP snooping submode summary table       
+    zxr10IgmpSnoopingSummarySubmodeTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IgmpSnoopingSummarySubmodeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping submode summary table, 
+             IGMP snooping supports submodes such as : VLAN, Service, VPLS, 
+             SUPERVLAN, VBUI, IP-GLOBAL and VRF.
+             Some submodes are not supported now,
+             but reserved for compatibility."
+        ::= { zxr10IgmpSnooping 14 }   
+        
+    zxr10IgmpSnoopingSummarySubmodeEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IgmpSnoopingSummarySubmodeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IGMP snooping submode summary entry."
+        INDEX   { zxr10IgmpSnoopingSummarySubmode,
+                  zxr10IgmpSnoopingSummarySubmodeIdx }
+        ::= { zxr10IgmpSnoopingSummarySubmodeTable 1 }
+        
+    Zxr10IgmpSnoopingSummarySubmodeEntry ::=
+        SEQUENCE {
+            zxr10IgmpSnoopingSummarySubmode
+                SubmodeType,
+            zxr10IgmpSnoopingSummarySubmodeIdx
+                Integer32,
+            zxr10IgmpSnoopingSummarySubmodeTotalGroupNum 
+                Unsigned32,
+            zxr10IgmpSnoopingSummarySubmodeExistHostGroupNum  
+                Unsigned32,
+            zxr10IgmpSnoopingSummarySubmodeDropGroupNum    
+                Unsigned32,
+            zxr10IgmpSnoopingSummarySubmodePrejoinGroupNum    
+                Unsigned32,
+            zxr10IgmpSnoopingSummarySubmodeMaxHostGroupNum   
+                Unsigned32, 
+            zxr10IgmpSnoopingSummarySubmodeSSMGroupNum  
+                Unsigned32, 
+            zxr10IgmpSnoopingSummarySubmodeASMGroupNum 
+                Unsigned32,
+            zxr10IgmpSnoopingSummarySubmodeTotalHostNum
+                Unsigned32,
+            zxr10IgmpSnoopingSummarySubmodeDynamicHostNum
+                Unsigned32,
+            zxr10IgmpSnoopingSummarySubmodeStaticHostNum
+                Unsigned32            
+    }
+              
+    zxr10IgmpSnoopingSummarySubmode  OBJECT-TYPE
+        SYNTAX   SubmodeType
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Submode type, 1 is VLAN, 2 is Service, 3 is VPLS, 4 is SUPERVLAN, 
+             5 is VBUI, 6 is IP-GLOBAL, 7 is VRF."
+        ::= { zxr10IgmpSnoopingSummarySubmodeEntry 1 }
+    
+    zxr10IgmpSnoopingSummarySubmodeIdx  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  not-accessible 
+        STATUS  current
+        DESCRIPTION
+            "Submode instance ID,
+             the value refer to zxr10IgmpSnoopingInstanceIdx."
+        ::= { zxr10IgmpSnoopingSummarySubmodeEntry 2 }   
+        
+    zxr10IgmpSnoopingSummarySubmodeTotalGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group access to this instance currently."
+        ::= { zxr10IgmpSnoopingSummarySubmodeEntry 3 }
+        
+    zxr10IgmpSnoopingSummarySubmodeExistHostGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group which exist IGMP host."
+        ::= { zxr10IgmpSnoopingSummarySubmodeEntry 4 }  
+        
+    zxr10IgmpSnoopingSummarySubmodeDropGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group which configured as drop mode."
+        ::= { zxr10IgmpSnoopingSummarySubmodeEntry 5 } 
+        
+    zxr10IgmpSnoopingSummarySubmodePrejoinGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group which configured as prejoin mode."
+        ::= { zxr10IgmpSnoopingSummarySubmodeEntry 6 }
+        
+    zxr10IgmpSnoopingSummarySubmodeMaxHostGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group which configured with max host number."
+        ::= { zxr10IgmpSnoopingSummarySubmodeEntry 7 } 
+ 
+    zxr10IgmpSnoopingSummarySubmodeSSMGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of source-specific multicast group access currently."
+        ::= { zxr10IgmpSnoopingSummarySubmodeEntry 8 }
+        
+    zxr10IgmpSnoopingSummarySubmodeASMGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of anycast-specific multicast group 
+            access to this instance currently."
+        ::= { zxr10IgmpSnoopingSummarySubmodeEntry 9 }
+        
+    zxr10IgmpSnoopingSummarySubmodeTotalHostNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of host access to this instance currently."
+        ::= { zxr10IgmpSnoopingSummarySubmodeEntry 10 }
+        
+    zxr10IgmpSnoopingSummarySubmodeDynamicHostNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of dynamic host access to this instance currently."
+        ::= { zxr10IgmpSnoopingSummarySubmodeEntry 11}
+
+    zxr10IgmpSnoopingSummarySubmodeStaticHostNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of static host access to this instance currently."
+        ::= { zxr10IgmpSnoopingSummarySubmodeEntry 12 }    
+                               
+    END

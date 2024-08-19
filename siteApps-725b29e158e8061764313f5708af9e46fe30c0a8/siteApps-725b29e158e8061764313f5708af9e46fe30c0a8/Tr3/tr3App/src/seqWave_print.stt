@@ -1,0 +1,72 @@
+program seqWave
+
+option +r;
+
+%% #include <math.h>
+
+/*evflag efSinEvent;*/
+
+double asub1_wf[1024];
+assign asub1_wf to "{M}:ASUB1_WF";
+
+double asub2_wf[1024];
+assign asub2_wf to "{M}:ASUB2_WF";
+
+double asub3_wf[1024];
+assign asub3_wf to "{M}:ASUB3_WF";
+
+
+double sin_wave[1024];
+assign sin_wave to "{M}:sinWF";
+monitor sin_wave;
+/*sync sin_wave  efSinEvent;*/
+
+double cos_wave[1024];
+assign cos_wave to "{M}:cosWF";
+monitor cos_wave;
+
+/*long sin_size;*/
+int sin_size;
+assign sin_size to "{M}:sin_phaseSize";
+monitor sin_size;
+
+/*long cos_size;*/
+int cos_size;
+assign cos_size to "{M}:cos_phaseSize";
+monitor cos_size;
+
+int count;
+int i;
+
+%%extern WaveDebug;
+
+ss ssMakeWave
+{
+	state init 
+	{
+		when (delay(2)) 
+		{
+			printf("Going to next-state: makeWave\n");
+		} state makeWave
+	}
+
+	state makeWave
+	{
+		when(delay(1)) 
+		{
+			count = pvCount(sin_wave);
+			if(WaveDebug)
+				printf("Wavecount(%d), sinWF-timestamp(%d), cosWF-timestamp(%d)\n",count, pvTimeStamp(sin_wave).secPastEpoch, pvTimeStamp(cos_wave).secPastEpoch);
+			for(i=0;i<count;i++)
+			{
+				asub1_wf[i] = sin(sin_wave[i]*sin_size)+cos(cos_wave[i]*cos_size);
+				asub2_wf[i] = sin_wave[i]*fabs(cos_wave[i]*5);
+				asub3_wf[i] = 5*fabs(sin_wave[i])-fabs(cos_wave[i]);
+			};
+
+			pvPut(asub1_wf);
+			pvPut(asub2_wf);
+			pvPut(asub3_wf);
+		} state makeWave
+	}
+}

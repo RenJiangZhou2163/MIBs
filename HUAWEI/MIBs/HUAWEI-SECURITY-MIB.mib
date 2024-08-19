@@ -1,10 +1,9 @@
 --  ===================================================================
--- Copyright (C) 2020 by HUAWEI TECHNOLOGIES. All rights reserved.
+-- Copyright (C) 2021 by HUAWEI TECHNOLOGIES. All rights reserved.
 -- Description:
 -- Reference:
--- Version: V2.55
+-- Version: V2.66
 -- ===================================================================
-
 	HUAWEI-SECURITY-MIB DEFINITIONS ::= BEGIN
  
 		IMPORTS
@@ -21,7 +20,7 @@
 	
 	
 		hwSecurityMIB MODULE-IDENTITY 
-			LAST-UPDATED "202003181500Z"		-- March 18, 2020 at 15:00 GMT
+			LAST-UPDATED "202108031440Z"		-- August 03, 2021 at 14:40 GMT
 			ORGANIZATION 
 				"Huawei Technologies Co.,Ltd."
 			CONTACT-INFO 
@@ -31,6 +30,48 @@
 				 People's Republic of China
 				 Website: http://www.huawei.com
 				 Email: support@huawei.com"
+			DESCRIPTION 
+				"Add hwCpcarReduceCarAlarm for cpcar"
+			REVISION "202108031440Z"		-- August 03, 2021 at 14:40 GMT
+			DESCRIPTION 
+				"Add hwCpcarReduceCarAlarmResume for cpcar"
+			REVISION "202108031440Z"		-- August 03, 2021 at 14:40 GMT
+	            DESCRIPTION
+                "Modify node for hwSessionCarTrapObject ."		   
+			REVISION "202107281720Z"		-- July  28, 2021 at 17:20 GMT
+			DESCRIPTION
+                "Add node for hwSessionCarTrapObject ."		   
+			REVISION "202107231720Z"		-- July  23, 2021 at 17:20 GMT
+			DESCRIPTION
+                "Add node for hwTerminalNumTrapObject and hwTerminalNumTrap."		   
+			REVISION "202105221532Z"		-- May  22, 2021 at 15:32 GMT
+			DESCRIPTION
+                "Modify node for hwMacFilterEnableMode."		   
+			REVISION "202104141147Z"		-- April  14, 2021 at 17:30 GMT
+			DESCRIPTION
+                "Add node for hwTerminalStatusAbnormal."		   
+			REVISION "202103271730Z"		-- March 27, 2021 at 17:30 GMT
+			DESCRIPTION
+                "Add node for hwTerminalStatusResume."		   
+			REVISION "202103271730Z"		-- March 27, 2021 at 17:30 GMT
+                        DESCRIPTION
+                "Add node for hwPPEDropPacketAlarm."		   
+			REVISION "202010151702Z"		-- October 15, 2020 at 17:02 GMT
+			DESCRIPTION
+                "Add node for hwPPEDropPacketAlarmResume."		   
+			REVISION "202010151700Z"		-- October 15, 2020 at 17:00 GMT
+			DESCRIPTION
+                "Modify spelling mistakes"		   
+			REVISION "202007310912Z"		-- July 31, 2020 at 09:12 GMT		 
+			DESCRIPTION
+                "Add node for hwIPSGv4ResourceALarm, hwIPSGv4ResourceResume, hwIPSGv6ResourceALarm, hwIPSGv6ResourceResume"		   
+			REVISION "202007141630Z"		-- July 14, 2020 at 16:30 GMT		 
+			DESCRIPTION
+                "Add node for hwArpsDaiVlanDropALarm"		   
+			REVISION "202007061230Z"		-- July 06, 2020 at 12:30 GMT
+			DESCRIPTION
+                "Add node for  hwArpsDaiBDDropALarm"		   
+			REVISION "202004240930Z"		-- April 24, 2020 at 09:30 GMT		 
 			DESCRIPTION
                 "Modify description for hwStrackUserInfo, hwStrackIfVlanInfo, hwStrackIpInfo and hwCpcarAutoPortDefendAlarmResume."	   
 			REVISION "202003181500Z"		-- March 18, 2020 at 15:00 GMT                                   
@@ -1241,9 +1282,9 @@
 		hwMacFilterEnableMode OBJECT-TYPE
 			SYNTAX INTEGER
 				{
-				none(0),
-				whitelist(1),
-				balcklist(2)
+				none(1),
+				whitelist(2),
+				balcklist(3)
 				}
 			MAX-ACCESS read-only
 			STATUS current
@@ -2047,6 +2088,24 @@
 				"The data of time which ARP Packet will be blocked. unit(second)."
 			::= { hwArpsTrapObject 8 }
 		
+		-- 1.3.6.1.4.1.2011.5.25.165.2.1.2.9
+		hwArpsBD OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"The BD of arp anti-attack check."
+			::= { hwArpsTrapObject 9 }
+			
+		-- 1.3.6.1.4.1.2011.5.25.165.2.1.2.10
+		hwArpsPktInfo OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"The detail of the packet discarded by arp anti-attack check."
+			::= { hwArpsTrapObject 10 }
+			
 		-- 1.3.6.1.4.1.2011.5.25.165.2.1.3
 		hwIpsgTrapObject OBJECT IDENTIFIER ::= { hwSecurityTrapObject 3 }
 		
@@ -2094,6 +2153,24 @@
 			DESCRIPTION
 				"The detail of the packet discarded by ip souce check."
 			::= { hwIpsgTrapObject 5 }
+		
+		-- 1.3.6.1.4.1.2011.5.25.165.2.1.3.6
+		hwIpsgPercent OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"The slot of ipsg."
+			::= { hwIpsgTrapObject 6 }
+			
+		-- 1.3.6.1.4.1.2011.5.25.165.2.1.3.7
+		hwIpsgSlot OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"The percent of ipsg resource."
+			::= { hwIpsgTrapObject 7 }
 			
 		-- 1.3.6.1.4.1.2011.5.25.165.2.1.4 
 		hwIcmpTrapObject OBJECT IDENTIFIER ::= { hwSecurityTrapObject 4 }
@@ -2277,7 +2354,15 @@
 			DESCRIPTION
 				"The reason of autodefend by cpcar."
 			::= { hwCpcarTrapObject 9 }		
-		
+		-- 1.3.6.1.4.1.2011.5.25.165.2.1.7.10
+		hwCpcarReduceCarSlotStr OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..64))
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"The reason of reducecar by cpcar."
+			::= { hwCpcarTrapObject 10 }
+
 		-- 1.3.6.1.4.1.2011.5.25.165.2.1.8
 		hwMACsecTrapObject OBJECT IDENTIFIER ::= { hwSecurityTrapObject 8 }
 		
@@ -2431,6 +2516,162 @@
 				"Insecure encryption algorithms exist."
 			::= { hwWeakEATrapObject 1 }
 			
+		-- 1.3.6.1.4.1.2011.5.25.165.2.1.14
+		hwPPETrapObject OBJECT IDENTIFIER ::= { hwSecurityTrapObject 14 }
+		
+		-- 1.3.6.1.4.1.2011.5.25.165.2.1.14.1
+		hwPPEDropPacketSlotStr OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..32))
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"The slot in which packets discarded on PPE."
+			::= { hwPPETrapObject 1 }
+		
+		-- 1.3.6.1.4.1.2011.5.25.165.2.1.14.2
+		hwPPEDropPacketNum OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..32))
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"The number of packets discarded on PPE."
+			::= { hwPPETrapObject 2 }
+
+		-- 1.3.6.1.4.1.2011.5.25.165.2.1.15
+		hwTerminalTrapObject OBJECT IDENTIFIER ::= { hwSecurityTrapObject 15 }
+		
+		-- 1.3.6.1.4.1.2011.5.25.165.2.1.15.1
+		hwTerminalIfName OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..32))
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"The interface name of the abnormal terminal connection."
+			::= { hwTerminalTrapObject 1 }
+		
+		-- 1.3.6.1.4.1.2011.5.25.165.2.1.15.2
+		hwTerminalSourceMac OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..32))
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"The source MAC of the abnormal terminal."
+			::= { hwTerminalTrapObject 2 }
+		
+		-- 1.3.6.1.4.1.2011.5.25.165.2.1.15.3
+		hwTerminalType OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..32))
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"The type of the abnormal terminal."
+			::= { hwTerminalTrapObject 3 }
+		
+		-- 1.3.6.1.4.1.2011.5.25.165.2.1.15.4
+		hwTerminalSourceIp OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..32))
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"The source IP of the abnormal terminal."
+			::= { hwTerminalTrapObject 4 }
+ 
+	        -- 1.3.6.1.4.1.2011.5.25.165.2.1.16
+		hwTerminalNumTrapObject OBJECT IDENTIFIER ::= { hwSecurityTrapObject 16 }
+
+		-- 1.3.6.1.4.1.2011.5.25.165.2.1.16.1
+		hwTerminalNumMaximum OBJECT-TYPE
+			SYNTAX EnabledStatus
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"The number of terminal entries has reached the maximum."
+			::= { hwTerminalNumTrapObject 1 }
+
+            -- 1.3.6.1.4.1.2011.5.25.165.2.1.17
+            hwSessionCarTrapObject OBJECT IDENTIFIER ::= { hwSecurityTrapObject 17 }
+            
+            -- 1.3.6.1.4.1.2011.5.25.165.2.1.17.1
+            hwSessionCarProtoType OBJECT-TYPE
+                    SYNTAX OCTET STRING (SIZE (0..32))
+	            MAX-ACCESS accessible-for-notify
+	            STATUS current
+	            DESCRIPTION
+	                "The protocol type of the attack session."
+	            ::= { hwSessionCarTrapObject 1 }
+
+            -- 1.3.6.1.4.1.2011.5.25.165.2.1.17.2
+            hwSessionCarSrcIP OBJECT-TYPE
+                   SYNTAX OCTET STRING (SIZE (0..32))
+	            MAX-ACCESS accessible-for-notify
+	            STATUS current
+	            DESCRIPTION
+	                "The source IP address of the attack session."
+	            ::= { hwSessionCarTrapObject 2 }
+                
+            -- 1.3.6.1.4.1.2011.5.25.165.2.1.17.3
+            hwSessionCarDstIP OBJECT-TYPE
+                  SYNTAX OCTET STRING (SIZE (0..32))
+	          MAX-ACCESS accessible-for-notify
+	          STATUS current
+	          DESCRIPTION
+	              "The destination IP address of the attack session."
+	          ::= { hwSessionCarTrapObject 3 }
+                
+            -- 1.3.6.1.4.1.2011.5.25.165.2.1.17.4
+            hwSessionCarSrcIPV6 OBJECT-TYPE
+                   SYNTAX OCTET STRING (SIZE (0..128))
+	            MAX-ACCESS accessible-for-notify
+	            STATUS current
+	            DESCRIPTION
+	                "The source IPV6 address of the attack session."
+	            ::= { hwSessionCarTrapObject 4 }
+                
+            -- 1.3.6.1.4.1.2011.5.25.165.2.1.17.5
+            hwSessionCarDstIPV6 OBJECT-TYPE
+                    SYNTAX OCTET STRING (SIZE (0..128))
+	            MAX-ACCESS accessible-for-notify
+	            STATUS current
+	            DESCRIPTION
+	                "The destination IPV6 address of the attack session."
+	            ::= { hwSessionCarTrapObject 5 }
+                
+            -- 1.3.6.1.4.1.2011.5.25.165.2.1.17.6
+            hwSessionCarSrcPort OBJECT-TYPE
+                   SYNTAX Integer32
+	           MAX-ACCESS accessible-for-notify
+	           STATUS current
+	           DESCRIPTION
+	               "The source port of the attack session."
+	           ::= { hwSessionCarTrapObject 6 }
+                
+            -- 1.3.6.1.4.1.2011.5.25.165.2.1.17.7
+            hwSessionCarDstPort OBJECT-TYPE
+                   SYNTAX Integer32
+	           MAX-ACCESS accessible-for-notify
+	           STATUS current
+	           DESCRIPTION
+	                "The Destination port of the attack session."
+	           ::= { hwSessionCarTrapObject 7 }
+
+            -- 1.3.6.1.4.1.2011.5.25.165.2.1.17.8
+            hwSessionCarSrcMAC OBJECT-TYPE
+                   SYNTAX OCTET STRING (SIZE (0..32))
+	           MAX-ACCESS accessible-for-notify
+	           STATUS current
+	           DESCRIPTION
+	                "The source MAC address of the attack session."
+	          ::= { hwSessionCarTrapObject 8 }
+                
+            -- 1.3.6.1.4.1.2011.5.25.165.2.1.17.9
+            hwSessionCarDstMAC OBJECT-TYPE
+                   SYNTAX OCTET STRING (SIZE (0..32))
+	            MAX-ACCESS accessible-for-notify
+	            STATUS current
+	            DESCRIPTION
+	                  "The destination MAC address of the attack session."
+	            ::= { hwSessionCarTrapObject 9 }
+                
 		-- 1.3.6.1.4.1.2011.5.25.165.2.2
 		hwSecurityTraps OBJECT IDENTIFIER ::= { hwMeSecurityMIBObjects 2 }
 		
@@ -2461,7 +2702,7 @@
 				 }
 			STATUS current
 			DESCRIPTION 
-				"The infomation of the packets discarded by strack."
+				"The information of the packets discarded by strack."
 			::= { hwStrackTrap 3 }
 		
 		-- 1.3.6.1.4.1.2011.5.25.165.2.2.1.4
@@ -2617,6 +2858,22 @@
 				"The alarm of arp speed limit."
 			::= { hwArpsTrap 15 }
 		
+		-- 1.3.6.1.4.1.2011.5.25.165.2.2.2.16
+		hwArpsDaiBDDropALarm NOTIFICATION-TYPE
+			OBJECTS { hwArpsPacketDropNum, hwArpsAlarmThreshold, hwArpsBD, hwArpsPktInfo }
+			STATUS current
+			DESCRIPTION 
+				"The alarm of BD Dai."
+			::= { hwArpsTrap 16 }
+		
+		-- 1.3.6.1.4.1.2011.5.25.165.2.2.2.17
+		hwArpsDaiVlanDropALarm NOTIFICATION-TYPE
+			OBJECTS { hwArpsPacketDropNum, hwArpsAlarmThreshold, hwArpsPVlan, hwArpsPktInfo }
+			STATUS current
+			DESCRIPTION 
+				"The alarm of VLAN Dai."
+			::= { hwArpsTrap 17 }
+			
 		-- 1.3.6.1.4.1.2011.5.25.165.2.2.3
 		hwIpsgTrap OBJECT IDENTIFIER ::= { hwSecurityTraps 3 }
 		
@@ -2635,6 +2892,38 @@
 			DESCRIPTION 
 				"The alarm of vlan ipsg."
 			::= { hwIpsgTrap 2 }
+			
+		-- 1.3.6.1.4.1.2011.5.25.165.2.2.3.3
+		hwIpsgv4ResourceALarm NOTIFICATION-TYPE
+			OBJECTS { hwIpsgPercent, hwIpsgSlot }
+			STATUS current
+			DESCRIPTION 
+				"The alarm of ipsgv4 resource full."
+			::= { hwIpsgTrap 3 }
+			
+		-- 1.3.6.1.4.1.2011.5.25.165.2.2.3.4
+		hwIpsgv4ResourceResume NOTIFICATION-TYPE
+			OBJECTS { hwIpsgPercent, hwIpsgSlot }
+			STATUS current
+			DESCRIPTION 
+				"The alarm of ipsgv4 resource full resume."
+			::= { hwIpsgTrap 4 }
+				
+		-- 1.3.6.1.4.1.2011.5.25.165.2.2.3.5
+		hwIpsgv6ResourceALarm NOTIFICATION-TYPE
+			OBJECTS { hwIpsgPercent, hwIpsgSlot }
+			STATUS current
+			DESCRIPTION 
+				"The alarm of ipsgv6 resource full."
+			::= { hwIpsgTrap 5 }
+			
+		-- 1.3.6.1.4.1.2011.5.25.165.2.2.3.6
+		hwIpsgv6ResourceResume NOTIFICATION-TYPE
+			OBJECTS { hwIpsgPercent, hwIpsgSlot }
+			STATUS current
+			DESCRIPTION 
+				"The alarm of ipsgv6 resource full resume."
+			::= { hwIpsgTrap 6 }
 			
 		-- 1.3.6.1.4.1.2011.5.25.165.2.2.4
 		hwIcmpTrap OBJECT IDENTIFIER ::= { hwSecurityTraps 4 }
@@ -2722,8 +3011,25 @@
 			STATUS current
 			DESCRIPTION 
 				"The resume alarm of cpcar auto-port-defend."
-			::= { hwCpcarTrap 4 }		
+			::= { hwCpcarTrap 4 }
+		-- 1.3.6.1.4.1.2011.5.25.165.2.2.7.5
+		hwCpcarReduceCarAlarm NOTIFICATION-TYPE
+			OBJECTS { hwCpcarReduceCarSlotStr
+				 }
+			STATUS current
+			DESCRIPTION 
+				"The alarm of cpcar reduce-car."
+			::= { hwCpcarTrap 5 }	
 		
+        -- 1.3.6.1.4.1.2011.5.25.165.2.2.7.6
+		hwCpcarReduceCarAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwCpcarReduceCarSlotStr
+				 }
+			STATUS current
+			DESCRIPTION 
+				"The alarm of cpcar reduce-car."
+			::= { hwCpcarTrap 6 }
+
 		-- 1.3.6.1.4.1.2011.5.25.165.2.2.8
 		hwMACsecTrap OBJECT IDENTIFIER ::= { hwSecurityTraps 8 }
 		
@@ -2812,7 +3118,67 @@
 			DESCRIPTION 
 				"Insecure encryption algorithms exist."
 			::= { hwWeakEATrap 1 }
-							
+
+		-- 1.3.6.1.4.1.2011.5.25.165.2.2.14
+		hwPPETrap OBJECT IDENTIFIER ::= { hwSecurityTraps 14 }
+		
+		-- 1.3.6.1.4.1.2011.5.25.165.2.2.14.1
+		hwPPEDropPacketAlarm NOTIFICATION-TYPE
+			OBJECTS { hwPPEDropPacketSlotStr, hwPPEDropPacketNum }
+			STATUS current
+			DESCRIPTION 
+				"The alarm of ppe drop packets."
+			::= { hwPPETrap 1 }	
+		
+		-- 1.3.6.1.4.1.2011.5.25.165.2.2.14.2
+		hwPPEDropPacketAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwPPEDropPacketSlotStr, hwPPEDropPacketNum
+				 }
+			STATUS current
+			DESCRIPTION 
+				"The resume alarm of ppe drop packets."
+			::= { hwPPETrap 2 }
+
+		-- 1.3.6.1.4.1.2011.5.25.165.2.2.15
+		hwTerminalTrap OBJECT IDENTIFIER ::= { hwSecurityTraps 15 }
+		
+		-- 1.3.6.1.4.1.2011.5.25.165.2.2.15.1
+		hwTerminalStatusAbnormal NOTIFICATION-TYPE
+			OBJECTS { hwTerminalIfName, hwTerminalSourceMac, hwTerminalType, hwTerminalSourceIp }
+			STATUS current
+			DESCRIPTION 
+				"The status of the terminal is abnormal."
+			::= { hwTerminalTrap 1 }	
+		
+		-- 1.3.6.1.4.1.2011.5.25.165.2.2.15.2
+		hwTerminalStatusResume NOTIFICATION-TYPE
+			OBJECTS { hwTerminalIfName, hwTerminalSourceMac, hwTerminalType, hwTerminalSourceIp }
+			STATUS current
+			DESCRIPTION 
+				"The status of the terminal is normal."
+			::= { hwTerminalTrap 2 }
+		
+	        -- 1.3.6.1.4.1.2011.5.25.165.2.2.16
+		hwTerminalNumTrap OBJECT IDENTIFIER ::= { hwSecurityTraps 16 }
+
+		-- 1.3.6.1.4.1.2011.5.25.165.2.2.16.1
+		hwTerminalNumAlarm NOTIFICATION-TYPE
+			STATUS current
+			DESCRIPTION 
+				"The number of terminal entries has reached the maximum."
+			::= { hwTerminalNumTrap 1 }
+
+		-- 1.3.6.1.4.1.2011.5.25.165.2.2.17
+		hwSessionCarTrap OBJECT IDENTIFIER ::= { hwSecurityTraps 17 }
+
+                -- 1.3.6.1.4.1.2011.5.25.165.2.2.17.1
+                hwSessionCarAttackInfo NOTIFICATION-TYPE
+                    OBJECTS { hwSessionCarProtoType, hwSessionCarSrcIP, hwSessionCarDstIP, hwSessionCarSrcIPV6, hwSessionCarDstIPV6, hwSessionCarSrcPort, hwSessionCarDstPort, hwSessionCarSrcMAC, hwSessionCarDstMAC }
+                    STATUS current
+                    DESCRIPTION 
+                           "One of the linkup session is detected as an attack."
+                    ::= { hwSessionCarTrap 1 }   
+
 		-- 1.3.6.1.4.1.2011.5.25.165.2.3
 		hwTrafficSuppression OBJECT IDENTIFIER ::= { hwMeSecurityMIBObjects 3 }
 		
@@ -2936,14 +3302,14 @@
 		hwMeSecurityObjectGroup OBJECT-GROUP
 			OBJECTS { hwStrackTotalPacket, hwStrackEndTime, hwStrackSourceMac, hwStrackPacketPVlan, hwStrackPacketCVlan, 
 				hwStrackPacketIfName, hwStrackSourceIp, hwArpsSourceInterface, hwArpsSourceIp, hwArpsSourceMac, 
-				hwArpsPVlan, hwArpsCVlan, hwArpsPacketDropNum, hwArpsAlarmThreshold, hwArpsBlockTime, 
-				hwIpsgPacketDropNum, hwIpsgAlarmThreshold, hwIpsgSourceInterface, hwIpsgVlan, hwIpsgPktInfo, hwIcmpPacketDropNum, hwIcmpAlarmThreshold, 
+				hwArpsPVlan, hwArpsCVlan, hwArpsPacketDropNum, hwArpsAlarmThreshold, hwArpsBlockTime, hwArpsBD, hwArpsPktInfo,
+				hwIpsgPacketDropNum, hwIpsgAlarmThreshold, hwIpsgSourceInterface, hwIpsgVlan, hwIpsgPktInfo, hwIpsgPercent, hwIpsgSlot, hwIcmpPacketDropNum, hwIcmpAlarmThreshold, 
 				hwIcmpSourceInterface, hwDapPortChange, hwCfgApUserName, hwCfgApIPAddress, hwCfgApApID, 
 				hwCfgApOperation, hwCfgApReason, hwCpcarDropPacketSlotStr, hwCpcarDropPacketProtocol, hwCpcarDropPacketCir, 
 				hwCpcarDropPacketCbs, hwCpcarDropPacketNum, hwMACsecIfName, hwMACsecReason, hwStrackPortPacketIfName, 
-				hwStrackPortPacketType, hwCpcarAutoDefendIfName, hwCpcarAutoDefendSlotStr, hwCpcarAutoDefendProtocol, hwCpcarAutoDefendReasonDescription, hwDapDeviceIP,
+				hwStrackPortPacketType, hwCpcarAutoDefendIfName, hwCpcarAutoDefendSlotStr, hwCpcarAutoDefendProtocol, hwCpcarAutoDefendReasonDescription, hwCpcarReduceCarSlotStr, hwDapDeviceIP,
 				hwOlcSlotStr, hwOlcThreshold1, hwOlcCurrentCpuUsage, hwOlcCpuSampleCycle, 
-				hwEngineCurrSessNum }
+				hwEngineCurrSessNum, hwPPEDropPacketSlotStr,  hwPPEDropPacketNum }
 			STATUS current
 			DESCRIPTION 
 				"The alarm parameter of huawei base security group."
@@ -2954,12 +3320,13 @@
 			NOTIFICATIONS { hwStrackUserInfo, hwStrackIfVlanInfo, hwStrackDenyPacket, hwStrackErrorDown, hwStrackIpInfo, 
 				hwArpsGatewayConflict, hwArpsEntryCheck, hwArpsPacketCheck, hwArpsDaiDropALarm, hwArpGlobleSpeedLimitALarm, 
 				hwArpIfSpeedLimitALarm, hwArpVlanSpeedLimitALarm, hwArpMissGlobleSpeedLimitALarm, hwArpMissIfSpeedLimitALarm, hwArpMissVlanSpeedLimitALarm, 
-				hwArpSourceIpSpeedLimitALarm, hwArpMissSourceIpSpeedLimitALarm, hwArpIfRateLimitBlockALarm, hwArpsLearnStrictCheck, hwArpSourceMacSpeedLimitALarm, 
-				hwIpsgDropALarm, hwIpsgVlanDropALarm, hwIcmpGlobleDropALarm, hwIcmpIfDropALarm, hwDapMibPortChange, hwCfgApTrapFailAlarm, 
+				hwArpSourceIpSpeedLimitALarm, hwArpMissSourceIpSpeedLimitALarm, hwArpIfRateLimitBlockALarm, hwArpsLearnStrictCheck, hwArpSourceMacSpeedLimitALarm, hwArpsDaiBDDropALarm, hwArpsDaiVlanDropALarm,
+				hwIpsgDropALarm, hwIpsgVlanDropALarm, hwIpsgv4ResourceALarm, hwIpsgv4ResourceResume, hwIpsgv6ResourceALarm, hwIpsgv6ResourceResume, hwIcmpGlobleDropALarm, hwIcmpIfDropALarm, hwDapMibPortChange, hwCfgApTrapFailAlarm, 
 				hwCpcarDropPacketAlarm, hwMACsecFailNotify, hwStrackPortAtk, hwTeSourceInterfaceCheckAlarm, hwTeSourceInterfaceCheckResume,hwCpcarDropPacketAlarmResume, hwCpcarAutoPortDefendAlarm,
-				hwCpcarAutoPortDefendAlarmResume, hwDapMibAuthRequest, 
+				hwCpcarAutoPortDefendAlarmResume, hwCpcarReduceCarAlarm, hwCpcarReduceCarAlarmResume, hwDapMibAuthRequest, 
 				hwOlcStartAlarm, hwOlcStopAlarm, 
-				hwEngineSessThresholdAlarm, hwEngineSessThresholdResume 
+				hwEngineSessThresholdAlarm, hwEngineSessThresholdResume,
+                                hwPPEDropPacketAlarm, hwPPEDropPacketAlarmResume, hwSessionCarAttackInfo 
 				 }
 			STATUS current
 			DESCRIPTION 

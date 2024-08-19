@@ -1,0 +1,345 @@
+--  $Id: zxr10switch.mib 8 2005-04-05 12:17:08Z taowq $
+--
+--  zxr10switch.mib: ZXR10 Switch MIB file
+--  
+--  Mar. 2005, Tao wenqiang
+--   
+--  Copyright(c) 2005 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+ZXR10-VLAN-TRANS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE,
+    MODULE-IDENTITY,
+    Integer32
+         FROM SNMPv2-SMI
+
+    enterprises 
+        FROM SNMPv2-SMI
+    RowStatus
+        FROM SNMPv2-TC
+    ifIndex
+        FROM RFC1213-MIB;
+    
+    zxr10VlanTrans MODULE-IDENTITY
+        LAST-UPDATED "201607111000Z"
+        ORGANIZATION "ZTE"
+        CONTACT-INFO
+               "ZTE Corporation
+
+                Nanjing Institute of ZTE Corporation
+
+                No.68 ZiJinghua Rd. YuHuatai District, Nanjing, China
+
+                Tel: +86-25-52870000"
+
+        DESCRIPTION 
+                "VLAN translation"
+        REVISION "201607111000Z" --2016-07-11 10:00
+        DESCRIPTION
+                "modify: the descriptions of some leafs of
+                zxr10CpuVlanTransTable are changed."
+        REVISION "201502061000Z"
+        DESCRIPTION
+                "modify: add descriptions for zxr10CpuVlanTransPortEntry and
+                zxr10CpuVlanTransEntry."
+        REVISION "201312131000Z"
+        DESCRIPTION
+                "modify: the descriptions of some leafs of
+                zxr10CpuVlanTransTable are changed."
+                
+        REVISION "200811100000Z"
+        DESCRIPTION
+                "Initial version of this MIB module."
+        ::= { zxr10switch 30 }
+          
+    zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+    zxr10 OBJECT IDENTIFIER ::= { zte 3}
+    zxr10switch OBJECT IDENTIFIER ::= { zxr10 102}
+             
+    DisplayString ::= OCTET STRING
+    --  This data type is used to model textual information taken
+    --  from the NVT ASCII character set.  By convention, objects
+    --  with this syntax are declared as having
+    --  SIZE (0..255)
+      zxr10CpuVlanTransPortTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10CpuVlanTransPortEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VLAN trans port table,in which you can find which ports can be
+             configed and also know the relation with the port's name and 
+             ifindex."
+        ::= { zxr10VlanTrans 1 }
+
+      zxr10CpuVlanTransPortEntry  OBJECT-TYPE
+        SYNTAX  Zxr10CpuVlanTransPortEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VLAN trans port table entry."
+        INDEX  { ifIndex }
+        ::= { zxr10CpuVlanTransPortTable 1 }
+
+      Zxr10CpuVlanTransPortEntry ::=
+        SEQUENCE {
+            zxr10CpuVlanTransPortName
+                DisplayString
+         }    
+       zxr10CpuVlanTransPortName  OBJECT-TYPE
+        SYNTAX  DisplayString 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "The name of this port which can be configed by vlan trans ,it
+            include physics port and smartgroup port"
+        ::= {  zxr10CpuVlanTransPortEntry 1 }
+
+    zxr10CpuVlanTransTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10CpuVlanTransEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VLAN trans information table."
+        ::= { zxr10VlanTrans 2 }
+
+    zxr10CpuVlanTransEntry
+        OBJECT-TYPE
+        SYNTAX  Zxr10CpuVlanTransEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VLAN trans information table entry."
+        INDEX  { zxr10CpuvlantransId }
+        ::= { zxr10CpuVlanTransTable 1 }
+
+    Zxr10CpuVlanTransEntry ::=
+        SEQUENCE {
+            zxr10CpuvlantransId
+                Integer32,
+            zxr10CpuvlantransInport 
+                Integer32,
+            zxr10CpuvlantransExport
+                Integer32,
+            zxr10CpuvlantransadvanceFlag
+                Integer32,
+            zxr10CpuvlantransUpport
+                DisplayString, 
+            zxr10CpuvlantransRowStatus
+                RowStatus,
+            zxr10CpuvlantransExInnervlan
+                Integer32,
+            zxr10CpuvlantransExOutervlan
+                Integer32,
+            zxr10CpuvlantransInInnervlan
+                DisplayString,
+            zxr10CpuvlantransInOutervlan
+                DisplayString,
+            zxr10CpuvlantransInInnervlan1k
+                OCTET STRING,
+            zxr10CpuvlantransInInnervlan2k
+                OCTET STRING,  
+            zxr10CpuvlantransInInnervlan3k
+                OCTET STRING,  
+            zxr10CpuvlantransInInnervlan4k
+                OCTET STRING,     
+            zxr10CpuvlantransInOutervlan1k
+                OCTET STRING,
+            zxr10CpuvlantransInOutervlan2k
+                OCTET STRING,
+            zxr10CpuvlantransInOutervlan3k
+                OCTET STRING,
+            zxr10CpuvlantransInOutervlan4k
+                OCTET STRING
+            
+                
+    }
+
+    zxr10CpuvlantransId  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "The VLAN trans session id (It's toplimit depends on ability of the
+            device)."
+        ::= { zxr10CpuVlanTransEntry 1 } 
+        
+    zxr10CpuvlantransInport  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "The index of ingress-port of VLAN trans. Every port have a unique
+            index, for example the index of gei-0/1/0/1 is 5,so you can input 5
+            represent the port gei-0/1/0/1 and you can find the relationship
+            between them in zxr10CpuvlantransPortTable in which there is only
+            one ingress-port."
+        ::= { zxr10CpuVlanTransEntry 2 }
+
+    zxr10CpuvlantransExport OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+           "The index of egress-port of VLAN trans. Every port have a unique
+           index, for example the index of gei-0/1/0/2 is 6,so you can input 6
+           represent the port gei-0/1/0/2 and you can find the relationship
+           between them in zxr10CpuvlantransPortTable in which there is only
+           one egress-port."
+        ::= { zxr10CpuVlanTransEntry 3 }
+
+    zxr10CpuvlantransadvanceFlag OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The advance flag of VLAN trans session, the valid vlaue is 0 or 1.
+            If the VLAN trans session have uplink port the value is 1,otherwise
+            is 0."
+        ::= { zxr10CpuVlanTransEntry 5 }
+
+    zxr10CpuvlantransUpport  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The indexs of uplink port in VLAN transvlan table. Every port have
+            a unique index, for example the index of gei-0/1/0/2 is 6,so you
+            can input 6 represent the port gei-0/1/0/2 and you can find the
+            relationship between them in zxr10CpuvlantransPortTable. The max
+            number of uplink port in a VLAN trans table is four."
+        ::= { zxr10CpuVlanTransEntry 6 }
+
+   zxr10CpuvlantransRowStatus OBJECT-TYPE
+        SYNTAX       RowStatus
+        MAX-ACCESS   read-only
+        STATUS  current
+        DESCRIPTION
+        "The flag of create or delete VLAN trans session."
+        ::= { zxr10CpuVlanTransEntry 7 }
+
+    zxr10CpuvlantransExInnervlan OBJECT-TYPE
+        SYNTAX    Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN trans's ex-inner vlan ,the value is vlan id such as 100,
+            only one number."
+        ::= { zxr10CpuVlanTransEntry 12 }
+
+    zxr10CpuvlantransExOutervlan OBJECT-TYPE
+        SYNTAX    Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN trans's ex-outner vlan ,the value is vlan id such as 100,
+            only one number."
+        ::= { zxr10CpuVlanTransEntry 13 }
+                 
+    zxr10CpuvlantransInInnervlan OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN trans inner of invlan ,which input vlan id's range id 1-
+            4094,such as '3-4,6,1000-1024',the value of inner vlan is a range
+            and also can be one value such as 500.if the input is NO Data
+            you must get vlan bitmap."
+        ::= { zxr10CpuVlanTransEntry 14 }
+
+    zxr10CpuvlantransInOutervlan OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN trans outner of invlan ,which input vlan id's range id 1-
+            4094,such as '1-10,34,40,1025-1200,2044,2048',the value of outner
+            invlan is a range and also can be one value such as 2000.if the
+            input is NO Data you must get vlan bitmap."
+        ::= { zxr10CpuVlanTransEntry 15 }
+
+    zxr10CpuvlantransInInnervlan1k OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(0..128))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN trans inner of invlan bitMap (1-1023),which input vlan
+            id's range id 1-1023,such as '3-4,6,1000-1023',the value of inner
+            invlan is a range and also can be one value such as 500."
+        ::= { zxr10CpuVlanTransEntry 16 }
+
+    zxr10CpuvlantransInInnervlan2k OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(0..128))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN trans inner of invlan bitMap (1024-2047),which input vlan
+            id's range id 1024-2047,such as '1024-1200,2044,2048',the value of
+            inner invlan is a range and also can be one value such as 2000."
+        ::= { zxr10CpuVlanTransEntry 17 }
+
+    zxr10CpuvlantransInInnervlan3k OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(0..128))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN trans inner of invlan bitMap (2048-3071),which input vlan
+            id's range id 2048-3071,such as '2500-2570,3000,3071',the value of
+            inner invlan is a range and also can be one value such as 2485."
+        ::= { zxr10CpuVlanTransEntry 18 }
+
+    zxr10CpuvlantransInInnervlan4k OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(0..128))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN trans inner of invlan bitMap (3072-4094),which input vlan
+            id's range id 3072-4094,such as '3080-3811,3900,4094',the value of
+            inner invlan is a range and also can be one value such as 3900."
+        ::= { zxr10CpuVlanTransEntry 19 }
+
+     zxr10CpuvlantransInOutervlan1k OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(0..128))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN trans outner of invlan bitMap (1-1023),which input vlan
+            id's range id 1-1023,such as '3-4,6,1000-1023',the value of outner
+            invlan is a range and also can be one value such as 500."
+        ::= { zxr10CpuVlanTransEntry 20 }
+
+    zxr10CpuvlantransInOutervlan2k OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(0..128))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN trans outner ofinvlan bitMap (1024-2047),which input vlan
+            id's range id 1024-2047,such as '1025-1200,2044,2047',the value of
+            outner invlan is a range and also can be one value such as 2000."
+        ::= { zxr10CpuVlanTransEntry 21 }
+
+    zxr10CpuvlantransInOutervlan3k OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(0..128))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN trans outner of invlan bitMap (2048-3071),which input
+            vlan id's range id 2048-3071,such as '2500-2570,3000,3071',the
+            value of outner invlan is a range and also can be one value such
+            as 2485."
+        ::= { zxr10CpuVlanTransEntry 22 }
+
+    zxr10CpuvlantransInOutervlan4k OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(0..128))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN trans outner of invlan bitMap (3072-4094),which input
+            vlan id's range id 3072-4094,such as '3080-3811,3900,4094',the
+            value of outner inner invlan is a range and also can be one
+            value such as 3900."
+        ::= { zxr10CpuVlanTransEntry 23 }
+
+END

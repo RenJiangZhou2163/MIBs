@@ -1,0 +1,5106 @@
+﻿ZXR10-ISIS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+    enterprises, Unsigned32, Counter64, IpAddress
+        FROM SNMPv2-SMI
+    DisplayString,MacAddress
+        FROM SNMPv2-TC;
+
+zxr10IsisInstance MODULE-IDENTITY
+    LAST-UPDATED "201512161030Z"
+    ORGANIZATION "ZTE Corporation."
+    CONTACT-INFO
+    "ISIS group."
+    DESCRIPTION
+    "This document describes a management information
+    base for the IS-IS Routing protocol."
+    REVISION "201512161030Z"
+    DESCRIPTION
+    "Add table:
+        1.zxr10IsisDfltLearnIgnoreTable.
+        2.Discard the leaf zxr10IsisAttrDefaultLearnAlways"
+    REVISION "201509221030Z"
+    DESCRIPTION
+    "Add tables:
+        1.zxr10IsisRouterIDTable.
+        2.zxr10IsisRemoteLfaTable.
+        3.zxr10IsisRlfaMaxMetricTable.
+        4.zxr10IsisFrrPriorityTable.
+        5.zxr10IsisRLFABlockTable" 
+    REVISION "201508261030Z"
+    DESCRIPTION
+    "Modify table:
+        1.Add tables: zxr10IsisDistributeListTable"
+     REVISION "201503091030Z"
+    DESCRIPTION
+    "Modify table:
+        1.Add tables: zxr10IsisV4RedisLimitTable and zxr10IsisV6RedisLimitTable."
+    REVISION "201503021030Z"
+    DESCRIPTION
+    "Modify table:
+        1.Zxr10IsisAttrTable, add the leaf zxr10IsisAttrDefaultLearnAlways.
+        2.The range of zxr10IsisRedisMetric changed from 0..4261412864 into 0..4261412864|4294967295.
+        3.Modified some irregular descriptions."
+    REVISION "201410251030Z"
+    DESCRIPTION
+    "Modify table:
+        1.Add : zxr10IsisIntfMetricLinkSDIncr."
+    REVISION "201410251030Z"
+    DESCRIPTION
+    "Modify table:
+        1.Add tables: zxr10IsisIntfLFATable."
+    REVISION "201410151030Z"
+    DESCRIPTION
+    "Modify table:
+        1.Zxr10IsisAttrTable, discard the leaf zxr10IsisAttrDistance.
+        2.Zxr10IsisAttrTable, discard the leaf zxr10IsisAttrIpv6Distance.
+        3.Add tables: zxr10IsisV4DistTable and zxr10IsisV6DistTable."
+    REVISION "201405051030Z"
+    DESCRIPTION
+    "Modify table:
+        1.Zxr10IsisAttrTable, Change the range for zxr10IsisAttrMaxpath.
+        2.Zxr10IsisAttrTable, Change the range for zxr10IsisAttrV6Maxpath."
+    REVISION "201306041000Z"
+    DESCRIPTION
+    "Modify table:
+        1.Zxr10IsisAttrTable, Change the DEFVAL for zxr10IsisAttrLspMtu"
+    REVISION "201303121500Z"
+    DESCRIPTION 
+    "Add tables:
+        1.zxr10IsisMplsLdpTable,
+        2.zxr10IsisPrefixPriorityTable,
+        3.zxr10IsisV4RouteLeakL1IntoL2Table,
+        4.zxr10IsisV4RouteLeakL2IntoL1Table,
+        5.zxr10IsisV6RouteLeakL1IntoL2Table,
+        6.zxr10IsisV6RouteLeakL2IntoL1Table,
+        7.zxr10IsisV6PrefixPriorityTable,
+        8.zxr10IsisV6FrrTable,
+        9.zxr10IsisIntfMplsLdpTable,
+        10.zxr10IsisShowIsisAdjTable, 
+        11.zxr10IsisShowIsisCircuitTable.
+    Modify tables:
+        1.zxr10IsisAttrTable,
+        2.zxr10IsisIntfTable."
+    REVISION "201102090000Z"
+    DESCRIPTION
+        "Initial version."
+    ::= { zxr10IsisInstanceMIBs 1 }
+
+
+    zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+
+    zxr10 OBJECT IDENTIFIER ::= { zte 3}
+                                                   
+    zxr10RosngMIB OBJECT IDENTIFIER ::= { zxr10 6000}
+
+    zxr10IsisInstanceMIBs OBJECT IDENTIFIER ::= { zxr10RosngMIB 158}
+
+        
+zxr10IsisInstanceMIB OBJECT IDENTIFIER ::= { zxr10IsisInstance 1 }
+
+zxr10IsisInstanceTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisInstanceEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS instance."
+        ::= { zxr10IsisInstanceMIB 1 }
+
+zxr10IsisInstanceEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisInstanceEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS instance."
+        INDEX  { zxr10IsisInstanceProcessId }
+        ::= { zxr10IsisInstanceTable 1 }
+            
+Zxr10IsisInstanceEntry ::=
+        SEQUENCE {
+            zxr10IsisInstanceProcessId
+                Unsigned32,
+            zxr10IsisInstanceVrfName
+                DisplayString
+        }
+
+zxr10IsisInstanceProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisInstanceEntry 1 }
+
+zxr10IsisInstanceVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisInstanceEntry 2 }
+
+
+--ipv6 spf-interval table
+zxr10IsisIpv6SpfIntervalTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisIpv6SpfIntervalEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to configure ISISv6 SPF interval."
+        ::= { zxr10IsisInstanceMIB 2 }
+
+zxr10IsisIpv6SpfIntervalEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisIpv6SpfIntervalEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to configure ISISv6 SPF execution interval."
+        INDEX  { zxr10IsisIpv6SpfIntervalProcessId,zxr10IsisIpv6SpfIntervalLevel }
+        ::= { zxr10IsisIpv6SpfIntervalTable 1 }
+            
+Zxr10IsisIpv6SpfIntervalEntry ::=
+        SEQUENCE {
+            zxr10IsisIpv6SpfIntervalProcessId
+                Unsigned32,
+            zxr10IsisIpv6SpfIntervalLevel
+                Unsigned32,
+            zxr10IsisIpv6SpfIntervalVrfName
+                DisplayString,
+            zxr10IsisIpv6SpfIntervalInterval
+                Unsigned32,
+            zxr10IsisIpv6SpfIntervalInitialWait
+                Unsigned32,
+            zxr10IsisIpv6SpfIntervalFirstSecWait
+                Unsigned32            
+        }
+
+zxr10IsisIpv6SpfIntervalProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisIpv6SpfIntervalEntry 1 }
+
+zxr10IsisIpv6SpfIntervalLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisIpv6SpfIntervalEntry 2 }
+
+zxr10IsisIpv6SpfIntervalVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisIpv6SpfIntervalEntry 3 }
+
+zxr10IsisIpv6SpfIntervalInterval OBJECT-TYPE
+        SYNTAX Unsigned32 (1..120)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS SPF execution interval."
+        ::= { zxr10IsisIpv6SpfIntervalEntry 4 }
+
+zxr10IsisIpv6SpfIntervalInitialWait OBJECT-TYPE
+        SYNTAX Unsigned32 (0..120000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The waiting initial before first SPF in milliseconds."
+        ::= { zxr10IsisIpv6SpfIntervalEntry 5 }
+
+zxr10IsisIpv6SpfIntervalFirstSecWait OBJECT-TYPE
+        SYNTAX Unsigned32 (1..120000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Minimum wait between first and second SPF in ms."
+        ::= { zxr10IsisIpv6SpfIntervalEntry 6 }
+--ipv6 spf-interval table  end
+
+
+
+--system-id table
+zxr10IsisSystemidTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisSystemidEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS system Id."
+        ::= { zxr10IsisInstanceMIB 3 }
+
+zxr10IsisSystemidEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisSystemidEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS system Id."
+        INDEX  { zxr10IsisSystemidProcessId,zxr10IsisSystemidSystemId }
+        ::= { zxr10IsisSystemidTable 1 }
+            
+Zxr10IsisSystemidEntry ::=
+        SEQUENCE {
+            zxr10IsisSystemidProcessId
+                Unsigned32,
+            zxr10IsisSystemidSystemId
+                MacAddress,
+            zxr10IsisSystemidVrfName
+                DisplayString,
+            zxr10IsisSystemidRange
+                Unsigned32
+        }
+
+zxr10IsisSystemidProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisSystemidEntry 1 }
+
+zxr10IsisSystemidSystemId OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS system Id."
+        ::= { zxr10IsisSystemidEntry 2 }
+
+zxr10IsisSystemidVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisSystemidEntry 3 }
+
+zxr10IsisSystemidRange OBJECT-TYPE
+        SYNTAX Unsigned32 (0..32)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The range of system Id."
+        ::= { zxr10IsisSystemidEntry 4 }
+--system-id table end
+
+
+--area table
+zxr10IsisAreaTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisAreaEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS area."
+        ::= { zxr10IsisInstanceMIB 4 }
+
+zxr10IsisAreaEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisAreaEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS area."
+        INDEX  { zxr10IsisAreaProcessId,zxr10IsisAreaAreaAddr }
+        ::= { zxr10IsisAreaTable 1 }
+            
+Zxr10IsisAreaEntry ::=
+        SEQUENCE {
+            zxr10IsisAreaProcessId
+                Unsigned32,
+            zxr10IsisAreaAreaAddr
+                OCTET STRING,
+            zxr10IsisAreaVrfName
+                DisplayString
+        }
+
+zxr10IsisAreaProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisAreaEntry 1 }
+
+zxr10IsisAreaAreaAddr OBJECT-TYPE
+        SYNTAX  OCTET STRING(SIZE(14))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Area address."
+        ::= { zxr10IsisAreaEntry 2 }
+
+zxr10IsisAreaVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisAreaEntry 3 }
+--area table end
+
+
+
+--metric-style table
+zxr10IsisMetricStyleTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisMetricStyleEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS metric style."
+        ::= { zxr10IsisInstanceMIB 5 }
+
+zxr10IsisMetricStyleEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisMetricStyleEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS metric style."
+        INDEX  { zxr10IsisMetricStyleProcessId }
+        ::= { zxr10IsisMetricStyleTable 1 }
+            
+Zxr10IsisMetricStyleEntry ::=
+        SEQUENCE {
+            zxr10IsisMetricStyleProcessId
+                Unsigned32,
+            zxr10IsisMetricStyleVrfName
+                DisplayString,
+            zxr10IsisMetricStyleMetricStyle
+                Unsigned32
+        }
+
+zxr10IsisMetricStyleProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisMetricStyleEntry 1 }
+
+zxr10IsisMetricStyleVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisMetricStyleEntry 2 }
+
+zxr10IsisMetricStyleMetricStyle OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Metric style." 
+        DEFVAL   {1}
+        ::= { zxr10IsisMetricStyleEntry 3 }
+--metric-style table
+
+
+
+--authentication-type table
+zxr10IsisAuthenTypeTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisAuthenTypeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS authentication type."
+        ::= { zxr10IsisInstanceMIB 6 }
+
+zxr10IsisAuthenTypeEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisAuthenTypeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS authentication type."
+        INDEX  { zxr10IsisAuthenTypeProcessId,zxr10IsisAuthenTypeLevel }
+        ::= { zxr10IsisAuthenTypeTable 1 }
+            
+Zxr10IsisAuthenTypeEntry ::=
+        SEQUENCE {
+            zxr10IsisAuthenTypeProcessId
+                Unsigned32,
+            zxr10IsisAuthenTypeLevel
+                Unsigned32,
+            zxr10IsisAuthenTypeVrfName
+                DisplayString,
+            zxr10IsisAuthenTypeType
+                Unsigned32
+        }
+
+zxr10IsisAuthenTypeProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisAuthenTypeEntry 1 }
+
+zxr10IsisAuthenTypeLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) would be effected on."
+        ::= { zxr10IsisAuthenTypeEntry 2 }
+
+zxr10IsisAuthenTypeVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisAuthenTypeEntry 3 }
+
+zxr10IsisAuthenTypeType OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Authentication type."
+        DEFVAL {2}
+        ::= { zxr10IsisAuthenTypeEntry 4 }
+--authentication-type table end
+
+
+
+--authentication table
+zxr10IsisAuthenTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisAuthenEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS authentication information."
+        ::= { zxr10IsisInstanceMIB 7 }
+
+zxr10IsisAuthenEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisAuthenEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS authentication context."
+        INDEX  { zxr10IsisAuthenProcessId,zxr10IsisAuthenLevel }
+        ::= { zxr10IsisAuthenTable 1 }
+            
+Zxr10IsisAuthenEntry ::=
+        SEQUENCE {
+            zxr10IsisAuthenProcessId
+                Unsigned32,
+            zxr10IsisAuthenLevel
+                Unsigned32,
+            zxr10IsisAuthenVrfName
+                DisplayString,
+            zxr10IsisAuthenWord
+                DisplayString,
+            zxr10IsisAuthenEncryptedWord
+                DisplayString,
+            zxr10IsisAuthenEncrypted
+                Unsigned32,
+            zxr10IsisAuthenClearWord
+                DisplayString,
+            zxr10IsisAuthenClear
+                Unsigned32
+        }
+
+zxr10IsisAuthenProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisAuthenEntry 1 }
+
+zxr10IsisAuthenLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisAuthenEntry 2 }
+
+zxr10IsisAuthenVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisAuthenEntry 3 }
+
+zxr10IsisAuthenWord OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..200))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The clear password."
+        ::= { zxr10IsisAuthenEntry 4 }
+
+zxr10IsisAuthenEncryptedWord OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..200))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Specify the encrypted password."
+        ::= { zxr10IsisAuthenEntry 6 }
+
+zxr10IsisAuthenEncrypted OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Flag of that the authentication type is encrypt."
+        ::= { zxr10IsisAuthenEntry 7 }
+
+zxr10IsisAuthenClearWord OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..200))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Specify the clear password."
+        ::= { zxr10IsisAuthenEntry 8 }
+
+zxr10IsisAuthenClear OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Flag of that the authentication type is clear."
+        ::= { zxr10IsisAuthenEntry 9 }
+--authentication table end
+
+
+
+--ipv4 summary-address table
+zxr10IsisSummaryTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisSummaryEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS IPv4 summary."
+        ::= { zxr10IsisInstanceMIB 8 }
+
+zxr10IsisSummaryEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisSummaryEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS IPv4 summary."
+        INDEX  { zxr10IsisSummaryProcessId,
+                 zxr10IsisSummaryIpAddr,
+                 zxr10IsisSummaryIpMask }
+        ::= { zxr10IsisSummaryTable 1 }
+            
+Zxr10IsisSummaryEntry ::=
+        SEQUENCE {
+            zxr10IsisSummaryProcessId
+                Unsigned32,
+            zxr10IsisSummaryIpAddr
+                IpAddress,
+            zxr10IsisSummaryIpMask
+                IpAddress,
+            zxr10IsisSummaryVrfName
+                DisplayString,
+            zxr10IsisSummaryMetric
+                Unsigned32,
+            zxr10IsisSummaryLevel
+                Unsigned32
+        }
+
+zxr10IsisSummaryProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisSummaryEntry 1 }
+
+zxr10IsisSummaryIpAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Summary IP address."
+        ::= { zxr10IsisSummaryEntry 2 }
+
+zxr10IsisSummaryIpMask OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Summary net mask."
+        ::= { zxr10IsisSummaryEntry 3 }
+
+zxr10IsisSummaryVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisSummaryEntry 4 }
+
+zxr10IsisSummaryMetric OBJECT-TYPE
+        SYNTAX Unsigned32 (0..4261412864)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Specify the metric for summary routes."
+        ::= { zxr10IsisSummaryEntry 5 }
+
+zxr10IsisSummaryLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (1..3)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisSummaryEntry 6 }
+--ipv4 summary-address table end
+
+
+
+--isis ipv4 redistribute table
+zxr10IsisRedisTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisRedisEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS IPv4 redistribute information."
+        ::= { zxr10IsisInstanceMIB 9 }
+
+zxr10IsisRedisEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisRedisEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS IPv4 redistribute information."
+        INDEX  { zxr10IsisRedisProcessId,
+                 zxr10IsisRedisProtocol,
+                 zxr10IsisRedisRedisProcessId }
+        ::= { zxr10IsisRedisTable 1 }
+            
+Zxr10IsisRedisEntry ::=
+        SEQUENCE {
+            zxr10IsisRedisProcessId
+                Unsigned32,
+            zxr10IsisRedisProtocol
+                Unsigned32,
+            zxr10IsisRedisRedisProcessId
+                Unsigned32,
+            zxr10IsisRedisVrfName
+                DisplayString,
+            zxr10IsisRedisLevel
+                Unsigned32,
+            zxr10IsisRedisMetric
+                Unsigned32,
+            zxr10IsisRedisWith-originate-metric
+                Unsigned32,
+            zxr10IsisRedisMetricStyle
+                Unsigned32,
+            zxr10IsisRedisRoutemapName
+                DisplayString
+        }
+
+zxr10IsisRedisProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisRedisEntry 1 }
+
+zxr10IsisRedisProtocol OBJECT-TYPE
+        SYNTAX Unsigned32 (0..255)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Redistribution protocol."
+        ::= { zxr10IsisRedisEntry 2 }
+
+zxr10IsisRedisRedisProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Redistribute process Id."
+        ::= { zxr10IsisRedisEntry 3 }
+
+zxr10IsisRedisVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisRedisEntry 4 }
+
+zxr10IsisRedisLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (1..3)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisRedisEntry 5 }
+
+zxr10IsisRedisMetric OBJECT-TYPE
+        SYNTAX Unsigned32 (0..4261412864|4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Specify metric for redistributed routes. The value 4294967295 is invalid."
+        ::= { zxr10IsisRedisEntry 6 }
+
+zxr10IsisRedisWith-originate-metric OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Using original metic of routes."
+        ::= { zxr10IsisRedisEntry 7 }
+
+zxr10IsisRedisMetricStyle OBJECT-TYPE
+        SYNTAX Unsigned32 (1..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "OSPF/ISIS exterior metric type for redistributed."
+        ::= { zxr10IsisRedisEntry 8 }
+
+zxr10IsisRedisRoutemapName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..32))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Route map name."
+        ::= { zxr10IsisRedisEntry 9 }
+--isis ipv4 redistribute table end
+
+
+
+--isis mpls table
+zxr10IsisMplsTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisMplsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS MPLS."
+        ::= { zxr10IsisInstanceMIB 10 }
+
+zxr10IsisMplsEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisMplsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS MPLS."
+        INDEX  { zxr10IsisMplsProcessId,zxr10IsisMplsLevel }
+        ::= { zxr10IsisMplsTable 1 }
+            
+Zxr10IsisMplsEntry ::=
+        SEQUENCE {
+            zxr10IsisMplsProcessId
+                Unsigned32,
+            zxr10IsisMplsLevel
+                Unsigned32,
+            zxr10IsisMplsVrfName
+                DisplayString
+        }
+
+zxr10IsisMplsProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisMplsEntry 1 }
+
+zxr10IsisMplsLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisMplsEntry 2 }
+
+zxr10IsisMplsVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisMplsEntry 3 }
+--isis mpls table end
+
+
+
+--isis ipv6 redistribute table
+zxr10IsisIpv6ReidsTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisIpv6ReidsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS IPv6 Redistribution."
+        ::= { zxr10IsisInstanceMIB 12 }
+
+zxr10IsisIpv6ReidsEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisIpv6ReidsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS IPv6 Redistribution."
+        INDEX  { zxr10IsisIpv6ReidsProcessId,
+                 zxr10IsisIpv6ReidsProtocol,
+                 zxr10IsisIpv6ReidsRedisProcessId }
+        ::= { zxr10IsisIpv6ReidsTable 1 }
+            
+Zxr10IsisIpv6ReidsEntry ::=
+        SEQUENCE {
+            zxr10IsisIpv6ReidsProcessId
+                Unsigned32,
+            zxr10IsisIpv6ReidsProtocol
+                Unsigned32,
+            zxr10IsisIpv6ReidsRedisProcessId
+                Unsigned32,
+            zxr10IsisIpv6ReidsVrfName
+                DisplayString,
+            zxr10IsisIpv6ReidsLevel
+                Unsigned32,
+            zxr10IsisIpv6ReidsMetric
+                Unsigned32,
+            zxr10IsisIpv6ReidsRouteMap
+                DisplayString
+        }
+
+zxr10IsisIpv6ReidsProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisIpv6ReidsEntry 1 }
+
+zxr10IsisIpv6ReidsProtocol OBJECT-TYPE
+        SYNTAX Unsigned32 (0..255)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Redistribution protocol."
+        ::= { zxr10IsisIpv6ReidsEntry 2 }
+
+zxr10IsisIpv6ReidsRedisProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Redistribution process Id."
+        ::= { zxr10IsisIpv6ReidsEntry 3 }
+
+zxr10IsisIpv6ReidsVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisIpv6ReidsEntry 4 }
+
+zxr10IsisIpv6ReidsLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (1..3)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisIpv6ReidsEntry 5 }
+
+zxr10IsisIpv6ReidsMetric OBJECT-TYPE
+        SYNTAX Unsigned32 (0..4261412864)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Specify metric value for Redistribution."
+        ::= { zxr10IsisIpv6ReidsEntry 6 }
+
+zxr10IsisIpv6ReidsRouteMap OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Redistribution route map name."
+        ::= { zxr10IsisIpv6ReidsEntry 7 }
+--isis ipv6 redistribute table end
+
+
+
+-- Object-id of attributes in this table  is 1351.
+zxr10IsisAttrTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisAttrEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS attribution."
+        ::= { zxr10IsisInstanceMIB 13 }
+
+zxr10IsisAttrEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisAttrEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS attribution."
+        INDEX  { zxr10IsisAttrProcessId }
+        ::= { zxr10IsisAttrTable 1 }
+            
+Zxr10IsisAttrEntry ::=
+        SEQUENCE {
+            zxr10IsisAttrProcessId
+                Unsigned32,
+            zxr10IsisAttrVrfName
+                DisplayString,
+            zxr10IsisAttrEnable
+                Unsigned32,
+            zxr10IsisAttrIsType
+                Unsigned32,
+            zxr10IsisAttrHostnameDynamic
+                Unsigned32,
+            zxr10IsisAttrISpf
+                Unsigned32,
+            zxr10IsisAttrDistance
+                Unsigned32,
+            zxr10IsisAttrMaxpath
+                Unsigned32,
+            zxr10IsisAttrLspMtu
+                Unsigned32,
+            zxr10IsisAttrSnpAuth
+                Unsigned32,
+            zxr10IsisAttrIgnoreLspError
+                Unsigned32,
+            zxr10IsisAttrRestartEnable
+                Unsigned32,
+            zxr10IsisAttrRestartT3Type
+                Unsigned32,
+            zxr10IsisAttrRestartT3Time
+                Unsigned32,
+            zxr10IsisAttrFastFloodNum
+                Unsigned32,
+            zxr10IsisAttrLspRefreshTime
+                Unsigned32,
+            zxr10IsisAttrLspMaxLifetime
+                Unsigned32,
+            zxr10IsisAttrFrrType
+                Unsigned32,
+            zxr10IsisAttrSnmpContext
+                DisplayString,
+            zxr10IsisAttrV4Level2
+                Unsigned32,
+            zxr10IsisAttrV4Into
+                Unsigned32,
+            zxr10IsisAttrV4Level1
+                Unsigned32,
+            zxr10IsisAttrV4RoutemapName
+                DisplayString,
+            zxr10IsisAttrIpv6Distance
+                Unsigned32,
+            zxr10IsisAttrIpv6SetOlBit
+                Unsigned32,
+            zxr10IsisAttrV6Level2
+                Unsigned32,
+            zxr10IsisAttrV6Into
+                Unsigned32,
+            zxr10IsisAttrV6Level1
+                Unsigned32,
+            zxr10IsisAttrV6RoutemapName
+                DisplayString,
+            zxr10IsisAttrV6Maxpath
+                Unsigned32,
+            zxr10IsisAttrLocalMtEnable
+                Unsigned32,
+            zxr10IsisAttrV6FrrType
+                Unsigned32,
+            zxr10IsisAttrDefaultLearnAlways
+                Unsigned32
+
+        }
+
+zxr10IsisAttrProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisAttrEntry 1 }
+
+zxr10IsisAttrVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisAttrEntry 2 }
+
+zxr10IsisAttrEnable OBJECT-TYPE
+        SYNTAX Unsigned32 (0..255)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Flag of that the system is enable."
+        DEFVAL {1}
+        ::= { zxr10IsisAttrEntry 3 }
+
+zxr10IsisAttrIsType OBJECT-TYPE
+        SYNTAX Unsigned32 (1..3)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) of the IS instance."
+        DEFVAL {3}
+        ::= { zxr10IsisAttrEntry 4 }
+
+zxr10IsisAttrHostnameDynamic OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Flag of that the hostname is of dynamicing."
+        DEFVAL  {1}
+        ::= { zxr10IsisAttrEntry 5 }
+
+zxr10IsisAttrISpf OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Flag of that the i-spf is enable."
+        ::= { zxr10IsisAttrEntry 6 }
+
+zxr10IsisAttrDistance OBJECT-TYPE
+        SYNTAX Unsigned32 (1..255)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "IPv4 management distance."
+        DEFVAL  {115}
+        ::= { zxr10IsisAttrEntry 7 }
+
+zxr10IsisAttrMaxpath OBJECT-TYPE
+        SYNTAX Unsigned32 (1..128)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Maximum of paths to one destination."
+        DEFVAL  {1}
+        ::= { zxr10IsisAttrEntry 8 }
+
+zxr10IsisAttrLspMtu OBJECT-TYPE
+        SYNTAX Unsigned32 (512..7680)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "LSP MTU."
+        DEFVAL  {1492}
+        ::= { zxr10IsisAttrEntry 9 }
+
+zxr10IsisAttrSnpAuth OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Flag of that the IS instance support SNP authentication."
+        DEFVAL  {1}
+        ::= { zxr10IsisAttrEntry 10 }
+
+zxr10IsisAttrIgnoreLspError OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Flag of that wheather the system would 
+            ignore Lsp checksum error."
+        ::= { zxr10IsisAttrEntry 11 }
+
+zxr10IsisAttrRestartEnable OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Flag of that gr is enable."
+        ::= { zxr10IsisAttrEntry 12 }
+
+zxr10IsisAttrRestartT3Type OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Flag of that GR T3 is setup."
+        DEFVAL  {1}
+        ::= { zxr10IsisAttrEntry 13 }
+
+zxr10IsisAttrRestartT3Time OBJECT-TYPE
+        SYNTAX Unsigned32 (1..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The value of GR T3 configured."
+        ::= { zxr10IsisAttrEntry 14 }
+
+zxr10IsisAttrFastFloodNum OBJECT-TYPE
+        SYNTAX Unsigned32 (1..15)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of LSPs of the fast flooding."
+        ::= { zxr10IsisAttrEntry 15 }
+
+zxr10IsisAttrLspRefreshTime OBJECT-TYPE
+        SYNTAX Unsigned32 (1..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "LSP refresh interval."
+        DEFVAL {900}
+        ::= { zxr10IsisAttrEntry 16 }
+
+zxr10IsisAttrLspMaxLifetime OBJECT-TYPE
+        SYNTAX Unsigned32 (1..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Max LSP life time."
+        ::= { zxr10IsisAttrEntry 17 }
+
+zxr10IsisAttrFrrType OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "FRR type configured."
+        DEFVAL {1200}
+        ::= { zxr10IsisAttrEntry 18 }
+
+zxr10IsisAttrSnmpContext OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..30))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Configured ISIS mib context name."
+        ::= { zxr10IsisAttrEntry 19 }
+
+zxr10IsisAttrV4Level2 OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Flag of that IPv4 level2 route-leak."
+        ::= { zxr10IsisAttrEntry 20 }
+
+zxr10IsisAttrV4Into OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Flag of that IPv4 route-leak."
+        ::= { zxr10IsisAttrEntry 21 }
+
+zxr10IsisAttrV4Level1 OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Flag of that IPv4 level1 route-leak."
+        ::= { zxr10IsisAttrEntry 22 }
+
+zxr10IsisAttrV4RoutemapName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..32))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Route map name of IPv4 route-leak."
+        ::= { zxr10IsisAttrEntry 23 }
+
+zxr10IsisAttrIpv6Distance OBJECT-TYPE
+        SYNTAX Unsigned32 (1..255)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS IPv6 management distance."
+        ::= { zxr10IsisAttrEntry 24 }
+
+zxr10IsisAttrIpv6SetOlBit OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Set IPv6 OL."
+        ::= { zxr10IsisAttrEntry 25 }
+
+zxr10IsisAttrV6Level2 OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Flag of that IPv6 level2 route-leak."
+        ::= { zxr10IsisAttrEntry 26 }
+
+zxr10IsisAttrV6Into OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Flag of that IPv6 route-leak."
+        ::= { zxr10IsisAttrEntry 27 }
+
+zxr10IsisAttrV6Level1 OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Flag of that IPv6 level1 route-leak."
+        ::= { zxr10IsisAttrEntry 28 }
+
+zxr10IsisAttrV6RoutemapName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..32))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Route map name of IPv6 route-leak."
+        ::= { zxr10IsisAttrEntry 29 }
+
+zxr10IsisAttrV6Maxpath OBJECT-TYPE
+        SYNTAX Unsigned32 (1..128)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Maximum of paths to one destination of IPv6."
+        DEFVAL {1}
+        ::= { zxr10IsisAttrEntry 30 }
+
+zxr10IsisAttrLocalMtEnable OBJECT-TYPE
+        SYNTAX Unsigned32 (0..255)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Flag of that IGP-MT is enable."
+        ::= { zxr10IsisAttrEntry 31 }
+
+zxr10IsisAttrV6FrrType OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPv6 fast-reroute type."
+        ::= { zxr10IsisAttrEntry 32 }
+        
+zxr10IsisAttrDefaultLearnAlways OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Flag of the system learning default route."
+        DEFVAL {1}
+        ::= { zxr10IsisAttrEntry 33 }
+--about 1351 table end
+
+
+
+--track table
+zxr10IsisTrackTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisTrackEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS track."
+        ::= { zxr10IsisInstanceMIB 14 }
+
+zxr10IsisTrackEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisTrackEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS track."
+        INDEX  { zxr10IsisTrackProcessId,zxr10IsisTrackTrackName }
+        ::= { zxr10IsisTrackTable 1 }
+            
+Zxr10IsisTrackEntry ::=
+        SEQUENCE {
+            zxr10IsisTrackProcessId
+                Unsigned32,
+            zxr10IsisTrackTrackName
+                DisplayString,
+            zxr10IsisTrackVrfName
+                DisplayString
+        }
+
+zxr10IsisTrackProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisTrackEntry 1 }
+
+zxr10IsisTrackTrackName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Name of ISIS track."
+        ::= { zxr10IsisTrackEntry 2 }
+
+zxr10IsisTrackVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisTrackEntry 3 }
+--track table end
+
+
+
+-- isis ipv4 fast-reroute table
+zxr10IsisFrrTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisFrrEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS FRR instance."
+        ::= { zxr10IsisInstanceMIB 15 }
+
+zxr10IsisFrrEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisFrrEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS FRR instance."
+        INDEX  { zxr10IsisFrrProcessId }
+        ::= { zxr10IsisFrrTable 1 }
+            
+Zxr10IsisFrrEntry ::=
+        SEQUENCE {
+            zxr10IsisFrrProcessId
+                Unsigned32,
+            zxr10IsisFrrVrfName
+                DisplayString,
+            zxr10IsisFrrFrrEnable
+                Unsigned32
+        }
+
+zxr10IsisFrrProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisFrrEntry 1 }
+
+zxr10IsisFrrVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisFrrEntry 2 }
+
+zxr10IsisFrrFrrEnable OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "FRR enable flag."
+        ::= { zxr10IsisFrrEntry 3 }
+-- isis ipv4 fast-reroute table
+
+
+
+--multi-topology table
+zxr10IsisMtTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisMtEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS multiply topology instance."
+        ::= { zxr10IsisInstanceMIB 16 }
+
+zxr10IsisMtEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisMtEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS multiply topology instance."
+        INDEX  { zxr10IsisMtProcessId }
+        ::= { zxr10IsisMtTable 1 }
+            
+Zxr10IsisMtEntry ::=
+        SEQUENCE {
+            zxr10IsisMtProcessId
+                Unsigned32,
+            zxr10IsisMtVrfName
+                DisplayString,
+            zxr10IsisMtMtEnable
+                Unsigned32
+        }
+
+zxr10IsisMtProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisMtEntry 1 }
+
+zxr10IsisMtVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisMtEntry 2 }
+
+zxr10IsisMtMtEnable OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Multiply topology enable flag."
+        ::= { zxr10IsisMtEntry 3 }
+--multi-topology table end
+
+
+
+-- hello-padding table
+zxr10IsisHelloPaddingTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisHelloPaddingEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS hello PDU padding instance."
+        ::= { zxr10IsisInstanceMIB 17 }
+
+zxr10IsisHelloPaddingEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisHelloPaddingEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS hello PDU padding instance."
+        INDEX  { zxr10IsisHelloPaddingProcessId,
+                 zxr10IsisHelloPaddingPadType }
+        ::= { zxr10IsisHelloPaddingTable 1 }
+            
+Zxr10IsisHelloPaddingEntry ::=
+        SEQUENCE {
+            zxr10IsisHelloPaddingProcessId
+                Unsigned32,
+            zxr10IsisHelloPaddingPadType
+                Unsigned32,
+            zxr10IsisHelloPaddingVrfName
+                DisplayString
+        }
+
+zxr10IsisHelloPaddingProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisHelloPaddingEntry 1 }
+
+zxr10IsisHelloPaddingPadType OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Hello PDU padding type."
+        ::= { zxr10IsisHelloPaddingEntry 2 }
+
+zxr10IsisHelloPaddingVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete        
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisHelloPaddingEntry 3 }
+-- hello-padding table end
+
+
+
+--spf-interval table
+zxr10IsisSpfIntervalTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisSpfIntervalEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS SPF execution interval."
+        ::= { zxr10IsisInstanceMIB 18 }
+
+zxr10IsisSpfIntervalEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisSpfIntervalEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS SPF execution interval."
+        INDEX  { zxr10IsisSpfIntervalProcessId,
+                 zxr10IsisSpfIntervalLevel }
+        ::= { zxr10IsisSpfIntervalTable 1 }
+            
+Zxr10IsisSpfIntervalEntry ::=
+        SEQUENCE {
+            zxr10IsisSpfIntervalProcessId
+                Unsigned32,
+            zxr10IsisSpfIntervalLevel
+                Unsigned32,
+            zxr10IsisSpfIntervalVrfName
+                DisplayString,
+            zxr10IsisSpfIntervalInterval
+                Unsigned32,
+            zxr10IsisSpfIntervalInitialWait
+                Unsigned32,
+            zxr10IsisSpfIntervalFirstSecWait
+                Unsigned32
+        }
+
+zxr10IsisSpfIntervalProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisSpfIntervalEntry 1 }
+
+zxr10IsisSpfIntervalLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisSpfIntervalEntry 2 }
+
+zxr10IsisSpfIntervalVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisSpfIntervalEntry 3 }
+
+zxr10IsisSpfIntervalInterval OBJECT-TYPE
+        SYNTAX Unsigned32 (1..120)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "SPF execution interval."
+        DEFVAL {10}
+        ::= { zxr10IsisSpfIntervalEntry 4 }
+
+zxr10IsisSpfIntervalInitialWait OBJECT-TYPE
+        SYNTAX Unsigned32 (0..120000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The waiting initial before first SPF in milliseconds."
+        DEFVAL {5500}
+        ::= { zxr10IsisSpfIntervalEntry 5 }
+
+zxr10IsisSpfIntervalFirstSecWait OBJECT-TYPE
+        SYNTAX Unsigned32 (1..120000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Minimum wait between first and second SPF in ms."
+        DEFVAL {5500}
+        ::= { zxr10IsisSpfIntervalEntry 6 }
+--spf-interval table end
+
+
+
+-- default-information table
+zxr10IsisDefaultInforTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisDefaultInforEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS redistribution default information instance."
+        ::= { zxr10IsisInstanceMIB 19 }
+
+zxr10IsisDefaultInforEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisDefaultInforEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS redistribution default information instance."
+        INDEX  { zxr10IsisDefaultInforProcessId }
+        ::= { zxr10IsisDefaultInforTable 1 }
+            
+Zxr10IsisDefaultInforEntry ::=
+        SEQUENCE {
+            zxr10IsisDefaultInforProcessId
+                Unsigned32,
+            zxr10IsisDefaultInforVrfName
+                DisplayString,
+            zxr10IsisDefaultInforOriginate
+                Unsigned32,
+            zxr10IsisDefaultInforDefaultAlways
+                Unsigned32,
+            zxr10IsisDefaultInforDefaultAlwaysLevel
+                Unsigned32,
+            zxr10IsisDefaultInforDefaultAlwaysMetric
+                Unsigned32,
+            zxr10IsisDefaultInforDefaultAlwaysMetricStyle
+                Unsigned32,
+            zxr10IsisDefaultInforDefaultLevel
+                Unsigned32,
+            zxr10IsisDefaultInforDefaultMetric
+                Unsigned32,
+            zxr10IsisDefaultInforDefaultMetricStyle
+                Unsigned32
+        }
+
+zxr10IsisDefaultInforProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisDefaultInforEntry 1 }
+
+zxr10IsisDefaultInforVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisDefaultInforEntry 2 }
+
+zxr10IsisDefaultInforOriginate OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS redistribution default information flag."
+        ::= { zxr10IsisDefaultInforEntry 3 }
+
+zxr10IsisDefaultInforDefaultAlways OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Always redistribute the default routes."
+        ::= { zxr10IsisDefaultInforEntry 4 }
+
+zxr10IsisDefaultInforDefaultAlwaysLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..3)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) that will always redistribute the default routes."
+        ::= { zxr10IsisDefaultInforEntry 5 }
+
+zxr10IsisDefaultInforDefaultAlwaysMetric OBJECT-TYPE
+        SYNTAX Unsigned32 (0..4261412864)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Metric of the default routes that 
+             will always be redistributed."
+        ::= { zxr10IsisDefaultInforEntry 6 }
+
+zxr10IsisDefaultInforDefaultAlwaysMetricStyle OBJECT-TYPE
+        SYNTAX Unsigned32 (1..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Type of metric of the default routes that 
+             will always be redistributed."
+        ::= { zxr10IsisDefaultInforEntry 7 }
+
+zxr10IsisDefaultInforDefaultLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..3)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) of the default routes."
+        ::= { zxr10IsisDefaultInforEntry 8 }
+
+zxr10IsisDefaultInforDefaultMetric OBJECT-TYPE
+        SYNTAX Unsigned32 (0..4261412864)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Metric of the default routes."
+        ::= { zxr10IsisDefaultInforEntry 9 }
+
+zxr10IsisDefaultInforDefaultMetricStyle OBJECT-TYPE
+        SYNTAX Unsigned32 (1..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Type of metric of the default routes."
+        ::= { zxr10IsisDefaultInforEntry 10 }
+-- default-information table end
+
+
+
+-- set-overload-bit table
+zxr10IsisOlTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisOlEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS OL instance."
+        ::= { zxr10IsisInstanceMIB 20 }
+
+zxr10IsisOlEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisOlEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS OL instance."
+        INDEX  { zxr10IsisOlProcessId }
+        ::= { zxr10IsisOlTable 1 }
+            
+Zxr10IsisOlEntry ::=
+        SEQUENCE {
+            zxr10IsisOlProcessId
+                Unsigned32,
+            zxr10IsisOlVrfName
+                DisplayString,
+            zxr10IsisOlOlConstTime
+                Unsigned32,
+            zxr10IsisOlOlAuto
+                Unsigned32,
+            zxr10IsisOlOlAutoTime
+                Unsigned32,
+            zxr10IsisOlOlBgp
+                Unsigned32,
+            zxr10IsisOlOlBgpTime
+                Unsigned32,
+            zxr10IsisOlOlSuppressType
+                Unsigned32,
+            zxr10IsisOlOlSet
+                Unsigned32
+        }
+
+zxr10IsisOlProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisOlEntry 1 }
+
+zxr10IsisOlVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisOlEntry 2 }
+
+zxr10IsisOlOlConstTime OBJECT-TYPE
+        SYNTAX Unsigned32 (5..86400)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Time in seconds to unset OL bit after reboot."
+        ::= { zxr10IsisOlEntry 3 }
+
+zxr10IsisOlOlAuto OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Waiting for ISIS database synchronization."
+        ::= { zxr10IsisOlEntry 4 }
+
+zxr10IsisOlOlAutoTime OBJECT-TYPE
+        SYNTAX Unsigned32 (5..86400)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Time in seconds to clear OL bit after reboot."
+        ::= { zxr10IsisOlEntry 5 }
+
+zxr10IsisOlOlBgp OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Let BGP decide when to clear the OL bit."
+        ::= { zxr10IsisOlEntry 6 }
+
+zxr10IsisOlOlBgpTime OBJECT-TYPE
+        SYNTAX Unsigned32 (5..86400)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Time in seconds to clear OL bit after reboot."
+        ::= { zxr10IsisOlEntry 7 }
+
+zxr10IsisOlOlSuppressType OBJECT-TYPE
+        SYNTAX Unsigned32 (0..3)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "If overload-bit set, suppress the following types."
+        ::= { zxr10IsisOlEntry 8 }
+
+zxr10IsisOlOlSet OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "OL set flag."
+        ::= { zxr10IsisOlEntry 9 }
+-- set-overload-bit table end
+
+
+
+-- restart t2-timer table
+zxr10IsisT2TimeTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisT2TimeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS GR T2 instance."
+        ::= { zxr10IsisInstanceMIB 21 }
+
+zxr10IsisT2TimeEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisT2TimeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS GR T2 instance."
+        INDEX  { zxr10IsisT2TimeProcessId,zxr10IsisT2TimeLevel }
+        ::= { zxr10IsisT2TimeTable 1 }
+            
+Zxr10IsisT2TimeEntry ::=
+        SEQUENCE {
+            zxr10IsisT2TimeProcessId
+                Unsigned32,
+            zxr10IsisT2TimeLevel
+                Unsigned32,
+            zxr10IsisT2TimeVrfName
+                DisplayString,
+            zxr10IsisT2TimeT2Time
+                Unsigned32
+        }
+
+zxr10IsisT2TimeProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisT2TimeEntry 1 }
+
+zxr10IsisT2TimeLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisT2TimeEntry 2 }
+
+zxr10IsisT2TimeVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisT2TimeEntry 3 }
+
+zxr10IsisT2TimeT2Time OBJECT-TYPE
+        SYNTAX Unsigned32 (5..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "GR T2 time."
+        DEFVAL {60}
+        ::= { zxr10IsisT2TimeEntry 4 }
+--restart t2-timer table end
+
+
+
+--summary-prefix table 
+zxr10IsisIpv6SummaryTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisIpv6SummaryEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS IPv6 summary."
+        ::= { zxr10IsisInstanceMIB 22 }
+
+zxr10IsisIpv6SummaryEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisIpv6SummaryEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS IPv6 summary."
+        INDEX  { zxr10IsisIpv6SummaryProcessId,
+                 zxr10IsisIpv6SummaryIpv6Prefix,
+                 zxr10IsisIpv6SummaryPrefixLen }
+        ::= { zxr10IsisIpv6SummaryTable 1 }
+            
+Zxr10IsisIpv6SummaryEntry ::=
+        SEQUENCE {
+            zxr10IsisIpv6SummaryProcessId
+                Unsigned32,
+            zxr10IsisIpv6SummaryIpv6Prefix
+                DisplayString,
+            zxr10IsisIpv6SummaryPrefixLen
+                Unsigned32,
+            zxr10IsisIpv6SummaryVrfName
+                DisplayString,
+            zxr10IsisIpv6SummaryMetric
+                Unsigned32,
+            zxr10IsisIpv6SummaryLevel
+                Unsigned32
+        }
+
+zxr10IsisIpv6SummaryProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisIpv6SummaryEntry 1 }
+
+zxr10IsisIpv6SummaryIpv6Prefix OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..16))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "IPv6 summary address."
+        ::= { zxr10IsisIpv6SummaryEntry 2 }
+
+zxr10IsisIpv6SummaryPrefixLen OBJECT-TYPE
+        SYNTAX Unsigned32 (0..128)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Prefix length of summary."
+        ::= { zxr10IsisIpv6SummaryEntry 3 }
+
+zxr10IsisIpv6SummaryVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisIpv6SummaryEntry 4 }
+
+zxr10IsisIpv6SummaryMetric OBJECT-TYPE
+        SYNTAX Unsigned32 (0..4261412864)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Metric of summary."
+        ::= { zxr10IsisIpv6SummaryEntry 5 }
+
+zxr10IsisIpv6SummaryLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (1..3)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level of summary."
+        ::= { zxr10IsisIpv6SummaryEntry 6 }
+--summary-prefix table end
+
+
+
+--distribute-list table
+zxr10IsisIpv6DistributeTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisIpv6DistributeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to IPv6 distribution instance."
+        ::= { zxr10IsisInstanceMIB 23 }
+
+zxr10IsisIpv6DistributeEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisIpv6DistributeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to IPv6 distribution instance."
+        INDEX  { zxr10IsisIpv6DistributeProcessId,
+                 zxr10IsisIpv6DistributeDirection }
+        ::= { zxr10IsisIpv6DistributeTable 1 }
+            
+Zxr10IsisIpv6DistributeEntry ::=
+        SEQUENCE {
+            zxr10IsisIpv6DistributeProcessId
+                Unsigned32,
+            zxr10IsisIpv6DistributeDirection
+                Unsigned32,
+            zxr10IsisIpv6DistributeVrfName
+                DisplayString,
+            zxr10IsisIpv6DistributeRoutemapName
+                DisplayString
+        }
+
+zxr10IsisIpv6DistributeProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisIpv6DistributeEntry 1 }
+
+zxr10IsisIpv6DistributeDirection OBJECT-TYPE
+        SYNTAX Unsigned32 (0..255)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Direction of IPv6  distribution."
+        ::= { zxr10IsisIpv6DistributeEntry 2 }
+
+zxr10IsisIpv6DistributeVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisIpv6DistributeEntry 3 }
+
+zxr10IsisIpv6DistributeRoutemapName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..32))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Routemap name used in IPv6 distribution."
+        ::= { zxr10IsisIpv6DistributeEntry 4 }
+--distribute-list table end
+
+
+
+-- lsp-gen-interval table
+zxr10IsisLspGenIntervalTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisLspGenIntervalEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to LSP genaration interval."
+        ::= { zxr10IsisInstanceMIB 24 }
+
+zxr10IsisLspGenIntervalEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisLspGenIntervalEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to LSP genaration interval."
+        INDEX  { zxr10IsisLspGenIntervalProcessId,
+                 zxr10IsisLspGenIntervalLevel }
+        ::= { zxr10IsisLspGenIntervalTable 1 }
+            
+Zxr10IsisLspGenIntervalEntry ::=
+        SEQUENCE {
+            zxr10IsisLspGenIntervalProcessId
+                Unsigned32,
+            zxr10IsisLspGenIntervalLevel
+                Unsigned32,
+            zxr10IsisLspGenIntervalVrfName
+                DisplayString,
+            zxr10IsisLspGenIntervalLspMaxWait
+                Unsigned32,
+            zxr10IsisLspGenIntervalLspInitialWait
+                Unsigned32,
+            zxr10IsisLspGenIntervalLspSecWait
+                Unsigned32            
+        }
+
+zxr10IsisLspGenIntervalProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisLspGenIntervalEntry 1 }
+
+zxr10IsisLspGenIntervalLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisLspGenIntervalEntry 2 }
+
+zxr10IsisLspGenIntervalVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisLspGenIntervalEntry 3 }
+
+zxr10IsisLspGenIntervalLspMaxWait OBJECT-TYPE
+        SYNTAX Unsigned32 (1..120)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "LSP Max generation interval in seconds."
+        DEFVAL {5}
+        ::= { zxr10IsisLspGenIntervalEntry 4 }
+
+zxr10IsisLspGenIntervalLspInitialWait OBJECT-TYPE
+        SYNTAX Unsigned32 (0..120000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Initial wait in milliseconds."
+        DEFVAL {50}
+        ::= { zxr10IsisLspGenIntervalEntry 5 }
+
+zxr10IsisLspGenIntervalLspSecWait OBJECT-TYPE
+        SYNTAX Unsigned32 (1..120000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Wait between first and second LSP generation in ms."
+        DEFVAL {5000}
+        ::= { zxr10IsisLspGenIntervalEntry 6 }
+-- lsp-gen-interval table end
+
+
+
+-- tables of isis interface model 
+zxr10IsisIntfMIB OBJECT IDENTIFIER ::= { zxr10IsisInstanceMIB 25 }
+
+-- interface table
+zxr10IsisIntfTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisIntfEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS interface."
+        ::= { zxr10IsisIntfMIB 1 }
+
+zxr10IsisIntfEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisIntfEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS interface."
+        INDEX  { zxr10IsisIntfProcessId,zxr10IsisIntfIntfName }
+        ::= { zxr10IsisIntfTable 1 }
+            
+Zxr10IsisIntfEntry ::=
+        SEQUENCE {
+            zxr10IsisIntfProcessId
+                Unsigned32,
+            zxr10IsisIntfIntfName
+                DisplayString,
+            zxr10IsisIntfVrfName
+                DisplayString,
+            zxr10IsisIntfEncapType
+                Unsigned32,
+            zxr10IsisIntfCircuitType
+                Unsigned32,
+            zxr10IsisIntfBfdEnable
+                Unsigned32,
+            zxr10IsisIntfIpv6BfdEnable
+                Unsigned32,
+            zxr10IsisIntfFastRerouteBlock
+                Unsigned32,
+            zxr10IsisIntfIgnoreMtu
+                Unsigned32,
+            zxr10IsisIntfMaxBurst
+                Unsigned32,
+            zxr10IsisIntfMonitorReceiveInterval
+                Unsigned32,
+            zxr10IsisIntfMonitorSendInterval
+                Unsigned32,
+            zxr10IsisIntfNetworkP2p
+                Unsigned32,
+            zxr10IsisIntfMeshBlock
+                Unsigned32,
+            zxr10IsisIntfMeshNum
+                Unsigned32,
+            zxr10IsisIntfMeshSet
+                Unsigned32,
+            zxr10IsisIntfPassiveMode
+                Unsigned32,
+            zxr10IsisIntfIpv6FastRerouteBlock
+                Unsigned32,
+            zxr10IsisIntfIgnoreIpAdjacencyCheck
+                Unsigned32,
+            zxr10IsisIntfIgnoreIpv6AdjacencyCheck
+                Unsigned32,
+            zxr10IsisIntfIgnoreIpSubnetCheck
+                Unsigned32,
+            zxr10IsisIntfMetricLinkSDIncr
+                INTEGER
+        }
+
+zxr10IsisIntfProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisIntfEntry 1 }
+
+zxr10IsisIntfIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisIntfEntry 2 }
+
+zxr10IsisIntfVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisIntfEntry 3 }
+
+zxr10IsisIntfEncapType OBJECT-TYPE
+        SYNTAX Unsigned32 (0..255)
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "Interface encaped type."
+        ::= { zxr10IsisIntfEntry 4 }
+
+zxr10IsisIntfCircuitType OBJECT-TYPE
+        SYNTAX Unsigned32 (1..3)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Circuit's level."
+        DEFVAL {3}
+        ::= { zxr10IsisIntfEntry 11 }
+
+zxr10IsisIntfBfdEnable OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Enable IPv4 BFD on this interface."
+        ::= { zxr10IsisIntfEntry 12 }
+
+zxr10IsisIntfIpv6BfdEnable OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Enable IPv6 BFD on this interface."
+        ::= { zxr10IsisIntfEntry 13 }
+
+zxr10IsisIntfFastRerouteBlock OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Set interface ip fast-reroute attribute."
+        ::= { zxr10IsisIntfEntry 15 }
+
+zxr10IsisIntfIgnoreMtu OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Ignore interface MTU."
+        ::= { zxr10IsisIntfEntry 16 }
+
+zxr10IsisIntfMaxBurst OBJECT-TYPE
+        SYNTAX Unsigned32 (1..50)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "LSP send number per-time."
+        DEFVAL {1}
+        ::= { zxr10IsisIntfEntry 17 }
+
+zxr10IsisIntfMonitorReceiveInterval OBJECT-TYPE
+        SYNTAX Unsigned32 (0..100)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Monitor ISIS packet receive interval."
+        DEFVAL {10}
+        ::= { zxr10IsisIntfEntry 18 }
+
+zxr10IsisIntfMonitorSendInterval OBJECT-TYPE
+        SYNTAX Unsigned32 (0..100)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Monitor ISIS packet send interval."
+        DEFVAL {10}
+        ::= { zxr10IsisIntfEntry 19 }
+
+zxr10IsisIntfNetworkP2p OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Specify ISIS point-to-point network."
+        ::= { zxr10IsisIntfEntry 20 }
+
+zxr10IsisIntfMeshBlock OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Set ISIS mesh group block."
+        ::= { zxr10IsisIntfEntry 21 }
+
+zxr10IsisIntfMeshNum OBJECT-TYPE
+        SYNTAX Unsigned32 (0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Mesh group number."
+        ::= { zxr10IsisIntfEntry 22 }
+
+zxr10IsisIntfMeshSet OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Mesh is set."
+        ::= { zxr10IsisIntfEntry 23 }
+
+zxr10IsisIntfPassiveMode OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Control the interface routing update."
+        ::= { zxr10IsisIntfEntry 24 }
+
+zxr10IsisIntfIpv6FastRerouteBlock OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Interface IPv6 fast-reroute block."
+        ::= { zxr10IsisIntfEntry 25 }
+
+zxr10IsisIntfIgnoreIpAdjacencyCheck OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Ignore IPv4 adjacency check."
+        ::= { zxr10IsisIntfEntry 26 }
+
+
+zxr10IsisIntfIgnoreIpv6AdjacencyCheck OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Ignore IPv6 address subnet check."
+        ::= { zxr10IsisIntfEntry 27 }
+
+zxr10IsisIntfIgnoreIpSubnetCheck OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Ignore IP address subnet check."
+        ::= { zxr10IsisIntfEntry 28 }
+        
+zxr10IsisIntfMetricLinkSDIncr OBJECT-TYPE
+        SYNTAX INTEGER 
+            {
+                maximum(99)
+            }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Interface SD link metric increase."
+        ::= { zxr10IsisIntfEntry 29 }
+-- interface attributes table end
+
+
+
+-- authentication-type of  interface model table 
+zxr10IsisIntfAutheTypeTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisIntfAutheTypeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to set interface authentication mode."
+        ::= { zxr10IsisIntfMIB 2 }
+
+zxr10IsisIntfAutheTypeEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisIntfAutheTypeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to set interface authentication mode."
+        INDEX  { zxr10IsisIntfAutheTypeProcessId,
+                 zxr10IsisIntfAutheTypeIntfName,
+                 zxr10IsisIntfAutheTypeLevel }
+        ::= { zxr10IsisIntfAutheTypeTable 1 }
+            
+Zxr10IsisIntfAutheTypeEntry ::=
+        SEQUENCE {
+            zxr10IsisIntfAutheTypeProcessId
+                Unsigned32,
+            zxr10IsisIntfAutheTypeIntfName
+                DisplayString,
+            zxr10IsisIntfAutheTypeLevel
+                Unsigned32,
+            zxr10IsisIntfAutheTypeVrfName
+                DisplayString,
+            zxr10IsisIntfAutheTypeType
+                Unsigned32
+        }
+
+zxr10IsisIntfAutheTypeProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisIntfAutheTypeEntry 1 }
+
+zxr10IsisIntfAutheTypeIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisIntfAutheTypeEntry 2 }
+
+zxr10IsisIntfAutheTypeLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisIntfAutheTypeEntry 3 }
+
+zxr10IsisIntfAutheTypeVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisIntfAutheTypeEntry 4 }
+
+zxr10IsisIntfAutheTypeType OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Interface authentication type."
+        DEFVAL {2}
+        ::= { zxr10IsisIntfAutheTypeEntry 5 }
+--authentication-type of  interface model table end
+
+
+
+--psnp-interval table
+zxr10IsisPsnpIntervalTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisPsnpIntervalEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS PSNP interval."
+        ::= { zxr10IsisIntfMIB 3 }
+
+zxr10IsisPsnpIntervalEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisPsnpIntervalEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS PSNP interval."
+        INDEX  { zxr10IsisPsnpIntervalProcessId,
+                 zxr10IsisPsnpIntervalIntfName,
+                 zxr10IsisPsnpIntervalLevel }
+        ::= { zxr10IsisPsnpIntervalTable 1 }
+            
+Zxr10IsisPsnpIntervalEntry ::=
+        SEQUENCE {
+            zxr10IsisPsnpIntervalProcessId
+                Unsigned32,
+            zxr10IsisPsnpIntervalIntfName
+                DisplayString,
+            zxr10IsisPsnpIntervalLevel
+                Unsigned32,
+            zxr10IsisPsnpIntervalVrfName
+                DisplayString,
+            zxr10IsisPsnpIntervalInterval
+                Unsigned32
+        }
+
+zxr10IsisPsnpIntervalProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisPsnpIntervalEntry 1 }
+
+zxr10IsisPsnpIntervalIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interval name."
+        ::= { zxr10IsisPsnpIntervalEntry 2 }
+
+zxr10IsisPsnpIntervalLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisPsnpIntervalEntry 3 }
+
+zxr10IsisPsnpIntervalVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisPsnpIntervalEntry 4 }
+
+zxr10IsisPsnpIntervalInterval OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "PSNP transmission interval."
+        DEFVAL {3}
+        ::= { zxr10IsisPsnpIntervalEntry 5 }
+
+
+
+--restart t1-timer table
+zxr10IsisT1TimeTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisT1TimeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS T1 time."
+        ::= { zxr10IsisIntfMIB 4 }
+
+zxr10IsisT1TimeEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisT1TimeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS T1 time."
+        INDEX  { zxr10IsisT1TimeProcessId,
+                 zxr10IsisT1TimeIntfName,
+                 zxr10IsisT1TimeLevel }
+        ::= { zxr10IsisT1TimeTable 1 }
+            
+Zxr10IsisT1TimeEntry ::=
+        SEQUENCE {
+            zxr10IsisT1TimeProcessId
+                Unsigned32,
+            zxr10IsisT1TimeIntfName
+                DisplayString,
+            zxr10IsisT1TimeLevel
+                Unsigned32,
+            zxr10IsisT1TimeVrfName
+                DisplayString,
+            zxr10IsisT1TimeTime
+                Unsigned32
+        }
+
+zxr10IsisT1TimeProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisT1TimeEntry 1 }
+
+zxr10IsisT1TimeIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisT1TimeEntry 2 }
+
+zxr10IsisT1TimeLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisT1TimeEntry 3 }
+
+zxr10IsisT1TimeVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisT1TimeEntry 4 }
+
+zxr10IsisT1TimeTime OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "GR T1 interval."
+        DEFVAL {3}
+        ::= { zxr10IsisT1TimeEntry 5 }
+--restart t1-timer table end
+
+
+
+--authentication table
+zxr10IsisIntfAuthenTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisIntfAuthenEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS interface authentication."
+        ::= { zxr10IsisIntfMIB 5 }
+
+zxr10IsisIntfAuthenEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisIntfAuthenEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS interface authentication."
+        INDEX  { zxr10IsisIntfAuthenProcessId,
+                 zxr10IsisIntfAuthenIntfName,
+                 zxr10IsisIntfAuthenLevel }
+        ::= { zxr10IsisIntfAuthenTable 1 }
+            
+Zxr10IsisIntfAuthenEntry ::=
+        SEQUENCE {
+            zxr10IsisIntfAuthenProcessId
+                Unsigned32,
+            zxr10IsisIntfAuthenIntfName
+                DisplayString,
+            zxr10IsisIntfAuthenLevel
+                Unsigned32,
+            zxr10IsisIntfAuthenVrfName
+                DisplayString,
+            zxr10IsisIntfAuthenWord
+                DisplayString,
+            zxr10IsisIntfAuthenEncryptedWord
+                DisplayString,
+            zxr10IsisIntfAuthenEncrypted
+                Unsigned32,
+            zxr10IsisIntfAuthenClearWord
+                DisplayString,
+            zxr10IsisIntfAuthenClear
+                Unsigned32
+        }
+
+zxr10IsisIntfAuthenProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisIntfAuthenEntry 1 }
+
+zxr10IsisIntfAuthenIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisIntfAuthenEntry 2 }
+
+zxr10IsisIntfAuthenLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisIntfAuthenEntry 3 }
+
+zxr10IsisIntfAuthenVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisIntfAuthenEntry 4 }
+
+zxr10IsisIntfAuthenWord OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..200))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The clear password."
+        ::= { zxr10IsisIntfAuthenEntry 5 }
+
+zxr10IsisIntfAuthenEncryptedWord OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..200))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The encrypted password."
+        ::= { zxr10IsisIntfAuthenEntry 7 }
+
+zxr10IsisIntfAuthenEncrypted OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Specify the encrypted password."
+        ::= { zxr10IsisIntfAuthenEntry 8 }
+
+zxr10IsisIntfAuthenClearWord OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..200))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The clear password."
+        ::= { zxr10IsisIntfAuthenEntry 9 }
+
+zxr10IsisIntfAuthenClear OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Specify the clear password."
+        ::= { zxr10IsisIntfAuthenEntry 10 }
+--authentication table end
+
+
+
+-- metric of interface model table
+zxr10IsisMetricTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisMetricEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS interface metric."
+        ::= { zxr10IsisIntfMIB 6 }
+
+zxr10IsisMetricEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisMetricEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS interface metric."
+        INDEX  { zxr10IsisMetricProcessId,
+                 zxr10IsisMetricIntfName,
+                 zxr10IsisMetricLevel }
+        ::= { zxr10IsisMetricTable 1 }
+            
+Zxr10IsisMetricEntry ::=
+        SEQUENCE {
+            zxr10IsisMetricProcessId
+                Unsigned32,
+            zxr10IsisMetricIntfName
+                DisplayString,
+            zxr10IsisMetricLevel
+                Unsigned32,
+            zxr10IsisMetricVrfName
+                DisplayString,
+            zxr10IsisMetricMetric
+                Unsigned32
+        }
+
+zxr10IsisMetricProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisMetricEntry 1 }
+
+zxr10IsisMetricIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisMetricEntry 2 }
+
+zxr10IsisMetricLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisMetricEntry 3 }
+
+zxr10IsisMetricVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisMetricEntry 4 }
+
+zxr10IsisMetricMetric OBJECT-TYPE
+        SYNTAX Unsigned32 (0..16777215)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Interface metric."
+        DEFVAL {10}
+        ::= { zxr10IsisMetricEntry 5 }
+-- metric of interface model table end
+
+
+
+--mtu table
+zxr10IsisIntfMtuTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisIntfMtuEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS interface mtu instance."
+        ::= { zxr10IsisIntfMIB 7 }
+
+zxr10IsisIntfMtuEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisIntfMtuEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS interface mtu instance."
+        INDEX  { zxr10IsisIntfMtuProcessId,zxr10IsisIntfMtuIntfName }
+        ::= { zxr10IsisIntfMtuTable 1 }
+            
+Zxr10IsisIntfMtuEntry ::=
+        SEQUENCE {
+            zxr10IsisIntfMtuProcessId
+                Unsigned32,
+            zxr10IsisIntfMtuIntfName
+                DisplayString,
+            zxr10IsisIntfMtuVrfName
+                DisplayString,
+            zxr10IsisIntfMtuMtu
+                Unsigned32
+        }
+
+zxr10IsisIntfMtuProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisIntfMtuEntry 1 }
+
+zxr10IsisIntfMtuIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisIntfMtuEntry 2 }
+
+zxr10IsisIntfMtuVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisIntfMtuEntry 3 }
+
+zxr10IsisIntfMtuMtu OBJECT-TYPE
+        SYNTAX Unsigned32 (512..4096)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Interface mtu."
+        ::= { zxr10IsisIntfMtuEntry 4 }
+--mtu table end
+
+
+
+--csnp-interval table
+zxr10IsisCsnpIntervalTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisCsnpIntervalEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS CSNP transmission interval instance."
+        ::= { zxr10IsisIntfMIB 8 }
+
+zxr10IsisCsnpIntervalEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisCsnpIntervalEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS CSNP transmission interval instance."
+        INDEX  { zxr10IsisCsnpIntervalProcessId,
+                 zxr10IsisCsnpIntervalIntfName,
+                 zxr10IsisCsnpIntervalLevel }
+        ::= { zxr10IsisCsnpIntervalTable 1 }
+            
+Zxr10IsisCsnpIntervalEntry ::=
+        SEQUENCE {
+            zxr10IsisCsnpIntervalProcessId
+                Unsigned32,
+            zxr10IsisCsnpIntervalIntfName
+                DisplayString,
+            zxr10IsisCsnpIntervalLevel
+                Unsigned32,
+            zxr10IsisCsnpIntervalVrfName
+                DisplayString,
+            zxr10IsisCsnpIntervalInterval
+                Unsigned32
+        }
+
+zxr10IsisCsnpIntervalProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisCsnpIntervalEntry 1 }
+
+zxr10IsisCsnpIntervalIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisCsnpIntervalEntry 2 }
+
+zxr10IsisCsnpIntervalLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisCsnpIntervalEntry 3 }
+
+zxr10IsisCsnpIntervalVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisCsnpIntervalEntry 4 }
+
+zxr10IsisCsnpIntervalInterval OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "CSNP transmission interval."
+        DEFVAL {10}
+        ::= { zxr10IsisCsnpIntervalEntry 5 }
+--csnp-interval table end
+
+
+
+-- ipv6 metric table
+zxr10IsisIpv6MetricTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisIpv6MetricEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to interface IPv6 metric instance."
+        ::= { zxr10IsisIntfMIB 9 }
+
+zxr10IsisIpv6MetricEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisIpv6MetricEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to interface IPv6 metric instance."
+        INDEX  { zxr10IsisIpv6MetricProcessId,
+                 zxr10IsisIpv6MetricIntfName,
+                 zxr10IsisIpv6MetricLevel }
+        ::= { zxr10IsisIpv6MetricTable 1 }
+            
+Zxr10IsisIpv6MetricEntry ::=
+        SEQUENCE {
+            zxr10IsisIpv6MetricProcessId
+                Unsigned32,
+            zxr10IsisIpv6MetricIntfName
+                DisplayString,
+            zxr10IsisIpv6MetricLevel
+                Unsigned32,
+            zxr10IsisIpv6MetricVrfName
+                DisplayString,
+            zxr10IsisIpv6MetricMetric
+                Unsigned32
+        }
+
+zxr10IsisIpv6MetricProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisIpv6MetricEntry 1 }
+
+zxr10IsisIpv6MetricIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisIpv6MetricEntry 2 }
+
+zxr10IsisIpv6MetricLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisIpv6MetricEntry 3 }
+
+zxr10IsisIpv6MetricVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisIpv6MetricEntry 4 }
+
+zxr10IsisIpv6MetricMetric OBJECT-TYPE
+        SYNTAX Unsigned32 (0..16777215)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Interface IPv6 metric."
+        DEFVAL {10}
+        ::= { zxr10IsisIpv6MetricEntry 5 }
+-- ipv6 metric table end
+
+
+
+--ip router isis table
+zxr10IsisIntfV4EnableTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisIntfV4EnableEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to interface with ISISv4 enable."
+        ::= { zxr10IsisIntfMIB 10 }
+
+zxr10IsisIntfV4EnableEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisIntfV4EnableEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to interface with ISISv4 enable."
+        INDEX  { zxr10IsisIntfV4EnableProcessId,zxr10IsisIntfV4EnableIntfName }
+        ::= { zxr10IsisIntfV4EnableTable 1 }
+            
+Zxr10IsisIntfV4EnableEntry ::=
+        SEQUENCE {
+            zxr10IsisIntfV4EnableProcessId
+                Unsigned32,
+            zxr10IsisIntfV4EnableIntfName
+                DisplayString,
+            zxr10IsisIntfV4EnableVrfName
+                DisplayString,
+            zxr10IsisIntfV4EnableV4Enable
+                Unsigned32
+        }
+
+zxr10IsisIntfV4EnableProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisIntfV4EnableEntry 1 }
+
+zxr10IsisIntfV4EnableIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisIntfV4EnableEntry 2 }
+
+zxr10IsisIntfV4EnableVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisIntfV4EnableEntry 3 }
+
+zxr10IsisIntfV4EnableV4Enable OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Enable ISIS IPv4 on this interface."
+        ::= { zxr10IsisIntfV4EnableEntry 9 }
+--ip router isis table end
+
+
+
+--hello-interval table
+zxr10IsisHelloIntervalTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisHelloIntervalEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS hello transmission interval."
+        ::= { zxr10IsisIntfMIB 11 }
+
+zxr10IsisHelloIntervalEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisHelloIntervalEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS hello transmission interval."
+        INDEX  { zxr10IsisHelloIntervalProcessId,
+                 zxr10IsisHelloIntervalIntfName,
+                 zxr10IsisHelloIntervalLevel }
+        ::= { zxr10IsisHelloIntervalTable 1 }
+            
+Zxr10IsisHelloIntervalEntry ::=
+        SEQUENCE {
+            zxr10IsisHelloIntervalProcessId
+                Unsigned32,
+            zxr10IsisHelloIntervalIntfName
+                DisplayString,
+            zxr10IsisHelloIntervalLevel
+                Unsigned32,
+            zxr10IsisHelloIntervalVrfName
+                DisplayString,
+            zxr10IsisHelloIntervalInterval
+                Unsigned32
+        }
+
+zxr10IsisHelloIntervalProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisHelloIntervalEntry 1 }
+
+zxr10IsisHelloIntervalIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisHelloIntervalEntry 2 }
+
+zxr10IsisHelloIntervalLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisHelloIntervalEntry 3 }
+
+zxr10IsisHelloIntervalVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisHelloIntervalEntry 4 }
+
+zxr10IsisHelloIntervalInterval OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS hello transmission interval."
+        DEFVAL {10}
+        ::= { zxr10IsisHelloIntervalEntry 5 }
+--hello-interval table end
+
+
+
+--priority table
+zxr10IsisPriorityTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisPriorityEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS interface priority."
+        ::= { zxr10IsisIntfMIB 12 }
+
+zxr10IsisPriorityEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisPriorityEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS interface priority."
+        INDEX  { zxr10IsisPriorityProcessId,
+                 zxr10IsisPriorityIntfName,
+                 zxr10IsisPriorityLevel }
+        ::= { zxr10IsisPriorityTable 1 }
+            
+Zxr10IsisPriorityEntry ::=
+        SEQUENCE {
+            zxr10IsisPriorityProcessId
+                Unsigned32,
+            zxr10IsisPriorityIntfName
+                DisplayString,
+            zxr10IsisPriorityLevel
+                Unsigned32,
+            zxr10IsisPriorityVrfName
+                DisplayString,
+            zxr10IsisPriorityPriority
+                Unsigned32
+        }
+
+zxr10IsisPriorityProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisPriorityEntry 1 }
+
+zxr10IsisPriorityIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisPriorityEntry 2 }
+
+zxr10IsisPriorityLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisPriorityEntry 3 }
+
+zxr10IsisPriorityVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisPriorityEntry 4 }
+
+zxr10IsisPriorityPriority OBJECT-TYPE
+        SYNTAX Unsigned32 (0..127)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Interface priority."
+        DEFVAL {64}
+        ::= { zxr10IsisPriorityEntry 5 }
+--priority table end
+
+
+
+-- ipv6 router isis
+zxr10IsisIntfV6EnableTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisIntfV6EnableEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to interface which enable ISISv6."
+        ::= { zxr10IsisIntfMIB 13 }
+
+zxr10IsisIntfV6EnableEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisIntfV6EnableEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to interface which enable ISISv6."
+        INDEX  { zxr10IsisIntfV6EnableProcessId,
+                 zxr10IsisIntfV6EnableIntfName }
+        ::= { zxr10IsisIntfV6EnableTable 1 }
+            
+Zxr10IsisIntfV6EnableEntry ::=
+        SEQUENCE {
+            zxr10IsisIntfV6EnableProcessId
+                Unsigned32,
+            zxr10IsisIntfV6EnableIntfName
+                DisplayString,
+            zxr10IsisIntfV6EnableVrfName
+                DisplayString,
+            zxr10IsisIntfV6EnableV6Enable
+                Unsigned32
+        }
+
+zxr10IsisIntfV6EnableProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisIntfV6EnableEntry 1 }
+
+zxr10IsisIntfV6EnableIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisIntfV6EnableEntry 2 }
+
+zxr10IsisIntfV6EnableVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisIntfV6EnableEntry 3 }
+
+zxr10IsisIntfV6EnableV6Enable OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Enable ISIS IPv6."
+        ::= { zxr10IsisIntfV6EnableEntry 9 }
+-- ipv6 router isis table end
+
+
+
+--hello-multiplier table
+zxr10IsisHelloMultiTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisHelloMultiEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS hello multiplier."
+        ::= { zxr10IsisIntfMIB 14 }
+
+zxr10IsisHelloMultiEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisHelloMultiEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS hello multiplier."
+        INDEX  { zxr10IsisHelloMultiProcessId,
+                 zxr10IsisHelloMultiIntfName,
+                 zxr10IsisHelloMultiLevel }
+        ::= { zxr10IsisHelloMultiTable 1 }
+            
+Zxr10IsisHelloMultiEntry ::=
+        SEQUENCE {
+            zxr10IsisHelloMultiProcessId
+                Unsigned32,
+            zxr10IsisHelloMultiIntfName
+                DisplayString,
+            zxr10IsisHelloMultiLevel
+                Unsigned32,
+            zxr10IsisHelloMultiVrfName
+                DisplayString,
+            zxr10IsisHelloMultiMultiplier
+                Unsigned32
+        }
+
+zxr10IsisHelloMultiProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisHelloMultiEntry 1 }
+
+zxr10IsisHelloMultiIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisHelloMultiEntry 2 }
+
+zxr10IsisHelloMultiLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisHelloMultiEntry 3 }
+
+zxr10IsisHelloMultiVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisHelloMultiEntry 4 }
+
+zxr10IsisHelloMultiMultiplier OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Hello multiplier."
+        DEFVAL {3}
+        ::= { zxr10IsisHelloMultiEntry 5 }
+--hello-multiplier table end
+
+
+
+--retransmit-interval table
+zxr10IsisRtxIntervalTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisRtxIntervalEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS LSP retransmission interval."
+        ::= { zxr10IsisIntfMIB 15 }
+
+zxr10IsisRtxIntervalEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisRtxIntervalEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS LSP retransmission interval."
+        INDEX  { zxr10IsisRtxIntervalProcessId,
+                 zxr10IsisRtxIntervalIntfName,
+                 zxr10IsisRtxIntervalLevel }
+        ::= { zxr10IsisRtxIntervalTable 1 }
+            
+Zxr10IsisRtxIntervalEntry ::=
+        SEQUENCE {
+            zxr10IsisRtxIntervalProcessId
+                Unsigned32,
+            zxr10IsisRtxIntervalIntfName
+                DisplayString,
+            zxr10IsisRtxIntervalLevel
+                Unsigned32,
+            zxr10IsisRtxIntervalVrfName
+                DisplayString,
+            zxr10IsisRtxIntervalInterval
+                Unsigned32
+        }
+
+zxr10IsisRtxIntervalProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisRtxIntervalEntry 1 }
+
+zxr10IsisRtxIntervalIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisRtxIntervalEntry 2 }
+
+zxr10IsisRtxIntervalLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisRtxIntervalEntry 3 }
+
+zxr10IsisRtxIntervalVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisRtxIntervalEntry 4 }
+
+zxr10IsisRtxIntervalInterval OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "LSP retransmition interval."
+        DEFVAL {5}
+        ::= { zxr10IsisRtxIntervalEntry 5 }
+-- retransmit-interval table end
+
+
+
+--restart t1-retry table
+zxr10IsisT1RetryTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisT1RetryEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS T1 maximum retransmission times."
+        ::= { zxr10IsisIntfMIB 16 }
+
+zxr10IsisT1RetryEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisT1RetryEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS T1 maximum retransmission times."
+        INDEX  { zxr10IsisT1RetryProcessId,
+                 zxr10IsisT1RetryIntfName,
+                 zxr10IsisT1RetryLevel }
+        ::= { zxr10IsisT1RetryTable 1 }
+            
+Zxr10IsisT1RetryEntry ::=
+        SEQUENCE {
+            zxr10IsisT1RetryProcessId
+                Unsigned32,
+            zxr10IsisT1RetryIntfName
+                DisplayString,
+            zxr10IsisT1RetryLevel
+                Unsigned32,
+            zxr10IsisT1RetryVrfName
+                DisplayString,
+            zxr10IsisT1RetryRetry
+                Unsigned32
+        }
+
+zxr10IsisT1RetryProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisT1RetryEntry 1 }
+
+zxr10IsisT1RetryIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisT1RetryEntry 2 }
+
+zxr10IsisT1RetryLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisT1RetryEntry 3 }
+
+zxr10IsisT1RetryVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisT1RetryEntry 4 }
+
+zxr10IsisT1RetryRetry OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "GR T1 maximum retransmission times."
+        DEFVAL {3}
+        ::= { zxr10IsisT1RetryEntry 5 }
+--restart t1-retry table end
+
+
+
+--lsp-interval table
+zxr10IsisLspIntervalTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisLspIntervalEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS LSP interval instance."
+        ::= { zxr10IsisIntfMIB 17 }
+
+zxr10IsisLspIntervalEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisLspIntervalEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS LSP interval instance."
+        INDEX  { zxr10IsisLspIntervalProcessId,
+                 zxr10IsisLspIntervalIntfName,
+                 zxr10IsisLspIntervalLevel }
+        ::= { zxr10IsisLspIntervalTable 1 }
+            
+Zxr10IsisLspIntervalEntry ::=
+        SEQUENCE {
+            zxr10IsisLspIntervalProcessId
+                Unsigned32,
+            zxr10IsisLspIntervalIntfName
+                DisplayString,
+            zxr10IsisLspIntervalLevel
+                Unsigned32,
+            zxr10IsisLspIntervalVrfName
+                DisplayString,
+            zxr10IsisLspIntervalInterval
+                Unsigned32
+        }
+
+zxr10IsisLspIntervalProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisLspIntervalEntry 1 }
+
+zxr10IsisLspIntervalIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisLspIntervalEntry 2 }
+
+zxr10IsisLspIntervalLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisLspIntervalEntry 3 }
+
+zxr10IsisLspIntervalVrfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..35))
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "ISIS vrf name."
+        ::= { zxr10IsisLspIntervalEntry 4 }
+
+zxr10IsisLspIntervalInterval OBJECT-TYPE
+        SYNTAX Unsigned32 (33..4294967040)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "LSP transmission interval."
+        DEFVAL {33}
+        ::= { zxr10IsisLspIntervalEntry 5 }
+--lsp-interval table end
+
+
+
+-- mpls ldp sync table
+zxr10IsisIntfMplsLdpTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisIntfMplsLdpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS interface MPLS LDP."
+        ::= { zxr10IsisIntfMIB  18} 
+
+zxr10IsisIntfMplsLdpEntry OBJECT-TYPE
+        SYNTAX  Zxr10IsisIntfMplsLdpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS interface MPLS LDP."
+        INDEX  {zxr10IsisIntfMplsLdpProcessId,
+                zxr10IsisIntfMplsLdpIntfName,
+                zxr10IsisIntfMplsLdpIntfLevel}
+        ::= { zxr10IsisIntfMplsLdpTable 1 }   
+
+Zxr10IsisIntfMplsLdpEntry ::=
+        SEQUENCE {
+            zxr10IsisIntfMplsLdpProcessId
+                Unsigned32, 
+            zxr10IsisIntfMplsLdpIntfName
+                DisplayString,
+            zxr10IsisIntfMplsLdpIntfLevel
+                Unsigned32,
+            zxr10IsisIntfMplsLdpSyncDisable
+                Unsigned32
+        }
+
+
+zxr10IsisIntfMplsLdpProcessId  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process id."
+        ::= { zxr10IsisIntfMplsLdpEntry 1 }
+
+zxr10IsisIntfMplsLdpIntfName  OBJECT-TYPE
+        SYNTAX     DisplayString (SIZE(0..31)) 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisIntfMplsLdpEntry 2 }  
+
+zxr10IsisIntfMplsLdpIntfLevel  OBJECT-TYPE
+        SYNTAX     Unsigned32 (0..2) 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisIntfMplsLdpEntry 3 }
+
+zxr10IsisIntfMplsLdpSyncDisable  OBJECT-TYPE
+        SYNTAX     Unsigned32 (0..1) 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The flag of ISIS interface MPLS 
+            LDP synchronization disable."
+        ::= { zxr10IsisIntfMplsLdpEntry 4 }
+-- mpls ldp sync table end
+
+-- static remote lfa table
+zxr10IsisIntfLFATable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisIntfLFAEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS interface static remote LFA."
+        ::= { zxr10IsisIntfMIB  19} 
+
+zxr10IsisIntfLFAEntry OBJECT-TYPE
+        SYNTAX  Zxr10IsisIntfLFAEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS interface static remote LFA."
+        INDEX  {zxr10IsisIntfLFAProcessId,
+                zxr10IsisIntfLFAIntfName,
+                zxr10IsisIntfLFAPrefix}
+        ::= { zxr10IsisIntfLFATable 1 }   
+
+Zxr10IsisIntfLFAEntry ::=
+        SEQUENCE {
+            zxr10IsisIntfLFAProcessId
+                Unsigned32, 
+            zxr10IsisIntfLFAIntfName
+                DisplayString,
+            zxr10IsisIntfLFAPrefix
+                DisplayString,
+            zxr10IsisIntfLFANextHop
+                IpAddress
+        }
+
+
+zxr10IsisIntfLFAProcessId  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "ISIS process id."
+        ::= { zxr10IsisIntfLFAEntry 1 }
+
+zxr10IsisIntfLFAIntfName  OBJECT-TYPE
+        SYNTAX     DisplayString (SIZE(0..31)) 
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisIntfLFAEntry 2 }  
+
+zxr10IsisIntfLFAPrefix  OBJECT-TYPE
+        SYNTAX     DisplayString (SIZE(0..31)) 
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The name of prefix."
+        ::= { zxr10IsisIntfLFAEntry 3 }
+
+zxr10IsisIntfLFANextHop  OBJECT-TYPE
+        SYNTAX     IpAddress 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The IP address of next hop."
+        ::= { zxr10IsisIntfLFAEntry 4 }
+-- static remote lfa table end
+
+-- mpls-ldp syn table
+zxr10IsisMplsLdpTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisMplsLdpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS MPLS LDP synchronization."
+        ::= { zxr10IsisInstanceMIB  26}
+
+zxr10IsisMplsLdpEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisMplsLdpEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS MPLS LDP synchronization."
+        INDEX  { zxr10IsisMplsLdpProcessId,zxr10IsisMplsLdpLevel}
+        ::= {zxr10IsisMplsLdpTable  1 }  
+        
+Zxr10IsisMplsLdpEntry ::=
+        SEQUENCE {
+            zxr10IsisMplsLdpProcessId
+                Unsigned32, 
+            zxr10IsisMplsLdpLevel
+                Unsigned32
+        }  
+
+zxr10IsisMplsLdpProcessId OBJECT-TYPE
+        SYNTAX   Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisMplsLdpEntry 1 }
+
+zxr10IsisMplsLdpLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisMplsLdpEntry 2 } 
+--mpls ldp syn table end
+
+
+--prefix-priority table
+zxr10IsisPrefixPriorityTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF Zxr10IsisPrefixPriorityEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "A table to ISIS prefix priority."
+    ::= { zxr10IsisInstanceMIB  27}
+
+zxr10IsisPrefixPriorityEntry OBJECT-TYPE
+        SYNTAX  Zxr10IsisPrefixPriorityEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS prefix priority."
+        INDEX  {zxr10IsisPrefixPriorityProcessId,
+                zxr10IsisPrefixPriorityLevel,
+                zxr10IsisPrefixPriorityPriority,
+                zxr10IsisPrefixPriorityAcl,
+                zxr10IsisPrefixPriorityAclName,
+                zxr10IsisPrefixPriorityTag,
+                zxr10IsisPrefixPriorityTagValue}
+        ::= {zxr10IsisPrefixPriorityTable 1 } 
+
+Zxr10IsisPrefixPriorityEntry ::=
+        SEQUENCE {
+            zxr10IsisPrefixPriorityProcessId
+                Unsigned32, 
+            zxr10IsisPrefixPriorityLevel
+                Unsigned32,
+            zxr10IsisPrefixPriorityPriority
+                Unsigned32,
+            zxr10IsisPrefixPriorityAcl
+                Unsigned32,
+            zxr10IsisPrefixPriorityAclName
+                DisplayString, 
+            zxr10IsisPrefixPriorityTag
+                Unsigned32,
+            zxr10IsisPrefixPriorityTagValue
+                Unsigned32          
+        }
+ 
+zxr10IsisPrefixPriorityProcessId OBJECT-TYPE
+        SYNTAX   Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisPrefixPriorityEntry 1 }
+
+zxr10IsisPrefixPriorityLevel OBJECT-TYPE
+        SYNTAX   Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisPrefixPriorityEntry 2 }
+
+zxr10IsisPrefixPriorityPriority OBJECT-TYPE
+        SYNTAX   Unsigned32 (0..3)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS prefix priority rule."
+        ::= { zxr10IsisPrefixPriorityEntry  3}
+
+zxr10IsisPrefixPriorityAcl OBJECT-TYPE
+        SYNTAX   Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The flag of ISIS prefix priority acl-list."
+        ::= { zxr10IsisPrefixPriorityEntry 4 }
+
+zxr10IsisPrefixPriorityAclName OBJECT-TYPE
+        SYNTAX    DisplayString (SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS prefix priority acl-list name."
+        ::= { zxr10IsisPrefixPriorityEntry 5 }
+
+zxr10IsisPrefixPriorityTag OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The flag of ISIS prefix priority tag."
+        ::= { zxr10IsisPrefixPriorityEntry 6 }
+
+zxr10IsisPrefixPriorityTagValue OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The number of ISIS prefix priority tag."
+        ::= { zxr10IsisPrefixPriorityEntry 7 }
+--prefix-priority table end
+
+
+
+--route-leak level-1 into level-2 table
+zxr10IsisV4RouteLeakL1IntoL2Table OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisV4RouteLeakL1IntoL2Entry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS IPv4 route-leak level-1 into level-2."
+        ::= { zxr10IsisInstanceMIB  28}
+
+zxr10IsisV4RouteLeakL1IntoL2Entry OBJECT-TYPE
+        SYNTAX  Zxr10IsisV4RouteLeakL1IntoL2Entry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS IPv4 route-leak level-1 into level-2."
+        INDEX  {zxr10IsisV4RouteLeakL1IntoL2ProcessId}
+        ::= { zxr10IsisV4RouteLeakL1IntoL2Table 1 } 
+        
+Zxr10IsisV4RouteLeakL1IntoL2Entry ::=
+        SEQUENCE {
+            zxr10IsisV4RouteLeakL1IntoL2ProcessId          
+                Unsigned32, 
+            zxr10IsisV4RouteLeakL1IntoL2RouteMapName
+                DisplayString
+        } 
+
+ zxr10IsisV4RouteLeakL1IntoL2ProcessId OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process id."
+        ::= { zxr10IsisV4RouteLeakL1IntoL2Entry 1 }
+
+ zxr10IsisV4RouteLeakL1IntoL2RouteMapName OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The name of route map."
+        ::= { zxr10IsisV4RouteLeakL1IntoL2Entry 2 }
+--route-leak level-1 into level-2 table end
+
+
+
+--route-leak level-2 into level-1 table
+zxr10IsisV4RouteLeakL2IntoL1Table OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisV4RouteLeakL2IntoL1Entry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS IPv4 route-leak level-2 into level-1."
+        ::= { zxr10IsisInstanceMIB  29}
+
+zxr10IsisV4RouteLeakL2IntoL1Entry OBJECT-TYPE
+        SYNTAX  Zxr10IsisV4RouteLeakL2IntoL1Entry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS IPv4 route-leak level-2 into level-1."
+        INDEX  {zxr10IsisV4RouteLeakL2IntoL1ProcessId}
+        ::= { zxr10IsisV4RouteLeakL2IntoL1Table 1 } 
+
+Zxr10IsisV4RouteLeakL2IntoL1Entry ::=
+        SEQUENCE {
+         zxr10IsisV4RouteLeakL2IntoL1ProcessId          
+                Unsigned32,
+         zxr10IsisV4RouteLeakL2IntoL1Enable
+                Unsigned32,
+         zxr10IsisV4RouteLeakL2IntoL1RouteMapName
+                DisplayString
+    } 
+
+zxr10IsisV4RouteLeakL2IntoL1ProcessId OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process id."
+        ::= { zxr10IsisV4RouteLeakL2IntoL1Entry 1 }
+ 
+zxr10IsisV4RouteLeakL2IntoL1Enable OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The flag of configing ISIS IPv4 route-leak level-2 into level-1."
+        ::= { zxr10IsisV4RouteLeakL2IntoL1Entry 2 }
+
+zxr10IsisV4RouteLeakL2IntoL1RouteMapName OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The name of route-map."
+        ::= { zxr10IsisV4RouteLeakL2IntoL1Entry 3 }
+--route-leak level-2 into level-1 table end
+
+
+
+--isis ipv6 route-leak level-1 into level-2 table
+zxr10IsisV6RouteLeakL1IntoL2Table OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisV6RouteLeakL1IntoL2Entry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS IPv6 route-leak level-1 into level-2."
+        ::= { zxr10IsisInstanceMIB  30}
+
+zxr10IsisV6RouteLeakL1IntoL2Entry OBJECT-TYPE
+        SYNTAX  Zxr10IsisV6RouteLeakL1IntoL2Entry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS IPv6 route-leak level-1 into level-2."
+        INDEX  {zxr10IsisV6RouteLeakL2IntoL1ProcessId}
+        ::= { zxr10IsisV6RouteLeakL1IntoL2Table 1 } 
+        
+Zxr10IsisV6RouteLeakL1IntoL2Entry ::=
+        SEQUENCE {
+            zxr10IsisV6RouteLeakL1IntoL2ProcessId          
+                Unsigned32, 
+            zxr10IsisV6RouteLeakL1IntoL2RouteMapName
+                DisplayString
+    } 
+
+zxr10IsisV6RouteLeakL1IntoL2ProcessId OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process id."
+        ::= { zxr10IsisV6RouteLeakL1IntoL2Entry 1 }
+
+zxr10IsisV6RouteLeakL1IntoL2RouteMapName OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The name of route-map."
+        ::= { zxr10IsisV6RouteLeakL1IntoL2Entry 2 } 
+--isis ipv6 route-leak level-1 into level-2 table end
+
+
+
+--isis ipv6 route-leak level-2 into level-1 table
+zxr10IsisV6RouteLeakL2IntoL1Table OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisV6RouteLeakL2IntoL1Entry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS IPv6 route-leak level-2 into level-1."
+        ::= { zxr10IsisInstanceMIB  31}
+
+zxr10IsisV6RouteLeakL2IntoL1Entry OBJECT-TYPE
+        SYNTAX  Zxr10IsisV6RouteLeakL2IntoL1Entry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS IPv6 route-leak level-2 into level-1."
+        INDEX  {zxr10IsisV6RouteLeakL2IntoL1ProcessId}
+        ::= { zxr10IsisV6RouteLeakL2IntoL1Table 1 } 
+        
+Zxr10IsisV6RouteLeakL2IntoL1Entry ::=
+        SEQUENCE {
+            zxr10IsisV6RouteLeakL2IntoL1ProcessId          
+                Unsigned32,
+            zxr10IsisV6RouteLeakL2IntoL1Enable
+                Unsigned32, 
+            zxr10IsisV6RouteLeakL2IntoL1RouteMapName
+                DisplayString
+        } 
+
+zxr10IsisV6RouteLeakL2IntoL1ProcessId OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process id."
+        ::= { zxr10IsisV6RouteLeakL2IntoL1Entry 1 }   
+        
+zxr10IsisV6RouteLeakL2IntoL1Enable OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The flag of configing ISIS IPv6 route-leak 
+            level-2 into level-1."
+        ::= { zxr10IsisV6RouteLeakL2IntoL1Entry 2 }
+
+zxr10IsisV6RouteLeakL2IntoL1RouteMapName OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The name of route-map."
+        ::= { zxr10IsisV6RouteLeakL2IntoL1Entry 3 }
+--isis ipv6 route-leak level-2 into level-1 table end
+
+
+
+-- isis ipv6 prefix-priority table
+zxr10IsisV6PrefixPriorityTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisV6PrefixPriorityEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS IPv6 prefix priority."
+        ::= { zxr10IsisInstanceMIB  32}
+
+zxr10IsisV6PrefixPriorityEntry OBJECT-TYPE
+        SYNTAX  Zxr10IsisV6PrefixPriorityEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS IPv6 prefix priority."
+        INDEX  {zxr10IsisV6PrefixPriorityProcessId,
+                zxr10IsisV6PrefixPriorityLevel,
+                zxr10IsisV6PrefixPriorityPriority,
+                zxr10IsisV6PrefixPriorityAcl,
+                zxr10IsisV6PrefixPriorityAclName,
+                zxr10IsisV6PrefixPriorityTag,
+                zxr10IsisV6PrefixPriorityTagValue}
+        ::= { zxr10IsisV6PrefixPriorityTable 1 } 
+
+Zxr10IsisV6PrefixPriorityEntry ::=
+        SEQUENCE {
+            zxr10IsisV6PrefixPriorityProcessId          
+                Unsigned32, 
+            zxr10IsisV6PrefixPriorityLevel
+                Unsigned32,
+            zxr10IsisV6PrefixPriorityPriority
+                Unsigned32,
+            zxr10IsisV6PrefixPriorityAcl
+               Unsigned32,
+            zxr10IsisV6PrefixPriorityAclName
+               DisplayString,
+            zxr10IsisV6PrefixPriorityTag
+               Unsigned32,
+            zxr10IsisV6PrefixPriorityTagValue
+               Unsigned32
+        }
+
+ zxr10IsisV6PrefixPriorityProcessId OBJECT-TYPE
+        SYNTAX      Unsigned32(0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process id."
+        ::= { zxr10IsisV6PrefixPriorityEntry 1 }
+
+zxr10IsisV6PrefixPriorityLevel  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisV6PrefixPriorityEntry 2 } 
+        
+zxr10IsisV6PrefixPriorityPriority OBJECT-TYPE
+        SYNTAX      Unsigned32(0..3)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The priority of ISIS prefix priority."
+        ::= { zxr10IsisV6PrefixPriorityEntry 3 }
+        
+zxr10IsisV6PrefixPriorityAcl  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The flag of ISIS IPv6 prefix priority acl-list."
+        ::= { zxr10IsisV6PrefixPriorityEntry 4 } 
+
+zxr10IsisV6PrefixPriorityAclName  OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(0..31)) 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The name of ISIS IPv6 prefix priority acl-list."
+        ::= { zxr10IsisV6PrefixPriorityEntry 5 }
+
+zxr10IsisV6PrefixPriorityTag  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The flag of ISIS IPv6 prefix priority tag."
+        ::= { zxr10IsisV6PrefixPriorityEntry 6 }   
+        
+zxr10IsisV6PrefixPriorityTagValue  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The number of ISIS IPv6 prefix priority tag."
+        ::= { zxr10IsisV6PrefixPriorityEntry 7 }  
+--isis ipv6 prefix-priority table end
+
+
+
+-- isis ipv6 fast-reroute table
+zxr10IsisV6FrrTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisV6FrrEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS IPv6 fast reroute."
+        ::= { zxr10IsisInstanceMIB  33} 
+
+zxr10IsisV6FrrEntry OBJECT-TYPE
+        SYNTAX  Zxr10IsisV6FrrEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS IPv6 fast reroute."
+        INDEX  {zxr10IsisV6FrrProcessId}
+        ::= { zxr10IsisV6FrrTable 1 }
+
+Zxr10IsisV6FrrEntry ::=
+        SEQUENCE {
+            zxr10IsisV6FrrProcessId          
+                Unsigned32, 
+            zxr10IsisV6FrrFrrEnable
+                Unsigned32
+        }
+
+zxr10IsisV6FrrProcessId  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process id."
+        ::= { zxr10IsisV6FrrEntry 1 }  
+        
+zxr10IsisV6FrrFrrEnable  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The flag of ISIS IPv6 fast reroute."
+        ::= { zxr10IsisV6FrrEntry 2 }
+-- isis ipv6 fast-reroute table
+
+
+
+--isis show table
+zxr10IsisShowMIB OBJECT IDENTIFIER ::= { zxr10IsisInstanceMIB 34 } 
+
+-- show isis adjacency table
+zxr10IsisShowIsisAdjTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisShowIsisAdjEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to show ISIS adjacency."
+        ::= { zxr10IsisShowMIB  1} 
+
+zxr10IsisShowIsisAdjEntry OBJECT-TYPE
+        SYNTAX  Zxr10IsisShowIsisAdjEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to show ISIS adjacency."
+        INDEX  {zxr10IsisShowIsisAdjProcessId,
+                zxr10IsisShowIsisAdjIntfName,
+                zxr10IsisShowIsisAdjLevel,
+                zxr10IsisShowIsisAdjSystemId,
+                zxr10IsisShowIsisAdjSnpaAddr}
+        ::= {zxr10IsisShowIsisAdjTable  1 }   
+
+Zxr10IsisShowIsisAdjEntry ::=
+        SEQUENCE {
+            zxr10IsisShowIsisAdjProcessId
+                Unsigned32, 
+            zxr10IsisShowIsisAdjIntfName
+                DisplayString,
+            zxr10IsisShowIsisAdjLevel
+                Unsigned32,
+            zxr10IsisShowIsisAdjSystemId
+                MacAddress,
+            zxr10IsisShowIsisAdjSnpaAddr
+                DisplayString,
+            zxr10IsisShowIsisAdjState
+                Unsigned32,
+            zxr10IsisShowIsisAdjHoldTime
+                Unsigned32,
+            zxr10IsisShowIsisAdjPriority
+                Unsigned32,
+            zxr10IsisShowIsisAdjMtFlag
+                Unsigned32
+        } 
+
+zxr10IsisShowIsisAdjProcessId  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process id."
+        ::= { zxr10IsisShowIsisAdjEntry 1 }
+
+zxr10IsisShowIsisAdjIntfName  OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The interface name of ISIS adjacency."
+        ::= { zxr10IsisShowIsisAdjEntry 2 }
+
+zxr10IsisShowIsisAdjLevel  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisShowIsisAdjEntry 3 }
+
+zxr10IsisShowIsisAdjSystemId  OBJECT-TYPE
+        SYNTAX      MacAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The system Id of ISIS adjacency."
+        ::= { zxr10IsisShowIsisAdjEntry 4 } 
+        
+zxr10IsisShowIsisAdjSnpaAddr  OBJECT-TYPE
+        SYNTAX     DisplayString (SIZE(0..255)) 
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The SNPA of ISIS adjacency."
+        ::= { zxr10IsisShowIsisAdjEntry 5} 
+
+zxr10IsisShowIsisAdjState  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..255)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "State of ISIS adjacency."
+        ::= { zxr10IsisShowIsisAdjEntry 6 }
+
+zxr10IsisShowIsisAdjHoldTime  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Hold-time of ISIS adjacency."
+        ::= { zxr10IsisShowIsisAdjEntry 7 }
+
+zxr10IsisShowIsisAdjPriority  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..127)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The priority of ISIS adjacency."
+        ::= { zxr10IsisShowIsisAdjEntry 8 } 
+        
+zxr10IsisShowIsisAdjMtFlag  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..1)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The multi-toplogy flag of ISIS adjacency."
+        ::= { zxr10IsisShowIsisAdjEntry 9 }
+        
+-- show isis adjacency table end
+
+
+
+-- show isis circuit table
+zxr10IsisShowIsisCircuitTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisShowIsisCircuitEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to show ISIS circuit."
+        ::= { zxr10IsisShowMIB  2} 
+
+zxr10IsisShowIsisCircuitEntry OBJECT-TYPE
+        SYNTAX  Zxr10IsisShowIsisCircuitEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to show ISIS circuit."
+        INDEX  {zxr10IsisShowIsisCircuitProcessId,
+                zxr10IsisShowIsisCircuitIntfName}
+        ::= {zxr10IsisShowIsisCircuitTable  1 }   
+
+Zxr10IsisShowIsisCircuitEntry ::=
+        SEQUENCE {
+            zxr10IsisShowIsisCircuitProcessId
+                Unsigned32, 
+            zxr10IsisShowIsisCircuitIntfName
+                DisplayString,
+            zxr10IsisShowIsisCircuitType
+                Unsigned32,
+            zxr10IsisShowIsisCircuitState
+                DisplayString,
+            zxr10IsisShowIsisCircuitCircId
+                Unsigned32,
+            zxr10IsisShowIsisCircuitL1Dr
+                DisplayString,
+            zxr10IsisShowIsisCircuitL2Dr
+                DisplayString,
+            zxr10IsisShowIsisCircuitL1Priority
+                Unsigned32,
+            zxr10IsisShowIsisCircuitL2Priority
+                Unsigned32
+       }
+
+zxr10IsisShowIsisCircuitProcessId  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS process id."
+        ::= { zxr10IsisShowIsisCircuitEntry 1 } 
+        
+zxr10IsisShowIsisCircuitIntfName  OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisShowIsisCircuitEntry 2 }
+
+zxr10IsisShowIsisCircuitType  OBJECT-TYPE
+        SYNTAX      Unsigned32(1..3)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Circuit's level."
+        ::= { zxr10IsisShowIsisCircuitEntry 3 }  
+
+zxr10IsisShowIsisCircuitState  OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(0..255))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "State of the ISIS circuit."
+        ::= { zxr10IsisShowIsisCircuitEntry 4 } 
+        
+zxr10IsisShowIsisCircuitCircId  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..255)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Circuit id of the ISIS circuit."
+        ::= { zxr10IsisShowIsisCircuitEntry 5 }
+
+zxr10IsisShowIsisCircuitL1Dr  OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(0..255))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The flag of level-1 designated router of the ISIS circuit."
+        ::= { zxr10IsisShowIsisCircuitEntry 6 }
+
+zxr10IsisShowIsisCircuitL2Dr  OBJECT-TYPE
+        SYNTAX      DisplayString (SIZE(0..255))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The flag of level-2 designated router of the ISIS circuit."
+        ::= { zxr10IsisShowIsisCircuitEntry 7 }
+        
+zxr10IsisShowIsisCircuitL1Priority  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..127)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Priority of the ISIS level-1 circuit."
+        ::= { zxr10IsisShowIsisCircuitEntry 8 }     
+        
+zxr10IsisShowIsisCircuitL2Priority  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..127)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Priority of the ISIS level-2 circuit."
+        ::= { zxr10IsisShowIsisCircuitEntry 9 }
+---- show isis circuit table end
+-- isis ipv4 distance table start 
+
+-- isis ipV4 distance table
+zxr10IsisV4DistTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisV4DistEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS IPv4 distance instance."
+        ::= { zxr10IsisInstanceMIB 35 }
+
+zxr10IsisV4DistEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisV4DistEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS IPv4 distance instance."
+        INDEX  { zxr10IsisV4DistProcessId,zxr10IsisV4DistPrefixListName }
+        ::= { zxr10IsisV4DistTable 1 }
+            
+Zxr10IsisV4DistEntry ::=
+        SEQUENCE {
+            zxr10IsisV4DistProcessId
+                Unsigned32,
+            zxr10IsisV4DistPrefixListName
+                DisplayString,
+            zxr10IsisV4DistDistance
+                Unsigned32
+        }
+
+zxr10IsisV4DistProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisV4DistEntry 1 }
+
+zxr10IsisV4DistPrefixListName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Prefix list name."
+        ::= { zxr10IsisV4DistEntry 2 }
+
+zxr10IsisV4DistDistance OBJECT-TYPE
+        SYNTAX Unsigned32 (1..255)
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "ISIS IPv4 distance value."
+        ::= { zxr10IsisV4DistEntry 3 }
+--isis ipV4 distance table end
+--isis ipv6 distance table
+zxr10IsisV6DistTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisV6DistEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS IPv6 distance instance."
+        ::= { zxr10IsisInstanceMIB 36 }
+
+zxr10IsisV6DistEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisV6DistEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS IPv6 distance instance."
+        INDEX  { zxr10IsisV6DistProcessId,zxr10IsisV6DistPrefixListName }
+        ::= { zxr10IsisV6DistTable 1 }
+            
+Zxr10IsisV6DistEntry ::=
+        SEQUENCE {
+            zxr10IsisV6DistProcessId
+                Unsigned32,
+            zxr10IsisV6DistPrefixListName
+                DisplayString,
+            zxr10IsisV6DistDistance
+                Unsigned32
+        }
+
+zxr10IsisV6DistProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisV6DistEntry 1 }
+
+zxr10IsisV6DistPrefixListName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Prefix list name."
+        ::= { zxr10IsisV6DistEntry 2 }
+
+zxr10IsisV6DistDistance OBJECT-TYPE
+        SYNTAX Unsigned32 (1..255)
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "ISIS IPv4 distance value."
+        ::= { zxr10IsisV6DistEntry 3 }
+--isis ipv6 distance table end
+-- isis ipV4 redis limit table
+zxr10IsisV4RedisLimitTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisV4RedisLimitEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS IPv4 redistibute limit instance."
+        ::= { zxr10IsisInstanceMIB 37 }
+
+zxr10IsisV4RedisLimitEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisV4RedisLimitEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS IPv4 redistibute limit instance."
+        INDEX  { zxr10IsisV4RedisLimitProcessId,zxr10IsisV4RedisLimitLevel }
+        ::= { zxr10IsisV4RedisLimitTable 1 }
+            
+Zxr10IsisV4RedisLimitEntry ::=
+        SEQUENCE {
+            zxr10IsisV4RedisLimitProcessId
+                Unsigned32,
+            zxr10IsisV4RedisLimitLevel
+                Unsigned32,
+            zxr10IsisV4RedisLimitValue
+                Unsigned32
+        }
+
+zxr10IsisV4RedisLimitProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisV4RedisLimitEntry 1 }
+
+zxr10IsisV4RedisLimitLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisV4RedisLimitEntry 2 }
+
+zxr10IsisV4RedisLimitValue OBJECT-TYPE
+        SYNTAX Unsigned32 (1..1000000)
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "ISIS IPv4 redistribute limit value."
+        ::= { zxr10IsisV4RedisLimitEntry 3 }
+--isis ipV4 redis  limit table end
+
+-- isis ipV6 redis limit table
+zxr10IsisV6RedisLimitTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisV6RedisLimitEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS IPv6 redistibute limit instance."
+        ::= { zxr10IsisInstanceMIB 38 }
+
+zxr10IsisV6RedisLimitEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisV6RedisLimitEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS IPv6 redistibute limit instance."
+        INDEX  { zxr10IsisV6RedisLimitProcessId,zxr10IsisV6RedisLimitLevel }
+        ::= { zxr10IsisV6RedisLimitTable 1 }
+            
+Zxr10IsisV6RedisLimitEntry ::=
+        SEQUENCE {
+            zxr10IsisV6RedisLimitProcessId
+                Unsigned32,
+            zxr10IsisV6RedisLimitLevel
+                Unsigned32,
+            zxr10IsisV6RedisLimitValue
+                Unsigned32
+        }
+
+zxr10IsisV6RedisLimitProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisV6RedisLimitEntry 1 }
+
+zxr10IsisV6RedisLimitLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisV6RedisLimitEntry 2 }
+
+zxr10IsisV6RedisLimitValue OBJECT-TYPE
+        SYNTAX Unsigned32 (1..1000000)
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "ISIS IPv6 redistribute limit value."
+        ::= { zxr10IsisV6RedisLimitEntry 3 }
+--isis ipV6 redis  limit table end
+
+--ipv4 distribute-list table
+zxr10IsisDistributeTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisDistributeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to IPv4 distribution instance."
+        ::= { zxr10IsisInstanceMIB 39 }
+
+zxr10IsisDistributeEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisDistributeEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to IPv4 distribution instance."
+        INDEX  { zxr10IsisDistributeProcessId,
+                 zxr10IsisDistributeDirection }
+        ::= { zxr10IsisDistributeTable 1 }
+            
+Zxr10IsisDistributeEntry ::=
+        SEQUENCE {
+            zxr10IsisDistributeProcessId
+                Unsigned32,
+            zxr10IsisDistributeDirection
+                Unsigned32,
+            zxr10IsisDistributeRoutemapName
+                DisplayString
+        }
+
+zxr10IsisDistributeProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisDistributeEntry 1 }
+
+zxr10IsisDistributeDirection OBJECT-TYPE
+        SYNTAX Unsigned32 (0..255)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Direction of IPv4  distribution."
+        ::= { zxr10IsisDistributeEntry 2 }
+
+zxr10IsisDistributeRoutemapName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..32))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Routemap name used in IPv4 distribution."
+        ::= { zxr10IsisDistributeEntry 3 }
+--ipv4 distribute-list table end
+
+
+-- isis remote lfa table
+zxr10IsisRemoteLfaTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisRemoteLfaEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS remote lfa instance."
+        ::= { zxr10IsisInstanceMIB 40 }
+
+zxr10IsisRemoteLfaEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisRemoteLfaEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS remote lfa instance."
+        INDEX  { zxr10IsisRemoteLfaProcessId,zxr10IsisRemoteLfaLevel }
+        ::= { zxr10IsisRemoteLfaTable 1 }
+            
+Zxr10IsisRemoteLfaEntry ::=
+        SEQUENCE {
+            zxr10IsisRemoteLfaProcessId
+                Unsigned32,
+            zxr10IsisRemoteLfaLevel
+                Unsigned32
+        }
+
+zxr10IsisRemoteLfaProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisRemoteLfaEntry 1 }
+
+zxr10IsisRemoteLfaLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisRemoteLfaEntry 2 }
+
+--isis remote lfa table end
+
+-- isis fast-reroute priority table start
+zxr10IsisFrrPriorityTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisFrrPriorityEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS fast-reroute priority."
+        ::= { zxr10IsisInstanceMIB 41 }
+
+zxr10IsisFrrPriorityEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisFrrPriorityEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS fast-reroute priority."
+        INDEX  {zxr10IsisFrrPriorityProcessId}
+        ::= { zxr10IsisFrrPriorityTable 1 }
+            
+Zxr10IsisFrrPriorityEntry ::=
+        SEQUENCE {
+            zxr10IsisFrrPriorityProcessId
+                Unsigned32,
+            zxr10IsisFrrPriorityLfa
+                Unsigned32,
+            zxr10IsisFrrPriorityRlfa
+                Unsigned32,
+            zxr10IsisFrrPriorityStaticRlfa
+                Unsigned32
+        }
+
+zxr10IsisFrrPriorityProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisFrrPriorityEntry 1 }
+
+zxr10IsisFrrPriorityLfa OBJECT-TYPE
+        SYNTAX Unsigned32 (1..255)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "LFA is a type of fast-reroute. Set LFA priority."
+        DEFVAL  {115}
+        ::= { zxr10IsisFrrPriorityEntry 2 }
+
+zxr10IsisFrrPriorityRlfa OBJECT-TYPE
+        SYNTAX Unsigned32 (1..255)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Remote-lfa is a type of fast-reroute. Set Remote-lfa priority."
+        DEFVAL  {115}
+        ::= { zxr10IsisFrrPriorityEntry 3 }
+
+zxr10IsisFrrPriorityStaticRlfa OBJECT-TYPE
+        SYNTAX Unsigned32 (1..255)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Static remote-lfa is a type of fast-reroute. Set static remote-lfa priority."
+        DEFVAL  {115}
+        ::= { zxr10IsisFrrPriorityEntry 4 }
+--isis fast-reroute priority table end
+
+-- isis remote lfa max metric table
+zxr10IsisRlfaMetricTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisRlfaMetricEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS remote lfa max metric instance."
+        ::= { zxr10IsisInstanceMIB 42 }
+
+zxr10IsisRlfaMetricEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisRlfaMetricEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS remote lfa max metric instance."
+        INDEX  { zxr10IsisRlfaMetricProcessId,zxr10IsisRlfaMetricLevel }
+        ::= { zxr10IsisRlfaMetricTable 1 }
+            
+Zxr10IsisRlfaMetricEntry ::=
+        SEQUENCE {
+            zxr10IsisRlfaMetricProcessId
+                Unsigned32,
+            zxr10IsisRlfaMetricLevel
+                Unsigned32,
+            zxr10IsisRlfaMetricValue
+                Unsigned32
+        }
+
+zxr10IsisRlfaMetricProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisRlfaMetricEntry 1 }
+
+zxr10IsisRlfaMetricLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisRlfaMetricEntry 2 }
+
+zxr10IsisRlfaMetricValue OBJECT-TYPE
+        SYNTAX Unsigned32 (1..4261412864)
+        MAX-ACCESS  read-only
+        STATUS  current        
+        DESCRIPTION
+            "ISIS remote lfa max metric value."
+        ::= { zxr10IsisRlfaMetricEntry 3 }
+        
+--isis remote lfa max metric table end
+-- isis router-id table
+zxr10IsisRouterIDTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisRouterIDEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS router ID instance."
+        ::= { zxr10IsisInstanceMIB 43 }
+
+zxr10IsisRouterIDEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisRouterIDEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS router ID instance."
+        INDEX  { zxr10IsisRouterIDProcessId }
+        ::= { zxr10IsisRouterIDTable 1 }
+            
+Zxr10IsisRouterIDEntry ::=
+        SEQUENCE {
+            zxr10IsisRouterIDProcessId
+                Unsigned32,
+            zxr10IsisRouterIDValue
+                IpAddress
+        }
+
+zxr10IsisRouterIDProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisRouterIDEntry 1 }
+
+zxr10IsisRouterIDValue OBJECT-TYPE
+        SYNTAX IpAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "ISIS router ID value."
+        ::= { zxr10IsisRouterIDEntry 2 }
+
+--isis router id table end
+--remote-lfa-block table
+zxr10IsisRLFABlockTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisRLFABlockEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to interface remote-lfa block."
+        ::= { zxr10IsisIntfMIB 20 }
+
+zxr10IsisRLFABlockEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisRLFABlockEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to interface remote-lfa block."
+        INDEX  { zxr10IsisRLFABlockProcessId,
+                 zxr10IsisRLFABlockIntfName,
+                 zxr10IsisRLFABlockLevel}
+        ::= { zxr10IsisRLFABlockTable 1 }
+            
+Zxr10IsisRLFABlockEntry ::=
+        SEQUENCE {
+            zxr10IsisRLFABlockProcessId
+                Unsigned32,
+            zxr10IsisRLFABlockIntfName
+                DisplayString,
+            zxr10IsisRLFABlockLevel
+                Unsigned32
+        }
+
+zxr10IsisRLFABlockProcessId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisRLFABlockEntry 1 }
+
+zxr10IsisRLFABlockIntfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "ISIS interface name."
+        ::= { zxr10IsisRLFABlockEntry 2 }
+
+zxr10IsisRLFABlockLevel OBJECT-TYPE
+        SYNTAX Unsigned32 (0..2)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level(s) will be effected on."
+        ::= { zxr10IsisRLFABlockEntry 3 }
+-- remote-lfa-block table end
+-- isis default-info learning ignore table
+zxr10IsisDfltLearnIgnoreTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IsisDfltLearnIgnoreEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to ISIS router ID instance."
+        ::= { zxr10IsisInstanceMIB 44 }
+
+zxr10IsisDfltLearnIgnoreEntry OBJECT-TYPE
+        SYNTAX Zxr10IsisDfltLearnIgnoreEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry to ISIS router ID instance."
+        INDEX  { zxr10IsisRouterIDProcessId,zxr10IsisDfltLearnIgnoreState }
+        ::= { zxr10IsisDfltLearnIgnoreTable 1 }
+            
+Zxr10IsisDfltLearnIgnoreEntry ::=
+        SEQUENCE {
+            zxr10IsisDfltLearnIgnoreProcId
+                Unsigned32,
+            zxr10IsisDfltLearnIgnoreState
+                Unsigned32,
+            zxr10IsisDfltLearnIgnoreLev
+                Unsigned32
+        }
+
+zxr10IsisDfltLearnIgnoreProcId OBJECT-TYPE
+        SYNTAX Unsigned32 (0..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "ISIS process Id."
+        ::= { zxr10IsisDfltLearnIgnoreEntry 1 }
+
+zxr10IsisDfltLearnIgnoreState OBJECT-TYPE
+        SYNTAX Unsigned32 (0..1)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The state of ignoring default route to learn."
+        ::= { zxr10IsisDfltLearnIgnoreEntry 2 }
+
+zxr10IsisDfltLearnIgnoreLev OBJECT-TYPE
+        SYNTAX Unsigned32 (1..3)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Level will be effected on."
+        ::= { zxr10IsisDfltLearnIgnoreEntry 3 }
+
+--default-info learning ignore
+
+END

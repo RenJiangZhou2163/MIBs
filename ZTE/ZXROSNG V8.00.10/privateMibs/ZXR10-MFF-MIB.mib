@@ -1,0 +1,272 @@
+--  ************************************************
+--  $Id: ZXR10-MFF-MIB.mib 2012-02-08  $
+--
+--  ZXR10-MFF-MIB.mib: ZXR10 MFF configuration MIB file
+--
+--  Feb. 2012, wangqizhen 10087663
+--
+--  Copyright(c) 2012 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+
+   ZXR10-MFF-MIB DEFINITIONS ::= BEGIN
+   IMPORTS
+          OBJECT-TYPE,
+          MODULE-IDENTITY,                    
+          IpAddress                  
+                    FROM SNMPv2-SMI
+          MacAddress
+                    FROM SNMPv2-TC
+          TimeTicks
+                    FROM RFC1155-SMI
+         zxr10RosngMIB                        
+                    FROM ZXR10-SMI;
+  
+    zxrosngMffModules MODULE-IDENTITY
+        LAST-UPDATED "201404240000Z"
+        ORGANIZATION "ZTE Corporation"
+        CONTACT-INFO
+            "ZTE Corporation 
+             Nanjing Institute of ZTE Corporation
+         
+             No.68 Zijinghua Rd. Yuhuatai District, Nanjing, China
+         
+             Tel: +86-25-52870000"
+
+        DESCRIPTION
+            "ZXROSNG11R1 MFF config MIB"
+        REVISION "201404240000Z"  
+        DESCRIPTION
+            "Revise descriptions of zxMffNetworkPortMode and zxMffGwVlanId" 
+        REVISION "201202080000Z"  
+        DESCRIPTION
+            "This mib defines management information objects for MFF" 
+        ::= { zxr10RosngMIB 2002 } 
+        
+     zxMffMIBObjects    OBJECT IDENTIFIER ::= { zxrosngMffModules 1 } 
+   
+    DisplayString ::= OCTET STRING   
+    --  This data type is used to model textual information taken
+    --  from the NVT ASCII character set.  By convention, objects
+    --  with this syntax are declared as having
+    --  SIZE (0..255)
+
+    -- (1)the zxMffVlanConfigTable
+
+    zxMffVlanConfigTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF ZxMffVlanConfigEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing vlan information."
+              ::= { zxMffMIBObjects 1 }
+
+     zxMffVlanConfigEntry OBJECT-TYPE
+              SYNTAX  ZxMffVlanConfigEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information about vlan."
+              INDEX   { 
+                            zxMffVlanIndex
+                      }
+              ::= { zxMffVlanConfigTable 1 }
+
+     ZxMffVlanConfigEntry ::=
+              SEQUENCE {
+                  zxMffVlanIndex
+                      INTEGER,
+                  zxMffVlanEnable
+                      INTEGER,
+                  zxMffVlanMode
+                      INTEGER,
+                  zxMffVlanDltGateway
+                      IpAddress,
+                  zxMffVlanGatewayDetect
+                      INTEGER,    
+                  zxMffVlanDetectTime                  
+                      TimeTicks                      
+              }
+
+    zxMffVlanIndex OBJECT-TYPE
+              SYNTAX  INTEGER (1..4094)
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "VLANID."
+              ::= { zxMffVlanConfigEntry 1 }
+              
+     zxMffVlanEnable OBJECT-TYPE
+              SYNTAX  INTEGER 
+                         {
+                            disable (0),
+                            enable  (1)
+                         }
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The mff mode enable or disable."
+              ::= { zxMffVlanConfigEntry 2 }
+              
+     zxMffVlanMode OBJECT-TYPE
+              SYNTAX  INTEGER 
+                        {
+                            invlid-mode (0),
+                            auto-mode   (1),
+                            manual-mode (2)
+                      } 
+
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "The mff mode."
+              ::= { zxMffVlanConfigEntry 3 }
+
+     zxMffVlanDltGateway OBJECT-TYPE
+              SYNTAX  IpAddress
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "MffVlanDltGateway."
+              ::= { zxMffVlanConfigEntry 4 }
+
+    zxMffVlanGatewayDetect OBJECT-TYPE
+              SYNTAX  INTEGER 
+                         {
+                            disable (0),
+                            enable  (1)
+                         }
+               MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "MffVlanGatewayDetect."
+              ::= { zxMffVlanConfigEntry 5 }
+              
+    zxMffVlanDetectTime OBJECT-TYPE
+              SYNTAX  TimeTicks
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "mffVlanDetectTime"
+              ::= { zxMffVlanConfigEntry 6 }
+              
+     -- (2)the zxMffNetworkPortTable table
+
+    zxMffNetworkPortTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF ZxMffNetworkPortEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing NetworkPort information."
+              ::= { zxMffMIBObjects 2 }
+
+     zxMffNetworkPortEntry OBJECT-TYPE
+              SYNTAX  ZxMffNetworkPortEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information about NetworkPort."
+              INDEX   { 
+                            zxMffNetworkPortIndex
+                      }
+              ::= { zxMffNetworkPortTable 1 }
+
+     ZxMffNetworkPortEntry ::=
+              SEQUENCE {
+                  zxMffNetworkPortIndex
+                      INTEGER,
+                  zxMffNetworkPortName
+                      DisplayString,
+                  zxMffNetworkPortMode
+                      INTEGER
+              }
+
+         zxMffNetworkPortIndex OBJECT-TYPE
+              SYNTAX  INTEGER 
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "MffNetworkPortIndex."
+              ::= { zxMffNetworkPortEntry 1 }
+              
+     zxMffNetworkPortName OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE(1..31))
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "NetworkPortName."
+              ::= { zxMffNetworkPortEntry 2 }
+              
+     zxMffNetworkPortMode OBJECT-TYPE
+              SYNTAX  INTEGER 
+                        {
+                            user-mode     (0),
+                            network-mode  (1)
+                      } 
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "NetworkPortMode,just display networkport."
+              ::= { zxMffNetworkPortEntry 3 }
+              
+    -- (3)the zxMffGatewayTabble 
+
+    zxMffGatewayTable OBJECT-TYPE
+              SYNTAX  SEQUENCE OF ZxMffGatewayEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "A table containing MffGateway information."
+              ::= { zxMffMIBObjects 3 }
+
+     zxMffGatewayEntry OBJECT-TYPE
+              SYNTAX  ZxMffGatewayEntry
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "Information about MffGateway."
+              INDEX   { 
+                            zxMffGwVlanId,
+                          zxMffGwIpAddr
+                      }
+              ::= { zxMffGatewayTable 1 }
+
+     ZxMffGatewayEntry ::=
+              SEQUENCE {
+                  zxMffGwVlanId
+                      INTEGER,
+                  zxMffGwIpAddr
+                      IpAddress,
+                  zxMffGwMacAddr
+                      MacAddress
+              }
+
+         zxMffGwVlanId OBJECT-TYPE
+              SYNTAX  INTEGER 
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The VlANID of Mff Gateway ."
+              ::= { zxMffGatewayEntry 1 }
+              
+     zxMffGwIpAddr OBJECT-TYPE
+              SYNTAX  IpAddress
+              MAX-ACCESS  not-accessible
+              STATUS  current
+              DESCRIPTION
+                      "The MffGwIpAddr."
+              ::= { zxMffGatewayEntry 2 }
+              
+     zxMffGwMacAddr OBJECT-TYPE
+              SYNTAX  MacAddress
+              MAX-ACCESS  read-only
+              STATUS  current
+              DESCRIPTION
+                      "MffGwMacAddr"
+              ::= { zxMffGatewayEntry 3 }
+
+              
+   
+
+     END

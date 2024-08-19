@@ -1,9 +1,9 @@
 -- ================================================================
--- Copyright (C) 2019 by HUAWEI TECHNOLOGIES. All rights reserved
+-- Copyright (C) 2021 by HUAWEI TECHNOLOGIES. All rights reserved
 --
 -- Description:The mib file is for management of VRRP extension
 -- Reference:
--- Version: V2.16
+-- Version: V2.17
 -- History:
 -- 2006.6.20, publish
 -- ================================================================
@@ -20,7 +20,7 @@
                      FROM SNMPv2-TC
                    InterfaceIndex, ifIndex
                      FROM IF-MIB
-                   VrId, vrrpOperState, vrrpOperMasterIpAddr, vrrpOperPrimaryIpAddr
+                   VrId, vrrpOperState, vrrpOperMasterIpAddr, vrrpOperPrimaryIpAddr, vrrpOperVrId
                      FROM VRRP-MIB
                    EnabledStatus
                      FROM P-BRIDGE-MIB  
@@ -35,7 +35,7 @@
                      
                     
     hwVrrpExt MODULE-IDENTITY
-        LAST-UPDATED "201905290000Z"        
+        LAST-UPDATED "202102010000Z"        
         ORGANIZATION
             "Huawei Technologies Co.,Ltd."
         CONTACT-INFO
@@ -49,7 +49,11 @@
         DESCRIPTION
             "It supplies for VRRP tracking function."
 
-        REVISION "201905290000Z"
+      REVISION "202102010000Z"
+            DESCRIPTION 
+               "Add the hwVrrpExtTrapResLimit trap and hwVrrp6ExtTrapResLimit trap." 
+
+      REVISION "201905290000Z"
             DESCRIPTION 
                "Add the hwVrrpExtTrapVirtualIPConflict trap and hwVrrpExtTrapVirtualIPConflictResume trap."
 
@@ -1007,6 +1011,32 @@ But for the VRRP v3 version,this time value is truncated to 40950 milliseconds w
 			   the VRRP virtual IP address conflict is rectified."                          
                ::= { hwVrrpExtNotifications 6 }
 
+	        hwVrrpExtTrapResLimit  NOTIFICATION-TYPE  
+            OBJECTS  {
+                         ifIndex,
+                         ifName,
+                         vrrpOperVrId
+                         
+			              
+                     }
+            STATUS       current
+            DESCRIPTION                                                                                                                                  
+               "The hwVrrpExtTrapResLimit  trap indicates that
+			   The board resources used for VRRP negotiation exceeded the threshold."                          
+               ::= { hwVrrpExtNotifications 7 }
+
+        hwVrrp6ExtTrapResLimit  NOTIFICATION-TYPE  
+            OBJECTS  {
+                         ifIndex,
+                         ifName,
+                         vrrpOperVrId
+                     }
+            STATUS       current
+            DESCRIPTION                                                                                                                                  
+               "The hwVrrp6ExtTrapResLimit  trap indicates that
+			   The board resources used for VRRP6 negotiation exceeded the threshold."                          
+               ::= { hwVrrpExtNotifications 8 }
+
                   
             vrrpExtConformance     OBJECT IDENTIFIER ::= { hwVrrpExt 3 }   
                         
@@ -1114,7 +1144,7 @@ But for the VRRP v3 version,this time value is truncated to 40950 milliseconds w
                                 "The VrrpStatExt attributes."
                         ::= { hwvrrpExtGroups 11 }   
        hwVrrpExtNotificationGroup NOTIFICATION-GROUP
-                        NOTIFICATIONS {hwVrrpExtTrapMasterDown, hwVrrpExtTrapNonMaster, hwVrrpExtTrapExpectStateChange, hwVrrpExtTrapExpectStateResume, hwVrrpExtTrapVirtualIPConflict, hwVrrpExtTrapVirtualIPConflictResume}
+                        NOTIFICATIONS {hwVrrpExtTrapMasterDown, hwVrrpExtTrapNonMaster, hwVrrpExtTrapExpectStateChange, hwVrrpExtTrapExpectStateResume, hwVrrpExtTrapVirtualIPConflict, hwVrrpExtTrapVirtualIPConflictResume, hwVrrpExtTrapResLimit, hwVrrp6ExtTrapResLimit}
                         STATUS current
                         DESCRIPTION
                         "The VRRP MIB Notification Group."

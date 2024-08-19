@@ -1,0 +1,1213 @@
+----------------------------------------------------------------------------------------------------
+-- $HeadURL: http://svn.wiener-d.com/src/enet/trunk/mibs/WIENER-CRATE-MIB.txt $
+-- $LastChangedDate: 2007-04-23 10:51:38 +0200 (Mo, 23 Apr 2007) $                                                                            
+-- $LastChangedRevision: 195 $                                                                        
+-- $LastChangedBy: koester $                                                                              
+-- Copyright \ufffd 2005-2007 W-IE-NE-R Plein & Baus GmbH, Burscheid, Germany                            
+----------------------------------------------------------------------------------------------------
+WIENER-CRATE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE, NOTIFICATION-TYPE, MODULE-IDENTITY,
+    Integer32, Opaque, enterprises, Counter32
+        FROM SNMPv2-SMI
+
+    TEXTUAL-CONVENTION, DisplayString, TruthValue
+	FROM SNMPv2-TC
+	
+--    Float
+--	    FROM NET-SNMP-TC
+--    Float 
+--	    FROM UCD-SNMP-MIB
+	;
+
+
+--
+-- Define the Float Textual Convention
+--   This definition was written by David Perkins.
+--
+
+Float ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "A single precision floating-point number.  The semantics
+         and encoding are identical for type 'single' defined in
+         IEEE Standard for Binary Floating-Point,
+         ANSI/IEEE Std 754-1985.
+         The value is restricted to the BER serialization of
+         the following ASN.1 type:
+             FLOATTYPE ::= [120] IMPLICIT FloatType
+         (note: the value 120 is the sum of '30'h and '48'h)
+         The BER serialization of the length for values of
+         this type must use the definite length, short
+         encoding form.
+
+         For example, the BER serialization of value 123
+         of type FLOATTYPE is '9f780442f60000'h.  (The tag
+         is '9f78'h; the length is '04'h; and the value is
+         '42f60000'h.) The BER serialization of value
+         '9f780442f60000'h of data type Opaque is
+         '44079f780442f60000'h. (The tag is '44'h; the length
+         is '07'h; and the value is '9f780442f60000'h."
+    SYNTAX Opaque (SIZE (7))
+
+
+
+wiener MODULE-IDENTITY
+
+
+    LAST-UPDATED "200703160000Z"
+    ORGANIZATION "WIENER Plein & Baus GmbH"
+    CONTACT-INFO "
+         postal:   WIENER Plein & Baus GmbH
+                   Mullersbaum 20
+                   D-51399 Burscheid
+                   Germany
+
+         email:    info@wiener-d.com
+
+        "
+    DESCRIPTION
+	"This revision introduces new OIDs for slew control:
+	  outputVoltageRiseRate and outputVoltageFallRate.
+	"
+
+    REVISION "200502010000Z"
+    DESCRIPTION
+	"This revision introduces new OIDs for group managment:
+      groupTable	  
+	"
+
+    REVISION "200406280000Z"
+    DESCRIPTION
+	"WIENER Crate MIB, actual Firmware: UEL6E 4.02.
+	 Initial Version.
+	"
+
+    ::= { enterprises 19947 }
+
+
+-------------------------------------------------------------------------------
+-- crate
+-------------------------------------------------------------------------------
+
+crate       OBJECT-TYPE
+    SYNTAX  Crate
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "SNMP control for electronic crates. A crate is a complete electronic system and 
+			consists of the mechanical rack, a power supply, a fan tray and a backplane.
+			All this things are necessary to provide an adequate housing for electronic
+			modules (e.g. VME CPU's)"
+    ::= { wiener 1 }
+
+
+Crate ::= SEQUENCE {
+        system
+            System,
+		input
+		    Input,
+		output
+		    Output,
+		sensor
+		    Sensor,
+    communication
+		    Communication,
+		powersupply
+		    Powersupply,
+		fantray
+		    Fantray,
+		rack
+		    Rack
+}
+
+system      OBJECT-TYPE
+    SYNTAX  System
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects which affect the complete crate"
+    ::= { crate 1 }
+
+
+input       OBJECT-TYPE 
+    SYNTAX  Input
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "All objects which are associated with the power input of the crate"
+    ::= { crate 2 }
+
+output      OBJECT-TYPE 
+    SYNTAX  Output
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "All objects which are associated with the power output of the crate"
+    ::= { crate 3 }
+
+sensor      OBJECT-TYPE 
+    SYNTAX  Sensor
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "All objects which are associated with temperature sensors in the crate"
+    ::= { crate 4 }
+
+communication OBJECT-TYPE 
+    SYNTAX  Communication
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "All objects which affect the remote control of the crate"
+    ::= { crate 5 }
+
+powersupply OBJECT-TYPE 
+    SYNTAX  Powersupply
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "All objects which are specific for the power supply of the crate"
+    ::= { crate 6 }
+
+fantray     OBJECT-TYPE 
+    SYNTAX  Fantray
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "All objects which are specific for the fan tray of the crate"
+    ::= { crate 7 }
+
+rack        OBJECT-TYPE 
+    SYNTAX  Rack
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "All objects which are specific for the crate (BIN) of the crate"
+    ::= { crate 8 }
+
+
+-------------------------------------------------------------------------------
+-- system
+-------------------------------------------------------------------------------
+System ::= SEQUENCE {
+        sysMainSwitch
+            INTEGER,
+		sysStatus
+		    BITS,
+		sysVmeSysReset
+		    INTEGER
+}
+
+sysMainSwitch OBJECT-TYPE
+    SYNTAX  INTEGER { OFF (0), ON (1) }
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "Read: An enumerated value which shows the current state of
+			 the crates main switch.
+             Write: Try to switch the complete crate ON or OFF.
+			 Only the values ON or OFF are allowed."
+    ::= { system 1 }
+
+sysStatus OBJECT-TYPE
+    SYNTAX  BITS {
+        mainOn (0) ,
+        mainInhibit (1) ,
+        localControlOnly (2) ,
+        inputFailure (3) ,
+        outputFailure (4) ,
+        fantrayFailure (5) ,
+        sensorFailure (6),
+        VmeSysfail (7),
+        plugAndPlayIncompatible (8)
+    }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A bit string which shows the status (health) of the complete crate.
+             If a bit is set (1), the explanation is satisfied
+                mainOn (0),					system is switched on, individual outputs may be controlled by their specific ON/INHIBIT
+                mainInhibit(1),				external (hardware-)inhibit of the complete system
+                localControlOnly (2),		local control only (CANBUS write access denied)
+                inputFailure (3),			any input failure (e.g. power fail)
+                outputFailure (4),			any output failure, details in outputTable
+                fantrayFailure (5),			fantray failure
+        		sensorFailure (6),     		temperature of the external sensors too high
+        		VmeSysfail(7),				VME SYSFAIL signal is active
+        		plugAndPlayIncompatible (8)	wrong power supply and rack connected
+        	"
+    ::= { system 2 }
+
+
+--        ERROR_BIN_CHECKSUM(?), 
+
+
+
+
+
+sysVmeSysReset OBJECT-TYPE
+    SYNTAX  INTEGER { TRIGGER (1) }
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "Read: Always 0.
+             Write: Trigger the generation of the VME SYSRESET signal.
+			 This signal will be active for a time of 200 ms"
+    ::= { system 3 }
+
+
+-------------------------------------------------------------------------------
+-- input
+-------------------------------------------------------------------------------
+-- reserved, possible entries:
+--   inputSetPfcVoltage
+--   inputMesPowerFail
+--   inputMesVoltage
+--   inputMesCurrent
+--   inputMesPower
+--   inputMesTemperature
+-------------------------------------------------------------------------------
+-- output
+-------------------------------------------------------------------------------
+Output ::= SEQUENCE {
+        outputNumber
+		    INTEGER,
+        outputTable
+            OutputTable
+        groupsNumber
+		    INTEGER,
+        groupsTable
+            GroupsTable
+
+--TotalPower
+
+}
+
+
+
+outputNumber OBJECT-TYPE
+    SYNTAX  INTEGER (0..255)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of output channels of the crate."
+    ::= { output 1 }
+
+outputTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF outputEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+           "A list of output entries."
+    ::= { output 2 }
+
+groupsNumber OBJECT-TYPE
+    SYNTAX  INTEGER (1..255)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of output groups of the crate."
+    ::= { output 3 }
+
+groupsTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF groupsEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+           "A list of output groups entries."
+    ::= { output 4 }
+
+outputEntry OBJECT-TYPE
+    SYNTAX  outputEntry
+    MAX-ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+            "A table row"
+    INDEX   { outputIndex }
+    ::= { outputTable 1 }
+
+OutputEntry ::=
+    SEQUENCE {
+        outputChannel
+            INTEGER,
+        outputName
+            DisplayString,
+        outputGroup
+            INTEGER,
+
+        outputStatus
+		    BITS,
+        outputMeasurementSenseVoltage
+		    Float,
+        outputMeasurementTerminalVoltage
+		    Float,
+        outputMeasurementCurrent
+		    Float,
+        outputMeasurementTemperature
+		    INTEGER,
+
+
+        outputSwitch
+		    INTEGER,
+        outputVoltage
+		    Float,
+        outputAdjustVoltage
+		    INTEGER,
+        outputCurrent
+		    Float,
+
+        outputVoltageRiseRate
+		    Float,
+        outputVoltageFallRate
+		    Float,
+
+        outputSupervisionBehavior
+            INTEGER,
+        outputSupervisionMinSenseVoltage
+		    Float,
+        outputSupervisionMaxSenseVoltage
+		    Float,
+        outputSupervisionMaxTerminalVoltage
+		    Float,
+        outputSupervisionMaxCurrent
+		    Float,
+        outputSupervisionMaxTemperature
+		    INTEGER,
+
+        outputConfigMaxSenseVoltage
+		    Float,
+        outputConfigMaxTerminalVoltage
+		    Float,
+        outputConfigMaxCurrent
+		    Float,
+        outputSupervisionMaxPower
+		    Float,
+
+
+
+    }
+
+
+outputIndex OBJECT-TYPE
+    SYNTAX  INTEGER { U0(1), U1(2), U2(3), U3(4), U4(5), U5(6), U6(7), U7(8), U8(9), U9(10), U10(11), U11(12) }
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A unique number for each power output channel. Its value
+            ranges between 1 and total number of output channels.
+			This value is equivalent to the output channel number at
+			the type label of the crate or power supply, but because the SMI
+			index starts at 1, index 1 corresponds to U0."
+    ::= { outputEntry 1 }
+
+outputName OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (1..4))
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A textual string containing a short name of the
+            output. If the crate is equipped with an alphanumeric
+			display, this string is shown to identify a output channel."
+    ::= { outputEntry 2 }
+
+outputGroup OBJECT-TYPE
+    SYNTAX  INTEGER (0..127)
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The group number associated with this channel"
+    ::= { outputEntry 3 }
+
+
+outputStatus OBJECT-TYPE
+    SYNTAX  BITS {
+        outputOn (0) ,
+        outputInhibit (1) ,
+        outputFailureMinSenseVoltage (2),
+        outputFailureMaxSenseVoltage (3),
+        outputFailureMaxTerminalVoltage (4),
+        outputFailureMaxCurrent (5),
+        outputFailureMaxTemperature (6),
+        outputFailureMaxPower (7),
+        -- reserved
+        outputFailureTimeout (9),
+   		outputCurrentLimited (10),
+   		outputRampUp (11),
+   		outputRampDown (12),
+    }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "A bit string which shows the status (health and operating conditions) of one output channel.
+             If a bit is set (1), the explanation is satisfied:
+                outputOn (0),							output channel is on
+                outputInhibit(1),						external (hardware-)inhibit of the output channel
+        		outputFailureMinSenseVoltage (2)		Supervision limit hurt: Sense voltage is too low
+        		outputFailureMaxSenseVoltage (3),		Supervision limit hurt: Sense voltage is too high
+        		outputFailureMaxTerminalVoltage (4),	Supervision limit hurt: Terminal voltage is too high
+        		outputFailureMaxCurrent (5),			Supervision limit hurt: Current is too high
+        		outputFailureMaxTemperature (6),		Supervision limit hurt: Heat sink temperature is too high
+        		outputFailureMaxPower (7),				Supervision limit hurt: Output power is too high
+                outputFailureTimeout (9),				Communication timeout between output channel and main control
+		   		outputCurrentLimited (10),				Current limiting is active (constant current mode)
+   				outputRampUp (11),						Output voltage is increasing (e.g. after switch on)
+   				outputRampDown (12),					Output voltage is decreasing (e.g. after switch off)
+
+        	"
+
+    ::= { outputEntry 4 }
+
+
+
+
+outputMeasurementSenseVoltage OBJECT-TYPE
+    SYNTAX  Float
+    UNITS   "V"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The measured voltage at the sense input lines."
+    ::= { outputEntry 5 }
+
+outputMeasurementTerminalVoltage OBJECT-TYPE
+    SYNTAX  Float
+    UNITS   "V"
+    MAX-ACCESS  read-only
+    STATUS  optional
+    DESCRIPTION
+            "The measured voltage at the output terminals."
+    ::= { outputEntry 6 }
+
+outputMeasurementCurrent OBJECT-TYPE
+    SYNTAX  Float
+    UNITS   "A"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The measured output current."
+    ::= { outputEntry 7 }
+
+outputMeasurementTemperature OBJECT-TYPE
+    SYNTAX  INTEGER { OK (-128), FAILURE(127) }
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The measured temperature of the power module."
+    ::= { outputEntry 8 }
+
+
+outputSwitch OBJECT-TYPE
+    SYNTAX  INTEGER { OFF (0), ON (1) }
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "Read: An enumerated value which shows the current state of
+			 the output channel.
+             Write: Change the state of the channel.
+             If the channel is on, and the write value is OFF, then the channel
+             will switch off.
+             If the channel is off, and the write value is ON, and if no other
+             signals (mainInhibit or outputInhibit) are active, then the channel
+             will switch on.
+			 Only the values ON or OFF are allowed."
+    ::= { outputEntry 9 }
+
+outputVoltage OBJECT-TYPE
+    SYNTAX  Float
+    UNITS   "V"
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The nominal output voltage of the channel."
+    ::= { outputEntry 10 }
+
+outputAdjustVoltage OBJECT-TYPE
+    SYNTAX  INTEGER (-128..127)
+    ACCESS  read-write
+    STATUS  obsolete
+    DESCRIPTION
+            "A posibillity to make small changes of the output voltage."
+    ::= { outputEntry 11 }
+
+outputCurrent OBJECT-TYPE
+    SYNTAX  Float
+    UNITS   "A"
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The current limit of the channel."
+    ::= { outputEntry 12 }
+
+outputVoltageRiseRate OBJECT-TYPE
+    SYNTAX  Float
+    UNITS   "A"
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "Voltage Fall Slew Rate [V/s].
+			 The slew rate of the output voltage if it increases (after switch on or if the Voltage has been
+			 changed).
+		    "
+    ::= { outputEntry 13 }
+
+outputVoltageFallRate OBJECT-TYPE
+    SYNTAX  Float
+    UNITS   "A"
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "Voltage Rise Slew Rate [V/s].
+			 The slew rate of the output voltage if it decreases (after switch off or if the Voltage has been
+			 changed).
+		    "
+    ::= { outputEntry 14 }
+
+outputSupervisionBehavior OBJECT-TYPE
+-- CHECK    SYNTAX  INTEGER { Ignore (0), (1..1022), SwitchOffCrate (1023) }
+    SYNTAX  INTEGER (0..65535)
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "A bit field packed into an integer which define the behavior of the output channel / power supply
+             after failures.
+             For each supervision value, a two-bit field exists.
+             The enumeration of this value (..L+..H*2) is:
+              	0			ignore the failure
+              	1			switch off this channel
+              	2			switch off all channels with the same group number
+              	3			switch off the complete crate.
+             The position of the bit fields in the integer value are:
+        		Bit 0, 1:	outputFailureMinSenseVoltage
+        		Bit 2, 3:	outputFailureMaxSenseVoltage
+        		Bit 4, 5:	outputFailureMaxTerminalVoltage
+        		Bit 6, 7:	outputFailureMaxCurrent
+        		Bit 8, 9:	outputFailureMaxTemperature
+        		Bit 10, 11:	outputFailureMaxPower
+        		Bit 12, 13:	reserved
+        		Bit 14, 15:	outputFailureTimeout
+        	"
+
+    ::= { outputEntry 15 }
+
+outputSupervisionMinSenseVoltage OBJECT-TYPE
+    SYNTAX  Float
+    UNITS   "V"
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "If the measured sense voltage is below this value, the power supply
+			 performs the function defined by SupervisionAction."
+    ::= { outputEntry 16 }
+
+outputSupervisionMaxSenseVoltage OBJECT-TYPE
+    SYNTAX  Float
+    UNITS   "V"
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "If the measured sense voltage is above this value, the power supply
+			 performs the function defined by SupervisionAction."
+    ::= { outputEntry 17 }
+
+outputSupervisionMaxTerminalVoltage OBJECT-TYPE
+    SYNTAX  Float
+    UNITS   "V"
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "If the measured voltage at the power supply output
+			 terminals is above this value, the power supply
+			 performs the function defined by SupervisionAction."
+    ::= { outputEntry 18 }
+
+outputSupervisionMaxCurrent OBJECT-TYPE
+    SYNTAX  Float
+    UNITS   "A"
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "If the measured current is above this value, the power supply
+			 performs the function defined by SupervisionAction."
+    ::= { outputEntry 19 }
+
+--outputSupervisionMaxTemperature OBJECT-TYPE  wohl besser config !!
+--    SYNTAX  INTEGER
+--    ACCESS  read-write
+--    STATUS  current
+--    DESCRIPTION
+--            "If the measured module temperature is above this value, the power supply
+--			 performs the function defined by SupervisionAction."
+--    ::= { outputEntry 20 }
+
+
+
+outputConfigMaxSenseVoltage OBJECT-TYPE
+    SYNTAX  Float
+    UNITS   "V"
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The maximum possible value of the sense voltage"
+    ::= { outputEntry 21 }
+
+outputConfigMaxTerminalVoltage OBJECT-TYPE
+    SYNTAX  Float
+    UNITS   "V"
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The maximum possible value of the terminal voltage"
+    ::= { outputEntry 22 }
+
+outputConfigMaxCurrent OBJECT-TYPE
+    SYNTAX  Float
+    UNITS   "A"
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The maximum possible value of the output current"
+    ::= { outputEntry 23 }
+
+outputSupervisionMaxPower OBJECT-TYPE
+    SYNTAX  Float
+    UNITS   "W"
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "If the measured power (measured current * measured terminal voltage) 
+             is above this value, the power supply performs the function defined
+              by SupervisionAction."
+    ::= { outputEntry 24 }
+
+-------------------------------------------------------------------------------
+-- output->groups
+-------------------------------------------------------------------------------
+
+groupsEntry OBJECT-TYPE
+    SYNTAX  groupsEntry
+    MAX-ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+            "A table row"
+    INDEX   { groupsIndex }
+    ::= { groupsTable 1 }
+
+GroupsEntry ::=
+    SEQUENCE {
+        groupsIndex
+            INTEGER,
+--      outputGroupsName
+--            DisplayString,
+--        outputGroupsGroup
+--            INTEGER,
+
+--        outputGroupsStatus
+--		    BITS,
+--        outputGroupsMeasurementSenseVoltage
+--		    Float,
+--        outputMeasurementTerminalVoltage
+--		    Float,
+--        outputMeasurementCurrent
+--		    Float,
+--        outputMeasurementTemperature
+--		    INTEGER,
+
+
+        groupsSwitch
+		    INTEGER,
+--        outputVoltage
+--		    Float,
+--        outputAdjustVoltage
+--		    INTEGER,
+--        outputCurrent
+--		    Float,
+
+--        outputRampUp
+--		    Float,
+--        outputRampDown
+--		    Float,
+
+--        outputSupervisionBehavior
+--            INTEGER,
+--        outputSupervisionMinSenseVoltage
+--		    Float,
+--        outputSupervisionMaxSenseVoltage
+--		    Float,
+--        outputSupervisionMaxTerminalVoltage
+--		    Float,
+--        outputSupervisionMaxCurrent
+--		    Float,
+--        outputSupervisionMaxTemperature
+--		    INTEGER,
+
+--        outputConfigMaxSenseVoltage
+--		    Float,
+--        outputConfigMaxTerminalVoltage
+--		    Float,
+--        outputConfigMaxCurrent
+--		    Float,
+--        outputSupervisionMaxPower
+--		    Float,
+    }
+
+groupsIndex OBJECT-TYPE
+    SYNTAX  INTEGER { ALL(0), (1..126) }
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A unique number for each power output group. Its value
+             ranges between 1 and 126.
+             The special group 0 is predefined and gives access to all channels.
+            "
+    ::= { groupsEntry 1 }
+
+groupsSwitch OBJECT-TYPE
+    SYNTAX  INTEGER { UNDEFINED (-1), OFF (0), ON (1) }
+    MAX-ACCESS  write-only
+    STATUS  current
+    DESCRIPTION
+            "Read: This function is not defined with groups of output channels.
+             Write: Switch all channels of a group on or off.
+             If any channel is on, and the write value is OFF, then all channels
+             will switch off.
+             If any channel is off, and the write value is ON, and if no other
+             signals (mainInhibit or outputInhibit) are active, then all channels
+             will switch on.
+			 Only the values ON or OFF are allowed."
+    ::= { groupsEntry 9 }
+
+--groupsName OBJECT-TYPE
+--    SYNTAX  DisplayString (SIZE (1..4))
+--    ACCESS  read-only
+--    STATUS  current
+--    DESCRIPTION
+--            "A textual string containing a short name of the
+--            output. If the crate is equipped with an alphanumeric
+--			display, this string is shown to identify a output channel."
+--    ::= { groupsEntry 2 }
+
+
+
+
+-------------------------------------------------------------------------------
+-- sensor
+-------------------------------------------------------------------------------
+Sensor ::= SEQUENCE {
+        sensorNumber
+		    INTEGER,
+        sensorTable
+            SensorTable
+}
+
+sensorNumber OBJECT-TYPE
+    SYNTAX  INTEGER (0..8)
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The number of temperature sensors of the crate."
+    ::= { sensor 1 }
+
+sensorTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF sensorEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+           "A list of sensor entries."
+    ::= { sensor 2 }
+
+sensorEntry OBJECT-TYPE
+    SYNTAX  SensorEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "An output entry containing objects at the
+            interface."
+    INDEX   { sensorIndex }
+    ::= { sensorTable 1 }
+
+SensorEntry ::=
+    SEQUENCE {
+        sensorIndex
+            INTEGER,
+        sensorTemperature
+            INTEGER
+        sensorWarningThreshold
+            INTEGER
+        sensorFailureThreshold
+            INTEGER
+    }
+
+sensorIndex OBJECT-TYPE
+    SYNTAX  INTEGER { TEMP1 (1), TEMP2(2), TEMP3(3), TEMP4(4), TEMP5(5),
+	  TEMP6(6), TEMP7(7), TEMP8(8) }
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A unique number for each temperature sensor in the crate"
+    ::= { sensorEntry 1 }
+
+sensorTemperature OBJECT-TYPE
+-- CHECK    SYNTAX  INTEGER { UNUSED(-128), (-127..127) }
+    SYNTAX  INTEGER (-128..127)
+    UNITS   "\ufffdC"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The measured temperature of the sensor.
+			 Unused temperature probes have the special value -128"
+    ::= { sensorEntry 2 }
+
+sensorWarningThreshold OBJECT-TYPE 
+-- CHECK    SYNTAX  INTEGER  { (0..126), DISABLED(127) }
+    SYNTAX  INTEGER  (0..127)
+    UNITS   "\ufffdC"
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "If the measured temperature of the sensor is higher than this
+			value, the fan speed of the connected fan tray is increased.
+			The value 127 has the special meaning: channel disabled."
+    ::= { sensorEntry 3}
+
+sensorFailureThreshold OBJECT-TYPE
+-- CHECK    SYNTAX  INTEGER  { (0..126), DISABLED(127) }
+    SYNTAX  INTEGER  (0..127)
+    UNITS   "\ufffdC"
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "If the measured temperature of the sensor is higher than this
+			value, the power supply switches off.
+			The value 127 has the special meaning: channel disabled."
+    ::= { sensorEntry 4}
+
+
+
+-------------------------------------------------------------------------------
+-- communication
+-------------------------------------------------------------------------------
+Communication ::= SEQUENCE {
+        snmp
+		    Snmp,
+        tcpip
+            Tcpip,
+        http
+            Http,
+        telnet
+            Telnet,
+        canbus
+            Canbus,
+        rs232
+            RS232
+}
+
+-------------------------------------------------------------------------------
+-- communication.snmp
+-------------------------------------------------------------------------------
+snmp OBJECT-TYPE
+    SYNTAX  Snmp
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "SNMP configuration."
+    ::= { communication 1 }
+
+Snmp ::= SEQUENCE {
+        snmpCommunityTable
+            SnmpCommunityTable
+        snmpPort
+		    INTEGER,
+}
+
+snmpCommunityTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF SnmpCommunityEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+           "The SNMP community string table for different views."
+    ::= { snmp 1 }
+
+snmpCommunityEntry OBJECT-TYPE
+    SYNTAX  SnmpCommunityEntry
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "One table row."
+    INDEX   { snmpAccessRight }
+    ::= { snmpCommunityTable 1 }
+
+
+SnmpEntry ::= SEQUENCE {
+        snmpAccessRight
+		    INTEGER,
+        snmpCommunityName
+            OCTET STRING
+}
+
+snmpAccessRight OBJECT-TYPE
+    SYNTAX  INTEGER { public (1), private (2), admin (3), guru (4) }
+    ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A unique number for each access right"
+    ::= { snmpCommunityEntry 1 }
+
+snmpCommunityName OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE (0..14))
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The SNMP community names for different views. The rights of the different communities are:
+               public       no write access
+               private      can switch power on/off, generate system reset
+               admin        can change supervision levels
+               guru         can change output voltage & current (this may destroy hardware if done wrong!)
+             Setting a community name to a zero-length string completly
+             disables the access to this view. If there is no higher-
+             privileged community, the community name can only changed
+             by direct access to the crate (not via network)!
+            "
+    ::= { snmpCommunityEntry 2}
+
+snmpPort OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The UDP port number of the SNMP protocol"
+    ::= { snmp 2}
+
+-------------------------------------------------------------------------------
+-- communication....
+-------------------------------------------------------------------------------
+
+-- other future entries:
+-- +-tcpip
+-- | |
+-- | +- tcpipIpAddress
+-- | +- tcpipGateway
+-- | +- tcpipSubnetMask
+-- | +- tcpipNegotiation
+-- | +- tcpipMAC
+-- |
+-- +-http
+-- | |
+-- | +- httpPort
+-- | +- httpWriteEnable
+-- |
+-- +-telnet
+-- | |
+-- | +- telnetPort
+-- |
+-- +-canbus
+-- | |
+-- | +- address
+-- | +- address2
+-- | +- speed
+-- |
+-- +-rs232
+-- | |
+-- | +- ?
+
+
+
+-------------------------------------------------------------------------------
+-- powersupply
+-------------------------------------------------------------------------------
+Powersupply ::= SEQUENCE {
+        psFirmwareVersion
+            DisplayString,
+        psSerialNumber
+		    OCTET STRING,
+		psOperatingTime
+		    INTEGER,
+        psDirectAccess OBJECT-TYPE
+            OCTET STRING
+}
+
+--integrated in system.sysDesc
+--psFirmwareVersion OBJECT-TYPE
+--    SYNTAX  DisplayString
+--    ACCESS  read-only
+--    STATUS  current
+--    DESCRIPTION
+--            "The firmware version of the power supply main CPU."
+--    ::= { powersupply 1 }
+
+psSerialNumber OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The serial number of the power supply."
+    ::= { powersupply 2 }
+
+psOperatingTime OBJECT-TYPE
+    SYNTAX  INTEGER
+    UNITS   "s"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The time in seconds for how long the power supply was switched on."
+    ::= { powersupply 3 }
+
+psDirectAccess OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE (1..14))
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "Direct data transfer to the UEP6000 power supply.
+             A read access returns nothing, a write access returns the
+             response of the power supply.
+            "
+    ::= { powersupply 1024 }
+
+-------------------------------------------------------------------------------
+-- fantray
+-------------------------------------------------------------------------------
+Fantray ::= SEQUENCE {
+        fanFirmwareVersion
+            DisplayString,
+        fanSerialNumber
+		    OCTET STRING,
+		fanOperatingTime
+		    INTEGER,
+		fanAirTemperature
+		    INTEGER,
+		fanSwitchOffDelay
+		    INTEGER,
+		fanNominalSpeed
+		    INTEGER,
+		fanNumberOfFans
+		    INTEGER,
+        fanSpeedTable
+		    FanSpeedTable
+}
+
+--integrated in system.sysDesc
+--fanFirmwareVersion OBJECT-TYPE
+--    SYNTAX  DisplayString
+--    ACCESS  read-only
+--    STATUS  current
+--    DESCRIPTION
+--            "The firmware version of the fan tray CPU."
+--    ::= { fantray 1 }
+
+fanSerialNumber OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..14))
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The serial number of the fan tray."
+    ::= { fantray 2 }
+
+fanOperatingTime OBJECT-TYPE
+    SYNTAX  INTEGER
+    UNITS   "s"
+    ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The time in seconds for how long the fan tray was switched on."
+    ::= { fantray 3 }
+
+fanAirTemperature OBJECT-TYPE
+    SYNTAX  INTEGER
+    UNITS   "\ufffdC"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The temperature of the fan tray inlet air."
+    ::= { fantray 4 }
+
+fanSwitchOffDelay OBJECT-TYPE
+    SYNTAX  INTEGER (0 .. 900)
+    UNITS   "s"
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The maximum time in seconds for which the fans will continue running
+			 after the power supply has been switched off. This feature is used
+			 to cool down the electronics after switching off.
+			"
+    ::= { fantray 5 }
+
+fanNominalSpeed OBJECT-TYPE
+-- CHECK    SYNTAX  INTEGER { (0) , (1200..3600) }
+    SYNTAX  INTEGER (0..3600)
+    UNITS   "RPM"
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The nominal fan rotation speed (RPM, Revolutions Per Minute)
+			 Value 0 does switch off the fans (only allowed if at least
+			 one rack temperature sensor is present).
+			 Values 1..1199 are not allowed"
+    ::= { fantray 6 }
+
+fanNumberOfFans OBJECT-TYPE
+    SYNTAX  INTEGER ( 0..12 )
+    UNITS   "Fans"
+    MAX-ACCESS  read-write
+    STATUS  current
+    DESCRIPTION
+            "The number of installed fans"
+    ::= { fantray 7 }
+
+
+fanSpeedTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF fanSpeedEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+           "A list of fanSpeedEntries."
+    ::= { fantray 8 }
+
+fanSpeedEntry OBJECT-TYPE
+    SYNTAX  fanSpeedEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A table row"
+    INDEX   { fanNumber }
+    ::= { fanSpeedTable 1 }
+
+fanSpeedEntry ::=
+    SEQUENCE {
+        fanNumber
+            INTEGER,
+        fanSpeed
+            INTEGER
+}
+
+fanNumber OBJECT-TYPE
+    SYNTAX  INTEGER ( 1..12 )
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+            "A unique number for each fan."
+    ::= { fanSpeedEntry 1 }
+
+fanSpeed OBJECT-TYPE
+    SYNTAX  INTEGER
+    UNITS   "RPM"
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+            "The measured fan rotation speed (RPM, Revolutions Per Minute)"
+    ::= { fanSpeedEntry 2 }
+
+
+
+
+
+-------------------------------------------------------------------------------
+-- rack
+-------------------------------------------------------------------------------
+-- this is reserved for futer items (BIN serial number, plug&play, ...)
+
+
+
+-------------------------------------------------------------------------------
+END

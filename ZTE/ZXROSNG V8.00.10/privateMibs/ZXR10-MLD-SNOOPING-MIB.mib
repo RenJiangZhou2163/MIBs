@@ -1,0 +1,989 @@
+ZXR10-MLD-SNOOPING-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, 
+    OBJECT-TYPE, 
+    Integer32, Unsigned32 
+        FROM SNMPv2-SMI
+    enterprises, IpAddress
+        FROM SNMPv2-SMI
+    Ipv6Address
+        FROM IPV6-TC
+    MacAddress, DisplayString, TEXTUAL-CONVENTION, RowStatus
+        FROM SNMPv2-TC
+    zxr10
+        FROM ZXR10-SMI;
+
+    zxr10MldSnoopingMIB MODULE-IDENTITY
+        LAST-UPDATED "201406161000Z"  
+        ORGANIZATION "ZTE Corporation"
+        CONTACT-INFO
+        "       Liu ning
+         Tel : +86-25-52870000        
+         E-Mail: liu.ning8@zte.com.cn
+         "
+        DESCRIPTION
+            "The MIB module to describe the MLD Snooping protocol."  
+        
+        REVISION  "201406161000Z"   
+        DESCRIPTION     
+            "Modify description of zxmlsinsLastMemQryInterval to explain the range."
+        REVISION  "201403111000Z"   
+        DESCRIPTION     
+            "Modify description of zxmlsinsMaxGroupNum,zxmlsinsAclName,
+             zxmlsGroupMaxHostNum to explain the range."
+        REVISION  "201311201000Z"   
+        DESCRIPTION     
+            "Initial resivion of this MIB module."
+        ::= { zxr10switch 54}     
+      
+    zxr10switch OBJECT IDENTIFIER ::= { zxr10 102 }
+
+    zxr10MldSnoopingGlobalObjects OBJECT IDENTIFIER ::= { zxr10MldSnoopingMIB 1 }
+    zxr10MldSnoopingObjects       OBJECT IDENTIFIER ::= { zxr10MldSnoopingMIB 2 }   
+
+    InstanceType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION  "A type value for the instance"
+    SYNTAX       INTEGER{vlan(1),service(2),vpls(3),supervlan(4),vbui(5),
+                         ipglobal(6),vrf(7)}
+                           
+    --=============================
+    --1. zxr10MldSnoopingGlobalObjects
+    --=============================
+--MLD snooping global configure 
+    zxmlsGlobalEnable  OBJECT-TYPE
+        SYNTAX   INTEGER{disable(1),enable(2)}
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "Enable/disable MLD snooping in this device."
+        ::= { zxr10MldSnoopingGlobalObjects 1 }    
+        
+    zxmlsGlobalQuery  OBJECT-TYPE
+        SYNTAX   INTEGER{disable(1),enable(2)}
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "Enable/disable MLD snooping Queries in this device."
+        ::= { zxr10MldSnoopingGlobalObjects 2}    
+        
+    zxmlsQueryInterval  OBJECT-TYPE
+        SYNTAX   Integer32 (30..65535)
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "The Query Interval is the interval between 
+             General Queries sent by the Querier.  
+             Default: 125 seconds."
+        ::= {zxr10MldSnoopingGlobalObjects 3 }    
+        
+    zxmlsQueryResponseInterval  OBJECT-TYPE
+        SYNTAX   Integer32 (1..255)
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "The Max Response Time inserted into the periodic General Queries.
+             Default: 100 ticks (1 tick = 100ms)."
+        ::= { zxr10MldSnoopingGlobalObjects 4 }     
+
+    -- =============================
+    --2. zxr10MldSnoopingObjects
+    -- =============================
+    
+    zxmlsInstanceObjects      OBJECT IDENTIFIER ::= { zxr10MldSnoopingObjects 1 }
+    zxmlsGroupObjects         OBJECT IDENTIFIER ::= { zxr10MldSnoopingObjects 2 }
+    zxmlsHostObjects          OBJECT IDENTIFIER ::= { zxr10MldSnoopingObjects 3 }
+    zxmlsMrouterObjects       OBJECT IDENTIFIER ::= { zxr10MldSnoopingObjects 4 }
+    zxmlsSummaryObjects       OBJECT IDENTIFIER ::= { zxr10MldSnoopingObjects 5 }
+    -- =============================
+    --2.1 zxmlsInstanceObjects
+    -- =============================
+
+    -- =============================
+    --2.1.1 zxmlsinsTable
+    -- =============================
+    --MLD snooping instance configure table       
+    zxmlsinsTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxmlsinsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MLD snooping instance configuration table, 
+             supports instances such as : VLAN and VPLS. "
+        ::= { zxmlsInstanceObjects 1 }   
+        
+    zxmlsinsEntry  OBJECT-TYPE
+        SYNTAX  ZxmlsinsEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MLD snooping instance entry.   
+             When instance type is VLAN,
+             index is {type, idx, 0}.  
+             When instance type is VPLS,  
+             index is {type, 0, VPN name}."
+        INDEX   { zxmlsinsType,
+                  zxmlsinsIdx,
+                  zxmlsinsName }
+        ::= { zxmlsinsTable 1 }
+        
+    ZxmlsinsEntry ::=
+        SEQUENCE {
+            zxmlsinsType
+                InstanceType,
+            zxmlsinsIdx
+                Integer32,   
+            zxmlsinsName
+                DisplayString,
+            zxmlsinsEnable
+                INTEGER,
+            zxmlsinsFastLeave
+                INTEGER,
+            zxmlsinsLastMemQryInterval
+                Integer32,
+            zxmlsinsMaxGroupNum
+                Integer32,
+            zxmlsinsHostTimeOut
+                Integer32,
+            zxmlsinsMrouterTimeOut
+                Integer32,
+            zxmlsinsQueryEnable
+                INTEGER,
+            zxmlsinsQueryVersion
+                INTEGER,
+            zxmlsinsWorkMode
+                INTEGER,
+            zxmlsinsAclName
+                DisplayString,
+            zxmlsinsRowStatus
+                RowStatus
+    }
+              
+    zxmlsinsType  OBJECT-TYPE
+        SYNTAX   InstanceType
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Instance type, 1 is VLAN, 3 is VPLS."
+        ::= { zxmlsinsEntry 1 }        
+    
+    zxmlsinsIdx  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  not-accessible 
+        STATUS  current
+        DESCRIPTION
+            "Instance ID of VLAN,
+             if instance is VLAN, it is VLAN ID,
+             it is 0 for other instances."
+        ::= { zxmlsinsEntry 2 }  
+ 
+    zxmlsinsName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "Name specified for each configured instance, 
+         only valid when instance type is VPLS."
+         ::= { zxmlsinsEntry 3 }
+         
+    zxmlsinsEnable  OBJECT-TYPE
+        SYNTAX   INTEGER{disable(1),enable(2)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Enable/disable MLD snooping in this instance."
+        ::= { zxmlsinsEntry 4 }
+    
+    zxmlsinsFastLeave  OBJECT-TYPE
+        SYNTAX    INTEGER{slowLeave(1),fastLeave(2)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Enable/disable group membership fast leave."
+        ::= { zxmlsinsEntry 5 }      
+        
+    zxmlsinsLastMemQryInterval  OBJECT-TYPE
+        SYNTAX   Integer32 (1..65535)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The Last Member Query Interval is the Max Response 
+             Time inserted into Multicast-Address-Specific Queries sent in 
+             response to Done messages, and is also the 
+             amount of time between Multicast-Address-Specific Query messages. 
+             Its minimum value and default value both are 1 second, 
+             maximum value depends on the product."
+        ::= { zxmlsinsEntry 6 }      
+        
+    zxmlsinsMaxGroupNum  OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Max number of multicast group can access in this instance.
+             Its minimum value is 1, maximum value depends on the product."
+        ::= { zxmlsinsEntry 7 } 
+                                                                                    
+    zxmlsinsHostTimeOut  OBJECT-TYPE
+        SYNTAX   Integer32 (30..65535)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Host aging-time. Default: 260 seconds."
+        ::= { zxmlsinsEntry 8 }    
+        
+    zxmlsinsMrouterTimeOut  OBJECT-TYPE
+        SYNTAX   Integer32 (30..65535)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Multicast router port aging-time. Default: 260 seconds."
+        ::= { zxmlsinsEntry 9 } 
+        
+    zxmlsinsQueryEnable  OBJECT-TYPE
+        SYNTAX   INTEGER{disable(1),enable(2)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Enable/disable Querier in this instance."
+        ::= { zxmlsinsEntry 10 } 
+        
+    zxmlsinsQueryVersion  OBJECT-TYPE
+        SYNTAX   INTEGER{v1(1),v2(2)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Querier version: V1 or V2."
+        ::= { zxmlsinsEntry 11 }
+        
+    zxmlsinsWorkMode  OBJECT-TYPE
+        SYNTAX   INTEGER{proxy(1),router(2),transparent(3)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Work mode: Proxy, Transparent or Router."
+        ::= { zxmlsinsEntry 12 }  
+    
+    zxmlsinsAclName  OBJECT-TYPE
+        SYNTAX   DisplayString(SIZE(1..31))
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "ACL name of this instance."
+        ::= { zxmlsinsEntry 13 }   
+
+    zxmlsinsRowStatus  OBJECT-TYPE
+        SYNTAX    RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The status of this row, support 'createAndGo' and 'destroy' for set operation."
+        ::= { zxmlsinsEntry 100 }             
+
+    -- =============================
+    --2.2 zxmlsGroupObjects
+    -- =============================
+--MLD snooping group table       
+    zxmlsGroupTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxmlsGroupEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MLD snooping group table."
+        ::= { zxmlsGroupObjects 1 }   
+        
+    zxmlsGroupEntry  OBJECT-TYPE
+        SYNTAX  ZxmlsGroupEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MLD snooping group entry.
+             When opertation is set, zxmlsGroupSourceIp should be 0,
+             zxmlsGroupInstanceType should be VLAN or VPLS.
+             When instance type is VLAN or IP-GLOBAL, zxmlsGroupInstanceName should be 0.
+             When instance type is VPLS, VBUI or VRF, zxmlsGroupInstanceIdx should be 0."
+        INDEX   { zxmlsGroupInstanceType,
+                  zxmlsGroupInstanceIdx,
+                  zxmlsGroupInstanceName,
+                  zxmlsGroupIp,
+                  zxmlsGroupSourceIp}
+        ::= { zxmlsGroupTable 1 }
+ 
+    ZxmlsGroupEntry ::=
+        SEQUENCE {
+            zxmlsGroupInstanceType
+                InstanceType,
+            zxmlsGroupInstanceIdx
+                Integer32,   
+            zxmlsGroupInstanceName
+                DisplayString,
+            zxmlsGroupIp
+                Ipv6Address,
+            zxmlsGroupSourceIp
+                Ipv6Address,
+            zxmlsGroupDropEnable
+                INTEGER,
+            zxmlsGroupMaxHostNum
+                Integer32,
+            zxmlsGroupHostNum
+                Integer32,
+            zxmlsGroupMac
+                MacAddress,
+            zxmlsGroupRowStatus
+                RowStatus
+    } 
+    
+    zxmlsGroupInstanceType  OBJECT-TYPE
+        SYNTAX   InstanceType
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Instance type, 1 is VLAN, 2 is Service, 3 is VPLS, 4 is SUPERVLAN, 
+             5 is VBUI, 6 is IP-GLOBAL, 7 is VRF."
+        ::= { zxmlsGroupEntry 1 }        
+    
+    zxmlsGroupInstanceIdx  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  not-accessible 
+        STATUS  current
+        DESCRIPTION
+            "Instance ID of VLAN and IP-GLOBAL,
+             if instance is VLAN, it is VLAN ID,             
+             if instance is IP-GLOBAL, it is 1,
+             it is 0 for other instances."
+        ::= { zxmlsGroupEntry 2 }  
+ 
+    zxmlsGroupInstanceName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "Name specified for each configured instance, 
+         only valid when instance type is VPLS, VBUI or VRF."
+         ::= { zxmlsGroupEntry 3 }
+         
+    zxmlsGroupIp  OBJECT-TYPE
+        SYNTAX   Ipv6Address
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MLD snooping Group IPv6 Addr."
+        ::= { zxmlsGroupEntry 4 }
+    
+    zxmlsGroupSourceIp  OBJECT-TYPE
+        SYNTAX   Ipv6Address
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MLD snooping Source IPv6 Addr."
+        ::= { zxmlsGroupEntry 5 }
+
+    zxmlsGroupDropEnable  OBJECT-TYPE
+        SYNTAX    INTEGER{disable(1),enable(2)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Enable/disable drop mode of this group.
+             When it is enabled, the mulitcast flow will be dropped
+             if there is no host in this group."
+        ::= { zxmlsGroupEntry 6 }      
+        
+    zxmlsGroupMaxHostNum  OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Max number of MLD snooping host can access to this group.
+             Its minimum value is 1, maximum value depends on the product."
+        ::= { zxmlsGroupEntry 7 }      
+        
+    zxmlsGroupHostNum  OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of MLD snooping host access to this group currently."
+        ::= { zxmlsGroupEntry 8 } 
+
+    zxmlsGroupMac  OBJECT-TYPE
+        SYNTAX   MacAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Group MAC address."
+        ::= { zxmlsGroupEntry 9 }
+    
+    zxmlsGroupRowStatus  OBJECT-TYPE
+        SYNTAX    RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The status of this row, by which new group entries with dropEnable or maxHostNum may be
+             created, or old group entries with dropEnable or maxHostNum deleted from this table.
+             Support 'createAndGo' and 'destroy' for set operation."
+        ::= { zxmlsGroupEntry 100 }      
+    
+    -- =============================
+    --2.3 zxmlsHostObjects
+    -- =============================
+--MLD snooping host table       
+    zxmlsHostTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxmlsHostEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MLD snooping host table."
+        ::= { zxmlsHostObjects 1 }   
+        
+    zxmlsHostEntry  OBJECT-TYPE
+        SYNTAX  ZxmlsHostEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MLD snooping host entry.
+             When operation is set, zxmlsHostSourceIp should be 0,
+             zxmlsHostInstanceType should be VLAN or VPLS.
+             When instance type is VLAN or IP-GLOBAL, zxmlsHostInstanceName should be 0.
+             When instance type is VPLS, VBUI or VRF, zxmlsHostInstanceIdx should be 0."
+        INDEX   { zxmlsHostInstanceType,
+                  zxmlsHostInstanceIdx,
+                  zxmlsHostInstanceName,
+                  zxmlsHostGroupIp,
+                  zxmlsHostSourceIp,
+                  zxmlsHostIfName,
+                  zxmlsHostUserId,
+                  zxmlsHostPhyName}
+        ::= { zxmlsHostTable 1 }
+ 
+    ZxmlsHostEntry ::=
+        SEQUENCE {
+            zxmlsHostInstanceType
+                InstanceType,
+            zxmlsHostInstanceIdx
+                Integer32,   
+            zxmlsHostInstanceName
+                DisplayString,
+            zxmlsHostGroupIp
+                Ipv6Address,
+            zxmlsHostSourceIp
+                Ipv6Address,
+            zxmlsHostIfName
+                DisplayString,
+            zxmlsHostUserId
+                Integer32,
+            zxmlsHostPhyName
+                DisplayString,
+            zxmlsHostStaticOrDynamic
+                INTEGER,
+            zxmlsHostFilterMode
+                INTEGER,
+            zxmlsHostRowStatus
+                RowStatus
+    } 
+    
+    zxmlsHostInstanceType  OBJECT-TYPE
+        SYNTAX   InstanceType
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Instance type, 1 is VLAN, 2 is Service, 3 is VPLS, 4 is SUPERVLAN, 
+             5 is VBUI, 6 is IP-GLOBAL, 7 is VRF."
+        ::= { zxmlsHostEntry 1 }        
+    
+    zxmlsHostInstanceIdx  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  not-accessible 
+        STATUS  current
+        DESCRIPTION
+            "Instance ID of VLAN and IP-GLOBAL,
+             if instance is VLAN, it is VLAN ID,             
+             if instance is IP-GLOBAL, it is 1,
+             it is 0 for other instances."
+        ::= { zxmlsHostEntry 2 }  
+ 
+    zxmlsHostInstanceName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "Name specified for each configured instance, 
+         only valid when instance type is VPLS, VBUI or VRF."
+         ::= { zxmlsHostEntry 3 }
+         
+    zxmlsHostGroupIp  OBJECT-TYPE
+        SYNTAX   Ipv6Address
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MLD snooping host IPv6 Addr."
+        ::= { zxmlsHostEntry 4 }
+    
+    zxmlsHostSourceIp  OBJECT-TYPE
+        SYNTAX   Ipv6Address
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MLD snooping host source IPv6 Addr."
+        ::= { zxmlsHostEntry 5 }
+
+    zxmlsHostIfName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Interface name."
+        ::= { zxmlsHostEntry 6 }
+        
+    zxmlsHostUserId  OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "For IPTV or SUPERVLAN hosts, it's user VLAN.
+             For M-VPLS hosts, it's user VPLS.
+             For VPLS hosts,it's 0.
+             For IP-Global or VRF hosts, it's a computed value,
+             the high 16 bits is internal VLAN, 
+             and the low 16 bits is external VLAN.
+             Otherwise, it's equal to instance ID."
+        ::= { zxmlsHostEntry 7 } 
+        
+    zxmlsHostPhyName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Physical Interface name."
+        ::= { zxmlsHostEntry 8 }
+        
+    zxmlsHostStaticOrDynamic  OBJECT-TYPE
+        SYNTAX   INTEGER{dynamic(1),static(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Mode of this host. It is dynamic if learned from MLD Report, 
+             or is static if configured."
+        ::= { zxmlsHostEntry 9 }
+
+    zxmlsHostFilterMode  OBJECT-TYPE
+        SYNTAX   INTEGER{include(1),exclude(2),request(3)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Filter mode of this host."
+        ::= { zxmlsHostEntry 10 }
+        
+    zxmlsHostRowStatus  OBJECT-TYPE
+        SYNTAX   RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The status of this row, by which new static host entries may be
+             created, or old static host entries deleted from this table.
+             Support 'createAndGo' and 'destroy' for set operation."
+        ::= { zxmlsHostEntry 100 }
+        
+    -- =============================
+    --2.4 zxmlsMrObjects
+    -- =============================
+--MLD snooping mrouter table       
+    zxmlsMrTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxmlsMrEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MLD snooping multicast router port table."
+        ::= { zxmlsMrouterObjects 1 }   
+        
+    zxmlsMrEntry  OBJECT-TYPE
+        SYNTAX  ZxmlsMrEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MLD snooping multicast router port entry.
+             When operation is set, zxmlsMrInstanceType should be VLAN or VPLS.
+             When instance type is VLAN or IP-GLOBAL, zxmlsMrInstanceName should be 0.
+             When instance type is VPLS, VBUI or VRF, zxmlsMrInstanceIdx should be 0."
+        INDEX   { zxmlsMrInstanceType,
+                  zxmlsMrInstanceIdx,
+                  zxmlsMrInstanceName,
+                  zxmlsMrIfName}
+        ::= { zxmlsMrTable 1 }
+ 
+    ZxmlsMrEntry ::=
+        SEQUENCE {
+            zxmlsMrInstanceType
+                InstanceType,
+            zxmlsMrInstanceIdx
+                Integer32,   
+            zxmlsMrInstanceName
+                DisplayString,
+            zxmlsMrIfName
+                DisplayString,
+            zxmlsMrStaticOrDynamic
+                INTEGER,
+            zxmlsMrVersion
+                INTEGER,
+            zxmlsMrRowStatus
+                RowStatus
+    }
+    
+    zxmlsMrInstanceType  OBJECT-TYPE
+        SYNTAX   InstanceType
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Instance type, 1 is VLAN, 2 is Service, 3 is VPLS, 4 is SUPERVLAN, 
+             5 is VBUI, 6 is IP-GLOBAL, 7 is VRF."
+        ::= { zxmlsMrEntry 1 }        
+    
+    zxmlsMrInstanceIdx  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  not-accessible 
+        STATUS  current
+        DESCRIPTION
+            "Instance ID of VLAN and IP-GLOBAL,
+             if instance is VLAN, it is VLAN ID,             
+             if instance is IP-GLOBAL, it is 1,
+             it is 0 for other instances."
+        ::= { zxmlsMrEntry 2 }  
+ 
+    zxmlsMrInstanceName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "Name specified for each configured instance, 
+         only valid when instance type is VPLS, VBUI or VRF."
+         ::= { zxmlsMrEntry 3 }
+        
+    zxmlsMrIfName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Interface name."
+        ::= { zxmlsMrEntry 4 }
+            
+    zxmlsMrStaticOrDynamic  OBJECT-TYPE
+        SYNTAX   INTEGER{dynamic(1),static(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Mode of this multicast router port. 
+             It is dynamic if learned from MLD Query, 
+             or is static if configured."
+        ::= { zxmlsMrEntry 5 }
+            
+    zxmlsMrVersion  OBJECT-TYPE
+        SYNTAX   INTEGER{v1(1),v2(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Version of this multicast router port."
+        ::= { zxmlsMrEntry 6 }
+        
+    zxmlsMrRowStatus  OBJECT-TYPE
+        SYNTAX    RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The status of this row, 
+             by which new static multicast router port entries may be created, 
+             or old static multicast router port entries deleted from this table.
+             Support 'createAndGo' and 'destroy' for set operation."
+        ::= { zxmlsMrEntry 100 }
+        
+    -- =============================
+    --2.5 zxmlsSummaryObjects
+    -- =============================
+    
+    zxmlsSummaryGlobalObjects        OBJECT IDENTIFIER ::= { zxmlsSummaryObjects 1 }
+    zxmlsSummaryInstanceObjects      OBJECT IDENTIFIER ::= { zxmlsSummaryObjects 2 }
+    
+    -- =============================
+    --2.5.1 zxmlsSummaryGlobal
+    -- =============================
+    --MLD snooping global summary       
+
+    zxmlssGlobalTotalGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group access currently."
+        ::= { zxmlsSummaryGlobalObjects 1 }
+        
+    zxmlssGlobalExistHostGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group which exist MLD host."
+        ::= { zxmlsSummaryGlobalObjects 2 }  
+        
+    zxmlssGlobalDropGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group which configured as drop mode."
+        ::= { zxmlsSummaryGlobalObjects 3 } 
+        
+    zxmlssGlobalPrejoinGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group which configured as prejoin mode."
+        ::= { zxmlsSummaryGlobalObjects 4 }
+        
+    zxmlssGlobalMaxHostGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group which configured with max host number."
+        ::= { zxmlsSummaryGlobalObjects 5 } 
+ 
+    zxmlssGlobalSSMGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of source-specific multicast group access currently."
+        ::= { zxmlsSummaryGlobalObjects 6 }
+        
+    zxmlssGlobalASMGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of anycast-specific multicast group access currently."
+        ::= { zxmlsSummaryGlobalObjects 7 }
+        
+    zxmlssGlobalTotalHostNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of host access currently."
+        ::= { zxmlsSummaryGlobalObjects 8 }
+        
+    zxmlssGlobalDynamicHostNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of dynamic host access currently."
+        ::= { zxmlsSummaryGlobalObjects 9}
+
+    zxmlssGlobalStaticHostNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of static host access currently."
+        ::= { zxmlsSummaryGlobalObjects 10 }    
+    
+    zxmlssGlobalTotalMrouterNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast router port access currently."
+        ::= { zxmlsSummaryGlobalObjects 11 }
+        
+    zxmlssGlobalDynamicMrouterNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of dynamic multicast router port access currently."
+        ::= { zxmlsSummaryGlobalObjects 12 }  
+        
+    zxmlssGlobalStaticMrouterNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of static multicast router port access currently."
+        ::= { zxmlsSummaryGlobalObjects 13 }
+        
+    -- =============================
+    --2.5.2 zxmlsSummaryInstanceTable
+    -- =============================
+    --MLD snooping instance summary table       
+    zxmlssInstanceTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxmlssInstanceEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MLD snooping instance summary table, 
+             MLD snooping supports instances such as : VLAN, Service, VPLS, 
+             SUPERVLAN, VBUI, IP-GLOBAL and VRF.
+             Some instances are not supported now,
+             but reserved for compatibility."
+        ::= { zxmlsSummaryInstanceObjects 1 }   
+        
+    zxmlssInstanceEntry  OBJECT-TYPE
+        SYNTAX  ZxmlssInstanceEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MLD snooping instance summary entry."
+        INDEX   { zxmlssInstanceType,
+                  zxmlssInstanceIdx,
+                  zxmlssInstanceName }
+        ::= { zxmlssInstanceTable 1 }
+        
+    ZxmlssInstanceEntry ::=
+        SEQUENCE {
+            zxmlssInstanceType
+                InstanceType,
+            zxmlssInstanceIdx
+                Integer32,
+            zxmlssInstanceName
+                DisplayString,
+            zxmlssInstanceTotalGroupNum 
+                Unsigned32,
+            zxmlssInstanceExistHostGroupNum  
+                Unsigned32,
+            zxmlssInstanceDropGroupNum    
+                Unsigned32,
+            zxmlssInstancePrejoinGroupNum    
+                Unsigned32,
+            zxmlssInstanceMaxHostGroupNum   
+                Unsigned32, 
+            zxmlssInstanceSSMGroupNum  
+                Unsigned32, 
+            zxmlssInstanceASMGroupNum 
+                Unsigned32,
+            zxmlssInstanceTotalHostNum
+                Unsigned32,
+            zxmlssInstanceDynamicHostNum
+                Unsigned32,
+            zxmlssInstanceStaticHostNum
+                Unsigned32            
+    }
+              
+    zxmlssInstanceType  OBJECT-TYPE
+        SYNTAX   InstanceType
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Instance type, 1 is VLAN, 2 is Service, 3 is VPLS, 4 is SUPERVLAN, 
+             5 is VBUI, 6 is IP-GLOBAL, 7 is VRF."
+        ::= { zxmlssInstanceEntry 1 }
+    
+    zxmlssInstanceIdx  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  not-accessible 
+        STATUS  current
+        DESCRIPTION
+            "Instance ID of VLAN and IP-GLOBAL,
+             if instance is VLAN, it is VLAN ID,
+             if instance is IP-GLOBAL, it is 1,
+             it is 0 for other instances."
+        ::= { zxmlssInstanceEntry 2 }   
+
+    zxmlssInstanceName  OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+        "Name specified for each configured instance, 
+         only valid when instance type is VPLS, VBUI or VRF."
+         ::= { zxmlssInstanceEntry 3 }
+         
+    zxmlssInstanceTotalGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group access to this instance currently."
+        ::= { zxmlssInstanceEntry 4 }
+        
+    zxmlssInstanceExistHostGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group which exist MLD host."
+        ::= { zxmlssInstanceEntry 5 }  
+        
+    zxmlssInstanceDropGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group which configured as drop mode."
+        ::= { zxmlssInstanceEntry 6 } 
+        
+    zxmlssInstancePrejoinGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group which configured as prejoin mode."
+        ::= { zxmlssInstanceEntry 7 }
+        
+    zxmlssInstanceMaxHostGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of multicast group which configured with max host number."
+        ::= { zxmlssInstanceEntry 8 } 
+ 
+    zxmlssInstanceSSMGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of source-specific multicast group access currently."
+        ::= { zxmlssInstanceEntry 9 }
+        
+    zxmlssInstanceASMGroupNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of anycast-specific multicast group 
+            access to this instance currently."
+        ::= { zxmlssInstanceEntry 10 }
+        
+    zxmlssInstanceTotalHostNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of host access to this instance currently."
+        ::= { zxmlssInstanceEntry 11 }
+        
+    zxmlssInstanceDynamicHostNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of dynamic host access to this instance currently."
+        ::= { zxmlssInstanceEntry 12}
+
+    zxmlssInstanceStaticHostNum  OBJECT-TYPE
+        SYNTAX   Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Number of static host access to this instance currently."
+        ::= { zxmlssInstanceEntry 13 }    
+        
+    -- =============================
+    --3. zxr10MldSnoopingNotifications  
+    -- =============================
+
+    -- =============================
+    --4. zxr10MldSnoopingConformance    
+    -- =============================   
+    
+    END

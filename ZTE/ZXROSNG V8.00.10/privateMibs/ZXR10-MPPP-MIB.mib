@@ -1,0 +1,296 @@
+-- *****************************************************************
+-- ZXROSNG-MPPP-MIB.mib 
+-- MPPP MIB Definitions  
+-- yangzhongming10106586
+-- 2013-03-12
+--
+-- Copyright (c) 1985-2013 by ZTE Corp.
+-- All rights reserved.
+-- *****************************************************************
+
+ZXR10-MPPP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+      MODULE-IDENTITY, 
+      OBJECT-TYPE, 
+      Unsigned32, 
+      enterprises
+                   FROM SNMPv2-SMI
+      DisplayString,
+      RowStatus
+                   FROM SNMPv2-TC;
+                   
+-------------------------------------------MODULE----------------------------------------------
+        
+zxr10MpppMIB  MODULE-IDENTITY
+    LAST-UPDATED  "201706271000Z" --2017-06-27 10:00
+    ORGANIZATION  "ZTE Corporation"
+    CONTACT-INFO
+       " Yang Zhongming
+         Tel:    +86-25-653460
+         E-mail: yang.zhongming@zte.com.cn
+       "
+    DESCRIPTION
+          "This MIB contains managed object definitions for the ZXROSng MPPP"
+
+    REVISION "201706271000Z" --2017-06-27 10:00
+    DESCRIPTION
+         "modify the description of zxr10MpppMemberConfigEPD and zxr10MpppMemberRemoteEPD"
+
+    REVISION "201706221000Z" --2017-06-22 10:00
+    DESCRIPTION
+         "modify: change type of zxr10MpppMemberConfigEPD and zxr10MpppMemberRemoteEPD
+          from OCTET STRING to DisplayString"
+
+    REVISION "201503091025Z" --2015-03-09 10:25
+    DESCRIPTION
+         "modify: change rang of zxr10MpppMemberRemoteEPD and zxr10MpppMemberRemoteEPD to SIZE(0..32)"
+
+    REVISION "201307011100Z" --2013-7-1 11:00
+    DESCRIPTION
+         "del: zxr10MpppMultilinkRowStatus
+          modify: zxr10MpppMultilinkLoadBalance
+                  zxr10MpppMultilinkFragmentation
+         " 
+         
+    REVISION "201303121400Z" --2013-3-12 14:00
+    DESCRIPTION
+         "Initial version of this MIB module"
+    
+    ::= { zxr10RosngMIB 502 }
+    
+zte                     OBJECT IDENTIFIER ::= { enterprises 3902 }  
+zxr10                   OBJECT IDENTIFIER ::= { zte 3 }
+zxr10RosngMIB           OBJECT IDENTIFIER ::= { zxr10 6000 }
+
+zxr10MpppGlobalObjects  OBJECT IDENTIFIER ::= { zxr10MpppMIB 1 }
+zxr10MpppObjects        OBJECT IDENTIFIER ::= { zxr10MpppMIB 2 }
+zxr10MpppTraps          OBJECT IDENTIFIER ::= { zxr10MpppMIB 3 }
+zxr10MpppConformance    OBJECT IDENTIFIER ::= { zxr10MpppMIB 4 }
+
+--====================================
+--1. zxr10MpppGlobalObjects 
+--====================================
+
+
+--====================================
+--2. zxr10MpppObjects 
+--====================================
+
+zxr10MpppMemberObjects       OBJECT IDENTIFIER ::= { zxr10MpppObjects 1 }
+zxr10MpppMultilinkObjects    OBJECT IDENTIFIER ::= { zxr10MpppObjects 2 }
+
+--====================================
+--2.1 zxr10MpppMemberObjects 
+--====================================
+
+--====================================
+--2.1.1 zxr10MpppMemberStatGroup 
+--====================================
+
+zxr10MpppMemberStatGroup OBJECT IDENTIFIER ::= { zxr10MpppMemberObjects 1 }
+
+--====================================
+--2.1.2 zxr10MpppMemberTable 
+--====================================
+
+zxr10MpppMemberTable   OBJECT-TYPE
+   SYNTAX    SEQUENCE OF Zxr10MpppMemberEntry
+   MAX-ACCESS    not-accessible
+   STATUS    current
+   DESCRIPTION
+             "A table containing mppp member information."
+   ::= { zxr10MpppMemberObjects 2 }
+
+zxr10MpppMemberEntry   OBJECT-TYPE
+   SYNTAX       Zxr10MpppMemberEntry
+   MAX-ACCESS   not-accessible
+   STATUS    current
+   DESCRIPTION
+             "Information about mppp member."
+   INDEX     { zxr10MpppMemberMasterPortName, zxr10MpppMemberPhysicalName }
+   ::= { zxr10MpppMemberTable 1 }
+
+
+Zxr10MpppMemberEntry ::= SEQUENCE {
+   zxr10MpppMemberMasterPortName
+        DisplayString,
+   zxr10MpppMemberPhysicalName
+        DisplayString,
+   zxr10MpppMemberMasterPortIndex
+        Unsigned32,
+   zxr10MpppMemberPhysicalIndex
+        Unsigned32,
+   zxr10MpppMemberIfState
+        INTEGER,
+   zxr10MpppMemberConfigEPD
+        DisplayString,
+   zxr10MpppMemberRemoteEPD
+        DisplayString,
+   zxr10MpppMemberRowStatus
+        RowStatus
+   }
+
+zxr10MpppMemberMasterPortName   OBJECT-TYPE
+   SYNTAX    DisplayString(SIZE(1..32))
+   MAX-ACCESS    not-accessible
+   STATUS    current
+   DESCRIPTION
+             "The mppp member masterport name."
+   ::= { zxr10MpppMemberEntry 1 }
+
+
+zxr10MpppMemberPhysicalName   OBJECT-TYPE
+   SYNTAX    DisplayString(SIZE(1..32))
+   MAX-ACCESS    not-accessible
+   STATUS    current
+   DESCRIPTION
+             "The mppp member ifname."
+   ::= { zxr10MpppMemberEntry 2 }
+
+
+zxr10MpppMemberMasterPortIndex   OBJECT-TYPE
+   SYNTAX    Unsigned32
+   MAX-ACCESS    read-only
+   STATUS    current
+   DESCRIPTION
+             "The mppp member masterport index."
+   ::= { zxr10MpppMemberEntry 3 }
+
+
+zxr10MpppMemberPhysicalIndex   OBJECT-TYPE
+   SYNTAX    Unsigned32
+   MAX-ACCESS    read-only
+   STATUS    current
+   DESCRIPTION
+             "The mppp member ifindex."
+   ::= { zxr10MpppMemberEntry 4 }
+
+
+zxr10MpppMemberIfState   OBJECT-TYPE
+   SYNTAX    INTEGER {active (1), inactive (2)}
+   MAX-ACCESS    read-only
+   STATUS    current
+   DESCRIPTION
+             "The mppp member ifstate."
+   DEFVAL    { inactive }
+   ::= { zxr10MpppMemberEntry 5 }
+
+
+zxr10MpppMemberConfigEPD   OBJECT-TYPE
+   SYNTAX    DisplayString(SIZE(0..32))
+   MAX-ACCESS    read-create
+   STATUS    current
+   DESCRIPTION
+             "The mppp member config-epd. When no configuration is available,
+              N/A is obtained."
+   ::= { zxr10MpppMemberEntry 6 }
+
+
+zxr10MpppMemberRemoteEPD   OBJECT-TYPE
+   SYNTAX    DisplayString(SIZE(0..32))
+   MAX-ACCESS    read-only
+   STATUS    current
+   DESCRIPTION
+             "The mppp member remote-epd. When the value is not available,
+              N/A is obtained."
+   ::= { zxr10MpppMemberEntry 7 }
+
+
+zxr10MpppMemberRowStatus   OBJECT-TYPE
+    SYNTAX    RowStatus
+    MAX-ACCESS    read-create
+    STATUS    current
+    DESCRIPTION
+             "The status of the row."
+   ::= { zxr10MpppMemberEntry 8 }
+
+
+--====================================
+--2.2 zxr10MpppMultilinkObjects 
+--====================================
+
+--====================================
+--2.2.1 zxr10MpppMultilinkStatGroup 
+--====================================
+
+zxr10MpppMultilinkStatGroup OBJECT IDENTIFIER ::= { zxr10MpppMultilinkObjects 1 }
+
+--====================================
+--2.2.2 zxr10MpppMultilinkTable 
+--====================================
+
+zxr10MpppMultilinkTable   OBJECT-TYPE
+   SYNTAX    SEQUENCE OF Zxr10MpppMultilinkEntry
+   MAX-ACCESS    not-accessible
+   STATUS    current
+   DESCRIPTION
+             "A table containing mppp multilink information."
+   ::= { zxr10MpppMultilinkObjects 2 }
+    
+zxr10MpppMultilinkEntry   OBJECT-TYPE
+   SYNTAX    Zxr10MpppMultilinkEntry
+   MAX-ACCESS    not-accessible
+   STATUS    current
+   DESCRIPTION
+             "Information about mppp multilink."
+   INDEX     { zxr10MpppMultilinkPortName }
+   ::= { zxr10MpppMultilinkTable 1 }
+
+
+Zxr10MpppMultilinkEntry ::= SEQUENCE {
+   zxr10MpppMultilinkPortName
+        DisplayString,
+   zxr10MpppMultilinkPortIndex
+        Unsigned32,
+   zxr10MpppMultilinkLoadBalance
+        INTEGER,
+   zxr10MpppMultilinkFragmentation
+        INTEGER
+   }
+
+zxr10MpppMultilinkPortName   OBJECT-TYPE
+   SYNTAX    DisplayString(SIZE(1..32))
+   MAX-ACCESS    not-accessible
+   STATUS    current
+   DESCRIPTION
+             "The mppp multilink port name."
+   ::= { zxr10MpppMultilinkEntry 1 }
+
+zxr10MpppMultilinkPortIndex   OBJECT-TYPE
+   SYNTAX    Unsigned32
+   MAX-ACCESS    read-only
+   STATUS    current
+   DESCRIPTION
+             "The mppp multilink port index."
+   ::= { zxr10MpppMultilinkEntry 2 }
+
+
+zxr10MpppMultilinkLoadBalance   OBJECT-TYPE
+   SYNTAX    INTEGER {perPacket (1), perDest (2)}
+   MAX-ACCESS    read-write
+   STATUS    current
+   DESCRIPTION
+             "The mppp multilink loadbalance."
+   DEFVAL    { perDest }
+   ::= { zxr10MpppMultilinkEntry 3 }
+
+zxr10MpppMultilinkFragmentation   OBJECT-TYPE
+   SYNTAX    INTEGER {fragmentation (1), unfragmentation (2)}
+   MAX-ACCESS    read-write
+   STATUS    current
+   DESCRIPTION
+             "The mppp multilink fragmentation."
+   DEFVAL    { unfragmentation }
+   ::= { zxr10MpppMultilinkEntry 4 }
+
+    
+--====================================
+--3 zxr10MpppNotifications   
+--====================================
+
+--====================================
+--4 zxr10MpppConformance       
+--====================================
+
+END

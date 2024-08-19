@@ -1,0 +1,424 @@
+    ZXR10-SUPERVLAN-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE, Unsigned32, IpAddress, enterprises    
+            FROM SNMPv2-SMI 
+        TEXTUAL-CONVENTION, DisplayString 
+            FROM SNMPv2-TC;
+           
+  zxr10SupervlanMIB MODULE-IDENTITY
+    LAST-UPDATED "201707051630Z"  
+    ORGANIZATION "ZTE Corporation"
+    CONTACT-INFO
+            "       Zeng wanmei 
+            Tel:    +86-25-52870000
+            E-Mail: zeng.wanmei@zte.com.cn"
+            
+        DESCRIPTION
+            "The MIB module to describe the SuperVLAN protocol"      
+            
+        REVISION "201707051630Z"--2017-07-05 16:30       
+        DESCRIPTION
+        "
+            modify DESCRIPTION:
+            zxr10SupervlanIfAttrInterSubRout
+        "
+        
+        REVISION "201305311200Z"--2013-05-31 00:00       
+        DESCRIPTION   "Initial version of this MIB module"
+        ::= { zxr10RosngMIB 505 }     
+        
+    zte OBJECT IDENTIFIER ::={enterprises 3902}
+    zxr10 OBJECT IDENTIFIER ::={zte 3}
+    zxr10RosngMIB OBJECT IDENTIFIER ::= { zxr10 6000}   
+    
+    EnabledStatus ::= TEXTUAL-CONVENTION
+    STATUS current
+        DESCRIPTION   "A simple status value for the object."
+        SYNTAX INTEGER 
+          { enabled(1),
+            disabled(2)
+          }
+          
+    SpecialEnabledStatus ::= TEXTUAL-CONVENTION
+    STATUS current
+        DESCRIPTION   "A special status value for the object."
+        SYNTAX INTEGER 
+          { ipv4enabled(1),
+            ipv6enabled(2),
+            enabled(3),
+            disabled(4),
+            invalid(5)
+          }
+          
+    zxr10SupervlanGlobalObjects   OBJECT IDENTIFIER ::= { zxr10SupervlanMIB 1 }
+    zxr10SupervlanObjects         OBJECT IDENTIFIER ::= { zxr10SupervlanMIB 2 }
+    zxr10SupervlanNotifications   OBJECT IDENTIFIER ::= { zxr10SupervlanMIB 3 }
+    zxr10SupervlanConformance     OBJECT IDENTIFIER ::= { zxr10SupervlanMIB 4 }
+--=======================================================================
+--1. zxr10SupervlanGlobalObjects 
+--=======================================================================
+--=======================================================================
+--2. zxr10SupervlanObjects 
+--======================================================================= 
+    zxr10SupervlanIfAttrObjects       OBJECT IDENTIFIER ::= { zxr10SupervlanObjects 1 }     
+    zxr10SupervlanBindObjects         OBJECT IDENTIFIER ::= { zxr10SupervlanObjects 2 }
+    zxr10SupervlanIppoolObjects       OBJECT IDENTIFIER ::= { zxr10SupervlanObjects 3 }    
+    zxr10SupervlanSwSubObjects        OBJECT IDENTIFIER ::= { zxr10SupervlanObjects 4 }    
+--=======================================================================
+--2.1 zxr10SupervlanIfAttrObjects 
+--=======================================================================
+    zxr10SupervlanIfAttrTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF Zxr10SupervlanIfAttrEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+        "The attribute of current SuperVLAN."     
+      ::= { zxr10SupervlanIfAttrObjects 1 }
+         
+    zxr10SupervlanIfAttrEntry  OBJECT-TYPE
+        SYNTAX      Zxr10SupervlanIfAttrEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This list contains SuperVLAN configuration."     
+        INDEX  {zxr10SupervlanIfAttrIfName }    
+        ::= { zxr10SupervlanIfAttrTable 1 }
+             
+    Zxr10SupervlanIfAttrEntry ::=
+      SEQUENCE {
+      zxr10SupervlanIfAttrIfName                 DisplayString,
+      zxr10SupervlanIfAttrInterSubRout           SpecialEnabledStatus,
+      zxr10SupervlanIfAttrSpIntSubRout           SpecialEnabledStatus,      
+      zxr10SupervlanIfAttrIppoolFilter           EnabledStatus,
+      zxr10SupervlanIfAttrArpBroadcast           EnabledStatus,
+      zxr10SupervlanIfAttrGraArpBrcast           EnabledStatus,
+      zxr10SupervlanIfAttrNdBroadcast            EnabledStatus
+    }
+  
+    zxr10SupervlanIfAttrIfName   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..31))
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION "SuperVLAN interface name,for example supervlanXXX." 
+        ::= { zxr10SupervlanIfAttrEntry 1 }
+        
+    zxr10SupervlanIfAttrInterSubRout   OBJECT-TYPE
+        SYNTAX     SpecialEnabledStatus
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "SuperVLAN inter-subvlan-routing attribute status,3 mean enable,4 
+        mean disable,default value is 3." 
+        DEFVAL  { enabled }
+        ::= { zxr10SupervlanIfAttrEntry 2 }
+
+    zxr10SupervlanIfAttrSpIntSubRout   OBJECT-TYPE
+        SYNTAX     SpecialEnabledStatus
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "SuperVLAN inter-subvlan-routing attribute status is used to 
+        distinguish between IPv4 and IPv6,1 mean IPv4 enable,2 mean IPv6 enable.
+        default value is 5." 
+        DEFVAL  { invalid }
+        ::= { zxr10SupervlanIfAttrEntry 3 }
+           
+    zxr10SupervlanIfAttrIppoolFilter   OBJECT-TYPE
+        SYNTAX     EnabledStatus
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "SuperVLAN ip-pool-filter attribute status,1 mean enable,
+        2 mean disable." 
+        ::= { zxr10SupervlanIfAttrEntry 4 }
+
+    zxr10SupervlanIfAttrArpBroadcast   OBJECT-TYPE
+        SYNTAX     EnabledStatus
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "SuperVLAN arp-broadcast attribute status,1 mean enable,2 
+        mean disable,default value is 2." 
+        DEFVAL  { disabled }
+        ::= { zxr10SupervlanIfAttrEntry 5 }
+
+    zxr10SupervlanIfAttrGraArpBrcast   OBJECT-TYPE
+        SYNTAX     EnabledStatus
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "SuperVLAN gratuitous-arp-broadcast attribute status,1 
+        mean enable,2 mean disable,default value is 1." 
+        DEFVAL  { enabled }
+        ::= { zxr10SupervlanIfAttrEntry 6 }
+ 
+    zxr10SupervlanIfAttrNdBroadcast   OBJECT-TYPE
+        SYNTAX     EnabledStatus
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "SuperVLAN nd-broadcast attribute status for IPv6,1 mean enable,2 
+        mean disable,default value is 2." 
+        DEFVAL  { disabled }
+        ::= { zxr10SupervlanIfAttrEntry 7 }       
+        
+--=======================================================================
+--2.2 zxr10SupervlanBindObjects 
+--=======================================================================
+    zxr10SupervlanBindTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF Zxr10SupervlanBindEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+        "Bound information of current SuperVLAN."     
+      ::= { zxr10SupervlanBindObjects 1 }
+         
+    zxr10SupervlanBindEntry  OBJECT-TYPE
+        SYNTAX      Zxr10SupervlanBindEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This list contains sub-interface of SuperVLAN."     
+        INDEX  {zxr10SupervlanBindSupervlanName,
+                zxr10SupervlanBindMemIfName }    
+        ::= { zxr10SupervlanBindTable 1 }
+        
+    Zxr10SupervlanBindEntry ::=
+      SEQUENCE {
+      zxr10SupervlanBindSupervlanName           DisplayString,
+      zxr10SupervlanBindMemIfName               DisplayString,
+      zxr10SupervlanBindSupervlanID             Unsigned32
+    }
+  
+    zxr10SupervlanBindSupervlanName   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..31))
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION "SuperVLAN interface name,for example supervlanXXX." 
+        ::= { zxr10SupervlanBindEntry 1 }
+            
+    zxr10SupervlanBindMemIfName   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..31))
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION "Sub-interface name." 
+        ::= { zxr10SupervlanBindEntry 2 }
+ 
+    zxr10SupervlanBindSupervlanID   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "SuperVLAN ID." 
+        ::= { zxr10SupervlanBindEntry 3 }
+      
+    zxr10SupervlanSwBindTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF Zxr10SupervlanSwBindEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+        "Switch Bound information of current SuperVLAN."      
+      ::= { zxr10SupervlanBindObjects 2 }
+         
+    zxr10SupervlanSwBindEntry  OBJECT-TYPE
+        SYNTAX      Zxr10SupervlanSwBindEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This list contains SubVLAN of SuperVLAN."     
+        INDEX  {zxr10SupervlanSwBindSupID,
+                zxr10SupervlanSwBindSubID }    
+        ::= { zxr10SupervlanSwBindTable 1 }
+        
+    Zxr10SupervlanSwBindEntry ::=
+      SEQUENCE {
+      zxr10SupervlanSwBindSupID       Unsigned32,
+      zxr10SupervlanSwBindSubID       Unsigned32,
+      zxr10SupervlanSwBindSubName     DisplayString,
+      zxr10SupervlanSwBindSupName     DisplayString
+    }
+  
+    zxr10SupervlanSwBindSupID   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION "SuperVLAN ID." 
+        ::= { zxr10SupervlanSwBindEntry 1 }
+
+    zxr10SupervlanSwBindSubID   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION "SubVLAN ID." 
+        ::= { zxr10SupervlanSwBindEntry 2 }
+
+    zxr10SupervlanSwBindSubName   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..31))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "SubVLAN name." 
+        ::= { zxr10SupervlanSwBindEntry 3 }
+ 
+    zxr10SupervlanSwBindSupName   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..31))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "SuperVLAN interface name." 
+        ::= { zxr10SupervlanSwBindEntry 4 } 
+              
+--=======================================================================
+--2.3 zxr10SupervlanIppoolObjects 
+--=======================================================================
+    zxr10SupervlanIppoolTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF Zxr10SupervlanIppoolEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+        "Ippool information of current sub-interface."      
+      ::= { zxr10SupervlanIppoolObjects 1 }
+         
+    zxr10SupervlanIppoolEntry  OBJECT-TYPE
+        SYNTAX      Zxr10SupervlanIppoolEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This list contains Ippool of sub-interface."     
+        INDEX  { zxr10SupervlanIppoolMemIfName, 
+                 zxr10SupervlanIppoolAddrBegin, 
+                 zxr10SupervlanIppoolAddrEnd }    
+        ::= { zxr10SupervlanIppoolTable 1 }
+        
+    Zxr10SupervlanIppoolEntry ::=
+      SEQUENCE {
+      zxr10SupervlanIppoolMemIfName             DisplayString,
+      zxr10SupervlanIppoolAddrBegin             IpAddress,
+      zxr10SupervlanIppoolAddrEnd               IpAddress
+    }
+  
+    zxr10SupervlanIppoolMemIfName   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..31))
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION "Sub-interface name." 
+        ::= { zxr10SupervlanIppoolEntry 1 }
+ 
+    zxr10SupervlanIppoolAddrBegin   OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION "IP-POOL address begin." 
+        ::= { zxr10SupervlanIppoolEntry 2 }
+
+    zxr10SupervlanIppoolAddrEnd   OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "IP-POOL address end." 
+        ::= { zxr10SupervlanIppoolEntry 3 }
+        
+    zxr10SupervlanSwIppoolTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF Zxr10SupervlanSwIppoolEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+        "Ippool information of current SubVLAN."      
+      ::= { zxr10SupervlanIppoolObjects 2 }
+         
+    zxr10SupervlanSwIppoolEntry  OBJECT-TYPE
+        SYNTAX      Zxr10SupervlanSwIppoolEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This list contains IP-POOL of SubVLAN."     
+        INDEX  { zxr10SupervlanSwIppoolSubID, 
+                 zxr10SupervlanSwIppoolAddrBegin, 
+                 zxr10SupervlanSwIppoolAddrEnd }    
+        ::= { zxr10SupervlanSwIppoolTable 1 }
+        
+    Zxr10SupervlanSwIppoolEntry ::=
+      SEQUENCE {
+      zxr10SupervlanSwIppoolSubID             Unsigned32,
+      zxr10SupervlanSwIppoolAddrBegin         IpAddress,
+      zxr10SupervlanSwIppoolAddrEnd           IpAddress,
+      zxr10SupervlanSwIppoolSubName           DisplayString
+    }
+  
+    zxr10SupervlanSwIppoolSubID   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION "SubVLAN ID." 
+        ::= { zxr10SupervlanSwIppoolEntry 1 }
+ 
+    zxr10SupervlanSwIppoolAddrBegin   OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION "Ippool address begin." 
+        ::= { zxr10SupervlanSwIppoolEntry 2 }
+
+    zxr10SupervlanSwIppoolAddrEnd   OBJECT-TYPE
+        SYNTAX     IpAddress
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION "Ipppol address end." 
+        ::= { zxr10SupervlanSwIppoolEntry 3 }
+        
+    zxr10SupervlanSwIppoolSubName   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..31))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "SubVLAN name." 
+        ::= { zxr10SupervlanSwIppoolEntry 4 }                    
+         
+--=======================================================================
+--2.4 zxr10SupervlanSwSubObjects 
+--=======================================================================
+    zxr10SupervlanSwSubTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF Zxr10SupervlanSwSubEntry
+      MAX-ACCESS  not-accessible
+      STATUS      current
+      DESCRIPTION
+        "The attribute of current SubVLAN."     
+      ::= { zxr10SupervlanSwSubObjects 1 }
+         
+    zxr10SupervlanSwSubEntry  OBJECT-TYPE
+        SYNTAX      Zxr10SupervlanSwSubEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "This list contains attribute of SubVLAN."     
+        INDEX  { zxr10SupervlanSwSubSubvlanID }    
+        ::= { zxr10SupervlanSwSubTable 1 }
+        
+    Zxr10SupervlanSwSubEntry ::=
+      SEQUENCE {
+      zxr10SupervlanSwSubSubvlanID              Unsigned32,
+      zxr10SupervlanSwSubGraArpBcast            EnabledStatus,
+      zxr10SupervlanSwSubSubvlanName            DisplayString
+    }
+  
+    zxr10SupervlanSwSubSubvlanID   OBJECT-TYPE
+        SYNTAX     Unsigned32
+        MAX-ACCESS not-accessible
+        STATUS     current
+        DESCRIPTION "SubVLAN ID." 
+        ::= { zxr10SupervlanSwSubEntry 1 } 
+        
+    zxr10SupervlanSwSubGraArpBcast   OBJECT-TYPE
+        SYNTAX     EnabledStatus
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "SubVLAN gratuitous-arp-broadcast attribute status,1 mean 
+        enable,2 mean disable,default value is 1." 
+        DEFVAL  { enabled }
+        ::= { zxr10SupervlanSwSubEntry 2 }
+ 
+      zxr10SupervlanSwSubSubvlanName   OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..31))
+        MAX-ACCESS read-only
+        STATUS     current
+        DESCRIPTION "SubVLAN name." 
+        ::= { zxr10SupervlanSwSubEntry 3 }    
+        
+--=======================================================================
+--3. zxr10SupervlanNotifications 
+--=======================================================================
+--=======================================================================
+--4. zxr10SupervlanNotifications 
+--=======================================================================     
+END                

@@ -1,0 +1,696 @@
+--  ************************************************
+--  ZXR10-ETH-MGT.mib: MIB for query status and configuration of the linear APS instance
+--  
+--  2012-07-18, lvzhi, ZTE Corp.
+--   
+--  Copyright(c) 2012 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************          
+  
+ZXROSNG-TPAPS-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+    OBJECT-TYPE,
+    MODULE-IDENTITY, Unsigned32                          FROM SNMPv2-SMI
+    zxr10RosngMIB                                        FROM ZXR10-SMI
+    DisplayString,TEXTUAL-CONVENTION                     FROM SNMPv2-TC; 
+
+    zxAPSProtectMIB MODULE-IDENTITY
+    LAST-UPDATED "201705161600Z"  
+    ORGANIZATION     "ZTE Corp."
+    CONTACT-INFO
+        "ZTE Corporation 
+         Nanjing Institute of ZTE Corporation
+         
+         No.68 Zijinghua Rd. Yuhuatai District, Nanjing, China
+         
+         Tel: +86-25-52870000"
+
+    DESCRIPTION
+        "MIB for query status and configuration of the linear APS instance" 
+    REVISION "201705161600Z"
+    DESCRIPTION
+       "Modify DESCRIPTION of zxAPSLineProtectPGStatusState."
+        
+    REVISION "201611071600Z"
+    DESCRIPTION
+       "Modify INTEGER of ApsStatusState.
+        Add TEXTUAL-CONVENTION of ApsBridgeType.
+        Add zxAPSLineProtectTGBridgeType in ZxAPSLineProtectTGConfigEntry.
+        Add zxAPSLineProtectPWBridgeType in ZxAPSLineProtectPWConfigEntry.
+        Modify DESCRIPTION of zxAPSLineProtectPWStatusState.
+        Modify DESCRIPTION of zxAPSLineProtectTGStatusState.
+        Expand the maxmum value of zxAPSLineProtectTGSwitchFlag from 5 to 7.
+        Expand the maxmum value of zxAPSLineProtectPWSwitchFlag from 5 to 7.
+        Expand the maxmum value of zxAPSLineProtectPGSwitchFlag from 5 to 7."
+        
+    REVISION "201607251600Z"
+    DESCRIPTION
+       "Expand the maxmum value of zxAPSLineProtectTGStatusTGID from 32768 to 4294967295."    
+        
+    REVISION "201601211600Z"
+    DESCRIPTION
+       "Modify DESCRIPTION of zxAPSLineProtectTGStatusState.
+
+        Modify DESCRIPTION of zxAPSLineProtectPWStatusState.
+
+        Modify DESCRIPTION of zxAPSLineProtectPGSwitchFlag.
+
+        Modify DESCRIPTION of zxAPSLineProtectPGStatusState."
+
+    REVISION "201503121600Z"
+    DESCRIPTION
+       "Add description for zxAPSLineProtectTGConfigEntry,zxAPSLineProtectPWConfigEntry,zxAPSLineProtectTGStatusEntry
+       zxAPSLineProtectPWStatusEntry,zxAPSLineProtectPGConfigEntry,zxAPSLineProtectPGStatusEntry."
+
+    REVISION "201409011600Z"
+    DESCRIPTION
+       "Modify DESCRIPTION of zxAPSLineProtectTGConfigTable:
+       from 'Posnet configuration table' to 'Configuration table of tunnel protection group's APS'.
+ 
+       Modify DESCRIPTION of ZxAPSLineProtectPWConfigEntry:
+       from 'Posnet configuration table' to 'Configuration table of pw group's APS'.
+
+       Modify DESCRIPTION of ZxAPSLineProtectTGStatusEntry:
+       from 'Posnet configuration table' to 'Status table of tunnel protection group's APS'.
+
+       Modify DESCRIPTION of zxAPSLineProtectPWStatusTable:
+       from 'Posnet configuration table' to 'Status table of pw group's APS'.
+
+       Modify DESCRIPTION of zxAPSLineProtectPGConfigTable:
+       from 'Posnet configuration table' to 'Configuration table of port protection group's APS'.
+
+       Modify DESCRIPTION of zxAPSLineProtectPGStatusTable:
+       from 'Posnet configuration table' to 'Status table of port group's APS'.
+
+       Modify syntax errors of description, such as: make to makes, noraml to normal."
+        
+    REVISION "201408271600Z"
+    DESCRIPTION
+       "Modify syntax of zxAPSLineProtectPGStatusPGID:
+       from DisplayString (SIZE(1..256)) to DisplayString (SIZE(1..65536)). 
+       
+       Modify syntax of zxAPSLineProtectPGPGID:
+       from DisplayString (SIZE(1..256)) to DisplayString (SIZE(1..65536))."
+
+    REVISION "201207180000Z"  
+    DESCRIPTION
+       "Initial created"
+       
+        ::= { zxr10RosngMIB 200}         
+   
+    ------------------------------------------------------self define type---------------------------------------- 
+ApsActiveState ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            "APS active state"
+    SYNTAX   INTEGER {restoreRun(0),
+                      pause(1)
+                     }
+     
+ApsSendPMode ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            "APS packet sending mode"
+    SYNTAX   INTEGER {send(0),
+                      nosend(1)
+                     }
+
+ApsRevertMode ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            "APS revertive mode"
+    SYNTAX   INTEGER {revertive(0),
+                      nonrevertive(1)
+                     }                  
+             
+ApsSwitchCmd ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            "APS switch command"
+    SYNTAX   INTEGER {none(0),
+                      clear(1),
+                      lockout(2),
+                      fsP(3),
+                      msP(4),
+                      exercise(5),
+                      fsW(6),
+                      msW(7)
+                    }             
+
+ApsStatusState ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            "APS state"
+    SYNTAX   INTEGER {
+                      noRequestNull(0),          
+                      noRequestNormal(1),       
+                      lockout(2),                 
+                      forcedSwitch(3),           
+                      signalFailW(4),           
+                      signalFailP(5),           
+                      manualSwitch(6),            
+                      waitToRestore(7),          
+                      exerciseNull(8),            
+                      exerciseNormal(9),          
+                      doNotRevert(10),           
+                      signalDegrW(11),           
+                      signalDegrP(12),           
+                      manualSwitchW(13),       
+                      forcedSwitchW(14),       
+                      mappingSwitchW(15),       
+                      mappingSwitchP(16),
+                      reverseRequestNull(17),
+                      reverseRequestNormal(18)
+                    }         
+ApsBridgeType ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+            "APS bridge type"
+    SYNTAX   INTEGER {broadcast(1),
+                      selector(2)
+                     }
+    ---------------define tunnel group config table ----------------                  
+
+    zxAPSLineProtectTGConfigTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxAPSLineProtectTGConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Configuration table of tunnel protection group's APS"
+        ::= { zxAPSProtectMIB 2}
+        
+    zxAPSLineProtectTGConfigEntry  OBJECT-TYPE
+        SYNTAX  ZxAPSLineProtectTGConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Configuration entry of tunnel protection group's APS"
+        INDEX  { zxAPSLineProtectTGTGID }
+        ::= { zxAPSLineProtectTGConfigTable 1 }
+
+    ZxAPSLineProtectTGConfigEntry ::=
+        SEQUENCE {
+            zxAPSLineProtectTGTGID                  Unsigned32,
+            zxAPSLineProtectTGActiveState           ApsActiveState,      
+            zxAPSLineProtectTGSendPMode             ApsSendPMode,      
+            zxAPSLineProtectTGHoldOffTime           Unsigned32,
+            zxAPSLineProtectTGRevertMode            ApsRevertMode,
+            zxAPSLineProtectTGWTRTime               Unsigned32,
+            zxAPSLineProtectTGSwitchFlag            ApsSwitchCmd,
+            zxAPSLineProtectTGBridgeType            ApsBridgeType
+    }
+
+    zxAPSLineProtectTGTGID  OBJECT-TYPE
+        SYNTAX      Unsigned32 (1..32768)
+        MAX-ACCESS  not-accessible 
+        STATUS      current
+        DESCRIPTION
+            "The group id of this protection group"
+        ::= { zxAPSLineProtectTGConfigEntry 1 } 
+   
+    zxAPSLineProtectTGActiveState  OBJECT-TYPE
+        SYNTAX      ApsActiveState
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The active state of this protection group
+            restoreRun(0): Restore to run APS
+            pause(1): Pause APS"
+        ::= { zxAPSLineProtectTGConfigEntry 2 } 
+         
+     zxAPSLineProtectTGSendPMode  OBJECT-TYPE
+        SYNTAX      ApsSendPMode 
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The protection mode of this protection group
+            send(0): To send APS packets
+            nosend(1): Not to send APS packets"
+        ::= { zxAPSLineProtectTGConfigEntry 3 }   
+        
+     zxAPSLineProtectTGHoldOffTime  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..100)
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The hold-off time of this protection group"
+        ::= { zxAPSLineProtectTGConfigEntry 4 }   
+        
+     zxAPSLineProtectTGRevertMode  OBJECT-TYPE
+        SYNTAX      ApsRevertMode
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The revertive mode of this protection group
+            revertive(0): APS is in revertive operation, which normal traffic 
+            signal is restored to the working transport entity after the 
+            condition(s) causing a switch has been cleared
+            nonrevertive(1): APS is in non-revertive operation, which normal 
+            traffic signal is allowed to remain on the protection transport 
+            entity even after a switch reason has been cleared"
+        ::= { zxAPSLineProtectTGConfigEntry 5 }    
+        
+     zxAPSLineProtectTGWTRTime  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..12)
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The wait-to-restore time of this protection group"
+        ::= { zxAPSLineProtectTGConfigEntry 6 }   
+        
+     zxAPSLineProtectTGSwitchFlag  OBJECT-TYPE
+        SYNTAX      ApsSwitchCmd 
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The switch command of this protection group
+            none(0): The switch command hasn't been configured or has been cleared
+            clear(1): Clear the externally initiated command and WTR
+            lockout(2): Prevent a working signal from being selected from the 
+            protection transport entity
+            fsP(3): Force the normal traffic to the protection entity
+            msP(4): In the absence of a failure of a working or protection 
+            entity,Force the normal traffic to the protection entity
+            exercise(5): Exercise of the APS protocol
+            msW(7): Manual switch normal traffic to working"
+        ::= { zxAPSLineProtectTGConfigEntry 7 }   
+    zxAPSLineProtectTGBridgeType  OBJECT-TYPE
+        SYNTAX      ApsBridgeType
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The bridge type of this protection group
+            selector(2): Selector bridge
+            broadcast(1): Broadcast bridge"
+        ::= { zxAPSLineProtectTGConfigEntry 8 }
+        ------------------------------------------define pw group config table -----------------------------------------                   
+   
+    zxAPSLineProtectPWConfigTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxAPSLineProtectPWConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Configuration table of pw group's APS"
+        ::= { zxAPSProtectMIB 3}
+        
+    zxAPSLineProtectPWConfigEntry  OBJECT-TYPE
+        SYNTAX  ZxAPSLineProtectPWConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Configuration entry of pw group's APS"
+        INDEX  { zxAPSLineProtectPWName }
+        ::= { zxAPSLineProtectPWConfigTable 1 }
+
+    ZxAPSLineProtectPWConfigEntry ::=
+        SEQUENCE {
+            zxAPSLineProtectPWName                  DisplayString,
+            zxAPSLineProtectPWActiveState           ApsActiveState,      
+            zxAPSLineProtectPWSendPMode             ApsSendPMode,      
+            zxAPSLineProtectPWHoldOffTime           Unsigned32,
+            zxAPSLineProtectPWRevertMode            ApsRevertMode,
+            zxAPSLineProtectPWWTRTime               Unsigned32,
+            zxAPSLineProtectPWSwitchFlag            ApsSwitchCmd,
+            zxAPSLineProtectPWBridgeType            ApsBridgeType
+    }
+
+    zxAPSLineProtectPWName  OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The group name of this protection group"
+        ::= { zxAPSLineProtectPWConfigEntry 1 } 
+   
+    zxAPSLineProtectPWActiveState  OBJECT-TYPE
+        SYNTAX      ApsActiveState
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The active state of this protection group
+            restoreRun(0): Restore to run APS
+            pause(1): Pause APS"
+        ::= { zxAPSLineProtectPWConfigEntry 2 } 
+         
+     zxAPSLineProtectPWSendPMode  OBJECT-TYPE
+        SYNTAX      ApsSendPMode 
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The protection mode of this protection group
+            send(0): To send APS packets
+            nosend(1): Not to send APS packets"
+        ::= { zxAPSLineProtectPWConfigEntry 3 }   
+        
+     zxAPSLineProtectPWHoldOffTime  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..100)
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The hold-off time of this protection group"
+        ::= { zxAPSLineProtectPWConfigEntry 4 }   
+        
+     zxAPSLineProtectPWRevertMode  OBJECT-TYPE
+        SYNTAX      ApsRevertMode
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The revertive mode of this protection group
+            revertive(0): APS is in revertive operation, which normal traffic 
+            signal is restored to the working transport entity after the 
+            condition(s) causing a switch has been cleared
+            nonrevertive(1): APS is in non-revertive operation, which normal 
+            traffic signal is allowed to remain on the protection transport 
+            entity even after a switch reason has been cleared"
+        ::= { zxAPSLineProtectPWConfigEntry 5 }    
+        
+     zxAPSLineProtectPWWTRTime  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..12)
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The wait-to-restore time of this protection group"
+        ::= { zxAPSLineProtectPWConfigEntry 6 }   
+        
+     zxAPSLineProtectPWSwitchFlag  OBJECT-TYPE
+        SYNTAX      ApsSwitchCmd 
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The switch command of this protection group
+            none(0): The switch command hasn't been configured or has been cleared
+            clear(1): Clear the externally initiated command and WTR
+            lockout(2): Prevent a working signal from being selected from the 
+            protection transport entity
+            fsP(3): Force the normal traffic to the protection entity
+            msP(4): In the absence of a failure of a working or protection 
+            entity,Force the normal traffic to the protection entity
+            exercise(5): Exercise of the APS protocol
+            msW(7): Manual switch normal traffic to working"
+        ::= { zxAPSLineProtectPWConfigEntry 7 }   
+    zxAPSLineProtectPWBridgeType  OBJECT-TYPE
+        SYNTAX      ApsBridgeType
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The bridge type of this protection group
+            selector(2): Selector bridge
+            broadcast(1): Broadcast bridge"
+        ::= { zxAPSLineProtectPWConfigEntry 8 }
+
+         -------------------define tunnel group status table ------------------                 
+    zxAPSLineProtectTGStatusTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxAPSLineProtectTGStatusEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Status table of tunnel protection group's APS"
+        ::= { zxAPSProtectMIB 4}
+        
+    zxAPSLineProtectTGStatusEntry  OBJECT-TYPE
+        SYNTAX  ZxAPSLineProtectTGStatusEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Status entry of tunnel protection group's APS"
+        INDEX  { zxAPSLineProtectTGStatusTGID }
+        ::= { zxAPSLineProtectTGStatusTable 1 }
+
+    ZxAPSLineProtectTGStatusEntry ::=
+        SEQUENCE {
+            zxAPSLineProtectTGStatusTGID              Unsigned32,
+            zxAPSLineProtectTGStatusState             ApsStatusState    
+    }
+
+    zxAPSLineProtectTGStatusTGID  OBJECT-TYPE
+        SYNTAX      Unsigned32 (1..4294967295)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The group id of this protection group"
+        ::= { zxAPSLineProtectTGStatusEntry 1 } 
+   
+    zxAPSLineProtectTGStatusState  OBJECT-TYPE
+        SYNTAX      ApsStatusState
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The current APS state of this protection group
+            noRequestNull(0): There is no request or the far end has 
+            configured lockout
+            noRequestNormal(1): The far end has request which makes normal
+            traffic signal be selected from the protection transport entity
+            lockout(2): Lockout has been configured
+            forcedSwitch(3): Force switch has been configured
+            signalFailW(4): The working transport entity has SF
+            signalFailP(5): The protection transport entity has SF
+            manualSwitch(6): Manual switch has been configured
+            waitToRestore(7): SF or SD in the working transport entity has 
+            been cleared
+            exerciseNull(8): Exercise of the APS protocol when normal traffic 
+            signal is selected from the working transport entity
+            exerciseNormal(9): Exercise of the APS protocol when normal traffic 
+            signal is selected from the protection transport entity
+            doNotRevert(10): There is no request after a switch reason has been 
+            cleared in non-revertive operation
+            signalDegrW(11): The working transport entity has SD
+            signalDegrP(12): The protection transport entity has SD
+            manualSwitchW(13): Manual switch to working has been configured
+            reverseRequestNull(17): Exercise has been configured at the far end and
+            normal traffic signal is selected from the working transport entity
+            reverseRequestNormal(18): Exercise has been configured at the far end and
+            normal traffic signal is selected from the protection transport entity
+            "
+        ::= { zxAPSLineProtectTGStatusEntry 2 }    
+
+           -----------------------define pw group status  table -----------------                   
+    zxAPSLineProtectPWStatusTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxAPSLineProtectPWStatusEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Status table of pw group's APS"
+        ::= { zxAPSProtectMIB 5}
+        
+    zxAPSLineProtectPWStatusEntry  OBJECT-TYPE
+        SYNTAX  ZxAPSLineProtectPWStatusEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Status entry of pw group's APS"
+        INDEX  { zxAPSLineProtectPWStatusPWName }
+        ::= { zxAPSLineProtectPWStatusTable 1 }
+
+    ZxAPSLineProtectPWStatusEntry ::=
+        SEQUENCE {
+            zxAPSLineProtectPWStatusPWName              DisplayString,
+            zxAPSLineProtectPWStatusState               ApsStatusState    
+    }
+
+    zxAPSLineProtectPWStatusPWName  OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The group name of this protection group"
+        ::= { zxAPSLineProtectPWStatusEntry 1 } 
+   
+    zxAPSLineProtectPWStatusState  OBJECT-TYPE
+        SYNTAX      ApsStatusState
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The current APS state of this protection group
+            noRequestNull(0): There is no request or the far end has 
+            configured lockout
+            noRequestNormal(1): The far end has request which makes normal 
+            traffic signal be selected from the protection transport entity
+            lockout(2): Lockout has been configured
+            forcedSwitch(3): Force switch has been configured
+            signalFailW(4): The working transport entity has SF
+            signalFailP(5): The protection transport entity has SF
+            manualSwitch(6): Manual switch has been configured
+            waitToRestore(7): SF or SD in the working transport entity has 
+            been cleared
+            exerciseNull(8): Exercise of the APS protocol when normal traffic 
+            signal is selected from the working transport entity
+            exerciseNormal(9): Exercise of the APS protocol when normal traffic 
+            signal is selected from the protection transport entity
+            doNotRevert(10): There is no request after a switch reason has been 
+            cleared in non-revertive operation
+            signalDegrW(11): The working transport entity has SD
+            signalDegrP(12): The protection transport entity has SD
+            manualSwitchW(13): Manual switch to working has been configured
+            mappingSwitchW(15): The far end has request which makes normal traffic
+            signal be selected from the working transport entity
+            mappingSwitchP(16): The far end has request which makes normal traffic
+            signal be selected from the protection transport entity
+            reverseRequestNull(17): Exercise has been configured at the far end and
+            normal traffic signal is selected from the working transport entity
+            reverseRequestNormal(18): Exercise has been configured at the far end and
+            normal traffic signal is selected from the protection transport entity
+            "
+        ::= { zxAPSLineProtectPWStatusEntry 2 }
+            -----------------------define port group config table -----------------                 
+
+    zxAPSLineProtectPGConfigTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxAPSLineProtectPGConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Configuration table of port protection group's APS"
+        ::= { zxAPSProtectMIB 6}
+        
+    zxAPSLineProtectPGConfigEntry  OBJECT-TYPE
+        SYNTAX  ZxAPSLineProtectPGConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Configuration entry of port protection group's APS"
+        INDEX  { zxAPSLineProtectPGPGID }
+        ::= { zxAPSLineProtectPGConfigTable 1 }
+
+    ZxAPSLineProtectPGConfigEntry ::=
+        SEQUENCE {
+            zxAPSLineProtectPGPGID                  Unsigned32,
+            zxAPSLineProtectPGActiveState           ApsActiveState, 
+            zxAPSLineProtectPGHoldOffTime           Unsigned32,
+            zxAPSLineProtectPGRevertMode            ApsRevertMode,
+            zxAPSLineProtectPGWTRTime               Unsigned32,
+            zxAPSLineProtectPGSwitchFlag            ApsSwitchCmd
+    }
+
+    zxAPSLineProtectPGPGID  OBJECT-TYPE
+        SYNTAX      Unsigned32 (1..65536)
+        MAX-ACCESS  not-accessible 
+        STATUS      current
+        DESCRIPTION
+            "The group id of this protection group"
+        ::= { zxAPSLineProtectPGConfigEntry 1 } 
+   
+    zxAPSLineProtectPGActiveState  OBJECT-TYPE
+        SYNTAX      ApsActiveState
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The active state of this protection group
+            restoreRun(0): Restore to run APS
+            pause(1): Pause APS"
+        ::= { zxAPSLineProtectPGConfigEntry 2 }         
+             
+     zxAPSLineProtectPGHoldOffTime  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..100)
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The hold-off time of this protection group"
+        ::= { zxAPSLineProtectPGConfigEntry 4 }   
+        
+     zxAPSLineProtectPGRevertMode  OBJECT-TYPE
+        SYNTAX      ApsRevertMode
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The revertive mode of this protection group
+            revertive(0): APS is in revertive operation, which normal traffic
+            signal is restored to the working transport entity after the 
+            condition(s) causing a switch has been cleared
+            nonrevertive(1): APS is in non-revertive operation, which normal
+            traffic signal is allowed to remain on the protection transport
+            entity even after a switch reason has been cleared"
+        ::= { zxAPSLineProtectPGConfigEntry 5 }    
+        
+     zxAPSLineProtectPGWTRTime  OBJECT-TYPE
+        SYNTAX      Unsigned32(0..12)
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The wait-to-restore time of this protection group"
+        ::= { zxAPSLineProtectPGConfigEntry 6 }   
+        
+     zxAPSLineProtectPGSwitchFlag  OBJECT-TYPE
+        SYNTAX      ApsSwitchCmd 
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The switch command of this protection group
+            none(0): The switch command hasn't been configured or has been cleared
+            clear(1): Clear the externally initiated command and WTR
+            lockout(2): Prevent a working signal from being selected from the 
+            protection transport entity
+            fsP(3): Force the normal traffic to the protection entity
+            msP(4): In the absence of a failure of a working or protection 
+            entity,Force the normal traffic to the protection entity
+            exercise(5): Exercise of the APS protocol
+            fsW(6): Forced switch normal traffic to working
+            msW(7): Manual switch normal traffic to working"
+        ::= { zxAPSLineProtectPGConfigEntry 7 }         
+
+       -------------------define port group status table -----------------                 
+    zxAPSLineProtectPGStatusTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxAPSLineProtectPGStatusEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Status table of port group's APS"
+        ::= { zxAPSProtectMIB 7}
+        
+    zxAPSLineProtectPGStatusEntry  OBJECT-TYPE
+        SYNTAX  ZxAPSLineProtectPGStatusEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Status entry of port group's APS"
+        INDEX  { zxAPSLineProtectPGStatusPGID }
+        ::= { zxAPSLineProtectPGStatusTable 1 }
+
+    ZxAPSLineProtectPGStatusEntry ::=
+        SEQUENCE {
+            zxAPSLineProtectPGStatusPGID              Unsigned32,
+            zxAPSLineProtectPGStatusState             ApsStatusState    
+    }
+
+    zxAPSLineProtectPGStatusPGID  OBJECT-TYPE
+        SYNTAX      Unsigned32 (1..65536)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The group id of this protection group"
+        ::= { zxAPSLineProtectPGStatusEntry 1 } 
+   
+    zxAPSLineProtectPGStatusState  OBJECT-TYPE
+        SYNTAX      ApsStatusState
+        MAX-ACCESS  read-only 
+        STATUS      current
+        DESCRIPTION
+            "The current APS state of this protection group
+            noRequestNull(0): There is no request or the far end has 
+            configured lockout
+            noRequestNormal(1): The far end has request which makes normal 
+            traffic signal be selected from the protection transport entity
+            lockout(2): Lockout has been configured
+            forcedSwitch(3): Force switch has been configured
+            signalFailW(4): The working transport entity has SF
+            signalFailP(5): The protection transport entity has SF
+            manualSwitch(6): Manual switch has been configured
+            waitToRestore(7): SF or SD in the working transport entity has 
+            been cleared
+            exerciseNull(8): Exercise of the APS protocol when normal traffic 
+            signal is selected from the working transport entity
+            exerciseNormal(9): Exercise of the APS protocol when normal traffic 
+            signal is selected from the protection transport entity
+            doNotRevert(10): There is no request after a switch reason has been 
+            cleared in non-revertive operation
+            signalDegrW(11): The working transport entity has SD
+            signalDegrP(12): The protection transport entity has SD
+            manualSwitchW(13): Manual switch to working has been configured 
+            forcedSwitchW(14): Force switch to working has been configured
+            reverseRequestNull(17): Exercise has been configured at the far end and
+            normal traffic signal is selected from the working transport entity
+            reverseRequestNormal(18): Exercise has been configured at the far end and
+            normal traffic signal is selected from the protection transport entity"
+        ::= { zxAPSLineProtectPGStatusEntry 2 }
+
+END

@@ -1,0 +1,588 @@
+--  ************************************************
+--  $Id: zxr10switch.mib 8 2005-04-05 12:17:08Z taowq $
+--
+--  zxr10switch.mib: ZXR10 Switch MIB file
+--
+--  Mar. 2005, Tao wenqiang
+--   
+--  Copyright(c) 2005 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+ZXR10-SWITCH-VLAN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Integer32
+       FROM SNMPv2-SMI
+    enterprises
+        FROM SNMPv2-SMI
+
+    RowStatus,
+    DisplayString, 
+    TEXTUAL-CONVENTION
+    FROM SNMPv2-TC
+    
+    ifIndex
+        FROM RFC1213-MIB
+    zxr10
+        FROM ZXR10-SMI;
+    
+    zxr10switch MODULE-IDENTITY
+        
+        LAST-UPDATED "201603181000Z"  -- 2016-03-18 10:00
+        ORGANIZATION "ZTE Corporation"
+        CONTACT-INFO
+            "Yan Zhihong
+             Tel:15805158932
+             E-Mail: yan.zhihong@zte.com.cn
+            "
+        DESCRIPTION
+            "The MIB module to describe SwitchVlan."
+
+        REVISION "201603181000Z" --2016-03-18 10:00
+        DESCRIPTION
+        "   add:
+            zxr10SwitchVlanInstanceTable,
+            zxr10SwitchVlanInstanceEntry,
+            zxr10SwitchVlanInstanceId,
+            zxr10SwitchVlanTagPrioirty,   
+            format:
+            zxr10SwitchVlanGlobal,
+            zxr10SwitchVlanPortTable
+        "
+        REVISION "201602291000Z" --2016-02-29 10:00
+        DESCRIPTION
+        "   add:
+            zxr10SwitchportTrunkAllowAllVlan          
+        "
+       REVISION "201502061000Z"  --2015-02-06 10:00
+       DESCRIPTION
+        "modify:add descriptions for zxr10CpuVlanPvidEntry,
+                zxr10QinQEntry,zxr10MemberShipEntry and
+                zxr10SwitchVlanPortEntry;
+                zxr10DefaultVlanEnable,zxr10QinQInterTpid 
+                and zxr10QinQExtTpid DEFVAL
+        " 
+       REVISION "201405231000Z"  --2014-05-23 10:00
+       DESCRIPTION
+        "modify:zxr10SwportTagTrunkNativeVlan DEFVAL
+        "   
+        REVISION "201312131000Z"  -- 2013-12-13 10:00
+        DESCRIPTION
+            "modify:the descriptions of some leafs of zxr10MemberShipTable 
+                    and zxr10CpuVlanPvidTable are changed."
+        REVISION "201303061000Z"  -- 2013-03-06 10:00 
+        DESCRIPTION
+            "add:zxr10SwitchVlanMIB
+                 EnabledStatus
+                 TPIDType
+            " 
+        REVISION "200810210000Z"  -- 2008-10-21 10:00
+        DESCRIPTION
+        "ZXROS SWITCH MIB"
+        ::= { zxr10 102 }
+        
+    EnabledStatus ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION "A simple status value for the object."
+        SYNTAX INTEGER { enabled(1), disabled(2) }
+        
+    TPIDType ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION "Value of TPID."
+    SYNTAX INTEGER { 
+                     tpidtype8100(1),
+                     tpidtype88a8(2),
+                     tpidtype9100(3),
+                     tpidtype9200(4),
+                     tpidtype9300(5)
+                   }
+    
+    zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+    zxr10 OBJECT IDENTIFIER ::= { zte 3}
+
+    zxr10vlan OBJECT IDENTIFIER ::= { zxr10switch 1}
+    zxr10QinQ  OBJECT IDENTIFIER   ::= { zxr10switch 3 }
+    zxr10MemberShip OBJECT IDENTIFIER ::={ zxr10switch 4}
+    
+    zxr10SwitchVlanMIB OBJECT IDENTIFIER ::={ zxr10switch 101}
+    
+    zxr10CpuVlanPvidTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10CpuVlanPvidEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VLAN information table."
+        ::= { zxr10vlan 1 }
+
+    zxr10CpuVlanPvidEntry  OBJECT-TYPE
+        SYNTAX  Zxr10CpuVlanPvidEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VLAN information table entry."
+        INDEX  { zxr10CpuVlanId }
+        ::= { zxr10CpuVlanPvidTable 1 }
+
+    Zxr10CpuVlanPvidEntry ::=
+        SEQUENCE {
+            zxr10CpuVlanId
+                Integer32,
+            zxr10CpuVlanIf 
+                Integer32,
+            zxr10CpuVlanMtu
+                Integer32,
+            zxr10CpuVlanSwitchEnable
+                INTEGER,
+            zxr10CpuVlanSaid
+                Integer32,
+            zxr10CpuVlanVpnid 
+                Integer32,
+            zxr10CpuVlanRowStatus
+                Integer32, 
+            zxr10CpuVlanName
+                DisplayString,
+            zxr10CpuVlanMemPortsPvid
+                DisplayString,
+            zxr10CpuVlanMemPortsUntag
+                DisplayString,
+            zxr10CpuVlanMemPortsTag
+                DisplayString
+            }
+    
+    zxr10CpuVlanId  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "The VLAN id (1-4094)"
+        ::= { zxr10CpuVlanPvidEntry 1 }
+        
+    zxr10CpuVlanIf  OBJECT-TYPE
+        SYNTAX  Integer32 
+        MAX-ACCESS  read-only 
+        STATUS  current
+        DESCRIPTION
+            "The VLAN entry -> L3 interface "
+        ::= { zxr10CpuVlanPvidEntry 2 }
+        
+    zxr10CpuVlanMtu OBJECT-TYPE
+        SYNTAX  Integer32 (1..65534)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN MTU size"
+        ::= { zxr10CpuVlanPvidEntry 3 }
+
+    zxr10CpuVlanSwitchEnable OBJECT-TYPE
+        SYNTAX    INTEGER{enable(0),disable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN l2/l3 switch flag:enable or disnable"
+        ::= { zxr10CpuVlanPvidEntry 4 }
+   
+   zxr10CpuVlanSaid OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION 
+            "Security Association Identifier(SAID)"
+        ::= { zxr10CpuVlanPvidEntry 5 }
+    
+    zxr10CpuVlanVpnid  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN entry -> Vpnid"
+        ::= { zxr10CpuVlanPvidEntry 6 }
+    
+    zxr10CpuVlanRowStatus OBJECT-TYPE
+        SYNTAX    Integer32
+        MAX-ACCESS   read-only
+        STATUS  current
+        DESCRIPTION
+            "The flag of create or delete VLAN "
+        ::= { zxr10CpuVlanPvidEntry 7 }
+    
+    zxr10CpuVlanName OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN name"
+        ::= { zxr10CpuVlanPvidEntry 8 }
+    
+    zxr10CpuVlanMemPortsPvid OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The PVID port members of VLAN "
+        ::= { zxr10CpuVlanPvidEntry 9 }
+    
+    zxr10CpuVlanMemPortsUntag OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The untag port members of VLAN "
+        ::= { zxr10CpuVlanPvidEntry 10 }
+    
+    zxr10CpuVlanMemPortsTag OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The tag port members of VLAN "
+        ::= { zxr10CpuVlanPvidEntry 11 }
+    
+    zxr10QinQTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10QinQEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Switchport QinQ(802.1q in 802.1q) configuration table."
+        ::= { zxr10QinQ 1 }
+    
+    zxr10QinQInterTpid  OBJECT-TYPE
+        SYNTAX   TPIDType
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The global internal qinq TPID,valid value is 1-5,they separately
+            mean 8100 88a8 9100 9200 9300,it can be set by different project."
+        DEFVAL  { tpidtype8100 }
+        ::= { zxr10QinQ 4 }
+    
+    zxr10QinQEntry  OBJECT-TYPE
+        SYNTAX  Zxr10QinQEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Switchport QinQ configuration table entry."
+        INDEX  { ifIndex }
+        ::= { zxr10QinQTable 1 }
+    
+    Zxr10QinQEntry ::=
+        SEQUENCE {
+            zxr10QinQPortName
+            DisplayString,
+            zxr10QinQMode
+                INTEGER,
+            zxr10QinQTpid
+                Integer32,
+            zxr10QinQPvid
+                Integer32, 
+            zxr10QinQExtTpid
+                TPIDType
+            }
+    
+    zxr10QinQPortName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The name of this port"
+        ::= { zxr10QinQEntry 1 }
+    
+    zxr10QinQMode  OBJECT-TYPE
+        SYNTAX   INTEGER{normal(0),customer(1),uplink(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The qinq mode of switchport "
+        ::= { zxr10QinQEntry 2 }
+    
+    zxr10QinQTpid  OBJECT-TYPE
+        SYNTAX   Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The qinq TPID of switchport "
+        ::= { zxr10QinQEntry 3 }
+    
+    zxr10QinQPvid  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The native vlan id of switchport "
+        ::= { zxr10QinQEntry 4 }
+    
+    zxr10QinQExtTpid  OBJECT-TYPE
+        SYNTAX  TPIDType
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The extensive qinq TPID of switchport,valid value is 1-5,they separately
+            mean 8100 88a8 9100 9200 9300,it can be set by different project."
+        DEFVAL  { tpidtype8100 }
+        ::= { zxr10QinQEntry 5 }
+    
+    zxr10MemberShipTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10MemberShipEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VLAN membership information table."
+        ::= { zxr10MemberShip 1 }
+    
+    zxr10MemberShipEntry  OBJECT-TYPE
+        SYNTAX  Zxr10MemberShipEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The VLAN membership information table entry."
+        INDEX  { ifIndex }
+        ::= { zxr10MemberShipTable 1 }
+    
+    Zxr10MemberShipEntry ::=
+        SEQUENCE {
+            zxr10MemberShipPortName
+                DisplayString,
+            zxr10MemberShipPvid
+                Integer32,
+            zxr10MemberShipMode
+                INTEGER,
+            zxr10MemberShipVlansTag
+                OCTET STRING,
+            zxr10MemberShipVlansHybridUnTag
+                OCTET STRING,
+            zxr10MemberShipVlansTag2k
+                OCTET STRING,
+            zxr10MemberShipVlansHybridUnTag2k
+                OCTET STRING,
+            zxr10MemberShipVlansTag3k
+                OCTET STRING,
+            zxr10MemberShipVlansHybridUnTag3k
+                OCTET STRING,
+            zxr10MemberShipVlansTag4k
+                OCTET STRING,
+            zxr10MemberShipVlansHybridUnTag4k
+                OCTET STRING,
+            zxr10MemberShipVlansHybridStrTag
+                DisplayString,
+            zxr10MemberShipVlansHybridStrUnTag
+                DisplayString
+            }
+    
+    
+    zxr10MemberShipPortName  OBJECT-TYPE
+        SYNTAX  DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The name of this port"
+        ::= { zxr10MemberShipEntry 1 }
+    
+    zxr10MemberShipPvid  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The native VLAN id of this interface"
+        ::= { zxr10MemberShipEntry 2 }
+    
+    zxr10MemberShipMode  OBJECT-TYPE
+        SYNTAX   INTEGER{access(0),trunk(1), hybrid(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN mode of this interface."
+        ::= { zxr10MemberShipEntry 3 }
+    
+    zxr10MemberShipVlansTag OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(0..128))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN tag bitMap (1-1024) "
+        ::= { zxr10MemberShipEntry 4 }
+    
+    zxr10MemberShipVlansHybridUnTag OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(0..128))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN untag bitMap(1-1024) of hybrid ports "
+        ::= { zxr10MemberShipEntry 5 }
+    
+    zxr10MemberShipVlansTag2k OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(0..128))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN bitMap (1025-2048) "
+        ::= { zxr10MemberShipEntry 6 }
+    
+    zxr10MemberShipVlansHybridUnTag2k OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(0..128))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN untag bitMap(1025-2048) of hybrid ports "
+        ::= { zxr10MemberShipEntry 7 }
+    
+    zxr10MemberShipVlansTag3k OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(0..128))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN tag bitMap (2049-3072) "
+        ::= { zxr10MemberShipEntry 8 }
+    
+    zxr10MemberShipVlansHybridUnTag3k OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(0..128))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN untag bitMap(2049-3072) of hybrid ports "
+        ::= { zxr10MemberShipEntry 9 }
+    
+    zxr10MemberShipVlansTag4k OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(0..128))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN tag bitMap(3073-4094)"
+        ::= { zxr10MemberShipEntry 10 }
+    
+    zxr10MemberShipVlansHybridUnTag4k OBJECT-TYPE
+        SYNTAX   OCTET STRING (SIZE(0..128))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN untag bitMap(3073-4094) of hybrid ports "
+        ::= { zxr10MemberShipEntry 11 }
+        
+    zxr10MemberShipVlansHybridStrTag OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN tag of hybrid ports."
+        ::= { zxr10MemberShipEntry 12} 
+    
+    zxr10MemberShipVlansHybridStrUnTag OBJECT-TYPE
+        SYNTAX   DisplayString
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN untag of hybrid ports."
+        ::= { zxr10MemberShipEntry 13 }
+
+    --=============================
+    --1. zxr10SwitchVlan Global 
+    --=============================
+    zxr10SwitchVlanGlobal  OBJECT IDENTIFIER ::= { zxr10SwitchVlanMIB 1 }
+
+    zxr10DefaultVlanEnable  OBJECT-TYPE
+        SYNTAX   EnabledStatus
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "If this object is true, then it default-vlan."
+        DEFVAL  { enabled }
+        ::= { zxr10SwitchVlanGlobal 1 }
+          
+    --=============================
+    --2. zxr10SwitchVlanPortTable 
+    --=============================
+    zxr10SwitchVlanPortTable   OBJECT-TYPE
+       SYNTAX  SEQUENCE OF Zxr10SwitchVlanPortEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+           "The switch VLAN enable table."
+        ::= { zxr10SwitchVlanMIB 2 }
+
+    zxr10SwitchVlanPortEntry  OBJECT-TYPE
+        SYNTAX  Zxr10SwitchVlanPortEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The switch VLAN enable table entry."
+        INDEX  { zxr10SwitchportName }
+        ::= { zxr10SwitchVlanPortTable 1 }
+        
+    Zxr10SwitchVlanPortEntry ::=
+        SEQUENCE {
+                zxr10SwitchportName  DisplayString,
+                zxr10SwportTagTrunkNativeVlan  EnabledStatus,
+                zxr10SwitchportTrunkAllowAllVlan EnabledStatus
+                }
+                
+    zxr10SwitchportName  OBJECT-TYPE
+        SYNTAX  DisplayString(SIZE(0..31))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "the name of switchport."
+        ::= { zxr10SwitchVlanPortEntry 1 }
+
+    zxr10SwportTagTrunkNativeVlan  OBJECT-TYPE
+        SYNTAX  EnabledStatus
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "If this object is true, then it enables the switchport tag trunk native vlan."
+        DEFVAL  { disabled }
+        ::= { zxr10SwitchVlanPortEntry 2 } 
+
+    zxr10SwitchportTrunkAllowAllVlan  OBJECT-TYPE
+        SYNTAX  EnabledStatus
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+           "The interface is in trunk mode,  
+            enabled, allow all VLAN packets pass the interface.
+            disabled, only matched VLAN packets can pass the interface. "
+        DEFVAL  { disabled }
+        ::= { zxr10SwitchVlanPortEntry 3 }
+
+    --=============================
+    --3. zxr10SwitchVlanInstanceTable 
+    --=============================
+     zxr10SwitchVlanInstanceTable OBJECT-TYPE
+       SYNTAX  SEQUENCE OF Zxr10SwitchVlanInstanceEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+           "The switch VLAN config table."
+        ::= { zxr10SwitchVlanMIB 3 }
+
+    zxr10SwitchVlanInstanceEntry  OBJECT-TYPE
+        SYNTAX  Zxr10SwitchVlanInstanceEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The switch VLAN config table entry."
+        INDEX  { zxr10SwitchVlanInstanceId }
+        ::= { zxr10SwitchVlanInstanceTable 1 }
+            
+    Zxr10SwitchVlanInstanceEntry ::=
+    SEQUENCE {
+            zxr10SwitchVlanInstanceId  Integer32,
+            zxr10SwitchVlanTagPriority  Integer32
+            }
+
+    zxr10SwitchVlanInstanceId  OBJECT-TYPE
+        SYNTAX  Integer32 (1..4094)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The switch VLAN ID."
+        ::= { zxr10SwitchVlanInstanceEntry 1 }
+
+    zxr10SwitchVlanTagPriority  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The VLAN tag priority, the value 0xFF means unconfigured."
+        ::= { zxr10SwitchVlanInstanceEntry 2 }
+END

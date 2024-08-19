@@ -1,0 +1,475 @@
+-- *****************************************************************
+-- $Id: Zxr10ProtocolRoutes.mib  2013-04-09 15:47:59Z mengmeihua $
+--
+-- Zxr10ProtocolRoutes.mib: ZTE Corporation Enterprise Structure of Management Information
+--
+-- APRIL 2013, mengmeihua
+--
+-- Copyright (c) 2013 by ZTE Corporation
+-- All rights reserved.
+-- 
+-- *****************************************************************
+--
+ZXR10-PROTOCOL-ROUTERS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,OBJECT-IDENTITY,Unsigned32,IpAddress, 
+        OBJECT-TYPE,
+        enterprises
+        FROM SNMPv2-SMI
+        DisplayString
+            FROM SNMPv2-TC
+        zxr10RosngMIB
+            FROM ZXR10-SMI;
+ 
+
+zxr10ProtocolRoutesMIB MODULE-IDENTITY
+        LAST-UPDATED "201705091010Z"  -- May 9, 2017
+        ORGANIZATION "ZTE Corporation"
+        CONTACT-INFO
+            "Meng meihua (He yunbo)
+             Tel: +86-25-52871138
+             E-Mail: meng.meihua@zte.com.cn
+             "
+        DESCRIPTION
+            "ZXROSNG PROTOCOL ROUTES MIB" 
+
+        REVISION "201705091010Z"  -- May 9, 2017
+        DESCRIPTION
+		    "Modify MAX-ACCESS of zxr10prIPv4gmrRouteNum and zxr10prIPv4gmrWarningPercent."
+        REVISION "201508131010Z"  -- August 13, 2015
+        DESCRIPTION
+            "Add zxr10prIPv4GlobalTableCapacity node to this mib file."     
+        REVISION "201412010000Z"  -- December 01, 2014
+        DESCRIPTION
+            "Add IPv6 route table to this mib file."   
+        REVISION "201304270000Z"  -- April 27, 2013
+        DESCRIPTION
+            "modify the invalid value of the zxr10prIPv4GlobalMaxRoutes."   
+        REVISION "201304090000Z"  -- April 09, 2013
+        DESCRIPTION
+            "It is protocol routes private mib.
+            It includes the command in the Protocol Routes model."        
+        ::= { zxr10RosngMIB 160 } 
+                       
+zxr10ProtocolRoutesGlobalObjects  OBJECT IDENTIFIER 
+        ::= {zxr10ProtocolRoutesMIB 1}      
+zxr10ProtocolRoutesObjects        OBJECT IDENTIFIER 
+        ::= {zxr10ProtocolRoutesMIB 2} 
+zxr10ProtocolRoutesGlobalTraps    OBJECT IDENTIFIER 
+        ::= {zxr10ProtocolRoutesMIB 3}     
+zxr10ProtocolRoutesConformance    OBJECT IDENTIFIER 
+        ::= {zxr10ProtocolRoutesMIB 4}    
+        
+zxr10ProtocolRoutesIPv4Objects OBJECT IDENTIFIER 
+        ::= {zxr10ProtocolRoutesObjects 1}                               
+zxr10ProtocolRoutesIPv6Objects OBJECT IDENTIFIER 
+        ::= {zxr10ProtocolRoutesObjects 2}
+zxr10prIPv4GlobalObjects OBJECT IDENTIFIER 
+        ::= { zxr10ProtocolRoutesIPv4Objects 1 }
+
+-- the zxr10prIPv4GlobalMaxRoutes
+-- The zxr10prIPv4GlobalMaxRoutes can set max-routes of global route table 
+-- this function can not limit the routes num,
+-- but only give users a alarm;
+          
+zxr10prIPv4GlobalMaxRoutes OBJECT IDENTIFIER 
+        ::= { zxr10prIPv4GlobalObjects 1 }  
+
+zxr10prIPv4gmrRouteNum OBJECT-TYPE
+        SYNTAX  Unsigned32 (1..4294967295)
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "the max-route num which means the maximum of 
+            the global route table.If this attribute is not set,
+            its value should be set to 0.This attibute 
+            must set with zxr10VrfRouteWarningPercent together.
+            If you just set this attibute only,there will
+            be an error!" 
+        ::= { zxr10prIPv4GlobalMaxRoutes 1 }  
+
+zxr10prIPv4gmrWarningPercent OBJECT-TYPE
+        SYNTAX  Unsigned32 (1..100)
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+            "when the routes in the global route table exceeded 
+            the warningpercent there will be a alarm displayed 
+            in the interface.If this attribute is not set,
+            its value should be set to 0.This attibute must 
+            set with zxr10VrfRouteMaxNum together.If you just 
+            set this attibute only, there will be an error!" 
+        ::= { zxr10prIPv4GlobalMaxRoutes 2 }    
+        
+-- the capability of IPv4 protocol route table
+zxr10prIPv4GlobalTableCap OBJECT-TYPE
+        SYNTAX  Unsigned32 (1..4294967295)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "the max capability of IPv4 protocol route table."  
+        ::= { zxr10prIPv4GlobalObjects 2 }   
+                              
+-- the VRF routing table
+-- The VRF routing table contains an entry for each route 
+-- The routes in the VRF routing table is valied and master;
+-- presently known to this entity.
+zxr10prIPv4VrfRouteTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10prIPv4VrfRouteEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+             "Show the vrf route detail information."
+        ::= { zxr10ProtocolRoutesIPv4Objects 2 }
+zxr10prIPv4VrfRouteEntry OBJECT-TYPE
+        SYNTAX  Zxr10prIPv4VrfRouteEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+             "Show the vrf route detail information."
+        INDEX   { zxr10prIPv4VrfRouteVrfName,
+                  zxr10prIPv4VrfRouteDest
+                }
+        ::= { zxr10prIPv4VrfRouteTable 1 }
+Zxr10prIPv4VrfRouteEntry ::=
+        SEQUENCE {  
+         zxr10prIPv4VrfRouteVrfName
+           DisplayString,
+         zxr10prIPv4VrfRouteDest
+           IpAddress,
+         zxr10prIPv4VrfRouteIfIndex
+           INTEGER, 
+         zxr10prIPv4VrfRouteIfName
+           DisplayString,
+         zxr10prIPv4VrfRouteMetric
+           INTEGER,
+         zxr10prIPv4VrfRoutePrf
+           INTEGER,
+         zxr10prIPv4VrfRouteNextHop
+           IpAddress,
+         zxr10prIPv4VrfRouteType
+           INTEGER,
+         zxr10prIPv4VrfRouteProto
+           INTEGER,
+         zxr10prIPv4VrfRouteAge
+           INTEGER,
+         zxr10prIPv4VrfRouteMask
+           IpAddress,
+         zxr10prIPv4VrfRouteInfo
+           OBJECT IDENTIFIER
+ }     
+ 
+zxr10prIPv4VrfRouteVrfName OBJECT-TYPE 
+        SYNTAX DisplayString (SIZE (0..32))
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "VRF Name."
+        ::= { zxr10prIPv4VrfRouteEntry 1 }
+
+zxr10prIPv4VrfRouteDest OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The destination IP address of this route.  An
+            entry with a value of 0.0.0.0 is considered a
+            default route.  Multiple routes to a single
+            destination can appear in the table, but MAX-ACCESS to
+            such multiple entries is dependent on the table-
+            MAX-ACCESS mechanisms defined by the network
+            management protocol in use."
+        ::= { zxr10prIPv4VrfRouteEntry 2 }  
+        
+zxr10prIPv4VrfRouteIfIndex OBJECT-TYPE
+        SYNTAX INTEGER (0..2147483647)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The IfIndex which uniquely identifies the
+            local interface through which the next hop of this
+            route should be reached.If there is no inteface, this
+            value will be set 0."
+        ::= { zxr10prIPv4VrfRouteEntry 3 }
+
+zxr10prIPv4VrfRouteIfName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The IfName which uniquely identifies the
+            local interface through which the next hop of this
+            route should be reached.If there is no inteface, this
+            value will be set NULL."
+        ::= { zxr10prIPv4VrfRouteEntry 4 }
+
+zxr10prIPv4VrfRouteMetric OBJECT-TYPE
+        SYNTAX  INTEGER (-1..2147483647)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The primary routing metric for this route.  The
+            semantics of this metric are determined by the
+            routing-protocol specified in the route's
+            zxr10VrfRouteProto value.  If this metric is not used,
+            its value should be set to -1."
+        ::= { zxr10prIPv4VrfRouteEntry 5 }
+
+zxr10prIPv4VrfRoutePrf OBJECT-TYPE
+        SYNTAX  INTEGER (-1..2147483647)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "An alternate routing Preference for this route.  The
+            semantics of this metric are determined by the
+            routing-protocol specified in the route's
+            zxr10VrfRouteProto value.  If the Preference is not used,
+            its value should be set to -1."
+        ::= { zxr10prIPv4VrfRouteEntry 6 }
+
+zxr10prIPv4VrfRouteNextHop OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The IP address of the next hop of this route.
+            (In the case of a route bound to an interface
+            which is realized via a broadcast media, the value
+            of this field is the agent's IP address on that
+            interface.)."
+        ::= { zxr10prIPv4VrfRouteEntry 7 }
+
+zxr10prIPv4VrfRouteType OBJECT-TYPE
+        SYNTAX  INTEGER {
+                 other(1),        -- none of the following
+
+                 invalid(2),      -- an invalidated route
+                                  -- route to directly
+                 direct(3),       -- connected (sub-)network
+
+                                  -- route to a non-local
+                 indirect(4)      -- host/network/sub-network
+             }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The type of route.  Note that the values
+            direct(3) and indirect(4) refer to the notion of
+            direct and indirect routing in the IP
+            architecture.
+
+            Setting this object to the value invalid(2) has
+            the effect of invalidating the corresponding entry
+            in the zxr10VrfRouteTable object.  That is, it
+            effectively dissasociates the destination
+            identified with said entry from the route
+            identified with said entry.  It is an
+            implementation-specific matter as to whether the
+            agent removes an invalidated entry from the table.
+            Accordingly, management stations must be prepared
+            to receive tabular information from agents that
+            corresponds to entries not currently in use.
+            Proper interpretation of such entries requires
+            examination of the relevant zxr10VrfRouteType object."
+        ::= { zxr10prIPv4VrfRouteEntry 8 }
+
+zxr10prIPv4VrfRouteProto OBJECT-TYPE
+        SYNTAX  INTEGER {
+                 other(1),       -- none of the following
+
+                                 -- non-protocol information,
+                                 -- e.g., manually configured
+                 local(2),       -- entries
+
+                                 -- set via a network
+                 netmgmt(3),     -- management protocol
+
+                                 -- obtained via ICMP,
+                 icmp(4),        -- e.g., Redirect
+
+                                 -- the remaining values are
+                                 -- all gateway routing
+                                 -- protocols
+                 egp(5),
+                 ggp(6),
+                 hello(7),
+                 rip(8),
+                 isis(9),
+                 esis(10),
+                 ciscoIgrp(11),
+                 bbnSpfIgp(12),
+                 ospf(13),
+                 bgp(14)
+             }
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The routing mechanism via which this route was
+            learned.  Inclusion of values for gateway routing
+            protocols is not intended to imply that hosts
+            should support those protocols."
+        ::= { zxr10prIPv4VrfRouteEntry 9 }
+
+zxr10prIPv4VrfRouteAge OBJECT-TYPE
+        SYNTAX  INTEGER (0..2147483647)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The number of seconds since this route was last
+            updated or otherwise determined to be correct.
+            Note that no semantics of `too old' can be implied
+            except through knowledge of the routing protocol
+            by which the route was learned."
+        ::= { zxr10prIPv4VrfRouteEntry 10 }
+
+zxr10prIPv4VrfRouteMask OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Indicate the mask to be logical-ANDed with the
+            destination address before being compared to the
+            value in the zxr10VrfRouteDest field.  For those systems
+            that do not support arbitrary subnet masks, an
+            agent constructs the value of the zxr10VrfRouteMask by
+            determining whether the value of the correspondent
+            zxr10VrfRouteDest field belong to a class-A, B, or C
+            network, and then using one of:
+
+                mask           network
+                255.0.0.0      class-A
+                255.255.0.0    class-B
+                255.255.255.0  class-C
+
+            If the value of the zxr10VrfRouteDest is 0.0.0.0 (a
+            default route), then the mask value is also
+            0.0.0.0.  It should be noted that all IP routing
+            subsystems implicitly use this mechanism."
+        ::= { zxr10prIPv4VrfRouteEntry 11 }
+
+zxr10prIPv4VrfRouteInfo OBJECT-TYPE
+        SYNTAX  OBJECT IDENTIFIER
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "A reference to MIB definitions specific to the
+            particular routing protocol which is responsible
+            for this route, as determined by the value
+            specified in the route's zxr10VrfRouteProto value.  If
+            this information is not present, its value should
+            be set to the OBJECT IDENTIFIER { 0 0 }, which is
+            a syntatically valid object identifier, and any
+            conformant implementation of ASN.1 and BER must be
+            able to generate and recognize this value."
+        ::= { zxr10prIPv4VrfRouteEntry 12 } 
+           
+zxr10prIPv6GlobalObjects OBJECT IDENTIFIER 
+        ::= { zxr10ProtocolRoutesIPv6Objects 1 }
+                                          
+-- the VRF routing IPv6 table
+-- The VRF routing IPv6 table contains an entry for each route 
+-- The routes in the VRF routing table is valied and master;
+-- presently known to this entity.
+zxr10prIPv6VrfRoutesSumTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10prIPv6VrfRoutesSumEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+             "Show the routes number in this vrf."
+        ::= { zxr10ProtocolRoutesIPv6Objects 2 }
+zxr10prIPv6VrfRoutesSumEntry OBJECT-TYPE
+        SYNTAX  Zxr10prIPv6VrfRoutesSumEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+             "Show the vrf route detail information."
+        INDEX   { zxr10prIPv6vrsVrfName}
+        ::= { zxr10prIPv6VrfRoutesSumTable 1 } 
+        
+Zxr10prIPv6VrfRoutesSumEntry ::=
+        SEQUENCE {  
+         zxr10prIPv6vrsVrfName
+           DisplayString,
+         zxr10prIPv6vrsTotal
+           Unsigned32,  
+         zxr10prIPv6vrsConnect
+           Unsigned32,
+         zxr10prIPv6vrsStatic
+           Unsigned32,
+         zxr10prIPv6vrsRip
+           Unsigned32,
+         zxr10prIPv6vrsOspf
+           Unsigned32,
+         zxr10prIPv6vrsIsis
+           Unsigned32,
+         zxr10prIPv6vrsBgp
+           Unsigned32
+ }     
+zxr10prIPv6vrsVrfName OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..32))
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+        "VRF Name. If this attribute has NULL value, it means that this 
+         is the global table."
+    ::= { zxr10prIPv6VrfRoutesSumEntry 1 }
+
+zxr10prIPv6vrsTotal OBJECT-TYPE
+    SYNTAX  Unsigned32 (0..4294967295) 
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "The Total routes number in this ipv6 table."
+    ::= { zxr10prIPv6VrfRoutesSumEntry 2 }
+
+zxr10prIPv6vrsConnect OBJECT-TYPE
+    SYNTAX  Unsigned32 (0..4294967295) 
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "The connect routes number in this ipv6 table."
+    ::= { zxr10prIPv6VrfRoutesSumEntry 3 }
+
+zxr10prIPv6vrsStatic OBJECT-TYPE
+    SYNTAX  Unsigned32 (0..4294967295) 
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "The static routes number in this ipv6 table."
+    ::= { zxr10prIPv6VrfRoutesSumEntry 4 }
+
+zxr10prIPv6vrsRip OBJECT-TYPE
+    SYNTAX  Unsigned32 (0..4294967295)  
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "The rip routes number in this ipv6 table."
+    ::= { zxr10prIPv6VrfRoutesSumEntry 5 }
+
+zxr10prIPv6vrsOspf OBJECT-TYPE
+    SYNTAX  Unsigned32 (0..4294967295)  
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "The ospf routes number in this ipv6 table."
+    ::= { zxr10prIPv6VrfRoutesSumEntry 6 }
+
+zxr10prIPv6vrsIsis OBJECT-TYPE
+    SYNTAX  Unsigned32 (0..4294967295)  
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "The isis routes number in this ipv6 table."
+    ::= { zxr10prIPv6VrfRoutesSumEntry 7 }
+
+zxr10prIPv6vrsBgp OBJECT-TYPE
+    SYNTAX  Unsigned32 (0..4294967295)  
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+        "The bgp routes number in this ipv6 table."
+    ::= { zxr10prIPv6VrfRoutesSumEntry 8 }
+
+END
+

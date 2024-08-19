@@ -1,0 +1,11 @@
+caget ECR11-Diag:FC01:SetADRate.VAL
+caget ECR11-Diag:FC01:SetADRate.RVAL
+caget ECR11-Diag:FC01:SetADRate.STAT
+caget ECR11-Diag:FC01:SetADRate.SEVR
+#caget ECR11-Diag:FC01:SetADRate.NSTA
+#caget ECR11-Diag:FC01:SetADRate.NSEV
+caget ECR11-Diag:FC01:SetADRate.ACKS
+#caget ECR11-Diag:FC01:SetADRate.ACKT
+##caget ECR11-Diag:FC01:SetADRate.UDF
+#caget ECR11-Diag:FC01:SetADRate.UNSV
+#caget ECR11-Diag:FC01:SetADRate.COSV

@@ -1,0 +1,133 @@
+===Example 1===
+This is a nice simple example. You can run it up standalone and then use telnet to connect to it to test it out.
+<pre>
+#!/bin/env python2.4
+#
+# require a fixed version of serial_sim to be imported
+from pkg_resources import require
+require("dls_serial_sim==1.7")
+from dls_serial_sim import serial_device
+# create a class that represents the device
+# This device has 3 integer values, a, b, and c
+# They can be set by sending "a=100"
+# They can be read by sending "a"
+# Unrecognised commands reply "ERROR"
+class my_device(serial_device):
+    # set the terminator to control when a string is passed to reply
+    Terminator = "\r\n"
+    # create an internal dict of values
+    vals = { "a":5, "b":6, "c":7 }
+    # implement a reply function            
+    def reply(self, command):
+        if "=" in command:
+            # set a value in the internal dictionary
+            split = command.split("=")
+            # if val isn't in the dict, return error
+            if not self.vals.has_key(split[0]):
+                return "ERROR"
+            try:
+                # set the dictionary to the right value
+                self.vals[split[0]] = int(split[1])
+                # returning None means nothing will be sent back
+                return None
+            except:
+                # if there was an error (like a non integer value)
+                return "ERROR"
+        else:
+            try:
+                # report the value as a string
+                return str(self.vals[command])
+            except:
+                # if it wasn't in the internal dictionary
+                return "ERROR"
+if __name__ == "__main__":
+    # little test function that runs only when you run this file
+    dev = my_device()
+    dev.start_ip(9004)
+    dev.start_debug(9006)
+    # do a raw_input() to stop the program exiting immediately
+    raw_input()
+</pre>
+
+Here's what happens when we test it. First we run it up in one terminal, then in the other we try:
+
+{{{
+[tmc43@pc0043 ~]$ telnet localhost 9004
+Trying 127.0.0.1...
+Connected to localhost.localdomain (127.0.0.1).
+Escape character is '^]'.
+a
+5
+b
+6
+g
+ERROR
+a=100
+a
+100
+^]quit
+
+telnet> quit
+Connection closed.
+[tmc43@pc0043 ~]$ telnet localhost 9006
+Trying 127.0.0.1...
+Connected to localhost.localdomain (127.0.0.1).
+Escape character is '^]'.
+Welcome to a remote python interactive console. Type your python commands below.
+>>> self.vals
+{'a': 100, 'c': 7, 'b': 6}
+>>> ^]quit
+
+telnet> quit
+Connection closed.
+[tmc43@pc0043 ~]$
+}}}
+
+===Example 2===
+We can do more complicated simulations with the schedule function:
+
+<pre>
+#!/bin/env python2.4
+from pkg_resources import require
+require("dls_serial_sim==1.7")
+from dls_serial_sim import serial_device
+# This device has 2 integer values, set, rbv
+# rbv tracks set, but only moves by 1 a second
+# Read set by sending "set"
+# Read rbv by sending "rbv"
+# Change set by sending an integer
+# Unrecognised commands reply "ERROR"
+class my_device(serial_device):
+    Terminator = "\r\n"
+    def __init__(self,initial):
+        # need an init function to start the schedule function
+        # also allow user to set position it starts in
+        self.vals = { "set":int(initial), "rbv":int(initial) }
+        self.schedule(self.inc,1.0)
+    def inc(self):
+        # increment rbv to make it closer to set
+        if self.vals["rbv"] < self.vals["set"]:
+            self.vals["rbv"] += 1
+        elif self.vals["rbv"] > self.vals["set"]:
+            self.vals["rbv"] -= 1
+    # implement a reply function            
+    def reply(self, command):
+        if self.vals.has_key(command):
+            # return the value
+            return str(self.vals[command])
+        else:
+            try:
+                # set set=command
+                self.vals["set"] = int(command)
+            except:
+                # if there was an error
+                return "ERROR"
+if __name__ == "__main__":
+    # little test function that runs only when you run this file
+    dev = my_device(90)
+    dev.start_ip(9004)
+    dev.start_debug(9006)
+    # do a raw_input() to stop the program exiting immediately
+    raw_input()
+</pre>
+

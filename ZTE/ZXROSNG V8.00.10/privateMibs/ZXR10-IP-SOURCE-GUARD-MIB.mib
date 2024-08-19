@@ -1,0 +1,124 @@
+--  ************************************************
+--  ZXR10-IP-SOURCE-GUARD-MIB.mib 
+--  ZXR10 IP Source guard configuration MIB file
+--  Dec. 2012
+--  Copyright(c) 2012 by ZTE Corporaton
+--  All rights reservered
+--  ************************************************
+
+ZXR10-IP-SOURCE-GUARD-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE, 
+    enterprises                      
+        FROM SNMPv2-SMI	
+	DisplayString,
+	RowStatus
+        FROM SNMPv2-TC;
+
+	zxr10IPSourceGuardMIB MODULE-IDENTITY
+	LAST-UPDATED "201212250000Z"  
+	ORGANIZATION "ZTE Corporation"
+	CONTACT-INFO
+		"Xiao Niankun  ZTE Corporation 
+		 Mail: xiao.niankun@zte.com.cn
+         Tel : +86-21-64673"
+	DESCRIPTION
+		"The MIB module to describe IP data filtering policy of interface(s)."
+	REVISION "201212250000Z"  
+	DESCRIPTION
+	   ""
+	::= { zxr10RosngMIB 2003 }	   
+
+	zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+	zxr10 OBJECT IDENTIFIER ::= { zte 3 }
+	zxr10RosngMIB OBJECT IDENTIFIER ::= { zxr10 6000}
+	
+	zxr10IPSourceGuardGlobalObjects   OBJECT IDENTIFIER ::= { zxr10IPSourceGuardMIB 1 }
+	zxr10IPSourceGuardObjects         OBJECT IDENTIFIER ::= { zxr10IPSourceGuardMIB 2 }
+	zxr10IPSourceGuardNotifications   OBJECT IDENTIFIER ::= { zxr10IPSourceGuardMIB 3 }
+	zxr10IPSourceGuardConformance     OBJECT IDENTIFIER ::= { zxr10IPSourceGuardMIB 4 }
+	
+	IPSourceGuardMode ::=INTEGER{macBase(1), ipBase(2), macIpBase(3)}
+	
+	zxr10IPSourceGuardTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10IPSourceGuardEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IP Source Guard configuration table."
+        ::= { zxr10IPSourceGuardObjects 1 }   
+        
+    zxr10IPSourceGuardEntry  OBJECT-TYPE
+        SYNTAX  Zxr10IPSourceGuardEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "IP Source Guard configuration entry."
+        INDEX   { zxr10IPSourceGuardIfName }
+        ::= { zxr10IPSourceGuardTable 1 }
+        
+    Zxr10IPSourceGuardEntry ::=
+        SEQUENCE {
+            zxr10IPSourceGuardIfName
+                DisplayString, 
+            zxr10IPSourceGuardMode
+                IPSourceGuardMode,
+            zxr10IPSourceGuardVLAN
+                INTEGER,
+			zxr10IPSourceGuardDefaultVLAN
+			    INTEGER,
+			zxr10IPSourceGuardRowStatus
+			    RowStatus
+    }
+	
+    zxr10IPSourceGuardIfName  OBJECT-TYPE
+        SYNTAX   DisplayString (SIZE(1..31)) 
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Interface name."
+        ::= { zxr10IPSourceGuardEntry 1 } 	
+
+    zxr10IPSourceGuardMode  OBJECT-TYPE
+        SYNTAX   IPSourceGuardMode
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Set ip-source-guard mode base on mac(1),ip(2) or mac and ip(3)."
+        ::= { zxr10IPSourceGuardEntry 2 } 
+		
+    zxr10IPSourceGuardVLAN  OBJECT-TYPE
+        SYNTAX   INTEGER(0..4094)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Designate VLAN ID of ip-source-guard. 
+             The value of 0 means no VLAN being designated.
+             The range from 1 to 4094 means appointed VLAN ID.
+             The other values is invalid. 
+			 It must be set together with zxr10IPSourceGuardMode."
+        ::= { zxr10IPSourceGuardEntry 3 } 		
+
+    zxr10IPSourceGuardDefaultVLAN OBJECT-TYPE
+        SYNTAX   INTEGER{notAllVlan(0),allVlan(1)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Designate default VLAN of ip-source-guard.
+             The value of 0 means no VLAN being designated,
+             or specific VLAN appointed by zxr10IPSourceGuardVLAN.
+             The value of 1 means default VLAN,
+			 the same as all VLAN being designated. 
+			 It must be set together with zxr10IPSourceGuardMode."
+        ::= { zxr10IPSourceGuardEntry 4 } 	
+
+    zxr10IPSourceGuardRowStatus  OBJECT-TYPE
+        SYNTAX   RowStatus 
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Interface name."
+        ::= { zxr10IPSourceGuardEntry 100 } 		
+END

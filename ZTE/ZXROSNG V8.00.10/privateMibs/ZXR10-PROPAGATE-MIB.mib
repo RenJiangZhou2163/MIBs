@@ -1,0 +1,330 @@
+--  ************************************************
+--  $Id: ZXR10-PROPAGATE-MIB.mib 2013-05$
+--
+--  ZXR10-PROPAGATE-MIB.mib: ZXR10 PROPAGATE MIB file
+--
+--  MAY. 2013, Zhao Yanhua
+--
+--  Copyright(c) 2005 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+
+ZXR10-PROPAGATE-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE, Integer32,
+        Gauge32, Unsigned32, enterprises
+            FROM SNMPv2-SMI
+        DisplayString, TruthValue, DateAndTime
+            FROM SNMPv2-TC;        
+
+    zxr10PropagateMIB MODULE-IDENTITY
+        LAST-UPDATED "201308211610Z"
+        ORGANIZATION "ZTE Corporation."
+        CONTACT-INFO
+            "       Zhao yanhua
+            Tel:    +86-25-52870000
+            E-Mail: zhao.yanhua3@zte.com.cn
+            "
+        DESCRIPTION
+            "ZTE PROPAGATE MIB
+            "
+        REVISION "201308211610Z"
+        DESCRIPTION
+            "Modify: index sequence of zxr10PropagateSecRelationTable and 
+            zxr10PropagateLspRelationTable.
+            "
+        REVISION "201307031110Z"
+        DESCRIPTION
+            "Add zxr10PropagateSecPhb, zxr10PropagateLspPhb.
+            "
+        REVISION "201305201230Z"
+        DESCRIPTION
+            "Initial version of Propagate MIB module.
+            "
+        ::= { zxr10RosngMIB 603}
+
+    zte OBJECT IDENTIFIER             ::= { enterprises 3902 }
+    zxr10 OBJECT IDENTIFIER           ::= { zte 3 }    
+    zxr10RosngMIB OBJECT IDENTIFIER   ::= { zxr10 6000 }   
+
+    zxr10PropagateGlobalObjects OBJECT IDENTIFIER ::= { zxr10PropagateMIB 1 }
+    zxr10PropagateObjects       OBJECT IDENTIFIER ::= { zxr10PropagateMIB 2 }
+    zxr10PropagateSecObjects         OBJECT IDENTIFIER ::= { zxr10PropagateObjects 1 }
+    zxr10PropagateLspObjects         OBJECT IDENTIFIER ::= { zxr10PropagateObjects 2 }
+    zxr10PropagateSecRelationObjects OBJECT IDENTIFIER ::= { zxr10PropagateObjects 3 }
+    zxr10PropagateLspRelationObjects OBJECT IDENTIFIER ::= { zxr10PropagateObjects 4 }   
+    zxr10PropagateNotifications OBJECT IDENTIFIER ::= { zxr10PropagateMIB 3 }
+    zxr10PropagateConformance   OBJECT IDENTIFIER ::= { zxr10PropagateMIB 4 }
+    
+-- *******************************************************************
+--  PROPAGATE Section Configures
+-- *******************************************************************
+    zxr10PropagateSecTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10PropagateSecEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Propagate configure table of Section."
+        ::= { zxr10PropagateSecObjects 1 }
+
+    zxr10PropagateSecEntry OBJECT-TYPE
+        SYNTAX      Zxr10PropagateSecEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Defines an entry in the zxr10PropagateSecTable."
+       INDEX {
+               zxr10PropagateSecId
+             }
+       ::= { zxr10PropagateSecTable 1 }
+
+    Zxr10PropagateSecEntry ::=
+        SEQUENCE {
+            zxr10PropagateSecId      
+                 Unsigned32,
+            zxr10PropagateSecEnable  
+                 TruthValue,
+            zxr10PropagateSecPhb
+                 INTEGER
+       }
+
+    zxr10PropagateSecId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+          "Section ID"
+        ::= { zxr10PropagateSecEntry 1 }
+
+    zxr10PropagateSecEnable OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+          "Propagate is enabled or disabled on this section:
+         -`true', which indicates that propagate is enabled,
+         -`false', which indicates that propagate is disabled."
+        ::= { zxr10PropagateSecEntry 2 }
+ 
+    zxr10PropagateSecPhb OBJECT-TYPE
+        SYNTAX      INTEGER{be(1),   
+                        af11(2),
+                        af12(3),
+                        af21(4),
+                        af22(5),
+                        af31(6),
+                        af32(7),
+                        af41(8),
+                        af42(9),
+                        cs6(10),   
+                        cs7(11),   
+                        ef(12)}
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+          "PHB value"
+        DEFVAL       { cs7 }
+        ::= { zxr10PropagateSecEntry 3 }
+ 
+-- *******************************************************************
+--  PROPAGATE Lsp Configures
+-- ******************************************************************* 
+    zxr10PropagateLspTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10PropagateLspEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Propagate configure table of LSP."
+        ::= { zxr10PropagateLspObjects 1 }
+
+    zxr10PropagateLspEntry OBJECT-TYPE
+        SYNTAX      Zxr10PropagateLspEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Defines an entry in the zxr10PropagateLspTable."
+       INDEX {
+               zxr10PropagateTeId,
+               zxr10PropagateLspId
+             }
+       ::= { zxr10PropagateLspTable 1 }
+
+    Zxr10PropagateLspEntry ::=
+        SEQUENCE {
+            zxr10PropagateTeId   
+                 Unsigned32,
+            zxr10PropagateLspId      
+                 Unsigned32,
+            zxr10PropagateLspEnable  
+                 TruthValue,
+            zxr10PropagateLspPhb
+                 INTEGER
+       }
+
+    zxr10PropagateTeId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+          "Tunnel ID"
+        ::= { zxr10PropagateLspEntry 1 }
+        
+    zxr10PropagateLspId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+          "LSP ID"
+        ::= { zxr10PropagateLspEntry 2 }
+
+    zxr10PropagateLspEnable OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+          "Propagate is enabled or disabled on this LSP:
+        - `true', which indicates that propagate is enabled,
+        - `false', which indicates that propagate is disabled."
+        ::= { zxr10PropagateLspEntry 3 }
+        
+    zxr10PropagateLspPhb OBJECT-TYPE
+        SYNTAX      INTEGER{be(1),   
+                        af11(2),
+                        af12(3),
+                        af21(4),
+                        af22(5),
+                        af31(6),
+                        af32(7),
+                        af41(8),
+                        af42(9),
+                        cs6(10),   
+                        cs7(11),   
+                        ef(12)}
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+          "PHB value"
+        DEFVAL       { cs7 }
+        ::= { zxr10PropagateLspEntry 4 }
+        
+-- *******************************************************************
+--  PROPAGATE Section to LSP relation Configures
+-- *******************************************************************
+    zxr10PropagateSecRelationTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10PropagateSecRelationEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Propagate relation table from Secion to LSP."
+        ::= { zxr10PropagateSecRelationObjects 1 }
+        
+    zxr10PropagateSecRelationEntry OBJECT-TYPE
+        SYNTAX      Zxr10PropagateSecRelationEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Defines an entry in the zxr10PropagateSecRelationTable."
+       INDEX {               
+               zxr10PropagateSecRelationSecId,       
+               zxr10PropagateSecRelationTeId,
+               zxr10PropagateSecRelationLspId
+             }
+       ::= { zxr10PropagateSecRelationTable 1 }
+       
+    Zxr10PropagateSecRelationEntry ::=
+        SEQUENCE {            
+            zxr10PropagateSecRelationSecId
+                Unsigned32,        
+            zxr10PropagateSecRelationTeId   
+                 Unsigned32,
+            zxr10PropagateSecRelationLspId
+                Unsigned32                 
+       }       
+       
+    zxr10PropagateSecRelationSecId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+          "Section ID"
+        ::= { zxr10PropagateSecRelationEntry 1 }
+        
+    zxr10PropagateSecRelationTeId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+          "Tunnel ID"
+        ::= { zxr10PropagateSecRelationEntry 2 }
+        
+    zxr10PropagateSecRelationLspId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+          "LSP ID"
+        ::= { zxr10PropagateSecRelationEntry 3 }
+                
+                
+-- *******************************************************************
+--  PROPAGATE LSP to PW relation Configures
+-- *******************************************************************
+    zxr10PropagateLspRelationTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF Zxr10PropagateLspRelationEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Propagate relation table from LSP to PW."
+        ::= { zxr10PropagateLspRelationObjects 1 }
+        
+    zxr10PropagateLspRelationEntry OBJECT-TYPE
+        SYNTAX      Zxr10PropagateLspRelationEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Defines an entry in the zxr10PropagateLspRelationTable."
+       INDEX {
+               zxr10PropagateLspRelationTeId,
+               zxr10PropagateLspRelationLspId,
+               zxr10PropagateLspRelationPwName               
+             }
+       ::= { zxr10PropagateLspRelationTable 1 }  
+
+    Zxr10PropagateLspRelationEntry ::=
+        SEQUENCE {
+            zxr10PropagateLspRelationTeId   
+                 Unsigned32,
+            zxr10PropagateLspRelationLspId      
+                 Unsigned32,
+            zxr10PropagateLspRelationPwName  
+                 DisplayString                 
+       }
+       
+    zxr10PropagateLspRelationTeId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+          "Tunnel ID"
+        ::= { zxr10PropagateLspRelationEntry 1 }
+        
+    zxr10PropagateLspRelationLspId OBJECT-TYPE
+        SYNTAX      Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+          "LSP ID"
+        ::= { zxr10PropagateLspRelationEntry 2 }  
+
+    zxr10PropagateLspRelationPwName OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+          "PW Name"
+        ::= { zxr10PropagateLspRelationEntry 3 }   
+
+END
+

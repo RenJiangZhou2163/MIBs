@@ -1,0 +1,232 @@
+--  ************************************************
+--  $Id: ZXROSNG-PROTECT-GROUP-MIB.mib 12 2012-10-20 16:10:23Z wangchuanming$
+--
+--  ZXROSNG-PROTECT-GROUP-MIB.mib:ZXR10 ethnet query and configuration MIB file
+--  
+--  June. 2012, wangchuanming
+--   
+--  Copyright(c) 2010 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************          
+  
+ 
+ZXROSNG-PROTECT-GROUP-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+       MODULE-IDENTITY, OBJECT-TYPE,Unsigned32,enterprises
+                     FROM SNMPv2-SMI
+       RowStatus,TEXTUAL-CONVENTION,
+       DisplayString FROM SNMPv2-TC; 
+                                               
+    zxProtectGroupMIB MODULE-IDENTITY
+    LAST-UPDATED "201310221000Z"  --2013-10-22 10:00
+    ORGANIZATION "ZTE Corporation"
+    CONTACT-INFO
+        "ZTE Corporation 
+         Nanjing Institute of ZTE Corporation
+         
+         No.68 Zijinghua Rd. Yuhuatai District, Nanjing, China
+         
+         Tel: +86-25-52870000"
+
+    DESCRIPTION
+        "ZXROS v4.6.03 ethnet query and configuration MIB"
+
+    REVISION "201310221000Z"  --2013-10-22 10:00
+    DESCRIPTION
+       "modify: ProtectGroupType
+                zxPGListConfigMasterTGID
+                zxPGListSlaveTGConfigSlaveTGID"
+  
+    REVISION "201210200000Z"  -- June 1, 2010
+    DESCRIPTION
+       "The Mib for Protection Group List"
+        ::= { zxr10RosngMIB 201}  
+        
+    zte OBJECT IDENTIFIER ::={enterprises 3902}
+    zxr10 OBJECT IDENTIFIER ::={zte 3}
+     
+   zxr10RosngMIB OBJECT IDENTIFIER ::= { zxr10 6000}
+    
+ -- self define type
+
+ProtectGroupType ::=  TEXTUAL-CONVENTION      
+                      STATUS      current
+                      DESCRIPTION
+                           "protetc group list group type."
+                      SYNTAX      INTEGER {
+                                                unknown(0),
+                                                tunnelGroup(2),
+                                                pwGroup(3)
+                                          }                   
+ 
+    zxPGListConfigTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxPGListConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Protection Group List table"
+        ::= { zxProtectGroupMIB 1}
+        
+    zxPGListConfigEntry  OBJECT-TYPE
+        SYNTAX  ZxPGListConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Protection Group List Config Entry"
+        INDEX  { zxPGListConfigListID }
+        ::= { zxPGListConfigTable 1 }
+        
+    ZxPGListConfigEntry ::=
+        SEQUENCE {
+            zxPGListConfigListID                Unsigned32, 
+            zxPGListConfigListType              ProtectGroupType,
+            zxPGListConfigMasterTGID            Unsigned32,
+            zxPGListConfigMasterPWGName         DisplayString,
+            zxPGListConfigRowStatus             RowStatus
+    }
+    
+    zxPGListConfigListID  OBJECT-TYPE
+        SYNTAX      Unsigned32(1..8192) 
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The number of this protect group list"
+        ::= { zxPGListConfigEntry 1 } 
+        
+     zxPGListConfigListType  OBJECT-TYPE
+        SYNTAX      ProtectGroupType 
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The protect group type of this protect group list"
+        ::= { zxPGListConfigEntry 2 }   
+        
+     zxPGListConfigMasterTGID  OBJECT-TYPE
+        SYNTAX      Unsigned32(1..32768)
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The master tunnel group of this protect group list.
+             The maximum can be configured is dynamically defined."
+        ::= { zxPGListConfigEntry 3 }   
+        
+     zxPGListConfigMasterPWGName  OBJECT-TYPE
+        SYNTAX      DisplayString
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+            "The master pw group of this protect group list"
+        ::= { zxPGListConfigEntry 4 }  
+
+     zxPGListConfigRowStatus  OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create 
+        STATUS      current
+        DESCRIPTION
+            "row status"
+        ::= { zxPGListConfigEntry 100 }
+
+-- define slave tunnel group of protect group list table 
+    zxPGListSlaveTGConfigTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxPGListSlaveTGConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Protection group list tunnel group type configuration table"
+        ::= { zxProtectGroupMIB 2}
+        
+    zxPGListSlaveTGConfigEntry  OBJECT-TYPE
+        SYNTAX  ZxPGListSlaveTGConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxPGListSlaveTGConfigListID,
+                 zxPGListSlaveTGConfigSlaveTGID}
+        ::= { zxPGListSlaveTGConfigTable 1 }
+        
+    ZxPGListSlaveTGConfigEntry ::=
+        SEQUENCE {
+            zxPGListSlaveTGConfigListID           Unsigned32, 
+            zxPGListSlaveTGConfigSlaveTGID        Unsigned32,
+            zxPGListSlaveTGConfigRowStatus        RowStatus
+    }
+    
+    zxPGListSlaveTGConfigListID  OBJECT-TYPE
+        SYNTAX      Unsigned32(1..8192) 
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The number of this protect group list"
+        ::= { zxPGListSlaveTGConfigEntry 1 } 
+        
+     zxPGListSlaveTGConfigSlaveTGID  OBJECT-TYPE
+        SYNTAX      Unsigned32(1..32768)  
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The slave tunnel group of this protect group list.
+             The maximum can be configured is dynamically defined."
+        ::= { zxPGListSlaveTGConfigEntry 2 }
+        
+     zxPGListSlaveTGConfigRowStatus  OBJECT-TYPE
+        SYNTAX      RowStatus
+        MAX-ACCESS  read-create 
+        STATUS      current
+        DESCRIPTION
+            "The slave tunnel group of this protect group list"
+        ::= { zxPGListSlaveTGConfigEntry 100 }
+
+-- define slave pw group of protect group list table 
+    zxPGListSlavePWGConfigTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxPGListSlavePWGConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Posnet configuration table"
+        ::= { zxProtectGroupMIB 3}
+        
+    zxPGListSlavePWGConfigEntry  OBJECT-TYPE
+        SYNTAX  ZxPGListSlavePWGConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            ""
+        INDEX  { zxPGListSlavePWGConfigListID,
+                 zxPGListSlavePWGConfigSlavePWGName}
+        ::= { zxPGListSlavePWGConfigTable 1 }
+        
+    ZxPGListSlavePWGConfigEntry ::=
+        SEQUENCE {
+            zxPGListSlavePWGConfigListID          Unsigned32, 
+            zxPGListSlavePWGConfigSlavePWGName    DisplayString,
+            zxPGListSlavePWGConfigRowStatus       RowStatus
+    }
+    
+    zxPGListSlavePWGConfigListID  OBJECT-TYPE
+        SYNTAX      Unsigned32(1..8192) 
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The number of this protect group list"
+        ::= { zxPGListSlavePWGConfigEntry 1 } 
+        
+     zxPGListSlavePWGConfigSlavePWGName  OBJECT-TYPE
+        SYNTAX      DisplayString 
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "The slave pw group of this protect group list"
+        ::= { zxPGListSlavePWGConfigEntry 2 }  
+
+     zxPGListSlavePWGConfigRowStatus  OBJECT-TYPE
+        SYNTAX      RowStatus 
+        MAX-ACCESS  read-create 
+        STATUS      current
+        DESCRIPTION
+            "row status"
+        ::= { zxPGListSlavePWGConfigEntry 100 }         
+
+ END

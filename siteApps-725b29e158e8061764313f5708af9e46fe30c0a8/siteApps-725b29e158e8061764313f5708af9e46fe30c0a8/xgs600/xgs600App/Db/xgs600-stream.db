@@ -1,0 +1,590 @@
+#
+# EPICS STREAM DB with STREAM for Agilent XGS-600
+#
+# - Author  : Jeong Han Lee    
+# - email   : jhlee@ibs.re.kr
+# - license : EPICS open license
+# 
+#  -0.9       Sunday, June 21 18:47:41 KST 2015, jhlee
+#
+#  -0.9.1     Monday, June 22 08:56:01 KST 2015, jhlee
+#             * extend "MSG handler in CNV2, AUX1, and AUX2"
+#               I think, this is the quick-and-dirty solution
+#
+#  -0.9.2    Tuesday, September 15 17:25:37 KST 2015, jhlee
+#            * Fixed INVALID_ALARM in calcout record.
+#              "A#3 is right" that was confirmed by Dirk Zimoch 
+#              through an email communication
+# 
+# 
+#
+#
+# TODO
+# - need "General Error Codes handling logic" in Manual 4-6 
+#   For CNV, introduce a logic to handle Open, but I never test them in various
+#   situations. And in others sensors type case, should add that logic into...
+#   Sunday, June 21 18:50:26 KST 2015, jhlee
+#
+
+# Software Revision
+#
+##############################################################
+record(stringin, "$(SYSDEV)SWRev") 
+{
+    field(DESC, "XGS-600 Software revision")
+    field(DTYP, "stream")
+    field( INP, "@xgs600.proto sw-rev($(ID)) $(PORT)")
+    field(PINI, "YES")
+}
+
+
+#
+# System Reset
+# Command       #aa06
+# Response      >
+#
+# Still don't understand what this command means
+# Thursday, June 18 22:26:46 KST 2015, jhlee
+##############################################################
+
+record(bo, "$(SYSDEV)Rst") 
+{
+    field(DESC, "XGS 600 Reset")
+    field(DTYP, "stream")
+    field( OUT, "@xgs600.proto rst($(ID)) $(PORT)")
+#    field(PINI, "YES")
+#   This field "clear"s camonitor SWRev returns. 
+#   RFQ:VAC:SWRev                  2015-06-18 20:32:39.598655  
+#   Without this field,
+#   RFQ:VAC:SWRev                  2015-06-18 20:33:47.871343 0203,0150,0150
+}
+
+
+
+# Read XGS contents
+#
+# command           #aa01 
+# response          >hhhhhhhhhhhh
+#
+# 6 hhs represents "slot 0,1,2,3,4,5"
+# 10 = Hot Filament Ion Gauge board (HFIG)
+# 3A = Inverted Magnetron board (IMG)
+# 40 = convection board (CNV)
+# 4C = Analog Board
+# FE = Empty Slot 
+############################################################
+record(stringin, "$(SYSDEV)Contents") 
+{
+    field(DESC, "XGS-600 contents")
+    field(DTYP, "stream")
+    field( INP, "@xgs600.proto read-xgs($(ID),$(SYSDEV)) $(PORT)")
+    field(PINI, "YES")
+}
+
+record(stringin, "$(SYSDEV)Slot0") 
+{
+    field(DESC, "XGS-600 slot0")
+    field(DTYP, "Soft Channel")
+}
+
+record(stringin, "$(SYSDEV)Slot1") 
+{
+    field(DESC, "XGS-600 slot1")
+    field(DTYP, "Soft Channel")
+}
+
+record(stringin, "$(SYSDEV)Slot2") 
+{
+    field(DESC, "XGS-600 slot2")
+    field(DTYP, "Soft Channel")
+}
+
+record(stringin, "$(SYSDEV)Slot3") 
+{
+    field(DESC, "XGS-600 slot3")
+    field(DTYP, "Soft Channel")
+}
+
+record(stringin, "$(SYSDEV)Slot4") 
+{
+    field(DESC, "XGS-600 slot4")
+    field(DTYP, "Soft Channel")
+}
+
+record(stringin, "$(SYSDEV)Slot5") 
+{
+    field(DESC, "XGS-600 slot5")
+    field(DTYP, "Soft Channel")
+}
+
+
+
+#
+# Pressure Unit : Table B-1
+#  
+# Set the unit to 
+# Unit   command      response
+# Torr   #aa01        >
+# mBar   #aa11        >
+# Pascal #aa12        >
+#
+# Examples : 
+# 
+# caput RFQ:VAC::PUnitSet {0|1|2}
+# caput RFQ:VAC::PUnitSet {Torr|mBar|Pascal}
+#
+#############################################################
+
+# record(ao, "$(SYSDEV):SetPUnit") {
+#     field(DESC, "Set Pressure Unit")
+#     field(DTYP, "stream")
+#     field( OUT, "@xgs600.proto setPresUnit($(ID)) $(PORT) ")
+#     field(FLNK, "$(SYSDEV):GetPUnit")
+# }
+
+# record(ai, "$(SYSDEV):GetPUnit") {
+#     field(DESC, "Get Pressure Unit")
+#     field(DTYP, "stream")
+#     field( INP, "@xgs600.proto getPresUnit($(ID))  $(PORT)")
+#     field(PINI, "YES")
+# }
+
+record(mbbo, "$(SYSDEV)PUnitSet") 
+{
+    field(DESC, "Set Pressure Unit")
+    field(DTYP, "stream")
+    field( OUT, "@xgs600.proto setPresUnit($(ID)) $(PORT) ")
+    field(ZRST, "Torr")
+    field(ZRVL, "0")
+    field(ONST, "mBar")
+    field(ONVL, "1")
+    field(TWST, "Pascal")
+    field(TWVL, "2")
+    field(THSV, "INVALID")
+    field(FRSV, "INVALID")
+    field(FVSV, "INVALID")
+    field(SXSV, "INVALID")
+    field(SVSV, "INVALID")
+    field(EISV, "INVALID")
+    field(NISV, "INVALID")
+    field(TESV, "INVALID")
+    field(ELSV, "INVALID")
+    field(TVSV, "INVALID")
+    field(TTSV, "INVALID")
+    field(FTSV, "INVALID")
+    field(FTSV, "INVALID")
+    field(FFSV, "INVALID")
+    field(UNSV, "INVALID")
+    field(IVOA, "Don't drive outputs")
+    field(FLNK, "$(SYSDEV)PUnitGet")
+}
+
+# Read the unit 
+# Unit   command      response  
+# Torr     #aa13        >00        
+# mBar     #aa13        >01        
+# Pascal   #aa13        >02        
+# 
+
+record(mbbi, "$(SYSDEV)PUnitGet") 
+{
+    field(DESC, "Get Pressure Unit")
+    field(DTYP, "stream")
+    field( INP, "@xgs600.proto getPresUnit($(ID)) $(PORT)")
+    field(ZRST, "Torr")
+    field(ZRVL, "0")
+    field(ONST, "mBar")
+    field(ONVL, "1")
+    field(TWST, "Pascal")
+    field(TWVL, "2")
+    field(THSV, "INVALID")
+    field(FRSV, "INVALID")
+    field(FVSV, "INVALID")
+    field(SXSV, "INVALID")
+    field(SVSV, "INVALID")
+    field(EISV, "INVALID")
+    field(NISV, "INVALID")
+    field(TESV, "INVALID")
+    field(ELSV, "INVALID")
+    field(TVSV, "INVALID")
+    field(TTSV, "INVALID")
+    field(FTSV, "INVALID")
+    field(FTSV, "INVALID")
+    field(FFSV, "INVALID")
+    field(UNSV, "INVALID")
+    field(PINI, "YES")
+}
+
+
+#
+# Setup Lockout : 3-16 / Table B-3 
+#
+# Toggle this to ON to make all filed on the SYSTEM SETUP and
+# SENSOR SETUP screen display-only (except for this field). This
+# provides a layer of security to prevent inadvertent change.
+# 
+# So, the initial value within IOC is set to ON
+# Friday, June 19 15:44:16 KST 2015, jhlee
+#  
+# Status       command      response
+# Lockout OFF  #aa20        >
+# Lockout ON   #aa21        >
+# Examples : 
+# 
+# caput RFQ:VAC:LockoutSet {Off|On}
+# caput RFQ:VAC:LockoutSet {0|1}
+#############################################################
+
+record(bo, "$(SYSDEV)LockoutSet") 
+{
+    field(DESC, "Lockout OFF or ON")
+    field(DTYP, "stream")
+    field( OUT, "@xgs600.proto setLockout($(ID)) $(PORT) ")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    field(PINI, "YES")
+    field( VAL, "1")
+    field(FLNK, "$(SYSDEV)LockoutGet")
+}
+
+
+# caget  RFQ:VAC:LockoutGet
+# RFQ:VAC:LockoutGet             On
+record(bi, "$(SYSDEV)LockoutGet") 
+{
+    field(DESC, "Readback zero check status")
+    field(DTYP, "stream")
+    field( INP, "@xgs600.proto getLockout($(ID)) $(PORT)")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+}
+
+
+
+#
+# AUX and CNV commands
+#
+# Calibrate
+# This commmand has the same function as CAL on the main screen, i.e.
+# used for both atmosphere and vacuum calibartions.
+# 
+# So, this function returns ?FF Error, I don't know why...
+# Monday, June 22 14:55:13 KST 2015, jhlee
+
+# 2015/06/22 14:53:38.146537 XGS600 RFQ:VAC1:Cal: Input "?FF (RetSensor)" mismatch after 0 bytes
+# 2015/06/22 14:53:38.146692 XGS600 RFQ:VAC1:Cal: got "?FF (RetSensor)" where ">" was expected
+
+
+# # command       return
+# # #aaA1CNV      > 
+# # #aaA1AUX      >
+
+# record(bo, "$(SYSDEV)CalCNV") 
+# {
+#     field(DESC, "XGS 600 CNV calibrate")
+#     field(DTYP, "stream")
+#     field( OUT, "@xgs600.proto calibrateCNV($(ID)) $(PORT)")
+# #    field(PINI, "YES")$
+# }
+
+
+# record(bo, "$(SYSDEV)CalAUX") 
+# {
+#     field(DESC, "XGS 600 AUX calibrate")
+#     field(DTYP, "stream")
+#     field( OUT, "@xgs600.proto calibrateAUX($(ID)) $(PORT)")
+#     field(ZNAM, "Off")
+#     field(ONAM, "On")
+# #    field(PINI, "YES")
+#     # field( VAL, "1")
+#     # field(FLNK, "$(SYSDEV)AtmSet")
+# #    field(PINI, "YES")$
+# }
+
+
+
+# record(ao, "$(SYSDEV)AtmSet")
+# {
+#     field(DESC, "XGS 600 Atomosphere value")
+#     field(DTYP, "stream")
+#     field( OUT, "@xgs600.proto setAtmValue($(ID)) $(PORT)") 
+#     field( VAL, "$(ATMVALUE)")
+#     field(PINI, "YES")
+# }
+
+#
+# For a testing system, I have HFIG1 and CNV1/2, 
+# So, the fixed pressure reading function is used.
+# 
+# I would like to use the Pressure unit got from $(SYSDEV)PUnitGet 
+# dynamically, so FLNK to $(SYSDEV)PRES1_EGU, and use DOL field
+# in stringout with OMSL (output mode selection) as closed_loop.
+# So whenever reading a pressure, it get the current pressure unit,
+# and put it into EGU field in the signal PRES1. 
+# It is really nice to have them dynamically, because it will remove
+# the possibility that someone may change the pressure unit while
+# we are scanning the pressure value. I think, it may be very rare
+# events. 
+#
+# Friday, June 19 19:24:29 KST 2015, jhlee 
+
+
+
+record (stringin, "$(SYSDEV)HFIG1_MSG") 
+{
+} 
+
+
+record(ai, "$(SYSDEV)HFIG1")
+{
+    field(DESC, "Pressure HFIG1")
+    field(DTYP, "stream")
+    field( INP, "@xgs600.proto readPressHFIG1($(ID),$(SYSDEV)HFIG1_MSG) $(PORT)")
+    field(PINI, "NO")
+    field(SCAN, "1 second")
+#
+#   for camonitor triggering...
+#   field(MDEL, "-1")
+#
+    field(FLNK, "$(SYSDEV)HFIG1_EGU")
+}
+ 
+
+
+# From https://wiki-ext.aps.anl.gov/epics/index.php/RRM_3-14_String_Output
+# The string output record must specify from where it gets its desired output string. 
+# The first field that determines where the desired output originates is the output 
+# mode select (OSML) field, which can have two possible value: closed_loop or supervisory. 
+#
+# If supervisory is specified, DOL is ignored, the current value of VAL is written, and 
+# the VAL can be changed externally via dbPuts at run-time. 
+#
+# If closed_loop is specified, the VAL field's value is obtained from the address 
+# specified in the desired output location field (DOL) which can be either a database 
+# link or a channel access link. 
+
+
+
+record(stringout, "$(SYSDEV)HFIG1_EGU")
+{
+#   does't matter it has the inital constant VAL or not.
+#
+#    field( VAL, "Torr")
+#
+    field( OUT, "$(SYSDEV)HFIG1.EGU")
+    field( DOL, "$(SYSDEV)PUnitGet.VAL")
+    field(OMSL, "closed_loop")
+#
+#    field(OMSL, "supervisory")
+#    with "supervisory", I can change VAL by
+#    caput RFQ:VAC:PRES1_EGU "mBar"
+#    even if this record is stringout.
+#
+
+}
+
+record (calcout, "$(SYSDEV)HFIG1_clean1") 
+{
+  field (INPA, "$(SYSDEV)HFIG1 CP")
+  field (CALC, "A#3")
+  field (OOPT, "When Non-zero")
+  field ( OUT, "$(SYSDEV)HFIG1_clean2.PROC")
+}
+
+record (stringout, "$(SYSDEV)HFIG1_clean2") 
+{
+  field (VAL, "HFIG1 Detected")
+  field (OUT, "$(SYSDEV)HFIG1_MSG PP")
+}
+
+
+
+
+
+#
+# http://epics.web.psi.ch/software/streamdevice/doc/tipsandtricks.html#argvar
+#
+# If there is no Convection sensor detected,
+# "readpress returns 'OPEN'. 
+# So, we need the mismatch to pass them into string
+# Sunday, June 21 18:45:33 KST 2015, jhlee
+
+
+
+record (stringin, "$(SYSDEV)CNV1_MSG") 
+{
+} 
+
+
+record(ai, "$(SYSDEV)CNV1")
+{
+    field(DESC, "Pressure CNV1")
+    field(DTYP, "stream")
+    field( INP, "@xgs600.proto readPressCNV1($(ID),$(SYSDEV)CNV1_MSG) $(PORT)")
+    field(PINI, "NO")
+    field(SCAN, "1 second")
+    field(FLNK, "$(SYSDEV)CNV1_EGU")
+}
+ 
+record(stringout, "$(SYSDEV)CNV1_EGU")
+{
+    field( OUT, "$(SYSDEV)CNV1.EGU")
+    field( DOL, "$(SYSDEV)PUnitGet.VAL")
+    field(OMSL, "closed_loop")
+}
+
+#
+# "A#3 is right" that was confirmed by Dirk Zimoch 
+# through an email communication
+#
+# Tuesday, September 15 17:20:18 KST 2015, jhlee
+#
+
+record (calcout, "$(SYSDEV)CNV1_clean1") 
+{
+  field (INPA, "$(SYSDEV)CNV1.SEVR CP")
+  field (CALC, "A#3")
+  field (OOPT, "When Non-zero")
+  field ( OUT, "$(SYSDEV)CNV1_clean2.PROC")
+}
+
+record (stringout, "$(SYSDEV)CNV1_clean2") 
+{
+  field (VAL, "CNV1 Detected")
+  field (OUT, "$(SYSDEV)CNV1_MSG PP")
+}
+
+
+
+
+record (stringin, "$(SYSDEV)CNV2_MSG") 
+{
+} 
+
+
+record(ai, "$(SYSDEV)CNV2")
+{
+    field(DESC, "Pressure CNV2")
+    field(DTYP, "stream")
+    field( INP, "@xgs600.proto readPressCNV2($(ID),$(SYSDEV)CNV2_MSG) $(PORT)")
+    field(PINI, "NO")
+    field(SCAN, "1 second")
+    field(FLNK, "$(SYSDEV)CNV2_EGU")
+}
+
+record(stringout, "$(SYSDEV)CNV2_EGU")
+{
+    field( OUT, "$(SYSDEV)CNV2.EGU")
+    field( DOL, "$(SYSDEV)PUnitGet.VAL")
+    field(OMSL, "closed_loop")
+}
+
+
+record (calcout, "$(SYSDEV)CNV2_clean1") 
+{
+  field (INPA, "$(SYSDEV)CNV2.SEVR CP")
+  field (CALC, "A#3")
+  field (OOPT, "When Non-zero")
+  field ( OUT, "$(SYSDEV)CNV2_clean2.PROC")
+}
+
+record (stringout, "$(SYSDEV)CNV2_clean2") 
+{
+  field (VAL, "CNV2 Detected")
+  field (OUT, "$(SYSDEV)CNV2_MSG PP")
+}
+
+
+
+
+
+record (stringin, "$(SYSDEV)AUX1_MSG") 
+{
+} 
+
+
+record(ai, "$(SYSDEV)AUX1")
+{
+    field(DESC, "Pressure AUX1")
+    field(DTYP, "stream")
+    field( INP, "@xgs600.proto readPressAUX1($(ID),$(SYSDEV)AUX1_MSG) $(PORT)")
+    field(PINI, "NO")
+    field(SCAN, "1 second")
+    field(FLNK, "$(SYSDEV)AUX1_EGU")
+}
+ 
+record(stringout, "$(SYSDEV)AUX1_EGU")
+{
+    field( OUT, "$(SYSDEV)AUX1.EGU")
+    field( DOL, "$(SYSDEV)PUnitGet.VAL")
+    field(OMSL, "closed_loop")
+}
+
+
+record (calcout, "$(SYSDEV)AUX1_clean1") 
+{
+  field (INPA, "$(SYSDEV)AUX1.SEVR CP")
+  field (CALC, "A#3")
+  field (OOPT, "When Non-zero")
+  field ( OUT, "$(SYSDEV)AUX1_clean2.PROC")
+}
+
+record (stringout, "$(SYSDEV)AUX1_clean2") 
+{
+  field (VAL, "AUX1 Cable is ACTIVE")
+  field (OUT, "$(SYSDEV)AUX1_MSG PP")
+}
+
+
+
+record (stringin, "$(SYSDEV)AUX2_MSG") 
+{
+} 
+
+
+
+record(ai, "$(SYSDEV)AUX2")
+{
+    field(DESC, "Pressure AUX2")
+    field(DTYP, "stream")
+    field( INP, "@xgs600.proto readPressAUX2($(ID),$(SYSDEV)AUX2_MSG) $(PORT)")
+    field(PINI, "NO")
+    field(SCAN, "1 second")
+    field(FLNK, "$(SYSDEV)AUX2_EGU")
+}
+ 
+record(stringout, "$(SYSDEV)AUX2_EGU")
+{
+    field( OUT, "$(SYSDEV)AUX2.EGU")
+    field( DOL, "$(SYSDEV)PUnitGet.VAL")
+    field(OMSL, "closed_loop")
+}
+
+#
+# It returns 
+# - >NOCBL : No active gauge cable detectd
+# - >FAULT : Active gauge voltage < 0.5 V
+# 
+#rfquser@rfqpc0:~/epics/R3.14.12.5$ camonitor  RFQ:VAC1:AUX1_MSG RFQ:VAC1:AUX2_MSG
+#RFQ:VAC1:AUX1_MSG              2015-06-22 13:39:22.525954 >NOCBL  
+#RFQ:VAC1:AUX2_MSG              2015-06-22 13:26:42.553686 AUX2 Cable is ACTIVE
+#RFQ:VAC1:AUX2_MSG              2015-06-22 13:39:40.553674 >NOCBL  
+#RFQ:VAC1:AUX2_MSG              2015-06-22 13:39:40.553855 AUX2 Cable is ACTIVE  
+#RFQ:VAC1:AUX2_MSG              2015-06-22 13:39:41.553440 >NOCBL  
+#RFQ:VAC1:AUX1_MSG              2015-06-22 13:39:44.525875 >FAULT  
+#RFQ:VAC1:AUX1_MSG              2015-06-22 13:39:46.526031 AUX1 Cable is ACTIVE 
+
+record (calcout, "$(SYSDEV)AUX2_clean1") 
+{
+  field (INPA, "$(SYSDEV)AUX2.SEVR CP")
+  field (CALC, "A#3")
+  field (OOPT, "When Non-zero")
+  field ( OUT, "$(SYSDEV)AUX2_clean2.PROC")
+}
+
+record (stringout, "$(SYSDEV)AUX2_clean2") 
+{
+  field (VAL, "AUX2 Cable is ACTIVE")
+  field (OUT, "$(SYSDEV)AUX2_MSG PP")
+}
+

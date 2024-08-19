@@ -1,0 +1,902 @@
+--
+--  DESCRIPTION
+--      This MIB file defines objects that can be managed on
+--      Sysmon3G.
+--
+--  LAST-UPDATED
+--      13 March 2013 - Initial revision
+--
+--  ORGANIZATION
+--      SAMWAY ELECTRONIC SRL
+--
+--  CONTACT-INFO
+--      E-mail: contact@samway.ro
+--
+
+-- Revision History:
+-- *************************************************************************
+-- 11/26/13 - v0.0.1 change the name. 
+--		     (system, temp, voltage, current, fan, input, output, control)
+
+
+
+ShelfManager-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+
+   enterprises         FROM RFC1155-SMI
+   DisplayString       FROM RFC1213-MIB	
+   OBJECT-TYPE         FROM RFC-1212;	
+-- IMPORTS End  
+
+
+samway	                OBJECT IDENTIFIER ::= { enterprises 28688}
+products                OBJECT IDENTIFIER ::= { samway 1 }
+sysmon                  OBJECT IDENTIFIER ::= { products 1 }
+
+elmaSystem              OBJECT IDENTIFIER ::= { sysmon 1 }
+elmaTemp                OBJECT IDENTIFIER ::= { sysmon 2 }
+elmaVoltage             OBJECT IDENTIFIER ::= { sysmon 3 }
+elmaCurrent             OBJECT IDENTIFIER ::= { sysmon 4 }
+elmaFan                 OBJECT IDENTIFIER ::= { sysmon 5 }
+elmaInput               OBJECT IDENTIFIER ::= { sysmon 6 }
+elmaOutput              OBJECT IDENTIFIER ::= { sysmon 7 }
+elmaControl             OBJECT IDENTIFIER ::= { sysmon 9 }
+-------------------------------------------------------------------------------
+-- elmaSystem
+-------------------------------------------------------------------------------
+hostName OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The name of the system monitor"
+    ::= { elmaSystem 1 }
+partNo OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The part number of the system monitor"
+    ::= { elmaSystem 2 }
+serialNo OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The serial number of the system monitor"
+    ::= { elmaSystem 3 }
+macAddress OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The MAC address of the system monitor"
+    ::= { elmaSystem 4 }
+softwareVersion OBJECT-TYPE
+    SYNTAX  DisplayString
+    MAX-ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The software version running on system monitor"
+    ::= { elmaSystem 5 }
+-------------------------------------------------------------------------------
+-- elmaTemp
+-------------------------------------------------------------------------------
+numberOfelmaTempSensors OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            " Number of temp sensors"
+    ::= { elmaTemp 1 }
+
+elmaTempTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF elmaTempEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+           "A list of output entries."
+    ::= { elmaTemp 2 }
+
+elmaTempEntry OBJECT-TYPE
+    SYNTAX  elmaTempEntry
+    MAX-ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+            "A table row"
+    INDEX   { elmaTempIndex }
+    ::= { elmaTempTable 1 }
+
+elmaTempEntry ::=
+    SEQUENCE {
+         elmaTempIndex
+            INTEGER,
+         elmaTempName
+            DisplayString,
+         elmaTempValue
+            INTEGER,
+         elmaTempState
+            INTEGER,
+         elmaTempLNCthreshold
+            DisplayString,
+         elmaTempLCthreshold
+            DisplayString,
+         elmaTempLNRthreshold
+            DisplayString,
+         elmaTempUNCthreshold
+            DisplayString,
+         elmaTempUCthreshold
+            DisplayString,
+         elmaTempUNRthreshold
+            DisplayString,
+         elmaTempLowerHysteresys
+            DisplayString,
+         elmaTempUpperHysteresys
+            DisplayString
+    }
+elmaTempIndex OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "An index for the temperature sensors"
+    ::= { elmaTempEntry 1 }
+
+elmaTempName OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "A textual string containing a the name of the
+            temperature sensor"
+    ::= { elmaTempEntry 2 }
+elmaTempValue OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The current reading of the temperature sensor in degrees C"
+    ::= { elmaTempEntry 3 }
+
+elmaTempState OBJECT-TYPE
+    SYNTAX  INTEGER   { 
+    LNCGL     (0), 
+    LCGL      (2), 
+    LNRGL     (4), 
+    UNCGH     (7), 
+    UCGH      (9), 
+    UNRGH     (11), 
+    NOTREADY  (14), 
+    OK        (15) 
+    }
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The current state of the temperature sensor"
+    ::= { elmaTempEntry 4 }
+
+ elmaTempLNCthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The LNCGL threshold value"
+    ::= { elmaTempEntry 5 }
+ elmaTempLCthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The LCGL threshold value"
+    ::= { elmaTempEntry 6 }
+ elmaTempLNRthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The LNRGL threshold value"
+    ::= { elmaTempEntry 7 }
+ elmaTempUNCthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The UNCGH threshold value"
+    ::= { elmaTempEntry 8 }
+ elmaTempUCthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The UCGH threshold value"
+    ::= { elmaTempEntry 9 }
+ elmaTempUNRthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The UNRGH threshold value"
+    ::= { elmaTempEntry 10 }
+ elmaTempLowerHysteresys OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The lower going hysteresys value"
+    ::= { elmaTempEntry 11 }
+ elmaTempUpperHysteresys OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The upper going hysteresys value"
+    ::= { elmaTempEntry 12 }
+
+-------------------------------------------------------------------------------
+-- elmaVoltage
+-------------------------------------------------------------------------------
+numberOfelmaVoltageSensors OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            " Number of voltage sensors"
+    ::= { elmaVoltage 1 }
+
+elmaVoltageTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF elmaVoltageEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+           "A list of output entries."
+    ::= { elmaVoltage 2 }
+
+elmaVoltageEntry OBJECT-TYPE
+    SYNTAX  elmaVoltageEntry
+    MAX-ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+            "A table row"
+    INDEX   { elmaVoltageIndex }
+    ::= { elmaVoltageTable 1 }
+
+elmaVoltageEntry ::=
+    SEQUENCE {
+         elmaVoltageIndex
+            INTEGER,
+         elmaVoltageName
+            DisplayString,
+         elmaVoltageValue
+            INTEGER,
+         elmaVoltageState
+            INTEGER,
+         elmaVoltageLNCthreshold
+            DisplayString,
+         elmaVoltageLCthreshold
+            DisplayString,
+         elmaVoltageLNRthreshold
+            DisplayString,
+         elmaVoltageUNCthreshold
+            DisplayString,
+         elmaVoltageUCthreshold
+            DisplayString,
+         elmaVoltageUNRthreshold
+            DisplayString,
+         elmaVoltageLowerHysteresys
+            DisplayString,
+         elmaVoltageUpperHysteresys
+            DisplayString
+    }
+elmaVoltageIndex OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "An index for the voltage sensors"
+    ::= { elmaVoltageEntry 1 }
+
+elmaVoltageName OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The name of the voltage sensor"
+    ::= { elmaVoltageEntry 2 }
+elmaVoltageValue OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The current reading of the voltage sensor in mV"
+    ::= { elmaVoltageEntry 3 }
+elmaVoltageState OBJECT-TYPE
+    SYNTAX  INTEGER   { 
+    LNCGL     (0), 
+    LCGL      (2), 
+    LNRGL     (4), 
+    UNCGH     (7), 
+    UCGH      (9), 
+    UNRGH     (11), 
+    NOTREADY (14), 
+    OK        (15) 
+    }
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The current state of the voltage sensor"
+    ::= { elmaVoltageEntry 4 }
+ elmaVoltageLNCthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The LNCGL threshold value"
+    ::= { elmaVoltageEntry 5 }
+ elmaVoltageLCthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The LCGL threshold value"
+    ::= { elmaVoltageEntry 6 }
+ elmaVoltageLNRthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The LNRGL threshold value"
+    ::= { elmaVoltageEntry 7 }
+ elmaVoltageUNCthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The UNCGH threshold value"
+    ::= { elmaVoltageEntry 8 }
+ elmaVoltageUCthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The UCGH threshold value"
+    ::= { elmaVoltageEntry 9 }
+ elmaVoltageUNRthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The UNRGH threshold value"
+    ::= { elmaVoltageEntry 10 }
+ elmaVoltageLowerHysteresys OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The lower going hysteresys value"
+    ::= { elmaVoltageEntry 11 }
+ elmaVoltageUpperHysteresys OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The upper going hysteresys value"
+    ::= { elmaVoltageEntry 12 }
+-------------------------------------------------------------------------------
+-- elmaCurrent
+-------------------------------------------------------------------------------
+numberOfelmaCurrentSensors OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            " Number of current sensors"
+    ::= { elmaCurrent 1 }
+
+elmaCurrentTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF elmaCurrentEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+           "A list of output entries."
+    ::= { elmaCurrent 2 }
+
+elmaCurrentEntry OBJECT-TYPE
+    SYNTAX  elmaCurrentEntry
+    MAX-ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+            "A table row"
+    INDEX   { elmaCurrentIndex }
+    ::= { elmaCurrentTable 1 }
+
+elmaCurrentEntry ::=
+    SEQUENCE {
+         elmaCurrentIndex
+            INTEGER,
+         elmaCurrentName
+            DisplayString,
+         elmaCurrentValue
+            INTEGER,
+         elmaCurrentState
+            INTEGER,
+         elmaCurrentLNCthreshold
+            DisplayString,
+         elmaCurrentLCthreshold
+            DisplayString,
+         elmaCurrentLNRthreshold
+            DisplayString,
+         elmaCurrentUNCthreshold
+            DisplayString,
+         elmaCurrentUCthreshold
+            DisplayString,
+         elmaCurrentUNRthreshold
+            DisplayString,
+         elmaCurrentLowerHysteresys
+            DisplayString,
+         elmaCurrentUpperHysteresys
+            DisplayString
+    }
+elmaCurrentIndex OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "An index for the current sensors"
+    ::= { elmaCurrentEntry 1 }
+
+elmaCurrentName OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The name of the current sensor"
+    ::= { elmaCurrentEntry 2 }
+elmaCurrentValue OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The current reading of the current sensor in mA"
+    ::= { elmaCurrentEntry 3 }
+elmaCurrentState OBJECT-TYPE
+    SYNTAX  INTEGER { 
+    LNCGL     (0), 
+    LCGL      (2), 
+    LNRGL     (4), 
+    UNCGH     (7), 
+    UCGH      (9), 
+    UNRGH     (11), 
+    NOTREADY  (14), 
+    OK        (15)
+    }
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The current state of the current sensor"
+    ::= { elmaCurrentEntry 4 }
+ elmaCurrentLNCthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The LNCGL threshold value"
+    ::= { elmaCurrentEntry 5 }
+ elmaCurrentLCthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The LCGL threshold value"
+    ::= { elmaCurrentEntry 6 }
+ elmaCurrentLNRthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The LNRGL threshold value"
+    ::= { elmaCurrentEntry 7 }
+ elmaCurrentUNCthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The UNCGH threshold value"
+    ::= { elmaCurrentEntry 8 }
+ elmaCurrentUCthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The UCGH threshold value"
+    ::= { elmaCurrentEntry 9 }
+ elmaCurrentUNRthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The UNRGH threshold value"
+    ::= { elmaCurrentEntry 10 }
+ elmaCurrentLowerHysteresys OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The lower going hysteresys value"
+    ::= { elmaCurrentEntry 11 }
+ elmaCurrentUpperHysteresys OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The upper going hysteresys value"
+    ::= { elmaCurrentEntry 12 }
+-------------------------------------------------------------------------------
+-- elmaFan
+-------------------------------------------------------------------------------
+numberOfelmaFanSensors OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            " Number of fan sensors"
+    ::= { elmaFan 1 }
+
+elmaFanTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF elmaFanEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+           "A list of output entries."
+    ::= { elmaFan 2 }
+
+elmaFanLevelGroup1 OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            " Fan level of group 1 fans. Set override levels 0 to 15. Override level 16 turns to automatic fan control mode."
+    ::= { elmaFan 3 }
+
+elmaFanLevelGroup2 OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            " Fan level of group 2 fans. Set override levels 0 to 15. Override level 16 turns to automatic fan control mode."
+    ::= { elmaFan 4 }
+
+elmaFanLevelGroup3 OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            " Fan level of group 3 fans. Set override levels 0 to 15. Override level 16 turns to automatic fan control mode."
+    ::= { elmaFan 5 }
+
+elmaFanLevelGroup4 OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            " Fan level of group 4 fans. Set override levels 0 to 15. Override level 16 turns to automatic fan control mode."
+    ::= { elmaFan 6 }
+
+elmaFanEntry OBJECT-TYPE
+    SYNTAX  elmaFanEntry
+    MAX-ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+            "A table row"
+    INDEX   { elmaFanIndex }
+    ::= { elmaFanTable 1 }
+
+elmaFanEntry ::=
+    SEQUENCE {
+         elmaFanIndex
+            INTEGER,
+         elmaFanName
+            DisplayString,
+         elmaFanValue
+            INTEGER,
+         elmaFanState
+            INTEGER,
+         elmaFanLNCthreshold
+            DisplayString,
+         elmaFanLCthreshold
+            DisplayString,
+         elmaFanLNRthreshold
+            DisplayString,
+         elmaFanUNCthreshold
+            DisplayString,
+         elmaFanUCthreshold
+            DisplayString,
+         elmaFanUNRthreshold
+            DisplayString,
+         elmaFanLowerHysteresys
+            DisplayString,
+         elmaFanUpperHysteresys
+            DisplayString
+    }
+elmaFanIndex OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "An index for the fan sensors"
+    ::= { elmaFanEntry 1 }
+
+elmaFanName OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The name of the fan sensor"
+    ::= { elmaFanEntry 2 }
+elmaFanValue OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The current reading of the fan sensor"
+    ::= { elmaFanEntry 3 }
+elmaFanState OBJECT-TYPE
+    SYNTAX  INTEGER  { 
+    LNCGL    (0), 
+    LCGL     (2), 
+    LNRGL    (4), 
+    UNCGH    (7), 
+    UCGH     (9), 
+    UNRGH    (11), 
+    NOTREADY (14), 
+    OK       (15)
+    }
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The current state of the fan sensor"
+    ::= { elmaFanEntry 4 }
+ elmaFanLNCthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The LNCGL threshold value"
+    ::= { elmaFanEntry 5 }
+ elmaFanLCthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The LCGL threshold value"
+    ::= { elmaFanEntry 6 }
+ elmaFanLNRthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The LNRGL threshold value"
+    ::= { elmaFanEntry 7 }
+ elmaFanUNCthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The UNCGH threshold value"
+    ::= { elmaFanEntry 8 }
+ elmaFanUCthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The UCGH threshold value"
+    ::= { elmaFanEntry 9 }
+ elmaFanUNRthreshold OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The UNRGH threshold value"
+    ::= { elmaFanEntry 10 }
+ elmaFanLowerHysteresys OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The lower going hysteresys value"
+    ::= { elmaFanEntry 11 }
+ elmaFanUpperHysteresys OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The upper going hysteresys value"
+    ::= { elmaFanEntry 12 }
+-------------------------------------------------------------------------------
+-- elmaInput
+-------------------------------------------------------------------------------
+numberOfelmaInputSensors OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            " Number of input sensors"
+    ::= { elmaInput 1 }
+
+elmaInputTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF elmaInputEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+           "A list of output entries."
+    ::= { elmaInput 2 }
+
+elmaInputEntry OBJECT-TYPE
+    SYNTAX  elmaInputEntry
+    MAX-ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+            "A table row"
+    INDEX   { elmaInputIndex }
+    ::= { elmaInputTable 1 }
+
+elmaInputEntry ::=
+    SEQUENCE {
+        elmaInputIndex
+            INTEGER,
+        elmaInputName
+            DisplayString,
+        elmaInputState
+            DisplayString
+    }
+elmaInputIndex OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "An index for the input sensors"
+    ::= { elmaInputEntry 1 }
+
+elmaInputName OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The name of the input sensor"
+    ::= { elmaInputEntry 2 }
+elmaInputState OBJECT-TYPE
+    SYNTAX  INTEGER  { DEASSERTED (0), ASSERTED (1) }
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The current state of the input sensor"
+    ::= { elmaInputEntry 3 }
+-------------------------------------------------------------------------------
+-- elmaOutput
+-------------------------------------------------------------------------------
+numberOfelmaOutputSensors OBJECT-TYPE
+    SYNTAX  INTEGER
+    MAX-ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            " Number of output sensors"
+    ::= { elmaOutput 1 }
+
+elmaOutputTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF elmaOutputEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+           "A list of output entries."
+    ::= { elmaOutput 2 }
+
+elmaOutputEntry OBJECT-TYPE
+    SYNTAX  elmaOutputEntry
+    MAX-ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+            "A table row"
+    INDEX   { elmaOutputIndex }
+    ::= { elmaOutputTable 1 }
+
+elmaOutputEntry ::=
+    SEQUENCE {
+        elmaOutputIndex
+            INTEGER,
+        elmaOutputName
+            DisplayString,
+        elmaOutputState
+            DisplayString
+    }
+elmaOutputIndex OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "An index for the output sensors"
+    ::= { elmaOutputEntry 1 }
+
+elmaOutputName OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "The name of the output sensor"
+    ::= { elmaOutputEntry 2 }
+elmaOutputState OBJECT-TYPE
+    SYNTAX  INTEGER { DEASSERTED (0), ASSERTED (1) }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "The current state of the output sensor"
+    ::= { elmaOutputEntry 3 }
+
+-------------------------------------------------------------------------------
+-- elmaControl
+-------------------------------------------------------------------------------
+sysreset OBJECT-TYPE
+    SYNTAX  INTEGER { DEASSERTED (0), ASSERTED (1) }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "Sysreset signal"
+    ::= { elmaControl 1 }
+rs232speed OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "RS232 Baud rate"
+    ::= { elmaControl 2 }
+userpassword OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "User password"
+    ::= { elmaControl 3 }
+adminpassword OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "Admin password"
+    ::= { elmaControl 4 }
+saveenv OBJECT-TYPE
+    SYNTAX  INTEGER { NO (0), YES (1) }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "Shows if there are setings to be saved. All configurations must be saved in order to make them permanent. Write 1 to save the settings"
+    ::= { elmaControl 5 }
+sysmonreboot OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "Read the time elapsed since last sysmon reboot (in seconds). If 0 is written the system monitor reboots"
+    ::= { elmaControl 6 }
+serialpassword OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "Password for Serial Over Lan"
+    ::= { elmaControl 7 }
+telnet OBJECT-TYPE
+    SYNTAX  INTEGER { DISABLED (0), ENABLED (1) }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "Enables or disables the Telnet access over Ethernet interface"
+    ::= { elmaControl 8 }
+web OBJECT-TYPE
+    SYNTAX  INTEGER { DISABLED (0), ENABLED (1) }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+            "Enables or disables the Web access over Ethernet interface"
+    ::= { elmaControl 9 }
+
+
+END

@@ -1,0 +1,2141 @@
+--  ************************************************
+--  $Id: ZXROSNG-TPOAM.mib   2012-08-21 14:20:22Z LuWei $
+--
+--  ZXROSNG-TPOAM.mib: ZXROSNG MPLS TPOAM query  MIB file
+--
+--  Nov. 2012, Lu Wei
+--
+--  Copyright(c) 2012 by ZTE Corporaton
+--  All rights reservered
+--
+--  ************************************************
+
+ZXROSNG-TPOAM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    Unsigned32,
+    Counter32,
+    Counter64,
+    IpAddress
+        FROM SNMPv2-SMI
+        
+    RowStatus,
+    DisplayString
+         FROM SNMPv2-TC 
+    OBJECT-TYPE,
+    MODULE-IDENTITY,
+    OBJECT-IDENTITY,
+    enterprises
+        FROM SNMPv2-SMI;
+
+zte MODULE-IDENTITY
+    LAST-UPDATED "201505250000Z"  -- May 25, 2015
+    ORGANIZATION "ZTE Corporation"
+    CONTACT-INFO
+        "ZTE Corporation 
+         Nanjing Institute of ZTE Corporation
+         
+         No.68 Zijinghua Rd. Yuhuatai District, Nanjing, China
+         
+         Tel: +86-25-52870000"
+
+    DESCRIPTION
+        "ZXROS SMI MIB"
+    REVISION "201505250000Z"  -- May 25, 2015
+    DESCRIPTION
+        "obsolete:    zxTPOAMMegConfigAISEnable
+         obsolete:    zxTPOAMMegConfigAISPhb"
+    REVISION "201502260000Z"  -- Feb 26, 2015
+    DESCRIPTION
+        "modify:    zxTPOAMChannelType
+         modify:    zxTPOAMMel
+         modify:    zxTPOAMGlobalEnable
+         modify:    zxTPOAMTc
+         modify:    zxTPOAMRdiToSF
+         modify:    zxTPOAMMegConfigCVPhbName
+         modify:    zxTPOAMMegConfigAISPhb
+         modify:    zxTPOAMMegConfigCSFPhb
+         modify:    zxTPOAMMegConfigLossPktThresholdMantissa
+         modify:    zxTPOAMMegConfigPaDMType
+         modify:    zxTPOAMMegConfigPaDMPhb
+         modify:    zxTPOAMLbMepMode
+         modify:    zxTPOAMLbTimeOut
+         modify:    zxTPOAMLbPhb
+         modify:    zxTPOAMLtTimeOut
+         modify:    zxTPOAMLtPhb
+         modify:    zxTPOAMLtMode
+         modify:    zxTPOAMTestPhb
+         modify:    zxTPOAMMegConfigSdEnable 
+         modify:    zxTPOAMLbTlvSize 
+         modify:    zxTPOAMTestOneWayMepID   
+         modify:    zxTPOAMDMSendPeriod"
+    REVISION "201308260000Z"  -- Aug 26, 2013
+    DESCRIPTION
+        "add:       zxTPOAMMegConfigPaDMEnable
+         add:       zxTPOAMMegConfigPaDMType
+         add:       zxTPOAMMegConfigPaDMPhb
+         add:       zxTPOAMMegConfigPaDMSendPeriod
+         add:       zxTPOAMMegConfigPaDMSendInterval
+         add:       zxTPOAMDMTlvSize
+         add:       zxTPOAMDMResultType
+         modify:    zxTPOAMTestType
+         modify:    zxTPOAMDMType"
+
+    REVISION "201308150000Z"  -- Aug 15, 2013
+    DESCRIPTION
+        "add:       zxTPOAMMegConfigProactiveLmType    
+         add:       zxTPOAMLMOnDemandType
+         modify:    zxTPOAMMegConfigProactiveLmEnable
+         modify:    zxTPOAMLbMepMode"
+
+    REVISION "201307030000Z"  -- July 03, 2013
+    DESCRIPTION
+        "add:       DESCRIPTION of all configuration entry    
+         modify:    zxTPOAMLbSendPeriod
+         modify:    zxTPOAMTestSendPeriod
+         modify:    zxTPOAMLMOnDemandSendPeriod
+         modify:    zxTPOAMDMSendPeriod
+         modify:    zxTPOAMLtResultHopEntry"
+
+    REVISION "201305070000Z"  -- May 07, 2013
+    DESCRIPTION
+        "add:       zxTPOAMSectionConfigSdEnable
+         modify:    zxTPOAMLtResultHopCount
+         modify:    zxTPOAMLtResultHopIndex
+         modify:    zxTPOAMTestResultRecvCount
+         modify:    zxTPOAMTestResultBandWidth
+         modify:    zxTPOAMTestResultDiscardCount"
+       
+    REVISION "200504120000Z"  -- April 12, 2005
+    DESCRIPTION
+       "Initial version of this MIB module."
+    ::= { enterprises 3902 }    -- assigned by IANA
+  
+zxr10 OBJECT-IDENTITY
+    STATUS    current
+    DESCRIPTION
+        "Zxr10 is the root OBJECT IDENTIFIER for ZTE
+         routers and switches pruducts"
+    ::= { zte 3 }
+    
+zxr10RosngMIB OBJECT-IDENTITY
+       STATUS current
+    DESCRIPTION
+        "Subtree beneath which ROSNG MIBS were built."
+  ::= { zxr10 6000 }   
+
+zxTPOAMModules OBJECT-IDENTITY
+      STATUS current
+    DESCRIPTION
+    "Subtree beneath which zxTPOAMModules MIBS were built."
+    ::= { zxr10RosngMIB 202 }    
+--- TP OAM global object  
+--- ***************************************************************************
+       
+    zxTPOAMChannelType OBJECT-TYPE
+            SYNTAX     Unsigned32
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The identity of Y.1731 packet in G-ACH Label
+                    (default:32762)."
+            ::= { zxTPOAMModules 1 }
+            
+    zxTPOAMMel OBJECT-TYPE
+            SYNTAX     Unsigned32(0..7)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The value of MEL field in OAM packets(default: 7)."
+            ::= { zxTPOAMModules 2 }
+            
+    zxTPOAMGlobalEnable OBJECT-TYPE
+            SYNTAX     INTEGER {disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The global enable switch(default: enable)."
+            ::= { zxTPOAMModules 3 }
+            
+    zxTPOAMTc OBJECT-TYPE
+            SYNTAX     Unsigned32(0..7)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The value of TC field in the label of GAL(default:7)."
+            ::= { zxTPOAMModules 4 }
+            
+    zxTPOAMRdiToSF OBJECT-TYPE
+            SYNTAX     INTEGER {disable(0),enable(1)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "This switch is used to transform the RDI alarm to SF alarm
+                    (default:disable)."
+            ::= { zxTPOAMModules 5 }
+                            
+--- ****************************************************************************
+ 
+ 
+--- TP OAM SECTION Config Table
+--- ****************************************************************************
+
+    zxTPOAMSectionConfigTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTPOAMSectionConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The configuration table in the instance of SECTION."
+        ::= { zxTPOAMModules 6 }
+
+    zxTPOAMSectionConfigEntry  OBJECT-TYPE
+        SYNTAX  ZxTPOAMSectionConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing management information applicable to a 
+             particular instance of SECTION"
+        INDEX  { zxTPOAMSectionConfigSectionID }
+        ::= { zxTPOAMSectionConfigTable 1 }
+
+    ZxTPOAMSectionConfigEntry ::=
+        SEQUENCE {
+            zxTPOAMSectionConfigSectionID          Unsigned32,
+            zxTPOAMSectionConfigLocalPort          DisplayString,
+            zxTPOAMSectionConfigPeerIp             IpAddress,
+            zxTPOAMSectionConfigSdEnable           INTEGER
+     }
+
+    zxTPOAMSectionConfigSectionID  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..4000)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "SECTION ID used to identify the SECTION entity."
+        ::= { zxTPOAMSectionConfigEntry 1 }
+
+    zxTPOAMSectionConfigLocalPort  OBJECT-TYPE
+        SYNTAX  DisplayString(SIZE(0..31))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Local port bind the SECTION,and the port support GEI/FEI/VLAN 
+            subinterface/the third layer's vlan port/sg aggregation port/sg 
+            subinterface. The limits of configuration:1)the port must locate 
+            in the third lay 2)one port can't bind one more ports"
+        ::= { zxTPOAMSectionConfigEntry 2 }
+
+    zxTPOAMSectionConfigPeerIp  OBJECT-TYPE
+        SYNTAX  IpAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Peer ip address bind the SECTION."
+        ::= { zxTPOAMSectionConfigEntry 3 }       
+        
+    zxTPOAMSectionConfigSdEnable  OBJECT-TYPE
+        SYNTAX  INTEGER {disable(1),enable(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "SECTION layer sd enable flag:1 disable,2 enable,default value is
+             disable."
+        ::= { zxTPOAMSectionConfigEntry 4 }
+
+--- ****************************************************************************
+
+
+--- TP OAM TUNNEL Config Table
+--- ****************************************************************************
+
+    zxTPOAMTunnelEntityStaConfigTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTPOAMTunnelEntityStaConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The configuration table in the instance of TUNNEL."
+        ::= { zxTPOAMModules 7 }
+
+    zxTPOAMTunnelEntityStaConfigEntry  OBJECT-TYPE
+        SYNTAX  ZxTPOAMTunnelEntityStaConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing management information applicable to a 
+             particular instance of TUNNEL."
+        INDEX  { zxTPOAMTunnelEntityStaCTunnelID,
+                 zxTPOAMTunnelEntityStaCLspid }
+        ::= { zxTPOAMTunnelEntityStaConfigTable 1 }
+
+    ZxTPOAMTunnelEntityStaConfigEntry ::=
+        SEQUENCE {
+            zxTPOAMTunnelEntityStaCTunnelID       Unsigned32,
+            zxTPOAMTunnelEntityStaCLspid          Unsigned32,
+            zxTPOAMTunnelEntityStaCMegIndex       Unsigned32,
+            zxTPOAMTunnelEntityStaCPropagate      INTEGER
+     }
+
+    zxTPOAMTunnelEntityStaCTunnelID  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..131072)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The TUNNEL ID only applies to the bidirectional static TUNNEL.
+             The range of this parameter depend on the device."
+        ::= { zxTPOAMTunnelEntityStaConfigEntry 1 }
+
+    zxTPOAMTunnelEntityStaCLspid  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The identity of the static LSP"
+        ::= { zxTPOAMTunnelEntityStaConfigEntry 2 }
+
+    zxTPOAMTunnelEntityStaCMegIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "MEG index corresponding to this entity.0 is invalid and it means 
+            that have not created MEG."
+        ::= { zxTPOAMTunnelEntityStaConfigEntry 3 }
+        
+    zxTPOAMTunnelEntityStaCPropagate  OBJECT-TYPE
+        SYNTAX  INTEGER {disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The propagating switch of the entity"
+        ::= { zxTPOAMTunnelEntityStaConfigEntry 4 }
+ --- *************************************************************************
+
+
+--- TP OAM dynamic TUNNEL Config Table
+--- **************************************************************************
+
+    zxTPOAMTunnelEntityDynConfigTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTPOAMTunnelEntityDynConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The configuration table in the instance of dynamic TUNNEL."
+        ::= { zxTPOAMModules 8 }
+
+    zxTPOAMTunnelEntityDynConfigEntry  OBJECT-TYPE
+        SYNTAX  ZxTPOAMTunnelEntityDynConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing management information applicable to a 
+             particular instance of dynamic TUNNEL."
+        INDEX  { zxTPOAMTunnelEntityDynCTunnelID,
+                 zxTPOAMTunnelEntityDynCLspRole }
+        ::= { zxTPOAMTunnelEntityDynConfigTable 1 }
+
+    ZxTPOAMTunnelEntityDynConfigEntry ::=
+        SEQUENCE {
+            zxTPOAMTunnelEntityDynCTunnelID       Unsigned32,
+            zxTPOAMTunnelEntityDynCLspRole        INTEGER,
+            zxTPOAMTunnelEntityDynCMegIndex       Unsigned32
+     }
+
+    zxTPOAMTunnelEntityDynCTunnelID  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..131072)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "TUNNEL ID.
+             The range of this parameter depend on the device."
+        ::= { zxTPOAMTunnelEntityDynConfigEntry 1 }
+
+    zxTPOAMTunnelEntityDynCLspRole  OBJECT-TYPE
+        SYNTAX  INTEGER {master(1),slave(2)}
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The identity of dynamic LSP which including two roles: master 
+            and backup"
+        ::= { zxTPOAMTunnelEntityDynConfigEntry 2 }
+
+    zxTPOAMTunnelEntityDynCMegIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "MEG index corresponding to this entity.0 is invalid and it means 
+            that have not created MEG."
+        ::= { zxTPOAMTunnelEntityDynConfigEntry 3 }
+--- ***************************************************************************
+
+
+--- TP OAM PW Config Table
+--- ***************************************************************************
+
+    zxTPOAMPWEntityConfigTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTPOAMPWEntityConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The configuration table in the instance of PW."
+        ::= { zxTPOAMModules 9 }
+
+    zxTPOAMPWEntityConfigEntry  OBJECT-TYPE
+        SYNTAX  ZxTPOAMPWEntityConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing management information applicable to a
+             particular instance of PW."
+        INDEX  { zxTPOAMPWEntityPWName }
+        ::= { zxTPOAMPWEntityConfigTable 1 }
+
+    ZxTPOAMPWEntityConfigEntry ::=
+        SEQUENCE {
+            zxTPOAMPWEntityPWName       DisplayString,
+            zxTPOAMPWEntityMegIndex     Unsigned32
+     }
+
+    zxTPOAMPWEntityPWName  OBJECT-TYPE
+        SYNTAX  DisplayString(SIZE(0..255)) 
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The PW name "
+        ::= { zxTPOAMPWEntityConfigEntry 1 }
+
+    zxTPOAMPWEntityMegIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "MEG index corresponding to this entity.0 is invalid and it means 
+            that have not created MEG."
+        ::= { zxTPOAMPWEntityConfigEntry 2 }
+--- ***************************************************************************
+
+
+--- TP OAM SECTION Config Table
+--- ***************************************************************************
+
+    zxTPOAMSectionEntityConfigTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTPOAMSectionEntityConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The configuration table in the instance of SECTION."
+        ::= { zxTPOAMModules 10 }
+
+    zxTPOAMSectionEntityConfigEntry  OBJECT-TYPE
+        SYNTAX  ZxTPOAMSectionEntityConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing management information applicable to a 
+             particular instance of SECTION."
+        INDEX  { zxTPOAMSectionEntitySectionID }
+        ::= { zxTPOAMSectionEntityConfigTable 1 }
+
+    ZxTPOAMSectionEntityConfigEntry ::=
+        SEQUENCE {
+            zxTPOAMSectionEntitySectionID       Unsigned32,
+            zxTPOAMSectionEntityMegIndex        Unsigned32,
+            zxTPOAMSectionEntityPropagate       INTEGER
+     }
+
+    zxTPOAMSectionEntitySectionID  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..4000) 
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "SECTION ID"
+        ::= { zxTPOAMSectionEntityConfigEntry 1 }
+
+    zxTPOAMSectionEntityMegIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "MEG index corresponding to this entity.0 is invalid and it 
+            means that have not created MEG."
+        ::= { zxTPOAMSectionEntityConfigEntry 2 }
+
+    zxTPOAMSectionEntityPropagate  OBJECT-TYPE
+        SYNTAX  INTEGER {disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The propagating switch of the entity"
+        ::= { zxTPOAMSectionEntityConfigEntry 3 }
+--- ***************************************************************************
+
+
+--- TP OAM MEG Config Table
+--- ***************************************************************************
+
+    zxTPOAMMegConfigTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTPOAMMegConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The configuration table of MEG."
+        ::= { zxTPOAMModules 11 }
+
+    zxTPOAMMegConfigEntry  OBJECT-TYPE
+        SYNTAX  ZxTPOAMMegConfigEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing management information applicable to a 
+             particular MEG."
+        INDEX  { zxTPOAMMegConfigIndex }
+        ::= { zxTPOAMMegConfigTable 1 }
+
+    ZxTPOAMMegConfigEntry ::=
+        SEQUENCE {
+            zxTPOAMMegConfigIndex                Unsigned32,
+            zxTPOAMMegConfigMegID                DisplayString,
+            zxTPOAMMegConfigOAMEnable            INTEGER,
+            zxTPOAMMegConfigCCEnable             INTEGER,
+            zxTPOAMMegConfigCVEnable             INTEGER,
+            zxTPOAMMegConfigCVPeriod             INTEGER,
+            zxTPOAMMegConfigCVPhbName            INTEGER,
+            zxTPOAMMegConfigAISEnable            INTEGER,
+            zxTPOAMMegConfigAISPhb               INTEGER,
+            zxTPOAMMegConfigCSFEnable            INTEGER,
+            zxTPOAMMegConfigCSFPhb               INTEGER,
+            zxTPOAMMegConfigLocalMepType         INTEGER,
+            zxTPOAMMegConfigLocalMepID           Unsigned32,
+            zxTPOAMMegConfigPeerMepType          INTEGER,
+            zxTPOAMMegConfigPeerlMepID           Unsigned32,
+            zxTPOAMMegConfigMipID                Unsigned32,
+            zxTPOAMMegConfigMipUpDown            INTEGER,
+            zxTPOAMMegConfigProactiveLmEnable    INTEGER,
+            zxTPOAMMegConfigSdEnable             INTEGER,
+            zxTPOAMMegConfigLossPktThresholdMantissa     Unsigned32,
+            zxTPOAMMegConfigLossPktThresholdExponent     Unsigned32,
+            zxTPOAMMegConfigLCKEnable            INTEGER,
+            zxTPOAMMegConfigTunnelID             Unsigned32,
+            zxTPOAMMegConfigLspid                Unsigned32,
+            zxTPOAMMegConfigLspRole              INTEGER,
+            zxTPOAMMegConfigPWName               DisplayString,
+            zxTPOAMMegConfigSectionID            Unsigned32,
+            zxTPOAMMegConfigProactiveLmType      INTEGER,
+            zxTPOAMMegConfigPaDMEnable           INTEGER,
+            zxTPOAMMegConfigPaDMType             INTEGER,
+            zxTPOAMMegConfigPaDMPhb              INTEGER,
+            zxTPOAMMegConfigPaDMSendInterval     Unsigned32,
+            zxTPOAMMegConfigPaDMTlvSize          Unsigned32
+     }
+
+    zxTPOAMMegConfigIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MEG index"
+        ::= { zxTPOAMMegConfigEntry 1 }
+
+    zxTPOAMMegConfigMegID  OBJECT-TYPE
+        SYNTAX  DisplayString(SIZE(1..13))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "MEG identity name"
+        ::= { zxTPOAMMegConfigEntry 2 }
+
+    zxTPOAMMegConfigOAMEnable  OBJECT-TYPE
+        SYNTAX  INTEGER {disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The OAM enable switch under MEG model.(default :disable)"
+        ::= { zxTPOAMMegConfigEntry 3 }
+    
+    zxTPOAMMegConfigCCEnable  OBJECT-TYPE
+        SYNTAX  INTEGER {disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The CC enable switch (this switch only enable in the case of 
+            peer mep and local mep with full configuration)"
+        ::= { zxTPOAMMegConfigEntry 4 }
+
+    zxTPOAMMegConfigCVEnable  OBJECT-TYPE
+        SYNTAX  INTEGER {disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The CV enable switch"
+        ::= { zxTPOAMMegConfigEntry 5 }
+
+    zxTPOAMMegConfigCVPeriod  OBJECT-TYPE
+        SYNTAX  INTEGER{p3dot33ms(1),
+                        p10ms(2),
+                        p100ms(3),
+                        p1s(4),
+                        p10s(5),
+                        p1min(6),
+                        p10min(7)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The sending period of CV packets "
+        ::= { zxTPOAMMegConfigEntry 6 }
+
+    zxTPOAMMegConfigCVPhbName  OBJECT-TYPE
+        SYNTAX  INTEGER{be(1),   
+                        af11(2),
+                        af12(3),
+                        af21(4),
+                        af22(5),
+                        af31(6),
+                        af32(7),
+                        af41(8),
+                        af42(9),
+                        cs6(10),   
+                        cs7(11),   
+                        ef(12)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The PHB value in CV sending packets.(default :cs7)"
+        ::= { zxTPOAMMegConfigEntry 7 }
+
+    zxTPOAMMegConfigAISEnable  OBJECT-TYPE
+        SYNTAX  INTEGER {disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "The AIS enable switch(The function of AIS is enabled 
+            only in the instance of lsp or pw)"
+        ::= { zxTPOAMMegConfigEntry 8 }
+    
+    zxTPOAMMegConfigAISPhb  OBJECT-TYPE
+        SYNTAX  INTEGER{be(1),   
+                        af11(2),
+                        af12(3),
+                        af21(4),
+                        af22(5),
+                        af31(6),
+                        af32(7),
+                        af41(8),
+                        af42(9),
+                        cs6(10),   
+                        cs7(11),   
+                        ef(12)}
+        MAX-ACCESS  read-only
+        STATUS  obsolete
+        DESCRIPTION
+            "The PHB value in AIS sending packets.(default :cs7)"
+        ::= { zxTPOAMMegConfigEntry 9 }
+
+    zxTPOAMMegConfigCSFEnable  OBJECT-TYPE
+        SYNTAX  INTEGER {disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The switch of CSF.(The function of CSF is enabled only 
+            in the instance of pw)"
+        ::= { zxTPOAMMegConfigEntry 10 }
+
+    zxTPOAMMegConfigCSFPhb  OBJECT-TYPE
+        SYNTAX  INTEGER{be(1),   
+                        af11(2),
+                        af12(3),
+                        af21(4),
+                        af22(5),
+                        af31(6),
+                        af32(7),
+                        af41(8),
+                        af42(9),
+                        cs6(10),   
+                        cs7(11),   
+                        ef(12)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The PHB value in CSF sending packets.(default :cs7)"
+        ::= { zxTPOAMMegConfigEntry 11 }    
+    
+    zxTPOAMMegConfigLocalMepType  OBJECT-TYPE
+        SYNTAX  INTEGER {unknown(0),source(1),destination(2),bidirection(3)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Local MEP type :source MEP/destination MEP/bidirectional  
+            MEP.The configuration of MEP and MIP is mutual exclusive."
+        ::= { zxTPOAMMegConfigEntry 12 }
+
+    zxTPOAMMegConfigLocalMepID  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..8191)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Lhe identity of local MEP.0 is invalid and it means that 
+            have not configed MEP."
+        ::= { zxTPOAMMegConfigEntry 13 }
+    
+    zxTPOAMMegConfigPeerMepType  OBJECT-TYPE
+        SYNTAX  INTEGER {unknown(0),source(1),destination(2),bidirection(3)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The type of peer MEP including source MEP,destination 
+            MEP and bidirectional MEP."
+        ::= { zxTPOAMMegConfigEntry 14 }
+
+    zxTPOAMMegConfigPeerlMepID  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..8191)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The identity of peer MEP.0 is invalid and it means that 
+            have not configed peer MEP."
+        ::= { zxTPOAMMegConfigEntry 15 }
+
+    zxTPOAMMegConfigMipID  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..8191)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The identity of MIP.0 is invalid and it means that have 
+            not configed MIP."
+        ::= { zxTPOAMMegConfigEntry 16 }    
+
+
+    zxTPOAMMegConfigMipUpDown  OBJECT-TYPE
+        SYNTAX  INTEGER {down(0),up(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The MIP attribute including UP and DOWN is available only 
+            when the value of zxTPOAMMegConfigMipID is not 0"
+        ::= { zxTPOAMMegConfigEntry 17 }
+ 
+    zxTPOAMMegConfigProactiveLmEnable  OBJECT-TYPE
+        SYNTAX  INTEGER {disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The switch of proactive LM.(default: disable)"
+        ::= { zxTPOAMMegConfigEntry 18 }
+
+    zxTPOAMMegConfigSdEnable  OBJECT-TYPE
+        SYNTAX  INTEGER {disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The switch of SD alarm function.(default :disable)
+            (even if the loss ratio runs over the threshold,
+            there is no SD alarm without this configuration)"
+        ::= { zxTPOAMMegConfigEntry 19 }
+
+    zxTPOAMMegConfigLossPktThresholdMantissa  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..9)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The configuration of loss ratio threshold(This field displays 
+            the manitissa in E-notation)(default: 5)"
+        ::= { zxTPOAMMegConfigEntry 20 }    
+
+    zxTPOAMMegConfigLossPktThresholdExponent  OBJECT-TYPE
+        SYNTAX  Unsigned32(2..6)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The configuration of loss ratio threshold(This field displays 
+            the exponent in E-notation)(default: 5)"
+        ::= { zxTPOAMMegConfigEntry 21 }    
+
+    zxTPOAMMegConfigLCKEnable  OBJECT-TYPE
+        SYNTAX  INTEGER {disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The switch of LCK.(default: disable)"
+        ::= { zxTPOAMMegConfigEntry 22 }    
+         
+   zxTPOAMMegConfigTunnelID  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..131072)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The node identified the TUNNEL ID if MEG binding the static 
+            or dynamic tunnels.0 is invalid.
+            The range of this parameter depending on the device."
+        ::= { zxTPOAMMegConfigEntry 23 }
+ 
+    zxTPOAMMegConfigLspid  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..65535)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "the node identified the static tunnel if MEG binding the 
+            static tunnels.0 is invalid"
+        ::= { zxTPOAMMegConfigEntry 24 }
+        
+    zxTPOAMMegConfigLspRole  OBJECT-TYPE
+        SYNTAX  INTEGER {none(0),master(1),slave(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The node identified the dynamic tunnel if MEG binding the 
+            dynamic tunnels.The LSP acts as master or backup.0 is invalid"
+        ::= { zxTPOAMMegConfigEntry 25 }
+        
+    zxTPOAMMegConfigPWName  OBJECT-TYPE
+        SYNTAX  DisplayString(SIZE(0..255))
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The node identified the PW name if MEG binding the instance 
+            of PW. Null is invalid"
+        ::= { zxTPOAMMegConfigEntry 26 }
+
+    zxTPOAMMegConfigSectionID  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..4000)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The node identified the SECTION ID if MEG binding 
+            the instace of SECTION.0 is invalid"
+        ::= { zxTPOAMMegConfigEntry 27 }    
+
+    zxTPOAMMegConfigProactiveLmType  OBJECT-TYPE
+        SYNTAX  INTEGER {g8114(1),y1731(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Proactive LM adopts protocol type: 
+             G.8114,counting the data packets; 
+             Y.1731,counting the data packets and OAM packets."
+        ::= { zxTPOAMMegConfigEntry 28 }
+
+    zxTPOAMMegConfigPaDMEnable  OBJECT-TYPE
+        SYNTAX  INTEGER {disable(0),enable(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The switch of proactive DM.(default: disable)"
+        ::= { zxTPOAMMegConfigEntry 29 }
+
+    zxTPOAMMegConfigPaDMType  OBJECT-TYPE
+        SYNTAX  INTEGER {oneway(1),twoway(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The type of proactive DM.(default: oneway)"
+        ::= { zxTPOAMMegConfigEntry 30 }
+        
+    zxTPOAMMegConfigPaDMPhb  OBJECT-TYPE
+        SYNTAX  INTEGER{be(1),
+                        af11(2),
+                        af12(3),
+                        af21(4),
+                        af22(5),
+                        af31(6),
+                        af32(7),
+                        af41(8),
+                        af42(9),
+                        cs6(10),
+                        cs7(11),
+                        ef(12)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "the PHB value in DM sending packets.(default: cs7)"
+        ::= { zxTPOAMMegConfigEntry 31 }
+
+    zxTPOAMMegConfigPaDMSendInterval  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..100)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Sending intervals in the function of proactive DM.
+            (sending interval :100ms-10s,default value:1s)"
+        ::= { zxTPOAMMegConfigEntry 32 }
+
+    zxTPOAMMegConfigPaDMTlvSize  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..400)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The length of the TLV information in the function of proactive DM"
+        ::= { zxTPOAMMegConfigEntry 33 }
+
+--- ***************************************************************************
+
+
+--- TP OAM LB test Table
+--- ***************************************************************************
+
+    zxTPOAMLbTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTPOAMLbEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The configuration table of LB detecting."
+        ::= { zxTPOAMModules 12 }
+
+    zxTPOAMLbEntry  OBJECT-TYPE
+        SYNTAX  ZxTPOAMLbEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing management information applicable to a 
+             particular LB detecting."
+        INDEX  { zxTPOAMLbMegIndex, zxTPOAMLbSnmpIndex }
+        ::= { zxTPOAMLbTable 1 }
+
+    ZxTPOAMLbEntry ::=
+        SEQUENCE {
+            zxTPOAMLbMegIndex          Unsigned32,
+            zxTPOAMLbSnmpIndex         Unsigned32,
+            zxTPOAMLbEnable            INTEGER,
+            zxTPOAMLbMepID             Unsigned32,
+            zxTPOAMLbMipID             Unsigned32,
+            zxTPOAMLbMepMode           INTEGER,
+            zxTPOAMLbTimeOut           Unsigned32,
+            zxTPOAMLbMipTTL            Unsigned32,
+            zxTPOAMLbSendPeriod        Unsigned32,
+            zxTPOAMLbTlvSize           Unsigned32,
+            zxTPOAMLbPhb               INTEGER,
+            zxTPOAMLbSendLimitFlag     Unsigned32,
+            zxTPOAMLbSendResultFlag    INTEGER,
+            zxTPOAMLbRowStatus         RowStatus
+     }
+
+    zxTPOAMLbMegIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MEG index"
+        ::= { zxTPOAMLbEntry 1 }
+
+    zxTPOAMLbSnmpIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Detecting instance index sending by network management by snmp."
+        ::= { zxTPOAMLbEntry 2 }
+
+    zxTPOAMLbEnable  OBJECT-TYPE
+        SYNTAX  INTEGER {disable(0),enable(1)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The switch of LB."
+        ::= { zxTPOAMLbEntry 3 }
+        
+    zxTPOAMLbMepID  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..8191)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Destination MEP ID in the function of LB.0 stands for the type
+             of MIP. 
+            MEP ID and MIP ID can't be effective or invalid at the same time."
+        ::= { zxTPOAMLbEntry 4 }
+
+    zxTPOAMLbMipID  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..8191)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Destination MIP ID in the function of LB."
+        ::= { zxTPOAMLbEntry 5 }
+
+    zxTPOAMLbMepMode  OBJECT-TYPE
+        SYNTAX  INTEGER {standard(1),ztemode(0)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The LB working model:standard model and private model of ZTE
+            (default: private model)"
+        ::= { zxTPOAMLbEntry 6 }
+
+    zxTPOAMLbTimeOut  OBJECT-TYPE
+        SYNTAX  Unsigned32(5..10)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Timeout value of waiting responding packets(default: 5s)"
+        ::= { zxTPOAMLbEntry 7 }
+
+    zxTPOAMLbMipTTL  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..255)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "TTL value of the destination MIP ID in the function of LB.
+            The node is invalid when the zxTPOAMLbLBType is MEP type."
+        ::= { zxTPOAMLbEntry 8 }
+        
+    zxTPOAMLbSendPeriod  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..86400)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Duration time in the function of LB.It ranges from 10s to 24h 
+            without the configuration of permanence detecting.If this node 
+            assigned 0,it means permanence detecting unless mannual stopping.
+            If assigned 10-86400,it means detecting lasting time.
+            If assigned 1-9,it is error."
+        ::= { zxTPOAMLbEntry 9 }
+
+    zxTPOAMLbTlvSize  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..400)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The length of the TLV information in the function of LB(1-400)."
+        ::= { zxTPOAMLbEntry 10 }
+            
+    zxTPOAMLbPhb  OBJECT-TYPE
+        SYNTAX  INTEGER{be(1),
+                        af11(2),
+                        af12(3),
+                        af21(4),
+                        af22(5),
+                        af31(6),
+                        af32(7),
+                        af41(8),
+                        af42(9),
+                        cs6(10),
+                        cs7(11),
+                        ef(12)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "the PHB value in LB sending packets.(default: cs7)"
+        ::= { zxTPOAMLbEntry 11 }
+
+    zxTPOAMLbSendLimitFlag  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..10)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The limit of sending speed in the function of LB.
+            default value is 10 packets per second.It means sending 
+            at full speed when the value is 0."
+        ::= { zxTPOAMLbEntry 12 }
+        
+    zxTPOAMLbSendResultFlag  OBJECT-TYPE
+        SYNTAX  INTEGER{nopreserve(1),preserve(2)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The flag is used to judge perserving results or not.default 
+             value is nopreserve."
+        ::= { zxTPOAMLbEntry 13 }
+
+    zxTPOAMLbRowStatus  OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Row status"
+        ::= { zxTPOAMLbEntry 14 }
+
+
+--- ***************************************************************************
+
+
+--- TP OAM LB result Table
+--- ***************************************************************************
+
+    zxTPOAMLbResultTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTPOAMLbResultEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The result table of LB detecting."
+        ::= { zxTPOAMModules 13 }
+
+    zxTPOAMLbResultEntry  OBJECT-TYPE
+        SYNTAX  ZxTPOAMLbResultEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing result information applicable to LB detecting"
+        INDEX  { zxTPOAMLbResultMegIndex, zxTPOAMLbResultSnmpIndex }
+        ::= { zxTPOAMLbResultTable 1 }
+
+    ZxTPOAMLbResultEntry ::=
+        SEQUENCE {
+            zxTPOAMLbResultMegIndex        Unsigned32,
+            zxTPOAMLbResultSnmpIndex       Unsigned32,
+            zxTPOAMLbResultLocalMep        Unsigned32,
+            zxTPOAMLbResultDestMep         Unsigned32,
+            zxTPOAMLbResultDestMip         Unsigned32,
+            zxTPOAMLbResultSendCount       Unsigned32,
+            zxTPOAMLbResultRecvCount       Unsigned32,
+            zxTPOAMLbResultDiscardCount    Unsigned32,
+            zxTPOAMLbResultStatus          INTEGER
+     }
+
+    zxTPOAMLbResultMegIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MEG index"
+        ::= { zxTPOAMLbResultEntry 1 }
+
+    zxTPOAMLbResultSnmpIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Detecting instance index sending by network management by snmp"
+        ::= { zxTPOAMLbResultEntry 2 }
+
+    zxTPOAMLbResultLocalMep  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..8191)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Local MEP ID"
+        ::= { zxTPOAMLbResultEntry 3 }
+        
+    zxTPOAMLbResultDestMep  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..8191)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Destination MEP ID in the function of LB.0 stands for
+            the type of MEP.MEP ID and MIP ID can't be effective or invalid
+            at the same time."
+        ::= { zxTPOAMLbResultEntry 4 }
+        
+        zxTPOAMLbResultDestMip  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..8191)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Destination MIP ID in the function of LB.0 stands for the type 
+             of MIP.
+            MEP ID and MIP ID can't be effective or invalid at the same time"
+        ::= { zxTPOAMLbResultEntry 5 }
+        
+    zxTPOAMLbResultSendCount  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The count of sending LB packets"
+        ::= { zxTPOAMLbResultEntry 6 }
+
+    zxTPOAMLbResultRecvCount  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The count of receiving LB packets"
+        ::= { zxTPOAMLbResultEntry 7 }
+
+    zxTPOAMLbResultDiscardCount  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The count of discarding LB packets"
+        ::= { zxTPOAMLbResultEntry 8 }
+
+    zxTPOAMLbResultStatus  OBJECT-TYPE
+        SYNTAX  INTEGER {notready(0),running(1),finished(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The status of testing instance:not started,testing,finished"
+        ::= { zxTPOAMLbResultEntry 9 }
+--- ***************************************************************************
+
+--- TP OAM LT test Table
+--- ***************************************************************************
+
+    zxTPOAMLtTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTPOAMLtEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The configuration table of LT detecting."
+        ::= { zxTPOAMModules 14 }
+
+    zxTPOAMLtEntry  OBJECT-TYPE
+        SYNTAX  ZxTPOAMLtEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing management information applicable to a 
+             particular LT detecting."
+        INDEX  { zxTPOAMLtMegIndex, zxTPOAMLtSnmpIndex }
+        ::= { zxTPOAMLtTable 1 }
+
+    ZxTPOAMLtEntry ::=
+        SEQUENCE {
+            zxTPOAMLtMegIndex           Unsigned32,
+            zxTPOAMLtSnmpIndex          Unsigned32,
+            zxTPOAMLtMepID              Unsigned32,
+            zxTPOAMLtEnable             INTEGER,
+            zxTPOAMLtTimeOut            Unsigned32,
+            zxTPOAMLtTTL                Unsigned32,
+            zxTPOAMLtPhb                INTEGER,
+            zxTPOAMLtTlvSize            Unsigned32,
+            zxTPOAMLtMode               INTEGER,
+            zxTPOAMLtSendResultFlag     INTEGER,
+            zxTPOAMLtRowStatus          RowStatus
+     }
+
+    zxTPOAMLtMegIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MEG index"
+        ::= { zxTPOAMLtEntry 1 }
+
+    zxTPOAMLtSnmpIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Detecting instance index sending by network management by snmp"
+        ::= { zxTPOAMLtEntry 2 }
+
+    zxTPOAMLtMepID  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..8191)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Destination MEP ID in the function of LT."
+        ::= { zxTPOAMLtEntry 3 }
+        
+    zxTPOAMLtEnable  OBJECT-TYPE
+        SYNTAX  INTEGER {disable(0),enable(1)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The switch of LT."
+        ::= { zxTPOAMLtEntry 4 }
+
+    zxTPOAMLtTimeOut  OBJECT-TYPE
+        SYNTAX  Unsigned32(5..10)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Timeout value of waiting responding packets.(default: 5s)"
+        ::= { zxTPOAMLtEntry 5 }
+
+    zxTPOAMLtTTL  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..255)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Maximum of the TTL in the function of LT."
+        ::= { zxTPOAMLtEntry 6 }
+
+    zxTPOAMLtPhb  OBJECT-TYPE
+        SYNTAX  INTEGER{be(1),
+                        af11(2),
+                        af12(3),
+                        af21(4),
+                        af22(5),
+                        af31(6),
+                        af32(7),
+                        af41(8),
+                        af42(9),
+                        cs6(10),
+                        cs7(11),
+                        ef(12)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The PHB value in LT sending packets.(default: cs7)"
+        ::= { zxTPOAMLtEntry 7 }
+
+    zxTPOAMLtTlvSize  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..400)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The length of the TLV information in the function of LT."
+        ::= { zxTPOAMLtEntry 8 }
+        
+    zxTPOAMLtMode  OBJECT-TYPE
+        SYNTAX  INTEGER {standard(1),ztemode(0)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The LT working model:standard model and private model of ZTE.
+            (default: private model)"
+        ::= { zxTPOAMLtEntry 9 }
+
+    zxTPOAMLtSendResultFlag  OBJECT-TYPE
+        SYNTAX  INTEGER{nopreserve(1),preserve(2)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The flag used to judge perserving results or not.
+            default value is nopreserve."
+        ::= { zxTPOAMLtEntry 10 }
+
+    zxTPOAMLtRowStatus  OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Row status"
+        ::= { zxTPOAMLtEntry 11 }
+
+
+--- ***************************************************************************
+
+
+--- TP OAM LT result Table
+--- ***************************************************************************
+
+    zxTPOAMLtResultTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTPOAMLtResultEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The result table of LT detecting."
+        ::= { zxTPOAMModules 15 }
+
+    zxTPOAMLtResultEntry  OBJECT-TYPE
+        SYNTAX  ZxTPOAMLtResultEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing result information applicable to a 
+             particular LT detecting."
+        INDEX  { zxTPOAMLtResultMegIndex, zxTPOAMLtResultSnmpIndex }
+        ::= { zxTPOAMLtResultTable 1 }
+
+    ZxTPOAMLtResultEntry ::=
+        SEQUENCE {
+            zxTPOAMLtResultMegIndex     Unsigned32,
+            zxTPOAMLtResultSnmpIndex    Unsigned32,
+            zxTPOAMLtResultLocalMep     Unsigned32,
+            zxTPOAMLtResultProcessStatus   INTEGER,
+            zxTPOAMLtResultHopCount     Unsigned32,
+            zxTPOAMLtResultStatus          INTEGER
+     }
+
+    zxTPOAMLtResultMegIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MEG index"
+        ::= { zxTPOAMLtResultEntry 1 }
+
+    zxTPOAMLtResultSnmpIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Detecting instance index sending by network management by snmp"
+        ::= { zxTPOAMLtResultEntry 2 }
+
+    zxTPOAMLtResultLocalMep  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..8191)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Local MEP ID"
+        ::= { zxTPOAMLtResultEntry 3 }
+        
+    zxTPOAMLtResultProcessStatus  OBJECT-TYPE
+        SYNTAX  INTEGER {fail(0),sucess(1)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The process of LT testing:fail or success."
+        ::= { zxTPOAMLtResultEntry 4 }
+
+    zxTPOAMLtResultHopCount  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..255)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Success hops of LT testing"
+        ::= { zxTPOAMLtResultEntry 5 }
+
+    zxTPOAMLtResultStatus  OBJECT-TYPE
+        SYNTAX  INTEGER {notready(0),running(1),finished(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The status of testing instance :not started,testing,finished"
+        ::= { zxTPOAMLtResultEntry 6 }
+
+--- ***************************************************************************
+
+
+--- TP OAM LT hop Table
+--- ***************************************************************************
+
+    zxTPOAMLtResultHopTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTPOAMLtResultHopEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The hop table of LT detecting."
+        ::= { zxTPOAMModules 16 }
+
+    zxTPOAMLtResultHopEntry  OBJECT-TYPE
+        SYNTAX  ZxTPOAMLtResultHopEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing hop result information applicable to a 
+             particular LT detecting."
+        INDEX  { zxTPOAMLtResultHopMegIndex, 
+                 zxTPOAMLtResultHopSnmpIndex, 
+                 zxTPOAMLtResultHopIndex
+               }
+        ::= { zxTPOAMLtResultHopTable 1 }
+
+    ZxTPOAMLtResultHopEntry ::=
+        SEQUENCE {
+            zxTPOAMLtResultHopMegIndex     Unsigned32,
+            zxTPOAMLtResultHopSnmpIndex    Unsigned32,
+            zxTPOAMLtResultHopIndex        Unsigned32,
+            zxTPOAMLtResultHopType         INTEGER,
+            zxTPOAMLtResultHopID           Unsigned32
+     }
+
+    zxTPOAMLtResultHopMegIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MEG index"
+        ::= { zxTPOAMLtResultHopEntry 1 }
+
+    zxTPOAMLtResultHopSnmpIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Detecting instance index sending by network management by snmp"
+        ::= { zxTPOAMLtResultHopEntry 2 }
+
+    zxTPOAMLtResultHopIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..255)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "Hop index"
+        ::= { zxTPOAMLtResultHopEntry 3 }
+        
+    zxTPOAMLtResultHopType  OBJECT-TYPE
+        SYNTAX  INTEGER {mep(1),mip(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Hop type:MEP or MIP"
+        ::= { zxTPOAMLtResultHopEntry 4 }
+
+    zxTPOAMLtResultHopID  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..8191)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The ID of MEP or MIP(it's invalid if the function adopt 
+            the private model of ZTE)"
+        ::= { zxTPOAMLtResultHopEntry 5 }
+--- ***************************************************************************
+
+--- TP OAM TEST Table
+--- ***************************************************************************
+
+    zxTPOAMTestTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTPOAMTestEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The configuration table of TEST detecting."
+        ::= { zxTPOAMModules 17 }
+
+    zxTPOAMTestEntry  OBJECT-TYPE
+        SYNTAX  ZxTPOAMTestEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing management information applicable to a 
+             particular TEST detecting."
+        INDEX  { zxTPOAMTestMegIndex }
+        ::= { zxTPOAMTestTable 1 }
+
+    ZxTPOAMTestEntry ::=
+        SEQUENCE {
+            zxTPOAMTestMegIndex          Unsigned32,
+            zxTPOAMTestEnable            INTEGER,
+            zxTPOAMTestType              INTEGER,
+            zxTPOAMTestOneWayMepID       Unsigned32,
+            zxTPOAMTestSendPeriod        Unsigned32,
+            zxTPOAMTestTlvSize           Unsigned32,
+            zxTPOAMTestPhb               INTEGER,
+            zxTPOAMTestSpeed             Unsigned32,
+            zxTPOAMTestCodeType          INTEGER,
+            zxTPOAMTestRowStatus         RowStatus
+     }
+
+    zxTPOAMTestMegIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MEG index"
+        ::= { zxTPOAMTestEntry 1 }
+
+    zxTPOAMTestEnable  OBJECT-TYPE
+        SYNTAX  INTEGER {disable(0),enable(1)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The switch of TEST."
+        ::= { zxTPOAMTestEntry 2 }
+
+    zxTPOAMTestType  OBJECT-TYPE
+        SYNTAX  INTEGER {onewaysource(1),onewaydest(2),twoway(3)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The type of the TEST function :source /destination /bidirectional.
+            Now only supporting the one-way model."
+        ::= { zxTPOAMTestEntry 3 }
+        
+    zxTPOAMTestOneWayMepID  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..8191)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The MEP ID of destination MEP in the function of Unidirectional TEST."
+        ::= { zxTPOAMTestEntry 4 }
+
+    zxTPOAMTestSendPeriod  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..86400)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Duration time in the function of TEST.It ranges from 10s to 24h 
+            without the configuration of permanence detecting.If this node 
+            assigned 0,it means permanence detecting unless mannual stopping.
+            If assigned 10-86400,it means detecting lasting time.
+            If assigned 1-9,it is error."
+        ::= { zxTPOAMTestEntry 5 }
+
+    zxTPOAMTestTlvSize  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..1400)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The length of the TLV information in the function of TEST."
+        ::= { zxTPOAMTestEntry 6 }
+
+    zxTPOAMTestPhb  OBJECT-TYPE
+        SYNTAX  INTEGER{be(1),
+                        af11(2),
+                        af12(3),
+                        af21(4),
+                        af22(5),
+                        af31(6),
+                        af32(7),
+                        af41(8),
+                        af42(9),
+                        cs6(10),
+                        cs7(11),
+                        ef(12)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The PHB value in TEST sending packets.(default: cs7)"
+        ::= { zxTPOAMTestEntry 7 }
+
+    zxTPOAMTestSpeed  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..10000)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Sending ratio: default value 10000kbps"
+        ::= { zxTPOAMTestEntry 8 }
+        
+    zxTPOAMTestCodeType  OBJECT-TYPE
+        SYNTAX  INTEGER {zero(0),one(1)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The TLV value: all 0, all 1 (default:all 0)"
+        ::= { zxTPOAMTestEntry 9 }
+
+    zxTPOAMTestRowStatus  OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Row status"
+        ::= { zxTPOAMTestEntry 10 }
+
+
+--- ***************************************************************************
+
+
+--- TP OAM TEST result Table
+--- ***************************************************************************
+
+    zxTPOAMTestResultTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTPOAMTestResultEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The result table of TEST detecting."
+        ::= { zxTPOAMModules 18 }
+
+    zxTPOAMTestResultEntry  OBJECT-TYPE
+        SYNTAX  ZxTPOAMTestResultEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing result information applicable to a 
+             particular TEST detecting."
+        INDEX  { zxTPOAMTestResultMegIndex }
+        ::= { zxTPOAMTestResultTable 1 }
+
+    ZxTPOAMTestResultEntry ::=
+        SEQUENCE {
+            zxTPOAMTestResultMegIndex        Unsigned32,
+            zxTPOAMTestResultLocalMep        Unsigned32,
+            zxTPOAMTestResultRecvCount       Counter32,
+            zxTPOAMTestResultBandWidth       Unsigned32,
+            zxTPOAMTestResultDiscardCount    Counter32,
+            zxTPOAMTestResultStatus          INTEGER
+     }
+
+    zxTPOAMTestResultMegIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MEG index"
+        ::= { zxTPOAMTestResultEntry 1 }
+
+    zxTPOAMTestResultLocalMep  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..8191)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Local MEP ID"
+        ::= { zxTPOAMTestResultEntry 2 }
+
+    zxTPOAMTestResultRecvCount  OBJECT-TYPE
+        SYNTAX  Counter32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The count of sending TEST packets."
+        ::= { zxTPOAMTestResultEntry 3 }
+        
+    zxTPOAMTestResultBandWidth  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The bandwidth in the function of TEST."
+        ::= { zxTPOAMTestResultEntry 4 }
+
+    zxTPOAMTestResultDiscardCount  OBJECT-TYPE
+        SYNTAX  Counter32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Discarding count in the function of TEST."
+        ::= { zxTPOAMTestResultEntry 5 }
+
+    zxTPOAMTestResultStatus  OBJECT-TYPE
+        SYNTAX  INTEGER {notready(0),running(1),finished(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The status of testing instance :not started,testing,finished"
+        ::= { zxTPOAMTestResultEntry 6 }
+
+--- ***************************************************************************
+
+
+--- TP OAM LM test Table
+--- ***************************************************************************
+
+    zxTPOAMLmOnDemandTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTPOAMLmOnDemandEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The testing table of on-demand LM detecting."
+        ::= { zxTPOAMModules 19 }
+
+    zxTPOAMLmOnDemandEntry  OBJECT-TYPE
+        SYNTAX  ZxTPOAMLmOnDemandEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing management information applicable to a 
+             particular on-demand LM detecting."
+        INDEX  { zxTPOAMLMOnDemandMegIndex }
+        ::= { zxTPOAMLmOnDemandTable 1 }
+
+    ZxTPOAMLmOnDemandEntry ::=
+        SEQUENCE {
+            zxTPOAMLMOnDemandMegIndex         Unsigned32,
+            zxTPOAMLMOnDemandEnable           INTEGER,
+            zxTPOAMLMOnDemandSendPeriod       Unsigned32,
+            zxTPOAMLMOnDemandLmPhb            INTEGER,
+            zxTPOAMLMOnDemandSendInterval     Unsigned32,
+            zxTPOAMLMOnDemandRowStatus        RowStatus,
+            zxTPOAMLMOnDemandType             INTEGER
+     }
+
+    zxTPOAMLMOnDemandMegIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MEG index"
+        ::= { zxTPOAMLmOnDemandEntry 1 }
+
+    zxTPOAMLMOnDemandEnable  OBJECT-TYPE
+        SYNTAX  INTEGER {disable(0),enable(1)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The switch of on-demand LM."
+        ::= { zxTPOAMLmOnDemandEntry 2 }
+
+    zxTPOAMLMOnDemandSendPeriod  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..86400)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Duration time in the function of LM.It ranges from 10s to 24h 
+            without the configuration of permanence detecting.If this node 
+            assigned 0,it means permanence detecting unless mannual stopping.
+            If assigned 10-86400,it means detecting lasting time.
+            If assigned 1-9,it is error."
+        ::= { zxTPOAMLmOnDemandEntry 3 }
+        
+    zxTPOAMLMOnDemandLmPhb  OBJECT-TYPE
+        SYNTAX  INTEGER{be(1),
+                        af11(2),
+                        af12(3),
+                        af21(4),
+                        af22(5),
+                        af31(6),
+                        af32(7),
+                        af41(8),
+                        af42(9),
+                        cs6(10),
+                        cs7(11),
+                        ef(12)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The PHB value in LM sending packets."
+        ::= { zxTPOAMLmOnDemandEntry 4 }
+
+    zxTPOAMLMOnDemandSendInterval  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..100)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Sending intervals in the function of on-demand LM.
+            (sending interval :100ms-10s,default value:1s)"
+        ::= { zxTPOAMLmOnDemandEntry 5 }
+
+    zxTPOAMLMOnDemandRowStatus  OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Row status"
+        ::= { zxTPOAMLmOnDemandEntry 6 }
+
+    zxTPOAMLMOnDemandType  OBJECT-TYPE
+        SYNTAX  INTEGER {g8114(1),y1731(2)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "On-demand LM adopts protocol type: 
+             G.8114,counting the data packets; 
+             Y.1731,counting the data packets and OAM packets."
+        ::= { zxTPOAMLmOnDemandEntry 7 }
+--- ***************************************************************************
+
+
+--- TP OAM LM result Table
+--- ***************************************************************************
+
+    zxTPOAMLmOnDemandResultTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTPOAMLmOnDemandResultEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The result table of on-demand LM detecting."
+        ::= { zxTPOAMModules 20 }
+
+    zxTPOAMLmOnDemandResultEntry  OBJECT-TYPE
+        SYNTAX  ZxTPOAMLmOnDemandResultEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing result information applicable to a 
+             particular on-demand LM detecting."
+        INDEX  { zxTPOAMLmODResultLocalMegIndex }
+        ::= { zxTPOAMLmOnDemandResultTable 1 }
+
+    ZxTPOAMLmOnDemandResultEntry ::=
+        SEQUENCE {
+            zxTPOAMLmODResultLocalMegIndex          Unsigned32,
+            zxTPOAMLmODResultLocalMepID             Unsigned32,
+            zxTPOAMLmODResultLocalSPktCount         Unsigned32,
+            zxTPOAMLmODResultLocalRPktCount         Unsigned32,
+            zxTPOAMLmODResultLocalDRPktCount        Unsigned32,
+            zxTPOAMLmODResultLocalDiscardRatio      Unsigned32,
+            zxTPOAMLmODResultRemoteSPktCount        Unsigned32,
+            zxTPOAMLmODResultRemoteRPktCount        Unsigned32,
+            zxTPOAMLmODResultRemoteDRPktCount       Unsigned32,
+            zxTPOAMLmODResultRemoteDiscardRatio     Unsigned32,
+            zxTPOAMLmODResultStatus                 INTEGER
+     }
+
+    zxTPOAMLmODResultLocalMegIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MEG index"
+        ::= { zxTPOAMLmOnDemandResultEntry 1 }
+
+    zxTPOAMLmODResultLocalMepID  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..8191)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Local MEP ID"
+        ::= { zxTPOAMLmOnDemandResultEntry 2 }
+
+    zxTPOAMLmODResultLocalSPktCount  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The number of local sending packets."
+        ::= { zxTPOAMLmOnDemandResultEntry 3 }
+        
+    zxTPOAMLmODResultLocalRPktCount  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The number of local receiving packets."
+        ::= { zxTPOAMLmOnDemandResultEntry 4 }
+
+    zxTPOAMLmODResultLocalDRPktCount  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The number of local lossing packets."
+        ::= { zxTPOAMLmOnDemandResultEntry 5 }
+
+    zxTPOAMLmODResultLocalDiscardRatio  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The ratio of local lossing packets in the function of on-demand LM."
+        ::= { zxTPOAMLmOnDemandResultEntry 6 }
+     
+    zxTPOAMLmODResultRemoteSPktCount  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The number of remote sending packets."
+        ::= { zxTPOAMLmOnDemandResultEntry 7 }
+
+    zxTPOAMLmODResultRemoteRPktCount  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The number of remote receiving packets."
+        ::= { zxTPOAMLmOnDemandResultEntry 8 }
+        
+    zxTPOAMLmODResultRemoteDRPktCount  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The number of remote lossing packets."
+        ::= { zxTPOAMLmOnDemandResultEntry 9 }
+
+    zxTPOAMLmODResultRemoteDiscardRatio  OBJECT-TYPE
+        SYNTAX  Unsigned32
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The ratio of remote lossing packets in the function of 
+             on-demand LM."
+        ::= { zxTPOAMLmOnDemandResultEntry 10 }
+
+    zxTPOAMLmODResultStatus  OBJECT-TYPE
+        SYNTAX  INTEGER {notready(0),running(1),finished(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The status of testing instance :not started,testing,finished"
+        ::= { zxTPOAMLmOnDemandResultEntry 11 }
+--- ***************************************************************************
+
+--- TP OAM DM test Table
+--- ***************************************************************************
+
+    zxTPOAMDMTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTPOAMDMEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The testing table of DM detecting."
+        ::= { zxTPOAMModules 21 }
+
+    zxTPOAMDMEntry  OBJECT-TYPE
+        SYNTAX  ZxTPOAMDMEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing management information applicable to a 
+             particular DM detecting."
+        INDEX  { zxTPOAMDMMegIndex }
+        ::= { zxTPOAMDMTable 1 }
+
+    ZxTPOAMDMEntry ::=
+        SEQUENCE {
+            zxTPOAMDMMegIndex            Unsigned32,
+            zxTPOAMDMEnable              INTEGER,
+            zxTPOAMDMType                INTEGER,
+            zxTPOAMDMSendPhb             INTEGER,
+            zxTPOAMDMSendPeriod          Unsigned32,
+            zxTPOAMDMSendInterval        Unsigned32,
+            zxTPOAMDMRowStatus           RowStatus,
+            zxTPOAMDMTlvSize             Unsigned32
+     }
+
+    zxTPOAMDMMegIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MEG index"
+        ::= { zxTPOAMDMEntry 1 }
+
+    zxTPOAMDMEnable  OBJECT-TYPE
+        SYNTAX  INTEGER {disable(0),enable(1)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The switch of DM."
+        ::= { zxTPOAMDMEntry 2 }
+
+    zxTPOAMDMType  OBJECT-TYPE
+        SYNTAX  INTEGER {oneway(1),twoway(2)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The type of the DM function."
+        ::= { zxTPOAMDMEntry 3 }
+        
+    zxTPOAMDMSendPhb  OBJECT-TYPE
+        SYNTAX  INTEGER{be(1),
+                        af11(2),
+                        af12(3),
+                        af21(4),
+                        af22(5),
+                        af31(6),
+                        af32(7),
+                        af41(8),
+                        af42(9),
+                        cs6(10),
+                        cs7(11),
+                        ef(12)}
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "the PHB value in DM sending packets."
+        ::= { zxTPOAMDMEntry 4 }
+
+    zxTPOAMDMSendPeriod  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..86400)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Duration time in the function of DM.It ranges from 10s to 24h 
+            without the configuration of permanence detecting.If this node 
+            assigned 0,it means permanence detecting unless mannual stopping.
+            If assigned 10-86400,it means detecting lasting time.
+            If assigned 1-9,it is error."
+        ::= { zxTPOAMDMEntry 5 }
+
+    zxTPOAMDMSendInterval  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..100)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "Sending intervals in the function of DM.
+            (sending interval :100ms-10s,default value:1s)"
+        ::= { zxTPOAMDMEntry 6 }
+            
+    zxTPOAMDMRowStatus  OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "row status"
+        ::= { zxTPOAMDMEntry 7 }
+
+    zxTPOAMDMTlvSize  OBJECT-TYPE
+        SYNTAX  Unsigned32(0..400)
+        MAX-ACCESS  read-create
+        STATUS  current
+        DESCRIPTION
+            "The length of the TLV information in the function of DM."
+        ::= { zxTPOAMDMEntry 8 }
+
+--- ***************************************************************************
+
+
+--- TP OAM DM result Table
+--- ***************************************************************************
+
+    zxTPOAMDMResultTable  OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ZxTPOAMDMResultEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "The result table of DM detecting."
+        ::= { zxTPOAMModules 22 }
+
+    zxTPOAMDMResultEntry  OBJECT-TYPE
+        SYNTAX  ZxTPOAMDMResultEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "An entry containing result information applicable to a 
+             particular DM detecting"
+        INDEX  { zxTPOAMDMResultMegIndex }
+        ::= { zxTPOAMDMResultTable 1 }
+
+    ZxTPOAMDMResultEntry ::=
+        SEQUENCE {
+            zxTPOAMDMResultMegIndex                  Unsigned32,
+            zxTPOAMDMResultLocalMepID                Unsigned32,
+            zxTPOAMDMResultDelay                     Counter64,
+            zxTPOAMDMResultDelayVariationRatio       Counter64,
+            zxTPOAMDMResultAvgDelay                  Counter64,
+            zxTPOAMDMResultAvgDelayVariationRatio    Counter64,
+            zxTPOAMDMResultDelayVariation            Counter64,
+            zxTPOAMDMResultAvgDelayVariation         Counter64,
+            zxTPOAMDMResultStatus                    INTEGER,
+            zxTPOAMDMResultType                      INTEGER
+     }
+
+    zxTPOAMDMResultMegIndex  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..65535)
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "MEG index"
+        ::= { zxTPOAMDMResultEntry 1 }
+
+    zxTPOAMDMResultLocalMepID  OBJECT-TYPE
+        SYNTAX  Unsigned32(1..8191)
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "Local MEP ID"
+        ::= { zxTPOAMDMResultEntry 2 }
+
+    zxTPOAMDMResultDelay  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The delay value in the function of DM (ns)"
+        ::= { zxTPOAMDMResultEntry 3 }
+        
+    zxTPOAMDMResultDelayVariationRatio  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The delay variation ratio in the function of DM(one in a million)"
+        ::= { zxTPOAMDMResultEntry 4 }
+
+    zxTPOAMDMResultAvgDelay  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The average delay value in the function of DM(ns)"
+        ::= { zxTPOAMDMResultEntry 5 }
+
+    zxTPOAMDMResultAvgDelayVariationRatio  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The average delay variation ratio in the function of DM
+             (one in a million)"
+        ::= { zxTPOAMDMResultEntry 6 }
+     
+    zxTPOAMDMResultDelayVariation  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The difference of delay value before and after in the function of 
+             DM(ns)"
+        ::= { zxTPOAMDMResultEntry 7 }
+
+    zxTPOAMDMResultAvgDelayVariation  OBJECT-TYPE
+        SYNTAX  Counter64
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The average difference of delay value before and after in the 
+             function of DM(ns)"
+        ::= { zxTPOAMDMResultEntry 8 }
+        
+    zxTPOAMDMResultStatus  OBJECT-TYPE
+        SYNTAX  INTEGER {notready(0),running(1),finished(2)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The status of testing instance :not started,testing,finished"
+        ::= { zxTPOAMDMResultEntry 9 }
+
+    zxTPOAMDMResultType  OBJECT-TYPE
+        SYNTAX  INTEGER {oneway(1),twoway(2),unknown(3)}
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+            "The type of the DM function "
+        ::= { zxTPOAMDMResultEntry 10 }
+--- ***************************************************************************
+END

@@ -1,0 +1,1239 @@
+# Used by Channel Access Security to determine access to this IOC.
+record(mbbo, "$(IOC,undefined):ACCESS")
+{
+  field(DESC, "$(IOC,undefined) Acc Mode")
+  field(PINI, "YES")
+  field(ZRST, "Running")
+  field(ZRSV, "NO_ALARM")
+  field(ONST, "Maintenance")
+  field(ONSV, "MINOR")
+  field(TWST, "Test")
+  field(TWSV, "MINOR")
+  field(THST, "OFFLINE")
+  field(THSV, "MAJOR")
+  info(autosaveFields, "VAL")
+}
+record(stringin, "$(IOC,undefined):STARTTOD")
+{
+    field(DESC, "Time and date of startup")
+    field(DTYP, "Soft Timestamp")
+    field(PINI, "YES")
+    field(INP, "@%m/%d/%Y %H:%M:%S")
+}
+record(stringin, "$(IOC,undefined):TOD")
+{
+    field(DESC, "Current time and date")
+    field(DTYP, "Soft Timestamp")
+    field(SCAN, "1 second")
+    field(INP, "@%m/%d/%Y %H:%M:%S")
+}
+record(calcout, "$(IOC,undefined):HEARTBEAT")
+{
+    field(DESC, "1 Hz counter since startup")
+    field(CALC, "(A<2147483647)?A+1:1")
+    field(SCAN, "1 second")
+    field(INPA, "$(IOC,undefined):HEARTBEAT")
+}
+# if autosave is working, START_CNT creates a running count of 
+# number of times the IOC was started.
+record(calcout, "$(IOC,undefined):START_CNT")
+{
+    field(DESC, "Increments at startup")
+    field(CALC, "A+1")
+    field(PINI, "YES")
+    field(INPA, "$(IOC,undefined):START_CNT")
+    info(autosaveFields_pass0, "VAL")
+}
+#
+# Using an existing internal set of subroutines, this
+# PV updates the Access Security mechanism dynamically.
+# The .acf file is re-read.
+#
+record( sub, "$(IOC,undefined):READACF")
+{
+    field( DESC, "$(IOC,undefined) ACF Update")
+    field( INAM, "asSubInit")
+    field( SNAM, "asSubProcess")
+    field( BRSV, "INVALID")
+}
+record(sub, "$(IOC,undefined):SYSRESET")
+{
+    alias("$(IOC,undefined):SysReset")
+    field(DESC, "IOC Restart" )
+    field(SNAM, "rebootProc")
+    field(BRSV,"INVALID")
+    field(L,"1")
+}
+
+record(ai, "$(IOC,undefined):CA_CLNT_CNT") {
+  field(DESC, "Number of CA Clients")
+  field(SCAN, "I/O Intr")
+  field(DTYP, "IOC stats")
+  field(INP, "@ca_clients")
+  field(HOPR, "200")
+  field(HIHI, "175")
+  field(HIGH, "100")
+  field(HHSV, "MAJOR")
+  field(HSV, "MINOR")
+  info(autosaveFields_pass0, "HOPR LOPR HIHI HIGH LOW LOLO HHSV HSV LSV LLSV")
+}
+
+record(ai, "$(IOC,undefined):CA_CONN_CNT") {
+  field(DESC, "Number of CA Connections")
+  field(SCAN, "I/O Intr")
+  field(DTYP, "IOC stats")
+  field(INP, "@ca_connections")
+  field(HOPR, "5000")
+  field(HIHI, "4500")
+  field(HIGH, "4000")
+  field(HHSV, "MAJOR")
+  field(HSV, "MINOR")
+  info(autosaveFields_pass0, "HOPR LOPR HIHI HIGH LOW LOLO HHSV HSV LSV LLSV")
+}
+
+record(ai, "$(IOC,undefined):RECORD_CNT") {
+  field(DESC, "Number of Records")
+  field(PINI, "YES")
+  field(DTYP, "IOC stats")
+  field(INP, "@records")
+}
+
+record(ai, "$(IOC,undefined):FD_MAX") {
+  field(DESC, "Max File Descriptors")
+  field(PINI, "YES")
+  field(DTYP, "IOC stats")
+  field(INP, "@maxfd")
+}
+
+record(ai, "$(IOC,undefined):FD_CNT") {
+  field(DESC, "Allocated File Descriptors")
+  field(SCAN, "I/O Intr")
+  field(DTYP, "IOC stats")
+  field(FLNK, "$(IOC,undefined):FD_FREE  PP MS")
+  field(INP, "@fd")
+}
+
+record(calc, "$(IOC,undefined):FD_FREE") {
+  field(DESC, "Available FDs")
+  field(CALC, "B>0?B-A:C")
+  field(INPA, "$(IOC,undefined):FD_CNT  NPP MS")
+  field(INPB, "$(IOC,undefined):FD_MAX  NPP MS")
+  field(INPC, "1000")
+  field(HOPR, "150")
+  field(LOLO, "5")
+  field(LOW, "20")
+  field(LLSV, "MAJOR")
+  field(LSV, "MINOR")
+  info(autosaveFields_pass0, "HOPR LOPR LOW LOLO LSV LLSV")
+}
+
+record(ai, "$(IOC,undefined):SYS_CPU_LOAD") {
+  field(DESC, "System CPU Load")
+  field(SCAN, "I/O Intr")
+  field(DTYP, "IOC stats")
+  field(INP, "@sys_cpuload")
+  field(EGU, "%")
+  field(PREC, "1")
+  field(HOPR, "100")
+  field(HIHI, "80")
+  field(HIGH, "70")
+  field(HHSV, "MAJOR")
+  field(HSV, "MINOR")
+  info(autosaveFields_pass0, "HOPR LOPR HIHI HIGH LOW LOLO HHSV HSV LSV LLSV")
+}
+
+record(ai, "$(IOC,undefined):IOC_CPU_LOAD") {
+  alias("$(IOC,undefined):LOAD")
+  field(DESC, "IOC CPU Load")
+  field(SCAN, "I/O Intr")
+  field(DTYP, "IOC stats")
+  field(INP, "@ioc_cpuload")
+  field(EGU, "%")
+  field(PREC, "1")
+  field(HOPR, "100")
+  field(HIHI, "80")
+  field(HIGH, "70")
+  field(HHSV, "MAJOR")
+  field(HSV, "MINOR")
+  info(autosaveFields_pass0, "HOPR LOPR HIHI HIGH LOW LOLO HHSV HSV LSV LLSV")
+}
+
+record(ai, "$(IOC,undefined):CPU_CNT") {
+  field(DESC, "Number of CPUs")
+  field(DTYP, "IOC stats")
+  field(INP, "@no_of_cpus")
+  field(PINI, "YES")
+}
+
+record(ai, "$(IOC,undefined):SUSP_TASK_CNT") {
+  field(DESC, "Number Suspended Tasks")
+  field(SCAN, "I/O Intr")
+  field(DTYP, "IOC stats")
+  field(INP, "@suspended_tasks")
+  field(HIHI, "1")
+  field(HHSV, "MAJOR")
+  info(autosaveFields_pass0, "HOPR LOPR HIHI HIGH LOW LOLO HHSV HSV LSV LLSV")
+}
+
+record(ai, "$(IOC,undefined):MEM_USED") {
+  field(DESC, "Allocated Memory")
+  field(SCAN, "I/O Intr")
+  field(DTYP, "IOC stats")
+  field(INP, "@allocated_bytes")
+  field(EGU, "byte")
+}
+
+record(ai, "$(IOC,undefined):MEM_FREE") {
+  field(DESC, "Free Memory")
+  field(SCAN, "I/O Intr")
+  field(DTYP, "IOC stats")
+  field(INP, "@free_bytes")
+  field(EGU, "byte")
+  field(LLSV, "MAJOR")
+  field(LSV, "MINOR")
+  info(autosaveFields_pass0, "HOPR LOPR LOW LOLO LSV LLSV")
+}
+
+record(ai, "$(IOC,undefined):MEM_MAX") {
+  field(DESC, "Maximum Memory")
+  field(SCAN, "I/O Intr")
+  field(DTYP, "IOC stats")
+  field(INP, "@total_bytes")
+  field(EGU, "byte")
+}
+
+record(ao, "$(IOC,undefined):CA_UPD_TIME") {
+  field(DESC, "CA Check Update Period")
+  field(DTYP, "IOC stats")
+  field(OUT, "@ca_scan_rate")
+  field(EGU, "sec")
+  field(DRVH, "60")
+  field(DRVL, "1")
+  field(HOPR, "60")
+  field(VAL, "15")
+  field(PINI, "YES")
+}
+
+record(ao, "$(IOC,undefined):FD_UPD_TIME") {
+  field(DESC, "FD Check Update Period")
+  field(DTYP, "IOC stats")
+  field(OUT, "@fd_scan_rate")
+  field(EGU, "sec")
+  field(DRVH, "60")
+  field(DRVL, "1")
+  field(HOPR, "60")
+  field(VAL, "20")
+  field(PINI, "YES")
+}
+
+record(ao, "$(IOC,undefined):LOAD_UPD_TIME") {
+  field(DESC, "CPU Check Update Period")
+  field(DTYP, "IOC stats")
+  field(OUT, "@cpu_scan_rate")
+  field(EGU, "sec")
+  field(DRVH, "60")
+  field(DRVL, "1")
+  field(HOPR, "60")
+  field(VAL, "10")
+  field(PINI, "YES")
+}
+
+record(ao, "$(IOC,undefined):MEM_UPD_TIME") {
+  field(DESC, "Memory Check Update Period")
+  field(DTYP, "IOC stats")
+  field(OUT, "@memory_scan_rate")
+  field(EGU, "sec")
+  field(DRVH, "60")
+  field(DRVL, "1")
+  field(HOPR, "60")
+  field(VAL, "10")
+  field(PINI, "YES")
+}
+
+record(stringin, "$(IOC,undefined):ST_SCRIPT1") {
+  field(DESC, "Startup Script Part1")
+  field(DTYP, "IOC stats")
+  field(INP, "@startup_script_1")
+  field(PINI, "YES")
+}
+
+record(stringin, "$(IOC,undefined):ST_SCRIPT2") {
+  field(DESC, "Startup Script Part2")
+  field(DTYP, "IOC stats")
+  field(INP, "@startup_script_2")
+  field(PINI, "YES")
+}
+
+record(waveform, "$(IOC,undefined):ST_SCRIPT") {
+  field(DESC, "Startup Script")
+  field(DTYP, "IOC stats")
+  field(INP, "@startup_script")
+  field(NELM, "120")
+  field(FTVL, "CHAR")
+  field(PINI, "YES")
+}
+
+record(stringin, "$(IOC,undefined):KERNEL_VERS") {
+  field(DESC, "Kernel Version")
+  field(DTYP, "IOC stats")
+  field(INP, "@kernel_ver")
+  field(PINI, "YES")
+}
+
+record(stringin, "$(IOC,undefined):EPICS_VERS") {
+  field(DESC, "EPICS Version")
+  field(DTYP, "IOC stats")
+  field(INP, "@epics_ver")
+  field(PINI, "YES")
+}
+
+record(waveform, "$(IOC,undefined):EPICS_VERSION") {
+  field(DESC, "EPICS Version")
+  field(DTYP, "IOC stats")
+  field(INP, "@epics_ver")
+  field(NELM, "120")
+  field(FTVL, "CHAR")
+  field(PINI, "YES")
+}
+
+record(stringin, "$(IOC,undefined):HOSTNAME") {
+  field(DESC, "Host Name")
+  field(DTYP, "IOC stats")
+  field(INP, "@hostname")
+  field(PINI, "YES")
+}
+
+record(stringin, "$(IOC,undefined):APP_DIR1") {
+  field(DESC, "Application Directory Part 1")
+  field(DTYP, "IOC stats")
+  field(INP, "@pwd1")
+  field(PINI, "YES")
+}
+
+record(stringin, "$(IOC,undefined):APP_DIR2") {
+  field(DESC, "Application Directory Part 2")
+  field(DTYP, "IOC stats")
+  field(INP, "@pwd2")
+  field(PINI, "YES")
+}
+
+record(waveform, "$(IOC,undefined):APP_DIR") {
+  field(DESC, "Application Directory")
+  field(DTYP, "IOC stats")
+  field(INP, "@pwd")
+  field(NELM, "160")
+  field(FTVL, "CHAR")
+  field(PINI, "YES")
+}
+
+record(stringin, "$(IOC,undefined):UPTIME") {
+  field(DESC, "Elapsed Time since Start")
+  field(SCAN, "1 second")
+  field(DTYP, "IOC stats")
+  field(INP, "@up_time")
+  field(PINI, "YES")
+}
+
+record(stringin, "$(IOC,undefined):ENGINEER") {
+  field(DESC, "Engineer")
+  field(DTYP, "IOC stats")
+  field(INP, "@engineer")
+  field(PINI, "YES")
+}
+
+record(stringin, "$(IOC,undefined):LOCATION") {
+  field(DESC, "Location")
+  field(DTYP, "IOC stats")
+  field(INP, "@location")
+  field(PINI, "YES")
+}
+record(ai, "$(IOC,undefined):GTIM_TIME") {
+  field(DESC, "Gen Time Secs since 1990")
+  field(SCAN, "1 second")
+  field(DTYP, "General Time")
+  field(PREC, "3")
+  field(INP,  "@TIME")
+  field(EGU,  "sec")
+}
+
+record(bo, "$(IOC,undefined):GTIM_RESET") {
+  field(DESC, "Gen Time Error Reset")
+  field(DTYP, "General Time")
+  field(OUT,  "@RSTERRCNT")
+  field(ZNAM, "Reset")
+  field(ONAM, "Reset")
+}
+
+record(longin, "$(IOC,undefined):GTIM_ERR_CNT") {
+  field(DESC, "Gen Time Error Count")
+  field(DTYP, "General Time")
+  field(INP,  "@GETERRCNT")
+  field(SCAN, "1 second")
+  field(HIHI, "1")
+  field(HHSV, "MAJOR")
+}
+
+record(stringin, "$(IOC,undefined):GTIM_CUR_SRC") {
+  field(DESC, "Gen Time Current Provider")
+  field(DTYP, "General Time")
+  field(INP,  "@BESTTCP")
+  field(SCAN, "1 second")
+}
+
+record(stringin, "$(IOC,undefined):GTIM_EVT_SRC") {
+  field(DESC, "Gen Time Event Provider")
+  field(DTYP, "General Time")
+  field(INP,  "@BESTTEP")
+  field(SCAN, "1 second")
+}
+
+record(stringin, "$(IOC,undefined):GTIM_HI_SRC") {
+  field(DESC, "Gen Time Highest Provider")
+  field(DTYP, "General Time")
+  field(INP,  "@TOPTCP")
+  field(SCAN, "1 second")
+}
+record(ai, "$(IOC,undefined):MEM_BLK") {
+  field(DESC, "Maximum Free Memory Block")
+  field(SCAN, "I/O Intr")
+  field(DTYP, "IOC stats")
+  field(INP, "@max_free")
+  field(EGU, "byte")
+  field(HOPR, "50000000")
+  field(FLNK, "$(IOC,undefined):MEM_BLK_FREE  PP MS")
+}
+
+record(calc, "$(IOC,undefined):MEM_BLK_FREE") {
+  field(DESC, "Maximum Free Memory Block")
+  field(CALC, "A>0?A:B")
+  field(INPA, "$(IOC,undefined):MEM_BLK  NPP MS")
+  field(INPB, "1000000000")
+  field(EGU, "byte")
+  field(HOPR, "50000000")
+  field(LOLO, "100000")
+  field(LOW, "500000")
+  field(LLSV, "MAJOR")
+  field(LSV, "MINOR")
+  info(autosaveFields_pass0, "HOPR LOLO LOW LLSV LSV")
+}
+
+record(stringin, "$(IOC,undefined):BOOTLINE1") {
+  field(DESC, "Boot Line Part1")
+  field(DTYP, "IOC stats")
+  field(INP, "@bootline_1")
+  field(PINI, "YES")
+}
+
+record(stringin, "$(IOC,undefined):BOOTLINE2") {
+  field(DESC, "Boot Line Part2")
+  field(DTYP, "IOC stats")
+  field(INP, "@bootline_2")
+  field(PINI, "YES")
+}
+
+record(stringin, "$(IOC,undefined):BOOTLINE3") {
+  field(DESC, "Boot Line Part3")
+  field(DTYP, "IOC stats")
+  field(INP, "@bootline_3")
+  field(PINI, "YES")
+}
+
+record(stringin, "$(IOC,undefined):BOOTLINE4") {
+  field(DESC, "Boot Line Part4")
+  field(DTYP, "IOC stats")
+  field(INP, "@bootline_4")
+  field(PINI, "YES")
+}
+
+record(stringin, "$(IOC,undefined):BOOTLINE5") {
+  field(DESC, "Boot Line Part5")
+  field(DTYP, "IOC stats")
+  field(INP, "@bootline_5")
+  field(PINI, "YES")
+}
+
+record(stringin, "$(IOC,undefined):BOOTLINE6") {
+  field(DESC, "Boot Line Part6")
+  field(DTYP, "IOC stats")
+  field(INP, "@bootline_6")
+  field(PINI, "YES")
+}
+
+record(waveform, "$(IOC,undefined):BOOTLINE") {
+  field(DESC, "Boot Line")
+  field(DTYP, "IOC stats")
+  field(INP, "@bootline")
+  field(NELM, "240")
+  field(FTVL, "CHAR")
+  field(PINI, "YES")
+}
+
+record(ai, "$(IOC,undefined):SYS_MBUF_FREE") {
+  field(DESC, "Min % Free Sys MBUFs")
+  field(DTYP, "IOC stats")
+  field(SCAN, "I/O Intr")
+  field(EGU, "%")
+  field(INP, "@min_sys_mbuf")
+  field(FLNK, "$(IOC,undefined):CLUST_1_0_0")
+  info(autosaveFields_pass0, "LOLO LOW LLSV LSV")
+}
+
+record(ai, "$(IOC,undefined):SYS_MBUF_MAX") {
+  field(DESC, "Number of System MBUFs")
+  field(DTYP, "IOC stats")
+  field(INP, "@sys_mbuf")
+  field(PINI, "YES")
+}
+
+record(ai, "$(IOC,undefined):IFI_ERR_CNT") {
+  field(DESC, "IF Input Errors")
+  field(DTYP, "IOC stats")
+  field(SCAN, "I/O Intr")
+  field(INP, "@inp_errs")
+  info(autosaveFields_pass0, "HIHI HIGH HHSV HSV")
+}
+
+record(ai, "$(IOC,undefined):IFO_ERR_CNT") {
+  field(DESC, "IF Output Errors")
+  field(DTYP, "IOC stats")
+  field(SCAN, "I/O Intr")
+  field(INP, "@out_errs")
+  info(autosaveFields_pass0, "HIHI HIGH HHSV HSV")
+}
+record(stringin, "$(IOC,undefined):BSP_REV") {
+  field(DESC, "BSP Revision")
+  field(DTYP, "IOC stats")
+  field(INP, "@bsp_rev")
+  field(PINI, "YES")
+}
+
+record(ai, "$(IOC,undefined):DAT_MBUF_FREE") {
+  field(DESC, "Min % Free Data MBUFs")
+  field(DTYP, "IOC stats")
+  field(SCAN, "I/O Intr")
+  field(EGU, "%")
+  field(HOPR, "100")
+  field(LOPR, "0")
+  field(INP, "@min_data_mbuf")
+  field(FLNK, "$(IOC,undefined):CLUST_0_0_0")
+  info(autosaveFields_pass0, "LOLO LOW LLSV LSV")
+}
+
+record(ai, "$(IOC,undefined):DAT_MBUF_MAX") {
+  field(DESC, "Number of Data MBUFs")
+  field(DTYP, "IOC stats")
+  field(INP, "@data_mbuf")
+  field(PINI, "YES")
+}
+record(stringin, "$(IOC,undefined):CA_ADDR_LIST") {
+  field(DESC, "EPICS_CA_ADDR_LIST")
+  field(DTYP, "IOC epics var")
+  field(INP, "@EPICS_CA_ADDR_LIST")
+  field(PINI, "YES")
+}
+record(stringin, "$(IOC,undefined):CA_CONN_TIME") {
+  field(DESC, "EPICS_CA_CONN_TMO")
+  field(DTYP, "IOC epics var")
+  field(INP, "@EPICS_CA_CONN_TMO")
+  field(PINI, "YES")
+}
+record(stringin, "$(IOC,undefined):CA_AUTO_ADDR") {
+  field(DESC, "EPICS_CA_AUTO_ADDR_LIST")
+  field(DTYP, "IOC epics var")
+  field(INP, "@EPICS_CA_AUTO_ADDR_LIST")
+  field(PINI, "YES")
+}
+record(stringin, "$(IOC,undefined):CA_RPTR_PORT") {
+  field(DESC, "EPICS_CA_REPEATER_PORT")
+  field(DTYP, "IOC epics var")
+  field(INP, "@EPICS_CA_REPEATER_PORT")
+  field(PINI, "YES")
+}
+record(stringin, "$(IOC,undefined):CA_SRVR_PORT") {
+  field(DESC, "EPICS_CA_SERVER_PORT")
+  field(DTYP, "IOC epics var")
+  field(INP, "@EPICS_CA_SERVER_PORT")
+  field(PINI, "YES")
+}
+record(stringin, "$(IOC,undefined):CA_MAX_ARRAY") {
+  field(DESC, "EPICS_CA_MAX_ARRAY_BYTES")
+  field(DTYP, "IOC epics var")
+  field(INP, "@EPICS_CA_MAX_ARRAY_BYTES")
+  field(PINI, "YES")
+}
+record(stringin, "$(IOC,undefined):CA_SRCH_TIME") {
+  field(DESC, "EPICS_CA_MAX_SEARCH_PERIOD")
+  field(DTYP, "IOC epics var")
+  field(INP, "@EPICS_CA_MAX_SEARCH_PERIOD")
+  field(PINI, "YES")
+}
+record(stringin, "$(IOC,undefined):CA_BEAC_TIME") {
+  field(DESC, "EPICS_CA_BEACON_PERIOD")
+  field(DTYP, "IOC epics var")
+  field(INP, "@EPICS_CA_BEACON_PERIOD")
+  field(PINI, "YES")
+}
+record(stringin, "$(IOC,undefined):TIMEZONE") {
+  field(DESC, "EPICS_TIMEZONE")
+  field(DTYP, "IOC epics var")
+  field(INP, "@EPICS_TIMEZONE")
+  field(PINI, "YES")
+}
+record(stringin, "$(IOC,undefined):TS_NTP_INET") {
+  field(DESC, "EPICS_TS_NTP_INET")
+  field(DTYP, "IOC epics var")
+  field(INP, "@EPICS_TS_NTP_INET")
+  field(PINI, "YES")
+}
+record(stringin, "$(IOC,undefined):IOC_LOG_PORT") {
+  field(DESC, "EPICS_IOC_LOG_PORT")
+  field(DTYP, "IOC epics var")
+  field(INP, "@EPICS_IOC_LOG_PORT")
+  field(PINI, "YES")
+}
+record(stringin, "$(IOC,undefined):IOC_LOG_INET") {
+  field(DESC, "EPICS_IOC_LOG_INET")
+  field(DTYP, "IOC epics var")
+  field(INP, "@EPICS_IOC_LOG_INET")
+  field(PINI, "YES")
+}
+record(ai, "$(IOC,undefined):CLUST_0_0_0") {
+  field(DESC, "DAT Size")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 0 0")
+  field(FLNK, "$(IOC,undefined):CLUST_0_0_1")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_0_1") {
+  field(DESC, "DAT Clusters")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 0 1")
+  field(FLNK, "$(IOC,undefined):CLUST_0_0_2")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_0_2") {
+  field(DESC, "DAT Free")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 0 2")
+  field(FLNK, "$(IOC,undefined):CLUST_0_0_3")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_0_3") {
+  field(DESC, "DAT Usage")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 0 3")
+  field(FLNK, "$(IOC,undefined):DAT_CLUST_AVAIL_0")
+}
+
+record(calc, "$(IOC,undefined):DAT_CLUST_AVAIL_0") {
+  field(DESC, "DAT Free percentage")
+  field(EGU,  "%")
+  field(PREC, "2")
+  field(CALC, "A>0?(B/A)*100:B=0?0:-1")
+  field(INPA, "$(IOC,undefined):CLUST_0_0_1 MS")
+  field(INPB, "$(IOC,undefined):CLUST_0_0_2 MS")
+  field(LOLO, "-0.1")
+  field(LLSV, "INVALID")
+  field(FLNK, "$(IOC,undefined):CLUST_0_1_0")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_1_0") {
+  field(DESC, "DAT Size")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 1 0")
+  field(FLNK, "$(IOC,undefined):CLUST_0_1_1")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_1_1") {
+  field(DESC, "DAT Clusters")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 1 1")
+  field(FLNK, "$(IOC,undefined):CLUST_0_1_2")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_1_2") {
+  field(DESC, "DAT Free")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 1 2")
+  field(FLNK, "$(IOC,undefined):CLUST_0_1_3")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_1_3") {
+  field(DESC, "DAT Usage")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 1 3")
+  field(FLNK, "$(IOC,undefined):DAT_CLUST_AVAIL_1")
+}
+
+record(calc, "$(IOC,undefined):DAT_CLUST_AVAIL_1") {
+  field(DESC, "DAT Free percentage")
+  field(EGU,  "%")
+  field(PREC, "2")
+  field(CALC, "A>0?(B/A)*100:B=0?0:-1")
+  field(INPA, "$(IOC,undefined):CLUST_0_1_1 MS")
+  field(INPB, "$(IOC,undefined):CLUST_0_1_2 MS")
+  field(LOLO, "-0.1")
+  field(LLSV, "INVALID")
+  field(FLNK, "$(IOC,undefined):CLUST_0_2_0")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_2_0") {
+  field(DESC, "DAT Size")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 2 0")
+  field(FLNK, "$(IOC,undefined):CLUST_0_2_1")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_2_1") {
+  field(DESC, "DAT Clusters")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 2 1")
+  field(FLNK, "$(IOC,undefined):CLUST_0_2_2")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_2_2") {
+  field(DESC, "DAT Free")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 2 2")
+  field(FLNK, "$(IOC,undefined):CLUST_0_2_3")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_2_3") {
+  field(DESC, "DAT Usage")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 2 3")
+  field(FLNK, "$(IOC,undefined):DAT_CLUST_AVAIL_2")
+}
+
+record(calc, "$(IOC,undefined):DAT_CLUST_AVAIL_2") {
+  field(DESC, "DAT Free percentage")
+  field(EGU,  "%")
+  field(PREC, "2")
+  field(CALC, "A>0?(B/A)*100:B=0?0:-1")
+  field(INPA, "$(IOC,undefined):CLUST_0_2_1 MS")
+  field(INPB, "$(IOC,undefined):CLUST_0_2_2 MS")
+  field(LOLO, "-0.1")
+  field(LLSV, "INVALID")
+  field(FLNK, "$(IOC,undefined):CLUST_0_3_0")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_3_0") {
+  field(DESC, "DAT Size")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 3 0")
+  field(FLNK, "$(IOC,undefined):CLUST_0_3_1")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_3_1") {
+  field(DESC, "DAT Clusters")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 3 1")
+  field(FLNK, "$(IOC,undefined):CLUST_0_3_2")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_3_2") {
+  field(DESC, "DAT Free")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 3 2")
+  field(FLNK, "$(IOC,undefined):CLUST_0_3_3")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_3_3") {
+  field(DESC, "DAT Usage")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 3 3")
+  field(FLNK, "$(IOC,undefined):DAT_CLUST_AVAIL_3")
+}
+
+record(calc, "$(IOC,undefined):DAT_CLUST_AVAIL_3") {
+  field(DESC, "DAT Free percentage")
+  field(EGU,  "%")
+  field(PREC, "2")
+  field(CALC, "A>0?(B/A)*100:B=0?0:-1")
+  field(INPA, "$(IOC,undefined):CLUST_0_3_1 MS")
+  field(INPB, "$(IOC,undefined):CLUST_0_3_2 MS")
+  field(LOLO, "-0.1")
+  field(LLSV, "INVALID")
+  field(FLNK, "$(IOC,undefined):CLUST_0_4_0")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_4_0") {
+  field(DESC, "DAT Size")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 4 0")
+  field(FLNK, "$(IOC,undefined):CLUST_0_4_1")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_4_1") {
+  field(DESC, "DAT Clusters")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 4 1")
+  field(FLNK, "$(IOC,undefined):CLUST_0_4_2")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_4_2") {
+  field(DESC, "DAT Free")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 4 2")
+  field(FLNK, "$(IOC,undefined):CLUST_0_4_3")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_4_3") {
+  field(DESC, "DAT Usage")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 4 3")
+  field(FLNK, "$(IOC,undefined):DAT_CLUST_AVAIL_4")
+}
+
+record(calc, "$(IOC,undefined):DAT_CLUST_AVAIL_4") {
+  field(DESC, "DAT Free percentage")
+  field(EGU,  "%")
+  field(PREC, "2")
+  field(CALC, "A>0?(B/A)*100:B=0?0:-1")
+  field(INPA, "$(IOC,undefined):CLUST_0_4_1 MS")
+  field(INPB, "$(IOC,undefined):CLUST_0_4_2 MS")
+  field(LOLO, "-0.1")
+  field(LLSV, "INVALID")
+  field(FLNK, "$(IOC,undefined):CLUST_0_5_0")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_5_0") {
+  field(DESC, "DAT Size")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 5 0")
+  field(FLNK, "$(IOC,undefined):CLUST_0_5_1")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_5_1") {
+  field(DESC, "DAT Clusters")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 5 1")
+  field(FLNK, "$(IOC,undefined):CLUST_0_5_2")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_5_2") {
+  field(DESC, "DAT Free")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 5 2")
+  field(FLNK, "$(IOC,undefined):CLUST_0_5_3")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_5_3") {
+  field(DESC, "DAT Usage")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 5 3")
+  field(FLNK, "$(IOC,undefined):DAT_CLUST_AVAIL_5")
+}
+
+record(calc, "$(IOC,undefined):DAT_CLUST_AVAIL_5") {
+  field(DESC, "DAT Free percentage")
+  field(EGU,  "%")
+  field(PREC, "2")
+  field(CALC, "A>0?(B/A)*100:B=0?0:-1")
+  field(INPA, "$(IOC,undefined):CLUST_0_5_1 MS")
+  field(INPB, "$(IOC,undefined):CLUST_0_5_2 MS")
+  field(LOLO, "-0.1")
+  field(LLSV, "INVALID")
+  field(FLNK, "$(IOC,undefined):CLUST_0_6_0")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_6_0") {
+  field(DESC, "DAT Size")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 6 0")
+  field(FLNK, "$(IOC,undefined):CLUST_0_6_1")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_6_1") {
+  field(DESC, "DAT Clusters")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 6 1")
+  field(FLNK, "$(IOC,undefined):CLUST_0_6_2")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_6_2") {
+  field(DESC, "DAT Free")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 6 2")
+  field(FLNK, "$(IOC,undefined):CLUST_0_6_3")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_6_3") {
+  field(DESC, "DAT Usage")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 6 3")
+  field(FLNK, "$(IOC,undefined):DAT_CLUST_AVAIL_6")
+}
+
+record(calc, "$(IOC,undefined):DAT_CLUST_AVAIL_6") {
+  field(DESC, "DAT Free percentage")
+  field(EGU,  "%")
+  field(PREC, "2")
+  field(CALC, "A>0?(B/A)*100:B=0?0:-1")
+  field(INPA, "$(IOC,undefined):CLUST_0_6_1 MS")
+  field(INPB, "$(IOC,undefined):CLUST_0_6_2 MS")
+  field(LOLO, "-0.1")
+  field(LLSV, "INVALID")
+  field(FLNK, "$(IOC,undefined):CLUST_0_7_0")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_7_0") {
+  field(DESC, "DAT Size")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 7 0")
+  field(FLNK, "$(IOC,undefined):CLUST_0_7_1")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_7_1") {
+  field(DESC, "DAT Clusters")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 7 1")
+  field(FLNK, "$(IOC,undefined):CLUST_0_7_2")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_7_2") {
+  field(DESC, "DAT Free")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 7 2")
+  field(FLNK, "$(IOC,undefined):CLUST_0_7_3")
+}
+
+record(ai, "$(IOC,undefined):CLUST_0_7_3") {
+  field(DESC, "DAT Usage")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 0 7 3")
+  field(FLNK, "$(IOC,undefined):DAT_CLUST_AVAIL_7")
+}
+
+record(calc, "$(IOC,undefined):DAT_CLUST_AVAIL_7") {
+  field(DESC, "DAT Free percentage")
+  field(EGU,  "%")
+  field(PREC, "2")
+  field(CALC, "A>0?(B/A)*100:B=0?0:-1")
+  field(INPA, "$(IOC,undefined):CLUST_0_7_1 MS")
+  field(INPB, "$(IOC,undefined):CLUST_0_7_2 MS")
+  field(LOLO, "-0.1")
+  field(LLSV, "INVALID")
+  field(FLNK, "")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_0_0") {
+  field(DESC, "SYS Size")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 0 0")
+  field(FLNK, "$(IOC,undefined):CLUST_1_0_1")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_0_1") {
+  field(DESC, "SYS Clusters")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 0 1")
+  field(FLNK, "$(IOC,undefined):CLUST_1_0_2")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_0_2") {
+  field(DESC, "SYS Free")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 0 2")
+  field(FLNK, "$(IOC,undefined):CLUST_1_0_3")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_0_3") {
+  field(DESC, "SYS Usage")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 0 3")
+  field(FLNK, "$(IOC,undefined):SYS_CLUST_AVAIL_0")
+}
+
+record(calc, "$(IOC,undefined):SYS_CLUST_AVAIL_0") {
+  field(DESC, "SYS Free percentage")
+  field(EGU,  "%")
+  field(PREC, "2")
+  field(CALC, "A>0?(B/A)*100:B=0?0:-1")
+  field(INPA, "$(IOC,undefined):CLUST_1_0_1 MS")
+  field(INPB, "$(IOC,undefined):CLUST_1_0_2 MS")
+  field(LOLO, "-0.1")
+  field(LLSV, "INVALID")
+  field(FLNK, "$(IOC,undefined):CLUST_1_1_0")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_1_0") {
+  field(DESC, "SYS Size")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 1 0")
+  field(FLNK, "$(IOC,undefined):CLUST_1_1_1")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_1_1") {
+  field(DESC, "SYS Clusters")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 1 1")
+  field(FLNK, "$(IOC,undefined):CLUST_1_1_2")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_1_2") {
+  field(DESC, "SYS Free")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 1 2")
+  field(FLNK, "$(IOC,undefined):CLUST_1_1_3")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_1_3") {
+  field(DESC, "SYS Usage")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 1 3")
+  field(FLNK, "$(IOC,undefined):SYS_CLUST_AVAIL_1")
+}
+
+record(calc, "$(IOC,undefined):SYS_CLUST_AVAIL_1") {
+  field(DESC, "SYS Free percentage")
+  field(EGU,  "%")
+  field(PREC, "2")
+  field(CALC, "A>0?(B/A)*100:B=0?0:-1")
+  field(INPA, "$(IOC,undefined):CLUST_1_1_1 MS")
+  field(INPB, "$(IOC,undefined):CLUST_1_1_2 MS")
+  field(LOLO, "-0.1")
+  field(LLSV, "INVALID")
+  field(FLNK, "$(IOC,undefined):CLUST_1_2_0")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_2_0") {
+  field(DESC, "SYS Size")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 2 0")
+  field(FLNK, "$(IOC,undefined):CLUST_1_2_1")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_2_1") {
+  field(DESC, "SYS Clusters")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 2 1")
+  field(FLNK, "$(IOC,undefined):CLUST_1_2_2")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_2_2") {
+  field(DESC, "SYS Free")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 2 2")
+  field(FLNK, "$(IOC,undefined):CLUST_1_2_3")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_2_3") {
+  field(DESC, "SYS Usage")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 2 3")
+  field(FLNK, "$(IOC,undefined):SYS_CLUST_AVAIL_2")
+}
+
+record(calc, "$(IOC,undefined):SYS_CLUST_AVAIL_2") {
+  field(DESC, "SYS Free percentage")
+  field(EGU,  "%")
+  field(PREC, "2")
+  field(CALC, "A>0?(B/A)*100:B=0?0:-1")
+  field(INPA, "$(IOC,undefined):CLUST_1_2_1 MS")
+  field(INPB, "$(IOC,undefined):CLUST_1_2_2 MS")
+  field(LOLO, "-0.1")
+  field(LLSV, "INVALID")
+  field(FLNK, "$(IOC,undefined):CLUST_1_3_0")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_3_0") {
+  field(DESC, "SYS Size")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 3 0")
+  field(FLNK, "$(IOC,undefined):CLUST_1_3_1")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_3_1") {
+  field(DESC, "SYS Clusters")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 3 1")
+  field(FLNK, "$(IOC,undefined):CLUST_1_3_2")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_3_2") {
+  field(DESC, "SYS Free")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 3 2")
+  field(FLNK, "$(IOC,undefined):CLUST_1_3_3")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_3_3") {
+  field(DESC, "SYS Usage")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 3 3")
+  field(FLNK, "$(IOC,undefined):SYS_CLUST_AVAIL_3")
+}
+
+record(calc, "$(IOC,undefined):SYS_CLUST_AVAIL_3") {
+  field(DESC, "SYS Free percentage")
+  field(EGU,  "%")
+  field(PREC, "2")
+  field(CALC, "A>0?(B/A)*100:B=0?0:-1")
+  field(INPA, "$(IOC,undefined):CLUST_1_3_1 MS")
+  field(INPB, "$(IOC,undefined):CLUST_1_3_2 MS")
+  field(LOLO, "-0.1")
+  field(LLSV, "INVALID")
+  field(FLNK, "$(IOC,undefined):CLUST_1_4_0")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_4_0") {
+  field(DESC, "SYS Size")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 4 0")
+  field(FLNK, "$(IOC,undefined):CLUST_1_4_1")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_4_1") {
+  field(DESC, "SYS Clusters")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 4 1")
+  field(FLNK, "$(IOC,undefined):CLUST_1_4_2")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_4_2") {
+  field(DESC, "SYS Free")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 4 2")
+  field(FLNK, "$(IOC,undefined):CLUST_1_4_3")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_4_3") {
+  field(DESC, "SYS Usage")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 4 3")
+  field(FLNK, "$(IOC,undefined):SYS_CLUST_AVAIL_4")
+}
+
+record(calc, "$(IOC,undefined):SYS_CLUST_AVAIL_4") {
+  field(DESC, "SYS Free percentage")
+  field(EGU,  "%")
+  field(PREC, "2")
+  field(CALC, "A>0?(B/A)*100:B=0?0:-1")
+  field(INPA, "$(IOC,undefined):CLUST_1_4_1 MS")
+  field(INPB, "$(IOC,undefined):CLUST_1_4_2 MS")
+  field(LOLO, "-0.1")
+  field(LLSV, "INVALID")
+  field(FLNK, "$(IOC,undefined):CLUST_1_5_0")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_5_0") {
+  field(DESC, "SYS Size")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 5 0")
+  field(FLNK, "$(IOC,undefined):CLUST_1_5_1")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_5_1") {
+  field(DESC, "SYS Clusters")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 5 1")
+  field(FLNK, "$(IOC,undefined):CLUST_1_5_2")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_5_2") {
+  field(DESC, "SYS Free")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 5 2")
+  field(FLNK, "$(IOC,undefined):CLUST_1_5_3")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_5_3") {
+  field(DESC, "SYS Usage")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 5 3")
+  field(FLNK, "$(IOC,undefined):SYS_CLUST_AVAIL_5")
+}
+
+record(calc, "$(IOC,undefined):SYS_CLUST_AVAIL_5") {
+  field(DESC, "SYS Free percentage")
+  field(EGU,  "%")
+  field(PREC, "2")
+  field(CALC, "A>0?(B/A)*100:B=0?0:-1")
+  field(INPA, "$(IOC,undefined):CLUST_1_5_1 MS")
+  field(INPB, "$(IOC,undefined):CLUST_1_5_2 MS")
+  field(LOLO, "-0.1")
+  field(LLSV, "INVALID")
+  field(FLNK, "$(IOC,undefined):CLUST_1_6_0")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_6_0") {
+  field(DESC, "SYS Size")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 6 0")
+  field(FLNK, "$(IOC,undefined):CLUST_1_6_1")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_6_1") {
+  field(DESC, "SYS Clusters")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 6 1")
+  field(FLNK, "$(IOC,undefined):CLUST_1_6_2")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_6_2") {
+  field(DESC, "SYS Free")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 6 2")
+  field(FLNK, "$(IOC,undefined):CLUST_1_6_3")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_6_3") {
+  field(DESC, "SYS Usage")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 6 3")
+  field(FLNK, "$(IOC,undefined):SYS_CLUST_AVAIL_6")
+}
+
+record(calc, "$(IOC,undefined):SYS_CLUST_AVAIL_6") {
+  field(DESC, "SYS Free percentage")
+  field(EGU,  "%")
+  field(PREC, "2")
+  field(CALC, "A>0?(B/A)*100:B=0?0:-1")
+  field(INPA, "$(IOC,undefined):CLUST_1_6_1 MS")
+  field(INPB, "$(IOC,undefined):CLUST_1_6_2 MS")
+  field(LOLO, "-0.1")
+  field(LLSV, "INVALID")
+  field(FLNK, "$(IOC,undefined):CLUST_1_7_0")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_7_0") {
+  field(DESC, "SYS Size")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 7 0")
+  field(FLNK, "$(IOC,undefined):CLUST_1_7_1")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_7_1") {
+  field(DESC, "SYS Clusters")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 7 1")
+  field(FLNK, "$(IOC,undefined):CLUST_1_7_2")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_7_2") {
+  field(DESC, "SYS Free")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 7 2")
+  field(FLNK, "$(IOC,undefined):CLUST_1_7_3")
+}
+
+record(ai, "$(IOC,undefined):CLUST_1_7_3") {
+  field(DESC, "SYS Usage")
+  field(DTYP, "IOC stats clusts")
+  field(INP, "@clust_info 1 7 3")
+  field(FLNK, "$(IOC,undefined):SYS_CLUST_AVAIL_7")
+}
+
+record(calc, "$(IOC,undefined):SYS_CLUST_AVAIL_7") {
+  field(DESC, "SYS Free percentage")
+  field(EGU,  "%")
+  field(PREC, "2")
+  field(CALC, "A>0?(B/A)*100:B=0?0:-1")
+  field(INPA, "$(IOC,undefined):CLUST_1_7_1 MS")
+  field(INPB, "$(IOC,undefined):CLUST_1_7_2 MS")
+  field(LOLO, "-0.1")
+  field(LLSV, "INVALID")
+  field(FLNK, "")
+}
+

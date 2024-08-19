@@ -1,0 +1,2014 @@
+XEROX-COMMS-ENGINE-MIB DEFINITIONS ::= BEGIN
+--  Module: Communications Engine MIB
+--  Author: Ira McDonald, Alan Sullivan, Robert Westfall
+--  File:   51comms.mib
+--  Date:   21 October 2001 - Version 4.13.int
+
+IMPORTS
+--  MODULE-IDENTITY, OBJECT-TYPE,
+--      Integer32, Counter32, Gauge32
+--          FROM SNMPv2-SMI             -  IETF RFC 1442/1902/2578
+--  DateAndTime, RowStatus, TruthValue
+--          FROM SNMPv2-TC              -  IETF RFC 1443/1903/2579
+--  MODULE-COMPLIANCE, OBJECT-GROUP
+--          FROM SNMPv2-CONF            -  IETF RFC 1444/1904/2580
+--  ProductID, hrDeviceIndex
+--          FROM HOST-RESOURCES-MIB     -  IETF RFC 1514/2790
+    ProductID,
+    hrDeviceIndex
+        FROM    HOST-RESOURCES-MIB
+--  xeroxCommonMIB
+--          FROM XEROX-COMMON-MIB
+    xeroxCommonMIB
+        FROM    XEROX-COMMON-MIB
+--  Ordinal32, Cardinal32,
+--      XcmFixedLocaleDisplayString,
+--      XcmGenSNMPv2ErrorStatus,
+--      xcmGenZeroDotZero
+--          FROM XEROX-GENERAL-TC
+    Ordinal32,
+    Cardinal32,
+    XcmFixedLocaleDisplayString,
+    XcmGenSNMPv2ErrorStatus
+        FROM    XEROX-GENERAL-TC
+--  XcmHrDevTrafficUnit
+--          FROM XEROX-HOST-RESOURCES-EXT-TC
+    XcmHrDevTrafficUnit
+        FROM    XEROX-HOST-RESOURCES-EXT-TC
+--  XcmCommsEngineGroupSupport,
+--     XcmCommsMgmtCommandRequest,
+--      XcmCommsMgmtCommandData,
+--      XcmCommsMgmtState,
+--      XcmCommsMgmtConditions,
+--      XcmCommsStackPosition,
+--      XcmCommsStackExtPurpose,
+--      XcmCommsStackExtRole,
+--      XcmCommsStackExtSuite,
+--      XcmCommsStackExtSuiteVersion,
+--      XcmCommsStackExtLayer,
+--      XcmCommsStackExtProtocol,
+--      XcmCommsAddressExtForm,
+--      XcmCommsAddressExtScope,
+--      XcmCommsAddressExtFanout
+--          FROM XEROX-COMMS-ENGINE-TC/
+    XcmCommsEngineGroupSupport,
+    XcmCommsMgmtCommandRequest,
+    XcmCommsMgmtCommandData,
+    XcmCommsMgmtState,
+    XcmCommsMgmtConditions,
+    XcmCommsStackPosition,
+    XcmCommsStackExtPurpose,
+    XcmCommsStackExtRole,
+    XcmCommsStackExtSuite,
+    XcmCommsStackExtSuiteVersion,
+    XcmCommsStackExtLayer,
+    XcmCommsStackExtProtocol,
+    XcmCommsAddressExtForm,
+    XcmCommsAddressExtScope,
+    XcmCommsAddressExtFanout
+        FROM    XEROX-COMMS-ENGINE-TC
+    Counter,
+    Gauge
+        FROM    RFC1155-SMI
+    OBJECT-TYPE
+        FROM    RFC-1212
+    ;
+
+xcmCommsEngineMIB OBJECT IDENTIFIER
+--  LAST-UPDATED "0110210000Z" -  21 October 2001
+--  ORGANIZATION "Xerox Corporation - XCMI Working Group"
+--  CONTACT-INFO
+--      "           XCMI Editors
+--      Email:      xcmieditors@cp10.es.xerox.com
+--
+--      - 
+--      -  BEGIN XEROX PRIVATE DATA
+--      - 
+--                  Ira McDonald
+--      Postal:     High North Inc
+--                  221 Ridge Ave
+--                  Grand Marais, MI  49839
+--      Voice:      906-494-2434 or 906-494-2697
+--      Email:      imcdonald@crt.xerox.com
+--
+--                  Alan Sullivan
+--      Formerly:   Xerox Corporation
+--
+--                  Robert Westfall
+--      Postal:     Xerox Corporation, MS 207-01Z
+--                  800 Phillips Rd
+--                  Webster, NY  14580
+--      Voice:      716-422-5717
+--      Email:      Robert_Westfall@mc.xerox.com
+--      - 
+--      -  ENDOF XEROX PRIVATE DATA
+--      - 
+--      "
+--  DESCRIPTION
+--      "Version:   4.13.int
+--
+--      The MIB module for detailed protocol stack graphing, and active
+--      management of communications protocol stacks, communications end
+--      system applications, communications intermediate systems, and
+--      communications gateways for network accessible host systems.
+--
+--      Usage:  Note that throughout this MIB module, the INDEX clauses
+--      referring to 'hrDeviceIndex' for the 'hrDeviceTable' (Devices
+--      Group) of the Host Resources MIB (RFC 2790) SHALL
+--      specify host system CPUs (ie, 'hrDeviceProcessor') and SHALL NOT
+--      specify ANY other 'hrDeviceType'.
+--
+--      Usage:  The object 'xcmCommsStackXrefHrCommDevIndex' in  the
+--      Comms Stack Xref Group of this MIB MAY be used to specify
+--      (for 'bottom' protocol stack layers) the corresponding value of
+--      'hrDeviceIndex' for network, modem, serial port, and parallel
+--      port devices.  And the object 'xcmCommsStackXrefIfIndex' MAY be
+--      used to specify the value of 'ifIndex' for the corresponding
+--      entry in the MIB-II 'ifTable' (ie, 'network interfaces').
+--
+--      Copyright (C) 1995-2001 Xerox Corporation. All Rights Reserved."
+    ::= { xeroxCommonMIB 61 }
+
+--mCommsEngineZeroDummy OBJECT IDENTIFIER ::= { xcmGenZeroDotZero 61 }
+
+--.ts 'Comms Engine Group (Mandatory)'
+--
+--          Comms Engine MIB
+--
+--          Comms Engine Group (Mandatory)
+--
+--          Implementation of this group is mandatory for all systems.
+
+xcmCommsEngine          OBJECT IDENTIFIER ::= { xcmCommsEngineMIB 3 }
+
+xcmCommsEngineTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmCommsEngineEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table of the communications engines installed and (possibly)
+        running on platforms (ie, CPUs) on this host system."
+    ::= { xcmCommsEngine 2 }
+
+xcmCommsEngineEntry OBJECT-TYPE
+    SYNTAX      XcmCommsEngineEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a communications engine installed and (possibly)
+        running on a platform (ie, CPU) on this host system.
+
+        Usage:  Note that values of 'hrDeviceIndex' used to reference
+        entries in the 'xcmCommsEngineTable' SHALL reference
+        entries in the 'hrDeviceTable' with 'hrDeviceType' equal to
+        'hrDeviceProcessor' (representing host system CPUs and therefore
+        also having corresponding entries in the 'hrProcessorTable')."
+    INDEX       { hrDeviceIndex }
+    ::= { xcmCommsEngineTable 1 }
+
+XcmCommsEngineEntry ::= SEQUENCE {
+        --  Comms Engine Information    
+        xcmCommsEngineRowStatus         INTEGER, 
+        xcmCommsEngineName              XcmFixedLocaleDisplayString, 
+        xcmCommsEngineStackLast         Cardinal32, 
+        xcmCommsEngineMuxLast           Cardinal32, 
+        xcmCommsEngineAddressLast       Cardinal32, 
+        xcmCommsEngineMgmtLast          Cardinal32, 
+        xcmCommsEngineGroupSupport      XcmCommsEngineGroupSupport, 
+        xcmCommsEngineCreateSupport     XcmCommsEngineGroupSupport, 
+        xcmCommsEngineUpdateSupport     XcmCommsEngineGroupSupport 
+        }                               
+
+--
+--          Comms Engine Information
+--
+
+xcmCommsEngineRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmCommsEngineTable'."
+    ::= { xcmCommsEngineEntry 1 }
+
+xcmCommsEngineName OBJECT-TYPE
+    SYNTAX      XcmFixedLocaleDisplayString (SIZE (0..255))
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Human-readable name, used by system administrators
+        and end users to identify this communications engine
+        for systems management.
+
+        Usage:  This name SHOULD be the one normally used in a
+        command shell for control of this communications engine."
+--  DEFVAL      { ''H }                 -  empty string
+    ::= { xcmCommsEngineEntry 2 }
+
+xcmCommsEngineStackLast OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The last entry index (regardless of its current state) in
+        the 'xcmCommsStackTable' of this communications engine,
+        on this host system.
+
+        Usage:  The last entry index explicitly bounds the valid range
+        of 'xcmCommsStackIndex'."
+--  DEFVAL      { 0 }                   -  no entries
+    ::= { xcmCommsEngineEntry 3 }
+
+xcmCommsEngineMuxLast OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The last entry index (regardless of its current state) in
+        the 'xcmCommsMuxTable' of this communications engine,
+        on this host system.
+
+        Usage:  The last entry index explicitly bounds the valid range
+        of 'xcmCommsMuxIndex'."
+--  DEFVAL      { 0 }                   -  no entries
+    ::= { xcmCommsEngineEntry 4 }
+
+xcmCommsEngineAddressLast OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The last entry index (regardless of its current state) in
+        the 'xcmCommsAddressTable' of this communications engine,
+        on this host system.
+
+        Usage:  The last entry index explicitly bounds the valid range
+        of 'xcmCommsAddressIndex'."
+--  DEFVAL      { 0 }                   -  no entries
+    ::= { xcmCommsEngineEntry 6 }
+
+xcmCommsEngineMgmtLast OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The last entry index (regardless of its current state) in
+        the 'xcmCommsMgmtTable' of this communications engine,
+        on this host system.
+
+        Usage:  The last entry index explicitly bounds the valid range
+        of 'xcmCommsMgmtIndex'."
+--  DEFVAL      { 0 }                   -  no entries
+    ::= { xcmCommsEngineEntry 7 }
+
+xcmCommsEngineGroupSupport OBJECT-TYPE
+    SYNTAX      XcmCommsEngineGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The terse conformance statement of ALL mandatory, conditionally
+        mandatory, and optional XCMI Comms Engine MIB object groups
+        supported by this management agent implementation (ie, version)
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents SHALL accurately
+        report their support for XCMI Comms Engine MIB object groups."
+--  DEFVAL      { 1 }                   -  mandatory groups
+    ::= { xcmCommsEngineEntry 8 }
+
+xcmCommsEngineCreateSupport OBJECT-TYPE
+    SYNTAX      XcmCommsEngineGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The terse conformance statement of ALL mandatory, conditionally
+        mandatory, and optional XCMI Comms Engine MIB object groups
+        supported for dynamic row creation (via '...RowStatus')
+        by this management agent implementation (ie, version)
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents SHALL accurately
+        report their support for XCMI Comms Engine MIB object groups."
+--  DEFVAL      { 0 }                   -  no dynamic row create groups
+    ::= { xcmCommsEngineEntry 9 }
+
+xcmCommsEngineUpdateSupport OBJECT-TYPE
+    SYNTAX      XcmCommsEngineGroupSupport
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The terse conformance statement of ALL mandatory, conditionally
+        mandatory, and optional XCMI Comms Engine MIB object groups
+        supported for existing row update (via SNMP Set-Request PDUs)
+        by this management agent implementation (ie, version)
+        on this host system, specified in a bit-mask.
+
+        Usage:  Conforming management agents SHALL accurately
+        report their support for XCMI Comms Engine MIB object groups."
+--  DEFVAL      { 0 }                   -  no existing row update groups
+    ::= { xcmCommsEngineEntry 10 }
+
+--.ts 'Comms Engine Ext Group (Optional)'
+--
+--          Comms Engine Ext Group (Optional)
+--
+--          Implementation of this group is optional for all systems.
+
+xcmCommsEngineExt       OBJECT IDENTIFIER ::= { xcmCommsEngineMIB 4 }
+
+xcmCommsEngineExtTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmCommsEngineExtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A 'sparse' table which augments 'xcmCommsEngineTable' with
+        additional useful information."
+    ::= { xcmCommsEngineExt 2 }
+
+xcmCommsEngineExtEntry OBJECT-TYPE
+    SYNTAX      XcmCommsEngineExtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A 'sparse' entry which augments 'xcmCommsEngineEntry' with
+        additional useful information."
+    INDEX       { hrDeviceIndex }
+    ::= { xcmCommsEngineExtTable 1 }
+
+XcmCommsEngineExtEntry ::= SEQUENCE {
+        --  Comms Engine Ext Information 
+        xcmCommsEngineExtRowStatus      INTEGER, 
+        xcmCommsEngineExtState          XcmCommsMgmtState, 
+        xcmCommsEngineExtConditions     XcmCommsMgmtConditions, 
+        xcmCommsEngineExtVersionID      ProductID, 
+        xcmCommsEngineExtVersionDate    OCTET STRING, 
+        --  Comms Engine Ext Common Cross References 
+        xcmCommsEngineExtMgmtIndex      Cardinal32, 
+        --  Comms Engine Ext Owner Cross References 
+        xcmCommsEngineExtOwnerOID       OBJECT IDENTIFIER 
+        }                               
+
+--
+--          Comms Engine Ext Information
+--
+
+xcmCommsEngineExtRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmCommsEngineExtTable'."
+    ::= { xcmCommsEngineExtEntry 1 }
+
+xcmCommsEngineExtState OBJECT-TYPE
+    SYNTAX      XcmCommsMgmtState
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A relatively generic description of the current state of
+        this communications entity."
+--  DEFVAL      { inoperative }         -  inoperative
+    ::= { xcmCommsEngineExtEntry 2 }
+
+xcmCommsEngineExtConditions OBJECT-TYPE
+    SYNTAX      XcmCommsMgmtConditions
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A relatively generic description of the current conditions of
+        this communications entity."
+--  DEFVAL      { 0 }                   -  no conditions
+    ::= { xcmCommsEngineExtEntry 4 }
+
+xcmCommsEngineExtVersionID OBJECT-TYPE
+    SYNTAX      ProductID
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The software product ID of the SNMP sub-agent which implements
+        the XCMI Comms Engine MIB on this host system.
+
+        Usage:  This object SHALL specify the software product ID of an
+        SNMP sub-agent (possibly also found in a conceptual row in the
+        'hrSWRunTable' and/or 'hrSWInstalledTable' in the IETF HR MIB).
+        This object SHALL NOT specify a particular release of the XCMI
+        Comms Engine MIB, or the whole host system product.
+
+        Note:   Contrast with 'sysObjectID' for the whole SNMP agent in
+        the IETF MIB-II (RFC 1213) and 'hrDeviceID' for the whole device
+        (or whole product, in the case of 'xcmHrDevice...') in the IETF
+        Host Resources MIB (RFC 2790)."
+    REFERENCE
+        "See:   'hrSW[Installed|Run]ID' in the Software Installed and
+                Software Running groups of the IETF HR MIB (RFC 2790)."
+--  DEFVAL      { xcmGenZeroDotZero }   -  no sub-agent version ID
+    ::= { xcmCommsEngineExtEntry 5 }
+
+xcmCommsEngineExtVersionDate OBJECT-TYPE
+--  SYNTAX      DateAndTime
+    SYNTAX      OCTET STRING
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The software build date of the SNMP sub-agent which implements
+        the XCMI Comms Engine MIB on this host system.
+
+        Usage:  This object SHALL specify the BUILD date of the SNMP
+        sub-agent software (not available elsewhere in IETF/XCMI MIBs).
+        This object SHALL NOT specify the INSTALL date of the SNMP
+        sub-agent software on this host system, nor the RESET date.
+
+        Note:   Contrast with 'hrSWInstalledDate' in the Software
+        Installed group of the IETF Host Resources MIB (RFC 2790), and
+        'xcmHrDevInfoResetDate' in the Device Info group of the XCMI
+        Host Resources Extensions MIB."
+    REFERENCE
+        "See:   'hrSW[Installed|Run]ID' in the Software Installed and
+                Software Running groups of the IETF HR MIB (RFC 2790)."
+--  DEFVAL      { '0000000000000000'H } -  no sub-agent version date
+    ::= { xcmCommsEngineExtEntry 6 }
+
+--
+--          Comms EngineExt Common Cross References
+--
+
+xcmCommsEngineExtMgmtIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsMgmtIndex' corresponding to a directly
+        associated conceptual row in the 'xcmCommsMgmtTable', or zero
+        if this 'managed entity' does NOT require such information."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsEngineExtEntry 7 }
+
+--
+--          Comms EngineExt Owner Cross References
+--
+
+xcmCommsEngineExtOwnerOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The OID (object identifier) of the conceptual row or simple
+        object which represents some 'owner entity' associated with
+        this entry in the 'xcmCommsEngineExtTable'."
+--  DEFVAL      { xcmGenZeroDotZero }   -  no owner
+    ::= { xcmCommsEngineExtEntry 8 }
+
+--.ts 'Comms Stack Group (Cond Mandatory)'
+--
+--          Comms Stack Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which implement stack layer graphing
+--          via SNMP.
+
+xcmCommsStack           OBJECT IDENTIFIER ::= { xcmCommsEngineMIB 5 }
+
+xcmCommsStackTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmCommsStackEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table containing information on the relationships between
+        the multiple stack layers or sublayers (ie, protocol entities)
+        comprising the (possibly) running 'protocol stacks' on this host
+        system.  In particular, it contains information about which
+        stack layer runs 'above' and 'below' which other stack layer."
+    ::= { xcmCommsStack 2 }
+
+xcmCommsStackEntry OBJECT-TYPE
+    SYNTAX      XcmCommsStackEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a stack layer in a protocol stack installed
+        and (possibly) running on this host system."
+    INDEX       { hrDeviceIndex, xcmCommsStackIndex }
+    ::= { xcmCommsStackTable 1 }
+
+XcmCommsStackEntry ::= SEQUENCE {
+        --  Comms Stack Information     
+        xcmCommsStackIndex              Ordinal32, 
+        xcmCommsStackRowStatus          INTEGER, 
+        xcmCommsStackTypeOID            OBJECT IDENTIFIER, 
+        xcmCommsStackName               XcmFixedLocaleDisplayString, 
+        xcmCommsStackPosition           XcmCommsStackPosition, 
+        --  Comms Stack Common Cross References 
+        xcmCommsStackLowerStackIndex    Cardinal32, 
+        xcmCommsStackUpperStackIndex    Cardinal32, 
+        xcmCommsStackAddressIndex       Cardinal32, 
+        xcmCommsStackOptionIndex        Cardinal32, 
+        --  Comms Stack Mux ONLY Cross References 
+        xcmCommsStackLowerMuxIndex      Cardinal32, 
+        xcmCommsStackUpperMuxIndex      Cardinal32 
+        }                               
+
+--
+--          Comms Stack Information
+--
+
+xcmCommsStackIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmCommsStackTable'."
+    ::= { xcmCommsStackEntry 1 }
+
+xcmCommsStackRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmCommsStackTable'."
+    ::= { xcmCommsStackEntry 2 }
+
+xcmCommsStackTypeOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "An unambiguous stack layer type,
+        used by system administrators and end users to identify
+        the type of this stack layer.
+
+        Usage:  Since this unambiguous stack layer type is specified
+        as an object identifier, it MAY be taken from any IETF, Xerox,
+        third- party, or product-specific MIB, or it MAY simply be any
+        IETF SMIv2-style 'autonomous type'.
+
+        Usage:  Suitable values for this unambiguous stack layer type
+        are specified in the companion XCMI Comms Config TC (eg,
+        'xcmCONetwareIPX')."
+--  DEFVAL      { xcmGenZeroDotZero }   -  no stack layer type
+    ::= { xcmCommsStackEntry 3 }
+
+xcmCommsStackName OBJECT-TYPE
+    SYNTAX      XcmFixedLocaleDisplayString (SIZE (0..255))
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Human-readable name, used by system administrators
+        and end users to identify this stack layer
+        for systems management.
+
+        Usage:  This name SHOULD be the one normally used in a
+        command shell for control of this stack layer."
+--  DEFVAL      { ''H }                 -  empty string
+    ::= { xcmCommsStackEntry 4 }
+
+xcmCommsStackPosition OBJECT-TYPE
+    SYNTAX      XcmCommsStackPosition
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A relatively generic description of the current position of
+        this protocol entity (ie, this layer) in this protocol stack.
+
+        Usage:  A conceptual row in 'xcmCommsStackTable', which occupies
+        a 'bottom' position in a protocol stack AND has a corresponding
+        row in the 'xcmCommsStackXrefTable', SHOULD have valid
+        references in 'xcmCommsStackXrefIfIndex' (to IETF MIB-II) and
+        'xcmCommsStackXrefHrCommDevIndex' (to IETF Host Resources MIB).
+
+        Usage:  A conceptual row in 'xcmCommsStackTable' which occupies
+        a 'lowerMux' and/or an 'upperMux' position in a protocol stack
+        SHALL have one (or two) valid corresponding conceptual
+        rows in the 'xcmCommsMuxTable', as the conventionally used
+        'xcmCommsStack[Lower|Upper]StackIndex' objects take on zero
+        values for multiplexors (thus breaking the graph of the stack
+        layers, without the use of the 'xcmCommsMuxTable')."
+--  DEFVAL      { bottom }              -  bottom layer position
+    ::= { xcmCommsStackEntry 5 }
+
+--
+--          Comms Stack Common Cross References
+--
+
+xcmCommsStackLowerStackIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsStackIndex' corresponding to a next
+        lower associated conceptual row in the 'xcmCommsStackTable', or
+        zero if this stack layer's position is either 'bottom' or
+        'lowerMux'."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsStackEntry 6 }
+
+xcmCommsStackUpperStackIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsStackIndex' corresponding to a next
+        higher associated conceptual row in the 'xcmCommsStackTable', or
+        zero if this stack layer's position is either 'upperMux' or
+        sometimes 'top' (see usage note below).
+
+        Usage:  Only for protocol entities whose current purpose is
+        either 'layerInterWorkingUnit' (ie, relays or gateways) or
+        'systemInterWorkingUnit' (ie, application gateways), it is
+        permitted that the stack layer whose current position is 'top'
+        have an upper layer index pointing to the peer entity (also in a
+        'top' position) which comprises the 'other half' of a relay or
+        gateway between two different address domains (ie, an active
+        protocol conversion relay) - that is the graphed protocol stack
+        is an inverted 'U'."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsStackEntry 7 }
+
+xcmCommsStackAddressIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsAddressIndex' corresponding to the first
+        associated conceptual row in the 'xcmCommsAddressTable', or zero
+        if this 'owner entity' does NOT require such information."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsStackEntry 8 }
+
+xcmCommsStackOptionIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsOptionIndex' corresponding to the first
+        associated conceptual row in the 'xcmCommsOptionTable', or zero
+        if this stack layer does NOT require such information."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsStackEntry 9 }
+
+--
+--          Comms Stack Mux ONLY Cross References
+--
+
+xcmCommsStackLowerMuxIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsMuxIndex' corresponding to the first
+        associated conceptual row in the 'xcmCommsMuxTable', or zero
+        if this stack layer's position is NOT 'lowerMux'."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsStackEntry 10 }
+
+xcmCommsStackUpperMuxIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsMuxIndex' corresponding to the first
+        associated conceptual row in the 'xcmCommsMuxTable', or zero
+        if this stack layer's position is NOT 'upperMux'."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsStackEntry 11 }
+
+--.ts 'Comms Stack Ext Group (Optional)'
+--
+--          Comms Stack Ext Group (Optional)
+--
+--          Implementation of this group is optional for all systems.
+
+xcmCommsStackExt        OBJECT IDENTIFIER ::= { xcmCommsEngineMIB 6 }
+
+xcmCommsStackExtTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmCommsStackExtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A 'sparse' table which augments 'xcmCommsStackTable' with
+        additional useful information."
+    ::= { xcmCommsStackExt 2 }
+
+xcmCommsStackExtEntry OBJECT-TYPE
+    SYNTAX      XcmCommsStackExtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A 'sparse' entry which augments 'xcmCommsStackEntry' with
+        additional useful information."
+    INDEX       { hrDeviceIndex, xcmCommsStackIndex }
+    ::= { xcmCommsStackExtTable 1 }
+
+XcmCommsStackExtEntry ::= SEQUENCE {
+        --  Comms Stack Ext Information 
+        xcmCommsStackExtRowStatus       INTEGER, 
+        xcmCommsStackExtState           XcmCommsMgmtState, 
+        xcmCommsStackExtConditions      XcmCommsMgmtConditions, 
+        xcmCommsStackExtPurpose         XcmCommsStackExtPurpose, 
+        xcmCommsStackExtRole            XcmCommsStackExtRole, 
+        xcmCommsStackExtSuite           XcmCommsStackExtSuite, 
+        xcmCommsStackExtSuiteVersion    XcmCommsStackExtSuiteVersion, 
+        xcmCommsStackExtLayer           XcmCommsStackExtLayer, 
+        xcmCommsStackExtProtocol        XcmCommsStackExtProtocol, 
+        --  Comms Stack Ext Common Cross References 
+        xcmCommsStackExtMgmtIndex       Cardinal32, 
+        --  Comms Stack Ext Owner Cross References 
+        xcmCommsStackExtOwnerOID        OBJECT IDENTIFIER 
+        }                               
+
+--
+--          Comms Stack Ext Information
+--
+
+xcmCommsStackExtRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmCommsStackExtTable'."
+    ::= { xcmCommsStackExtEntry 1 }
+
+xcmCommsStackExtState OBJECT-TYPE
+    SYNTAX      XcmCommsMgmtState
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A relatively generic description of the current state of
+        this communications entity."
+--  DEFVAL      { inoperative }         -  inoperative
+    ::= { xcmCommsStackExtEntry 2 }
+
+xcmCommsStackExtConditions OBJECT-TYPE
+    SYNTAX      XcmCommsMgmtConditions
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A relatively generic description of the current conditions of
+        this communications entity."
+--  DEFVAL      { 0 }                   -  no conditions
+    ::= { xcmCommsStackExtEntry 3 }
+
+xcmCommsStackExtPurpose OBJECT-TYPE
+    SYNTAX      XcmCommsStackExtPurpose
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A relatively generic description of the current purpose of
+        this stack layer during normal operation."
+--  DEFVAL      { unknown }             -  unknown
+    ::= { xcmCommsStackExtEntry 4 }
+
+xcmCommsStackExtRole OBJECT-TYPE
+    SYNTAX      XcmCommsStackExtRole
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A relatively generic description of the current role of
+        this stack layer during normal operation."
+--  DEFVAL      { unknown }             -  unknown
+    ::= { xcmCommsStackExtEntry 5 }
+
+xcmCommsStackExtSuite OBJECT-TYPE
+    SYNTAX      XcmCommsStackExtSuite
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The current protocol suite of this protocol entity
+        (stack layer or sublayer)."
+--  DEFVAL      { unknown }             -  unknown
+    ::= { xcmCommsStackExtEntry 6 }
+
+xcmCommsStackExtSuiteVersion OBJECT-TYPE
+    SYNTAX      XcmCommsStackExtSuiteVersion
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The current protocol suite version of this protocol entity
+        (stack layer or sublayer)."
+--  DEFVAL      { unknown }             -  unknown
+    ::= { xcmCommsStackExtEntry 7 }
+
+xcmCommsStackExtLayer OBJECT-TYPE
+    SYNTAX      XcmCommsStackExtLayer
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The closest approximate layer in the OSI Reference Model
+        (CCITT X.200 | ISO 7498) to the current behavior
+        of this stack layer or sublayer."
+--  DEFVAL      { unknown }             -  unknown
+    ::= { xcmCommsStackExtEntry 8 }
+
+xcmCommsStackExtProtocol OBJECT-TYPE
+    SYNTAX      XcmCommsStackExtProtocol
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The specific protocol (within a given protocol suite) currently
+        configured for this stack layer or sublayer."
+--  DEFVAL      { unknown }             -  unknown
+    ::= { xcmCommsStackExtEntry 9 }
+
+--
+--          Comms Stack Ext Common Cross References
+--
+
+xcmCommsStackExtMgmtIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsMgmtIndex' corresponding to the directly
+        associated conceptual row in the 'xcmCommsMgmtTable', or zero
+        if this 'managed entity' does NOT require such information."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsStackExtEntry 10 }
+
+--
+--          Comms Stack Ext Owner Cross References
+--
+
+xcmCommsStackExtOwnerOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The OID (object identifier) of the conceptual row or simple
+        object which represents some 'owner entity' associated with
+        this entry in the 'xcmCommsStackExtTable'.
+
+        Usage:  A Printer Channel, for example, might choose to specify
+        the OID of some conceptual row in the 'prtChannelTable'."
+    REFERENCE
+        "See:   'prtChannelTable' in Printer MIB (RFC 1759)"
+--  DEFVAL      { xcmGenZeroDotZero }   -  no owner
+    ::= { xcmCommsStackExtEntry 11 }
+
+--.ts 'Comms Stack Xref Group (Optional)'
+--
+--          Comms Stack Xref Group (Optional)
+--
+--          Implementation of this group is optional for all systems.
+
+xcmCommsStackXref       OBJECT IDENTIFIER ::= { xcmCommsEngineMIB 7 }
+
+xcmCommsStackXrefTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmCommsStackXrefEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table containing optional cross reference information for
+        the multiple stack layers or sublayers (ie, protocol entities)
+        comprising the (possibly) running 'protocol stacks' on this host
+        system."
+    ::= { xcmCommsStackXref 2 }
+
+xcmCommsStackXrefEntry OBJECT-TYPE
+    SYNTAX      XcmCommsStackXrefEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a stack layer in a protocol stack installed
+        and (possibly) running on this host system."
+    INDEX       { hrDeviceIndex, xcmCommsStackIndex }
+    ::= { xcmCommsStackXrefTable 1 }
+
+XcmCommsStackXrefEntry ::= SEQUENCE {
+        --  Comms Stack Xref Information 
+        xcmCommsStackXrefRowStatus      INTEGER, 
+        --  Comms Stack Xref Special ONLY Cross References 
+        xcmCommsStackXrefLayerMgmtIndex Cardinal32, 
+        xcmCommsStackXrefLayerSecIndex  Cardinal32, 
+        xcmCommsStackXrefLayerIWUIndex  Cardinal32, 
+        xcmCommsStackXrefHrSWRunIndex   Cardinal32, 
+        xcmCommsStackXrefHrSWInsIndex   Cardinal32, 
+        --  Comms Stack Xref Bottom ONLY Cross References 
+        xcmCommsStackXrefIfIndex        Cardinal32, 
+        xcmCommsStackXrefHrCommDevIndex Cardinal32 
+        }                               
+
+--
+--          Comms Stack Xref Information
+--
+
+xcmCommsStackXrefRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmCommsStackXrefTable'."
+    ::= { xcmCommsStackXrefEntry 1 }
+
+--
+--          Comms Stack Xref Special ONLY Cross References
+--
+
+xcmCommsStackXrefLayerMgmtIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsStackIndex' corresponding to the
+        one-to-one associated conceptual row in the 'xcmCommsStackTable'
+        which has 'xcmCommsStackExtPurpose' of 'layerManagement',
+        or zero if this this stack layer has no associated layer
+        management entity."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsStackXrefEntry 2 }
+
+xcmCommsStackXrefLayerSecIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsStackIndex' corresponding to the
+        one-to-one associated conceptual row in the 'xcmCommsStackTable'
+        which has 'xcmCommsStackExtPurpose' of 'layerSecurity',
+        or zero if this this stack layer has no associated layer
+        security entity."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsStackXrefEntry 3 }
+
+xcmCommsStackXrefLayerIWUIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsStackIndex' corresponding to the
+        one-to-one associated conceptual row in the 'xcmCommsStackTable'
+        which has 'xcmCommsStackExtPurpose' of 'layerInterWorkingUnit',
+        or zero if this this stack layer has no associated layer
+        relay entity."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsStackXrefEntry 4 }
+
+xcmCommsStackXrefHrSWRunIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'hrSWRunIndex' corresponding to the directly
+        associated conceptual row in the 'hrSWRunTable' of the
+        Host Resources MIB (RFC 2790), or zero if 'hrSWRunTable'
+        is NOT implemented."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsStackXrefEntry 5 }
+
+xcmCommsStackXrefHrSWInsIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'hrSWInstalledIndex' corresponding to the directly
+        associated conceptual row in the 'hrSWInstalledTable' of the
+        Host Resources MIB (RFC 2790), or zero if 'hrSWInstalledTable'
+        is NOT implemented."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsStackXrefEntry 6 }
+
+--
+--          Comms Stack Xref Bottom ONLY Cross References
+--
+
+xcmCommsStackXrefIfIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'ifIndex' corresponding to the directly
+        associated conceptual row in the 'ifTable' (Interfaces Group)
+        of the MIB-II (RFC 1213), or zero if the position of this
+        stack layer is NOT 'bottom' (ie, this stack layer does NOT
+        represent a physical 'network interface').
+
+        Usage:  This is partially a convenience object, since given the
+        value of 'hrDeviceIndex' for an 'hrDeviceNetwork' type device,
+        the corresponding 'ifIndex' is found in the mandatory entry in
+        the 'hrNetworkTable'.  However, note that for 'hrDeviceModem',
+        'hrDeviceSerialPort', and 'hrDeviceParallelPort' devices, the
+        'xcmCommsStackXrefIfIndex' object is a NECESSITY for support of
+        this communications engine MIB."
+    REFERENCE
+        "See:   'xcmCommsStackPosition' and the 'InterfaceIndex'
+        textual convention in Evolution of the Interfaces Group of
+        MIB-II (RFC 1573)."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsStackXrefEntry 7 }
+
+xcmCommsStackXrefHrCommDevIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'hrDeviceIndex' corresponding to the directly
+        associated conceptual rows in the 'hrDeviceTable' and (possibly)
+        'hrNetworkTable' of the Host Resources MIB (RFC 2790), or zero
+        if the position of this stack layer is NOT 'bottom' (ie, this
+        stack layer does NOT represent a physical 'network interface').
+
+        Usage:  Note that for 'hrDeviceModem', 'hrDeviceSerialPort', and
+        'hrDeviceParallelPort' devices, there is NO corresponding entry
+        in the 'hrNetworkTable', a subtle difference between MIB-II (RFC
+        1213) and the Host Resources MIB (RFC 2790)."
+    REFERENCE
+        "See:   'xcmCommsStackPosition' and the 'hrDeviceIndex'
+        of the Devices Group of the Host Resources MIB (RFC 2790)."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsStackXrefEntry 8 }
+
+--.ts 'Comms Mux Group (Cond Mandatory)'
+--
+--          Comms Mux Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which implement stack layer graphing
+--          via SNMP.
+
+xcmCommsMux             OBJECT IDENTIFIER ::= { xcmCommsEngineMIB 8 }
+
+xcmCommsMuxTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmCommsMuxEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table containing information on the relationships between
+        the multiple stack layers or sublayers (ie, protocol entities)
+        participating in a 'upper' or 'lower' multiplexor (ie, the
+        simultaneous adjacency of two or more 'upper' or 'lower'
+        stack layers with a single instance of a 'base' stack layer),
+        eg, IP (a 'base' stack layer) operating below both TCP and UDP
+        (the 'adjacent' stack layers)."
+    ::= { xcmCommsMux 2 }
+
+xcmCommsMuxEntry OBJECT-TYPE
+    SYNTAX      XcmCommsMuxEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry for a 'base' stack layer participating in an 'upper'
+        or 'lower' multiplexor."
+    INDEX       { hrDeviceIndex, xcmCommsMuxIndex }
+    ::= { xcmCommsMuxTable 1 }
+
+XcmCommsMuxEntry ::= SEQUENCE {
+        --  Comms Mux Information       
+        xcmCommsMuxIndex                Ordinal32, 
+        xcmCommsMuxRowStatus            INTEGER, 
+        --  Comms Mux Common Cross References 
+        xcmCommsMuxNextIndex            Cardinal32, 
+        xcmCommsMuxPreviousIndex        Cardinal32, 
+        xcmCommsMuxOptionIndex          Cardinal32, 
+        --  Comms Mux Stack Cross References 
+        xcmCommsMuxBaseStackIndex       Ordinal32, 
+        xcmCommsMuxAdjacentStackIndex   Ordinal32 
+        }                               
+
+--
+--          Comms Mux Information
+--
+
+xcmCommsMuxIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmCommsMuxTable'."
+    ::= { xcmCommsMuxEntry 1 }
+
+xcmCommsMuxRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmCommsMuxTable'."
+    ::= { xcmCommsMuxEntry 2 }
+
+--
+--          Comms Mux Common Cross References
+--
+
+xcmCommsMuxNextIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsMuxIndex' corresponding to a next
+        associated conceptual row in the 'xcmCommsMuxTable', or zero
+        if this is the last associated conceptual row in a given set."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsMuxEntry 3 }
+
+xcmCommsMuxPreviousIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsMuxIndex' corresponding to a previous
+        associated conceptual row in the 'xcmCommsMuxTable', or zero
+        if this is the first associated conceptual row in a given set."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsMuxEntry 4 }
+
+xcmCommsMuxOptionIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsOptionIndex' corresponding to the first
+        associated conceptual row in the 'xcmCommsOptionTable', or zero
+        if this multiplexor entry does NOT require such information."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsMuxEntry 5 }
+
+--
+--          Comms Mux Stack Cross References
+--
+
+xcmCommsMuxBaseStackIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsStackIndex' corresponding to the base
+        associated conceptual row in the 'xcmCommsStackTable'."
+    ::= { xcmCommsMuxEntry 6 }
+
+xcmCommsMuxAdjacentStackIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsStackIndex' corresponding to the adjacent
+        associated conceptual row in the 'xcmCommsStackTable'."
+    ::= { xcmCommsMuxEntry 7 }
+
+--.ts 'Comms Mux Ext Group (Optional)'
+--
+--          Comms Mux Ext Group (Optional)
+--
+--          Implementation of this group is optional for all systems.
+
+xcmCommsMuxExt          OBJECT IDENTIFIER ::= { xcmCommsEngineMIB 9 }
+
+xcmCommsMuxExtTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmCommsMuxExtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A 'sparse' table which augments 'xcmCommsMuxTable' with
+        additional useful information."
+    ::= { xcmCommsMuxExt 2 }
+
+xcmCommsMuxExtEntry OBJECT-TYPE
+    SYNTAX      XcmCommsMuxExtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A 'sparse' entry which augments 'xcmCommsMuxEntry' with
+        additional useful information."
+    INDEX       { hrDeviceIndex, xcmCommsMuxIndex }
+    ::= { xcmCommsMuxExtTable 1 }
+
+XcmCommsMuxExtEntry ::= SEQUENCE {
+        --  Comms Mux Ext Information   
+        xcmCommsMuxExtRowStatus         INTEGER, 
+        xcmCommsMuxExtState             XcmCommsMgmtState, 
+        xcmCommsMuxExtConditions        XcmCommsMgmtConditions, 
+        --  Comms Mux Ext Common Cross References 
+        xcmCommsMuxExtMgmtIndex         Cardinal32, 
+        xcmCommsMuxExtAddressIndex      Cardinal32, 
+        --  Comms Mux Ext Owner Cross References 
+        xcmCommsMuxExtOwnerOID          OBJECT IDENTIFIER 
+        }                               
+
+--
+--          Comms Mux Ext Information
+--
+
+xcmCommsMuxExtRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmCommsMuxExtTable'."
+    ::= { xcmCommsMuxExtEntry 1 }
+
+xcmCommsMuxExtState OBJECT-TYPE
+    SYNTAX      XcmCommsMgmtState
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A relatively generic description of the current state of
+        this communications entity."
+--  DEFVAL      { inoperative }         -  inoperative
+    ::= { xcmCommsMuxExtEntry 2 }
+
+xcmCommsMuxExtConditions OBJECT-TYPE
+    SYNTAX      XcmCommsMgmtConditions
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A relatively generic description of the current conditions of
+        this communications entity."
+--  DEFVAL      { 0 }                   -  no conditions
+    ::= { xcmCommsMuxExtEntry 3 }
+
+--
+--          Comms Mux Ext Common Cross References
+--
+
+xcmCommsMuxExtMgmtIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsMgmtIndex' corresponding to the directly
+        associated conceptual row in the 'xcmCommsMgmtTable', or zero
+        if this 'managed entity' does NOT require such information."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsMuxExtEntry 4 }
+
+xcmCommsMuxExtAddressIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsAddressIndex' corresponding to the first
+        associated conceptual row in the 'xcmCommsAddressTable', or zero
+        if this 'owner entity' does NOT require such information."
+--  DEFVAL      { ''H }                 -  empty string
+    ::= { xcmCommsMuxExtEntry 5 }
+
+--
+--          Comms Mux Ext Owner Cross References
+--
+
+xcmCommsMuxExtOwnerOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The OID (object identifier) of the conceptual row or simple
+        object which represents some 'owner entity' associated with
+        this entry in the 'xcmCommsMuxExtTable'."
+--  DEFVAL      { xcmGenZeroDotZero }   -  no owner
+    ::= { xcmCommsMuxExtEntry 6 }
+
+--.ts 'Comms Address Group (Cond Mandatory)'
+--
+--          Comms Address Group (Cond Mandatory)
+--
+--          Implementation of this group is conditionally mandatory, ie,
+--          mandatory for systems which implement address directories
+--          via SNMP.
+
+xcmCommsAddress         OBJECT IDENTIFIER ::= { xcmCommsEngineMIB 10 }
+
+xcmCommsAddressTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmCommsAddressEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table containing information on unicast, multicast, and
+        broadcast addresses (remote/local) known to this host system."
+    ::= { xcmCommsAddress 2 }
+
+xcmCommsAddressEntry OBJECT-TYPE
+    SYNTAX      XcmCommsAddressEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry containing information on one unicast, multicast, or
+        broadcast address (remote/local) known to this host system."
+    INDEX       { hrDeviceIndex, xcmCommsAddressIndex }
+    ::= { xcmCommsAddressTable 1 }
+
+XcmCommsAddressEntry ::= SEQUENCE {
+        --  Comms Address Information   
+        xcmCommsAddressIndex            Ordinal32, 
+        xcmCommsAddressRowStatus        INTEGER, 
+        xcmCommsAddressTypeOID          OBJECT IDENTIFIER, 
+        xcmCommsAddressUserRole         INTEGER, 
+        xcmCommsAddressName             XcmFixedLocaleDisplayString, 
+        xcmCommsAddressCanonical        OCTET STRING, 
+        --  Comms Address Common Cross References 
+        xcmCommsAddressNextIndex        Cardinal32, 
+        xcmCommsAddressPreviousIndex    Cardinal32, 
+        xcmCommsAddressOptionIndex      Cardinal32 
+        }                               
+
+--
+--          Comms Address Information
+--
+
+xcmCommsAddressIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmCommsAddressTable'."
+    ::= { xcmCommsAddressEntry 1 }
+
+xcmCommsAddressRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmCommsAddressTable'."
+    ::= { xcmCommsAddressEntry 2 }
+
+xcmCommsAddressTypeOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "An unambiguous address type,
+        used by system administrators and end users to identify
+        the type of this address.
+
+        Usage:  Since this unambiguous address type is specified
+        as an object identifier, it MAY be taken from any IETF, Xerox,
+        third- party, or product-specific MIB, or it MAY simply be any
+        IETF SMIv2-style 'autonomous type'.
+
+        Usage:  Suitable values for this unambiguous address type
+        are specified in the companion XCMI Comms Config TC (eg,
+        'xcmCONetwareIPX')."
+--  DEFVAL      { xcmGenZeroDotZero }   -  no address type
+    ::= { xcmCommsAddressEntry 3 }
+
+xcmCommsAddressUserRole OBJECT-TYPE
+--  SYNTAX      Integer32
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "An unambiguous address user role,
+        used by system administrators and end users to identify
+        the user role of this address.
+
+        Usage:  This unambiguous address user role is specified by a
+        value defined in the textual convention 'XcmSecUserRole' in the
+        XCMI Security/AAA TC.
+
+        Usage:  This unambiguous address user role is weakly typed here
+        to avoid cyclic compilation dependencies between XCMI MIBs.
+
+        Usage:  A chain of 'xcmCommsAddressEntry' objects MAY be pointed
+        to by 'xcmDevHelpCommsAddressIndex' in the Device Help group of
+        the XCMI Ext to IETF Host Resources MIB.  In this case, the
+        'xcmCommsAddressTypeOID' object MAY contain values such as
+        'xcmCOOsiwanPSTNAddress' (analog phone number),
+        'xcmCOOsiwanFaxAddress' (fax phone number), etc,
+        taken from the XCMI Comms Config TC.
+        In this case, the 'xcmCommsAddressUserRole' object MAY be used
+        to specify the role of the system admin, system operator, etc
+        (whose name is specified by 'xcmCommsAddressName',
+        address format is specified by 'xcmCommsAddressTypeOID',
+        and actual address is specified by 'xcmCommsAddressCanonical')."
+    REFERENCE
+        "See:   'XcmSecUserRole' in the XCMI Security/AAA TC.
+        See:    'xcmDevHelpCommsAddressIndex' in the
+                XCMI Ext to IETF Host Resources MIB."
+    ::= { xcmCommsAddressEntry 4 }
+
+xcmCommsAddressName OBJECT-TYPE
+    SYNTAX      XcmFixedLocaleDisplayString (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Human-readable name, used by system administrators
+        and end users to identify this protocol entity.
+
+        Usage:  This name SHOULD be the one normally used in a
+        command shell for control of this protocol entity.
+
+        Usage:  When a chain of 'xcmCommsAddressEntry' objects is
+        pointed to by 'xcmHrDevHelpCommsAddressIndex' in the Device Help
+        group of the XCMI Ext to IETF Host Resources MIB (see the
+        'xcmCommsAddressUserRole' object above) special semantics apply.
+        In this case, the 'xcmCommsAddressName' object MAY be used
+        to specify the name of the system admin, system operator, etc
+        (whose role is specified by 'xcmCommsAddressUserRole',
+        address format is specified by 'xcmCommsAddressTypeOID',
+        and actual address is specified by 'xcmCommsAddressCanonical')."
+--  DEFVAL      { ''H }                 -  empty string
+    ::= { xcmCommsAddressEntry 5 }
+
+xcmCommsAddressCanonical OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The current canonical address of this protocol entity."
+    ::= { xcmCommsAddressEntry 6 }
+
+--
+--          Comms Address Common Cross References
+--
+
+xcmCommsAddressNextIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsAddressIndex' corresponding to a next
+        associated conceptual row in the 'xcmCommsAddressTable', or zero
+        if this is the last associated conceptual row in a given set.
+
+        Usage:  A locally administered 'directory' MAY be searched
+        and/or managed via use of the 'xcmCommsAddressNextIndex'
+        and the 'xcmCommsAddressPreviousIndex' objects referenced
+        from each base protocol entity (ie, stack layer)."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsAddressEntry 7 }
+
+xcmCommsAddressPreviousIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsAddressIndex' corresponding to a previous
+        associated conceptual row in the 'xcmCommsAddressTable', or zero
+        if this is the first associated conceptual row in a given set."
+--  DEFVAL      { 0 }                   -  no entry
+    ::= { xcmCommsAddressEntry 8 }
+
+xcmCommsAddressOptionIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsOptionIndex' corresponding to the first
+        associated conceptual row in the 'xcmCommsOptionTable', or zero
+        if this address entry does NOT require such information."
+--  DEFVAL      { ''H }                 -  empty string
+    ::= { xcmCommsAddressEntry 9 }
+
+--.ts 'Comms Address Ext Group (Optional)'
+--
+--          Comms Address Ext Group (Optional)
+--
+--          Implementation of this group is optional for all systems.
+
+xcmCommsAddressExt      OBJECT IDENTIFIER ::= { xcmCommsEngineMIB 11 }
+
+xcmCommsAddressExtTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmCommsAddressExtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A 'sparse' table which augments 'xcmCommsAddressTable' with
+        additional useful information."
+    ::= { xcmCommsAddressExt 2 }
+
+xcmCommsAddressExtEntry OBJECT-TYPE
+    SYNTAX      XcmCommsAddressExtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A 'sparse' entry which augments 'xcmCommsAddressEntry' with
+        additional useful information."
+    INDEX       { hrDeviceIndex, xcmCommsAddressIndex }
+    ::= { xcmCommsAddressExtTable 1 }
+
+XcmCommsAddressExtEntry ::= SEQUENCE {
+        --  Comms Address Ext Information 
+        xcmCommsAddressExtRowStatus     INTEGER, 
+        xcmCommsAddressExtState         XcmCommsMgmtState, 
+        xcmCommsAddressExtConditions    XcmCommsMgmtConditions, 
+        xcmCommsAddressExtForm          XcmCommsAddressExtForm, 
+        xcmCommsAddressExtScope         XcmCommsAddressExtScope, 
+        xcmCommsAddressExtFanout        XcmCommsAddressExtFanout, 
+        --  Comms Address Ext Common Cross References 
+        xcmCommsAddressExtMgmtIndex     Cardinal32, 
+        --  Comms Address Ext Owner Cross References 
+        xcmCommsAddressExtOwnerOID      OBJECT IDENTIFIER 
+        }                               
+
+--
+--          Comms Address Ext Information
+--
+
+xcmCommsAddressExtRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmCommsAddressExtTable'."
+    ::= { xcmCommsAddressExtEntry 1 }
+
+xcmCommsAddressExtState OBJECT-TYPE
+    SYNTAX      XcmCommsMgmtState
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A relatively generic description of the current state of
+        this communications entity."
+--  DEFVAL      { inoperative }         -  inoperative
+    ::= { xcmCommsAddressExtEntry 2 }
+
+xcmCommsAddressExtConditions OBJECT-TYPE
+    SYNTAX      XcmCommsMgmtConditions
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A relatively generic description of the current conditions of
+        this communications entity."
+--  DEFVAL      { 0 }                   -  no conditions
+    ::= { xcmCommsAddressExtEntry 3 }
+
+xcmCommsAddressExtForm OBJECT-TYPE
+    SYNTAX      XcmCommsAddressExtForm
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The current address form of this protocol entity."
+--  DEFVAL      { unknown }             -  unknown
+    ::= { xcmCommsAddressExtEntry 4 }
+
+xcmCommsAddressExtScope OBJECT-TYPE
+    SYNTAX      XcmCommsAddressExtScope
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The current address scope of this protocol entity."
+--  DEFVAL      { unknown }             -  unknown
+    ::= { xcmCommsAddressExtEntry 5 }
+
+xcmCommsAddressExtFanout OBJECT-TYPE
+    SYNTAX      XcmCommsAddressExtFanout
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The current address fan out of this protocol entity."
+--  DEFVAL      { unknown }             -  unknown
+    ::= { xcmCommsAddressExtEntry 6 }
+
+--
+--          Comms Address Ext Common Cross References
+--
+
+xcmCommsAddressExtMgmtIndex OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The value of 'xcmCommsMgmtIndex' corresponding to the directly
+        associated conceptual row in the 'xcmCommsMgmtTable', or zero
+        if this 'managed entity' does NOT require such information."
+--  DEFVAL      { ''H }                 -  empty string
+    ::= { xcmCommsAddressExtEntry 7 }
+
+--
+--          Comms Address Ext Owner Cross References
+--
+
+xcmCommsAddressExtOwnerOID OBJECT-TYPE
+    SYNTAX      OBJECT IDENTIFIER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The OID (object identifier) of the conceptual row or simple
+        object which represents some 'owner entity' associated with
+        this entry in the 'xcmCommsAddressExtTable'."
+--  DEFVAL      { xcmGenZeroDotZero }   -  no owner
+    ::= { xcmCommsAddressExtEntry 8 }
+
+--.ts 'Comms Traffic Group (Optional)'
+--
+--          Comms Traffic Group (Optional)
+--
+--          Implementation of this group is optional for all systems.
+
+xcmCommsTraffic         OBJECT IDENTIFIER ::= { xcmCommsEngineMIB 12 }
+
+xcmCommsTrafficTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmCommsTrafficEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table containing input and output traffic counters for
+        stack layers."
+    ::= { xcmCommsTraffic 2 }
+
+xcmCommsTrafficEntry OBJECT-TYPE
+    SYNTAX      XcmCommsTrafficEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry containing input and output traffic counters for
+        this stack layer."
+    INDEX       { hrDeviceIndex, xcmCommsStackIndex }
+    ::= { xcmCommsTrafficTable 1 }
+
+XcmCommsTrafficEntry ::= SEQUENCE {
+        --  Comms Traffic Information   
+        xcmCommsTrafficRowStatus        INTEGER, 
+        xcmCommsTrafficInputUnit        XcmHrDevTrafficUnit, 
+        xcmCommsTrafficOutputUnit       XcmHrDevTrafficUnit, 
+        xcmCommsTrafficInputCount       Counter, 
+        xcmCommsTrafficOutputCount      Counter, 
+        xcmCommsTrafficInputErrors      Counter, 
+        xcmCommsTrafficOutputErrors     Counter 
+        }                               
+
+--
+--          Comms Traffic Information
+--
+
+xcmCommsTrafficRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmCommsTrafficTable'."
+    ::= { xcmCommsTrafficEntry 1 }
+
+xcmCommsTrafficInputUnit OBJECT-TYPE
+    SYNTAX      XcmHrDevTrafficUnit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A layer input unit, used by system administrators
+        and end users of this layer for traffic counters."
+--  DEFVAL      { unknown }             -  unknown
+    ::= { xcmCommsTrafficEntry 2 }
+
+xcmCommsTrafficOutputUnit OBJECT-TYPE
+    SYNTAX      XcmHrDevTrafficUnit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A layer output unit, used by system administrators
+        and end users of this layer for traffic counters."
+--  DEFVAL      { unknown }             -  unknown
+    ::= { xcmCommsTrafficEntry 3 }
+
+xcmCommsTrafficInputCount OBJECT-TYPE
+--  SYNTAX      Counter32
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A layer input traffic count, used by system administrators
+        and end users of this layer.
+
+        Usage:  Although no default value ('DEFVAL' clause) is permitted
+        (by IETF SMIv2) for this counter, conforming host systems SHALL
+        zero this counter upon conceptual row creation."
+    ::= { xcmCommsTrafficEntry 4 }
+
+xcmCommsTrafficOutputCount OBJECT-TYPE
+--  SYNTAX      Counter32
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A layer output traffic count, used by system administrators
+        and end users of this layer.
+
+        Usage:  Although no default value ('DEFVAL' clause) is permitted
+        (by IETF SMIv2) for this counter, conforming host systems SHALL
+        zero this counter upon conceptual row creation."
+    ::= { xcmCommsTrafficEntry 5 }
+
+xcmCommsTrafficInputErrors OBJECT-TYPE
+--  SYNTAX      Counter32
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A layer input errors count, used by system administrators
+        and end users of this layer.
+
+        Usage:  Although no default value ('DEFVAL' clause) is permitted
+        (by IETF SMIv2) for this counter, conforming host systems SHALL
+        zero this counter upon conceptual row creation."
+    ::= { xcmCommsTrafficEntry 6 }
+
+xcmCommsTrafficOutputErrors OBJECT-TYPE
+--  SYNTAX      Counter32
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A layer output errors count, used by system administrators
+        and end users of this layer.
+
+        Usage:  Although no default value ('DEFVAL' clause) is permitted
+        (by IETF SMIv2) for this counter, conforming host systems SHALL
+        zero this counter upon conceptual row creation."
+    ::= { xcmCommsTrafficEntry 7 }
+
+--.ts 'Comms Access Group (Optional)'
+--
+--          Comms Access Group (Optional)
+--
+--          Implementation of this group is optional for all systems.
+
+xcmCommsAccess          OBJECT IDENTIFIER ::= { xcmCommsEngineMIB 13 }
+
+xcmCommsAccessTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmCommsAccessEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table containing current, high-water mark, and maximum
+        permitted values for both connection (or association) and
+        message (or datagram) ports at the upper sides (ie, service
+        provider interfaces) of stack layers."
+    ::= { xcmCommsAccess 2 }
+
+xcmCommsAccessEntry OBJECT-TYPE
+    SYNTAX      XcmCommsAccessEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table containing current, high-water mark, and maximum
+        permitted values for both connection (or association) and
+        message (or datagram) ports at the upper side (ie, service
+        provider interface) of this stack layer."
+    INDEX       { hrDeviceIndex, xcmCommsStackIndex }
+    ::= { xcmCommsAccessTable 1 }
+
+XcmCommsAccessEntry ::= SEQUENCE {
+        --  Comms Access Information    
+        xcmCommsAccessRowStatus         INTEGER, 
+        xcmCommsAccessConnectPorts      Gauge, 
+        xcmCommsAccessHighConnectPorts  Gauge, 
+        xcmCommsAccessMaxConnectPorts   Cardinal32, 
+        xcmCommsAccessDatagramPorts     Gauge, 
+        xcmCommsAccessHighDatagramPorts Gauge, 
+        xcmCommsAccessMaxDatagramPorts  Cardinal32 
+        }                               
+
+--
+--          Comms Access Information
+--
+
+xcmCommsAccessRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmCommsAccessTable'."
+    ::= { xcmCommsAccessEntry 1 }
+
+xcmCommsAccessConnectPorts OBJECT-TYPE
+--  SYNTAX      Gauge32
+    SYNTAX      Gauge
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The current number of connection (or association) ports open at
+        the upper side (ie, service provider interface) of this layer."
+--  DEFVAL      { 0 }                   -  no ports
+    ::= { xcmCommsAccessEntry 2 }
+
+xcmCommsAccessHighConnectPorts OBJECT-TYPE
+--  SYNTAX      Gauge32
+    SYNTAX      Gauge
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The highest number of connection (or association) ports open at
+        the upper side (ie, service provider interface) of this layer."
+--  DEFVAL      { 0 }                   -  no ports
+    ::= { xcmCommsAccessEntry 3 }
+
+xcmCommsAccessMaxConnectPorts OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The maximum number of connection (or association) ports
+        permitted at the upper side (ie, service provider interface)
+        of this layer."
+--  DEFVAL      { 0 }                   -  no ports
+    ::= { xcmCommsAccessEntry 4 }
+
+xcmCommsAccessDatagramPorts OBJECT-TYPE
+--  SYNTAX      Gauge32
+    SYNTAX      Gauge
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The current number of message (or datagram) ports open at
+        the upper side (ie, service provider interface) of this layer."
+--  DEFVAL      { 0 }                   -  no ports
+    ::= { xcmCommsAccessEntry 5 }
+
+xcmCommsAccessHighDatagramPorts OBJECT-TYPE
+--  SYNTAX      Gauge32
+    SYNTAX      Gauge
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The highest number of message (or datagram) ports open at
+        the upper side (ie, service provider interface) of this layer."
+--  DEFVAL      { 0 }                   -  no ports
+    ::= { xcmCommsAccessEntry 6 }
+
+xcmCommsAccessMaxDatagramPorts OBJECT-TYPE
+    SYNTAX      Cardinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The maximum number of message (or datagram) ports permitted at
+        the upper side (ie, service provider interface) of this layer."
+--  DEFVAL      { 0 }                   -  no ports
+    ::= { xcmCommsAccessEntry 7 }
+
+--.ts 'Comms Mgmt Group (Optional)'
+--
+--          Comms Mgmt Group (Optional)
+--
+--          Implementation of this group is optional for all systems.
+
+xcmCommsMgmt            OBJECT IDENTIFIER ::= { xcmCommsEngineMIB 14 }
+
+xcmCommsMgmtTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF XcmCommsMgmtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table containing additional management control objects for
+        installed and (possibly) active entities on this host system and
+        supporting detailed and extensible 'states' and 'conditions'."
+    ::= { xcmCommsMgmt 2 }
+
+xcmCommsMgmtEntry OBJECT-TYPE
+    SYNTAX      XcmCommsMgmtEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry containing additional management control objects for
+        installed and (possibly) active entity on this host system and
+        supporting detailed and extensible 'states' and 'conditions'."
+    INDEX       { hrDeviceIndex, xcmCommsMgmtIndex }
+    ::= { xcmCommsMgmtTable 1 }
+
+XcmCommsMgmtEntry ::= SEQUENCE {
+        --  Comms Mgmt Information      
+        xcmCommsMgmtIndex               Ordinal32, 
+        xcmCommsMgmtRowStatus           INTEGER, 
+        xcmCommsMgmtCommandRequest      XcmCommsMgmtCommandRequest, 
+        xcmCommsMgmtCommandData         XcmCommsMgmtCommandData, 
+        xcmCommsMgmtCommandStatus       XcmGenSNMPv2ErrorStatus, 
+        xcmCommsMgmtCommandInProgress   INTEGER 
+        }                               
+
+--
+--          Comms Mgmt Information
+--
+
+xcmCommsMgmtIndex OBJECT-TYPE
+    SYNTAX      Ordinal32
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "A unique value used by this host system to identify this
+        conceptual row in the 'xcmCommsMgmtTable'."
+    ::= { xcmCommsMgmtEntry 1 }
+
+xcmCommsMgmtRowStatus OBJECT-TYPE
+--  SYNTAX      RowStatus
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object is used to create and delete individual conceptual
+        rows in the 'xcmCommsMgmtTable'."
+    ::= { xcmCommsMgmtEntry 2 }
+
+xcmCommsMgmtCommandRequest OBJECT-TYPE
+    SYNTAX      XcmCommsMgmtCommandRequest
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The most recent comms management command request
+        specified for this conceptual row in the 'xcmCommsMgmtTable'.
+
+        Usage:  Conforming management agents SHALL 'reject' any
+        SNMP Set-Request to 'xcmCommsMgmtCommand[Request|Data]'
+        while another management operation is already in progress
+        (ie, while 'xcmCommsMgmtCommandInProgress' is 'true'),
+        with 'badValue' (SNMPv1) or 'inconsistentValue' (SNMPv2/v3).
+
+        Usage:  Conforming management stations SHALL set
+        'xcmCommsMgmtCommandRequest' (mgmt operation) and
+        'xcmCommsMgmtCommandData' (mgmt arguments)
+        SIMULTANEOUSLY (in the same SNMP Set-Request PDU)."
+    REFERENCE
+        "See:   'xcmCommsMgmtCommand[Data|Status|InProgress]'"
+--  DEFVAL      { none }                -  no command request
+    ::= { xcmCommsMgmtEntry 3 }
+
+xcmCommsMgmtCommandData OBJECT-TYPE
+    SYNTAX      XcmCommsMgmtCommandData (SIZE (0..255))
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "The most recent comms management command data (if any)
+        specified for this conceptual row in the 'xcmCommsMgmtTable'.
+
+        Usage:  Conforming management agents SHALL 'reject' any
+        SNMP Set-Request to 'xcmCommsMgmtCommand[Request|Data]'
+        while another management operation is already in progress
+        (ie, while 'xcmCommsMgmtCommandInProgress' is 'true'),
+        with 'badValue' (SNMPv1) or 'inconsistentValue' (SNMPv2/v3).
+
+        Usage:  Conforming management stations SHALL set
+        'xcmCommsMgmtCommandRequest' (mgmt operation) and
+        'xcmCommsMgmtCommandData' (mgmt arguments)
+        SIMULTANEOUSLY (in the same SNMP Set-Request PDU).
+
+        Usage:  Conformant implementations MUST encrypt passwords, keys,
+        and other security information stored in this string object."
+    REFERENCE
+        "See:   'xcmCommsMgmtCommand[Request|Status|InProgress]'"
+--  DEFVAL      { ''H }                 -  no command data
+    ::= { xcmCommsMgmtEntry 4 }
+
+xcmCommsMgmtCommandStatus OBJECT-TYPE
+    SYNTAX      XcmGenSNMPv2ErrorStatus
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The simple comms management error status associated with
+        this conceptual row in 'xcmCommsMgmtTable'.
+
+        Usage:  Conforming management agents SHALL set this
+        object to the value returned in an SNMP Set-Response PDU when
+        a simple comms management operation is 'accepted', ie, when
+        'xcmCommsMgmtCommandInProgress' goes from 'false' to 'true'.
+
+        Usage:  Conforming management agents SHALL set this
+        object to the value of the completion status of the (possibly
+        deferred) simple comms management operation, when
+        'xcmCommsMgmtCommandInProgress' goes from 'true' to 'false'."
+    REFERENCE
+        "See:   'xcmCommsMgmtCommand[Request|Data|InProgress]'"
+--  DEFVAL      { noError }             -  no error
+    ::= { xcmCommsMgmtEntry 5 }
+
+xcmCommsMgmtCommandInProgress OBJECT-TYPE
+--  SYNTAX      TruthValue
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The comms management in progress status associated with
+        this conceptual row in 'xcmCommsMgmtTable'.
+
+        Usage:  Conforming management agents SHALL 'reject' any
+        SNMP Set-Request to 'xcmCommsMgmtCommand[Request|Data]'
+        while another management operation is already in progress
+        (ie, while 'xcmCommsMgmtCommandInProgress' is 'true'),
+        with 'badValue' (SNMPv1) or 'inconsistentValue' (SNMPv2/v3)."
+    REFERENCE
+        "See:   'xcmCommsMgmtCommand[Request|Data|Status]'"
+--  DEFVAL      { false }               -  no command in progress
+    ::= { xcmCommsMgmtEntry 6 }
+
+--.ts 'Comms Engine MIB Conformance Macros'
+--
+--          Comms Engine MIB Conformance Information
+--
+--          With Mandatory and Optional Conformance Groups
+
+xcmCommsEngineMIBConformance
+    OBJECT IDENTIFIER ::= { xcmCommsEngineMIB 2 }
+xcmCommsEngineMIBGroups
+    OBJECT IDENTIFIER ::= { xcmCommsEngineMIBConformance 2 }
+
+--
+--          Basic Compliance Statements
+--
+
+END

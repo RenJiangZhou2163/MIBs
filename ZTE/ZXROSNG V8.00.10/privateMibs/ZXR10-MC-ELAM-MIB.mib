@@ -1,0 +1,376 @@
+--  ********************************************************
+--  $Id: ZXR10-mc-elam.mib 2010-05-21 13:40:21Z zhujie $
+--
+--  ZXR10-mc-elam.mib: ZXR10 mc-elam MIB file
+--
+--  May. 2010, Zhu Jie
+--  Copyright(c) 2010 by ZTE Corporation
+--  All rights reserved
+--
+--  ********************************************************      
+
+ZXR10-MC-ELAM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Unsigned32,
+    Integer32,
+    enterprises
+        FROM SNMPv2-SMI
+
+    --TEXTUAL-CONVENTION,    
+    --TruthValue
+      --  FROM SNMPv2-TC   
+        
+    MacAddress     
+        FROM SNMPv2-TC -- [RFC2579]      
+    
+    DisplayString
+            FROM RFC1213-MIB
+    
+    --IpAddress   FROM RFC1155-SMI
+    IpAddress
+            FROM SNMPv2-SMI;   
+
+
+
+    --ifIndex
+      --  FROM RFC1213-MIB   
+        mc-elamMIB MODULE-IDENTITY
+
+        LAST-UPDATED "201303180000Z"  -- 2013-3-18 00:00
+        
+        ORGANIZATION "ZTE Corporation"
+
+        CONTACT-INFO
+            "  Yang Zengfang
+               Tel : +86-25-15051656440
+               E-mail: yang.zengfang@zte.com.cn
+            "
+
+        DESCRIPTION
+            "This MIB contains managed object definitions for the ZXROSng MCELAM" 
+        
+        REVISION "201303180000Z" --2013-3-18 00:00
+        DESCRIPTION
+            "Update version of this MIB module"
+                               ::= { zxr10RosngMIB 131 }      
+                  
+
+        
+        
+    zte OBJECT IDENTIFIER ::= { enterprises 3902 }
+               
+    zxr10 OBJECT IDENTIFIER ::= { zte 3}
+               
+    zxr10RosngMIB OBJECT IDENTIFIER ::= { zxr10 6000}
+             
+  -- tables
+
+           mc-elamMIBObjects    OBJECT IDENTIFIER ::= { mc-elamMIB 1 } 
+
+
+---mc-elamInstanceTable
+      mc-elamInstanceTable    OBJECT-TYPE
+          SYNTAX            SEQUENCE OF Mc-elamInstanceEntry
+          MAX-ACCESS        not-accessible
+          STATUS            current
+          DESCRIPTION       "mc-elam instance information query table."
+      ::=  { mc-elamMIBObjects  1 }
+
+      mc-elamInstanceEntry    OBJECT-TYPE
+          SYNTAX            Mc-elamInstanceEntry
+          MAX-ACCESS        not-accessible
+          STATUS            current
+          DESCRIPTION       "mc-elam instance"
+          INDEX                {mc-elamInstanceId}
+    ::=  { mc-elamInstanceTable 1 }
+
+      Mc-elamInstanceEntry
+      ::=  SEQUENCE
+      {
+          mc-elamInstanceId                     Integer32,
+          mc-elamSourceIP                       IpAddress,
+          mc-elamDestinationIP                  IpAddress,
+          mc-elamSystemPriority                 Unsigned32,
+          mc-elamSystemMac                      MacAddress,
+          mc-elamTimeradvertise                 Integer32,
+          mc-elamDetectMultiplier               Integer32,
+          mc-elamRestoreMode                    INTEGER,
+          mc-elamRestoreTime                    Integer32,
+          mc-elamBindSmartgroupId               Integer32,
+          mc-elamBindSmartgroupMode             INTEGER,
+          mc-elamActorMcelamRole                INTEGER,
+          mc-elamActorLacpRole                  INTEGER,
+          mc-elamActorIsPwFault                 INTEGER,
+          mc-elamActorSgProtocolState           INTEGER,
+          mc-elamPartnerMcelamRole              INTEGER,   
+          mc-elamPartnerLacpRole                INTEGER,
+          mc-elamPartnerIsPwFault               INTEGER,
+          mc-elamPartnerSgProtocolState         INTEGER,
+          zxr10McelamPartnerTimeradvertise      Integer32, 
+          zxr10McelamPartnerMultiplier          Integer32
+          
+      }
+
+      mc-elamInstanceId   OBJECT-TYPE
+            SYNTAX            Integer32
+            MAX-ACCESS        read-only
+            STATUS            current
+            DESCRIPTION     "The mcelam instance Identifier."
+      ::=  { mc-elamInstanceEntry  1 }
+
+      mc-elamSourceIP    OBJECT-TYPE
+            SYNTAX            IpAddress
+            MAX-ACCESS        read-only
+            STATUS            current
+            DESCRIPTION     "The source ip address of mcelam instance."
+      ::=  { mc-elamInstanceEntry  2 }
+
+      mc-elamDestinationIP    OBJECT-TYPE
+            SYNTAX            IpAddress
+            MAX-ACCESS        read-only
+            STATUS            current
+            DESCRIPTION     "The destination ip address of mcelam instance."
+      ::=  { mc-elamInstanceEntry 3 }
+      
+      mc-elamSystemPriority    OBJECT-TYPE
+            SYNTAX            Unsigned32
+            MAX-ACCESS        read-only
+            STATUS            current
+            DESCRIPTION     "The system priority of mcelam instance."
+      ::=  { mc-elamInstanceEntry  4 } 
+      
+      mc-elamSystemMac    OBJECT-TYPE
+            SYNTAX            MacAddress
+            MAX-ACCESS        read-only
+            STATUS            current
+            DESCRIPTION     "The system mac of mcelam instance."
+      ::=  { mc-elamInstanceEntry  5 }  
+      
+      mc-elamTimeradvertise   OBJECT-TYPE
+            SYNTAX            Integer32
+            MAX-ACCESS        read-only
+            STATUS            current
+            DESCRIPTION     "The timer-advertise of mcelam instance."
+      ::=  { mc-elamInstanceEntry  6 } 
+      
+      mc-elamDetectMultiplier   OBJECT-TYPE
+            SYNTAX            Integer32
+            MAX-ACCESS        read-only
+            STATUS            current
+            DESCRIPTION     "SThe detect-multiplier of mcelam instance."
+      ::=  { mc-elamInstanceEntry  7 }  
+      
+      mc-elamRestoreMode    OBJECT-TYPE
+            SYNTAX  INTEGER
+                    {
+                         immediately(0),
+                         revertive(1),
+                         nonRevertive(2)   
+                    } 
+            MAX-ACCESS      read-only
+            STATUS            current
+            DESCRIPTION   "The restore mode of mcelam instance."
+      ::=  { mc-elamInstanceEntry  8 } 
+      
+      mc-elamRestoreTime    OBJECT-TYPE
+            SYNTAX            Integer32
+            MAX-ACCESS        read-only
+            STATUS            current
+            DESCRIPTION     "The restore time of mcelam instance."
+      ::=  { mc-elamInstanceEntry  9 } 
+      
+      mc-elamBindSmartgroupId    OBJECT-TYPE
+            SYNTAX            Integer32
+            MAX-ACCESS        read-only
+            STATUS            current
+            DESCRIPTION     "The smartgroup id which be binded by mcelam instance."
+      ::=  { mc-elamInstanceEntry  10 } 
+      
+      mc-elamBindSmartgroupMode   OBJECT-TYPE
+            SYNTAX        INTEGER
+                          {
+                              auto(1),
+                              master(2),
+                              slave(3)                       
+                          }
+            MAX-ACCESS         read-only
+            STATUS             current
+            DESCRIPTION     "The mode that mcelam bind smartgroup. "
+      ::=  { mc-elamInstanceEntry  11 }  
+      
+      mc-elamActorMcelamRole   OBJECT-TYPE
+           SYNTAX          INTEGER
+                           {
+                               slave(0),
+                               master(1)                       
+                           }
+            MAX-ACCESS       read-only
+            STATUS           current
+            DESCRIPTION   "The actor mcelam role."
+      ::=  { mc-elamInstanceEntry  12 }  
+      
+      mc-elamActorLacpRole   OBJECT-TYPE
+            SYNTAX        INTEGER
+                          {
+                              slave(0),
+                              master(1)                       
+                          }
+            MAX-ACCESS      read-only
+            STATUS           current
+            DESCRIPTION   "The actor lacp role."
+      ::=  { mc-elamInstanceEntry  13 }
+      
+      mc-elamActorIsPwFault   OBJECT-TYPE
+            SYNTAX        INTEGER
+                          {
+                               notfault(0),
+                               fault(1)                       
+                          }
+            MAX-ACCESS      read-only
+            STATUS          current
+            DESCRIPTION   "Is  actor mcelam instance pwfault?"
+      ::=  { mc-elamInstanceEntry  14 } 
+      
+      mc-elamActorSgProtocolState   OBJECT-TYPE
+            SYNTAX        INTEGER
+                          {      
+                               down(0),
+                               up(1)          
+                          }
+            MAX-ACCESS      read-only
+            STATUS          current
+            DESCRIPTION   "The actor smartgroup protocol state which be binded by mcelam instance."
+      ::=  { mc-elamInstanceEntry  15 }
+      
+      mc-elamPartnerMcelamRole   OBJECT-TYPE
+           SYNTAX        INTEGER
+                         {
+                             slave(0),
+                             master(1)                        
+                         }
+            MAX-ACCESS      read-only
+            STATUS          current
+            DESCRIPTION   "The partner mcelam role."
+      ::=  { mc-elamInstanceEntry  16 }   
+            
+      mc-elamPartnerLacpRole    OBJECT-TYPE
+           SYNTAX        INTEGER
+                         {
+                             slave(0),
+                             master(1)                        
+                         }
+            MAX-ACCESS      read-only
+            STATUS           current
+            DESCRIPTION   "The partner lacp role."
+      ::=  { mc-elamInstanceEntry  17 }
+       
+      mc-elamPartnerIsPwFault     OBJECT-TYPE
+            SYNTAX        INTEGER
+                          {
+                               notfault(0),
+                               fault(1)                       
+                          }
+            MAX-ACCESS      read-only
+            STATUS           current
+            DESCRIPTION   "Is  partner mcelam instance pwfault?"
+      ::=  { mc-elamInstanceEntry  18 } 
+            
+      mc-elamPartnerSgProtocolState    OBJECT-TYPE
+            SYNTAX        INTEGER
+                          {      
+                               down(0),
+                               up(1)          
+                          }
+            MAX-ACCESS      read-only
+            STATUS           current
+            DESCRIPTION   "The partner smartgroup protocol state which be binded by mcelam instance."
+      ::=  { mc-elamInstanceEntry  19 }
+
+           zxr10McelamPartnerTimeradvertise   OBJECT-TYPE
+            SYNTAX            Integer32
+            MAX-ACCESS        read-only
+            STATUS            current
+            DESCRIPTION     "The timer-advertise of partner mcelam instance."
+      ::=  { mc-elamInstanceEntry  20 }
+      
+        zxr10McelamPartnerMultiplier   OBJECT-TYPE
+            SYNTAX            Integer32
+            MAX-ACCESS        read-only
+            STATUS            current
+            DESCRIPTION     "The detect-multiplier of partner mcelam instance."
+      ::=  { mc-elamInstanceEntry  21 }
+
+
+
+
+
+
+
+---mc-elamTrackTable
+      mc-elamTrackTable    OBJECT-TYPE
+          SYNTAX            SEQUENCE OF Mc-elamTrackEntry
+          MAX-ACCESS        not-accessible
+          STATUS            current
+          DESCRIPTION      "mc-elam track information query table."
+      ::=  { mc-elamMIBObjects 2 }
+
+      mc-elamTrackEntry    OBJECT-TYPE
+          SYNTAX            Mc-elamTrackEntry
+          MAX-ACCESS        not-accessible
+          STATUS            current
+          DESCRIPTION      "mc-elam track"
+          INDEX              { mc-elamTrackName,mc-elamTrackInstanceId}
+    ::=  { mc-elamTrackTable 1 }
+
+      Mc-elamTrackEntry
+      ::=  SEQUENCE
+      {
+          mc-elamTrackName         DisplayString,
+          mc-elamTrackInstanceId        Integer32,
+          mc-elamTrackType         INTEGER,
+          mc-elamTrackIsGroup      INTEGER
+      }
+
+      mc-elamTrackName   OBJECT-TYPE
+        SYNTAX            DisplayString(SIZE(1..31))
+        MAX-ACCESS        read-only
+        STATUS            current
+        DESCRIPTION     "The track name."
+      ::=  { mc-elamTrackEntry  1 }
+
+     mc-elamTrackInstanceId    OBJECT-TYPE
+        SYNTAX            Integer32
+        MAX-ACCESS        read-only
+        STATUS            current
+        DESCRIPTION     "The mcelam instance Identifier."
+     ::=  { mc-elamTrackEntry  2 }
+
+      mc-elamTrackType   OBJECT-TYPE
+        SYNTAX   INTEGER
+                 {
+                      linkType(1),
+                      peerType(2),
+                      pwType(3)                      
+                 }
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION   "The track type."
+      ::=  { mc-elamTrackEntry  3 }
+
+      mc-elamTrackIsGroup   OBJECT-TYPE
+        SYNTAX        INTEGER
+                      {
+                           notgroup(0),
+                           group(1)                       
+                      }
+        MAX-ACCESS      read-only
+        STATUS           current
+        DESCRIPTION   "Is group type?"
+      ::=  { mc-elamTrackEntry  4 }
+                                 
+END
+
+

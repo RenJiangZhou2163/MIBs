@@ -1,0 +1,359 @@
+-- *****************************************************************
+-- ZXR10-MPLS-ICCP-MIB.mib 
+-- MPLS Label Distribution Protocol MIB Definitions
+-- zhangjie00067308
+-- 2013-2-19
+--
+-- Copyright (c) 1985-2008 by ZTE Corp.
+-- All rights reserved.
+-- *****************************************************************
+--
+
+ZXR10-MPLS-ICCP-MIB DEFINITIONS ::= BEGIN  
+
+IMPORTS
+       OBJECT-TYPE,
+       MODULE-IDENTITY,
+       Unsigned32,enterprises,IpAddress
+             FROM SNMPv2-SMI
+       DisplayString
+             FROM SNMPv2-TC
+
+       MplsLdpIdentifier
+             FROM MPLS-TC-STD-MIB            --  [RFC3811]
+
+       zxr10MplsLdp
+             FROM ZXR10-MPLS-LDP-MIB;
+
+zxr10mplsIccpMIB MODULE-IDENTITY
+         LAST-UPDATED "201406261200Z"  -- June 26, 2014
+         ORGANIZATION "ZTE Corporation."
+         CONTACT-INFO
+             "Zhang Jie
+              Tel:    +86-18068809926
+              E-Mail: zhang.jie17@zte.com.cn 
+             "
+         DESCRIPTION
+             "This MIB contains managed object definitions for the
+             'Inter-Chassis Communication Protocol for L2VPN PE Redundancy,
+             ICCP' document."
+         REVISION "201406261200Z"
+         DESCRIPTION
+             "modify: change DEFVAL from number to defined word 
+                      of below tables or nodes:
+                   zxr10IccpRgAppCfgMlacpEnble zxr10IccpRgAppCfgMcPortEnble
+                   zxr10IccpRgAppCfgMcPwEnble zxr10IccpRgAppCfgArpEnble
+                   zxr10IccpRgAppCfgMacEnble zxr10IccpRgPeerState
+                   zxr10IccpRgAppState
+             "    
+         REVISION "201401091200Z"
+         DESCRIPTION
+             "add: zxr10IccpRgAppCfgMacEnble in zxr10IccpRgAppCfgTable 
+                  mac in SYNTAX of zxr10IccpRgAppStateAppType
+             "    
+         REVISION "201302281200Z"
+         DESCRIPTION
+             "Initial revision."
+         ::= { zxr10MplsLdp 2}
+
+      zxr10IccpGlobalObjects OBJECT IDENTIFIER ::={ zxr10mplsIccpMIB 1}
+      zxr10IccpRgObjects OBJECT IDENTIFIER ::={ zxr10mplsIccpMIB 2}
+      zxr10IccpNotifications OBJECT IDENTIFIER ::={ zxr10mplsIccpMIB 3}
+      zxr10IccpConformance OBJECT IDENTIFIER ::={ zxr10mplsIccpMIB 4}
+
+--********************************************
+--definition of tables::
+--********************************************
+
+--*************zxr10IccpRgCfgTable***************
+zxr10IccpRgCfgTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10IccpRgCfgEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION "ICCP RG Table. This table contains
+                     one entry per rg table."
+
+            ::= { zxr10IccpRgObjects 1 }
+
+zxr10IccpRgCfgEntry OBJECT-TYPE
+            SYNTAX     Zxr10IccpRgCfgEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+               "The parameter of a rg entity containing statistics 
+                information about a particular Redundancy Group."
+            INDEX { zxr10IccpRgCfgRgId }
+            ::= { zxr10IccpRgCfgTable 1 }
+
+Zxr10IccpRgCfgEntry ::= SEQUENCE {
+            zxr10IccpRgCfgRgId             Unsigned32,
+            zxr10IccpRgCfgHostname         DisplayString
+            }
+
+zxr10IccpRgCfgRgId OBJECT-TYPE
+            SYNTAX      Unsigned32
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION "The identifier of a redundancy group.The maximum
+                         range can be configured is dynamically defined."
+            ::= { zxr10IccpRgCfgEntry 1 }
+
+zxr10IccpRgCfgHostname  OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                   "The host name of the rg."
+            ::= { zxr10IccpRgCfgEntry 2 } 
+
+--***********zxr10IccpRgPeerCfgTable*************
+zxr10IccpRgPeerCfgTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10IccpRgPeerCfgEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION "ICCP Peer Table. This table contains
+                    one entry per iccp peer table."
+
+            ::= { zxr10IccpRgObjects 2 }
+
+zxr10IccpRgPeerCfgEntry OBJECT-TYPE
+            SYNTAX     Zxr10IccpRgPeerCfgEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                "The parameter of a rg peer entity containing statistics 
+                information about a particular rg peer."
+            INDEX { zxr10IccpRgPeerCfgRgId,
+                    zxr10IccpRgPeerCfgPeerLsrId }
+            ::= { zxr10IccpRgPeerCfgTable 1 }
+
+Zxr10IccpRgPeerCfgEntry ::= SEQUENCE {
+            zxr10IccpRgPeerCfgRgId             Unsigned32,
+            zxr10IccpRgPeerCfgPeerLsrId        IpAddress
+            }
+
+zxr10IccpRgPeerCfgRgId OBJECT-TYPE
+            SYNTAX      Unsigned32
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION "The identifier of a redundancy group."
+            ::= { zxr10IccpRgPeerCfgEntry 1 }
+
+zxr10IccpRgPeerCfgPeerLsrId  OBJECT-TYPE
+            SYNTAX     IpAddress
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The identifier of peer lsr used to identify a session."
+            ::= { zxr10IccpRgPeerCfgEntry 2 } 
+
+--***********zxr10IccpRgAppCfgTable*************
+zxr10IccpRgAppCfgTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10IccpRgAppCfgEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION "ICCP App Table. This table contains
+                    one entry per iccp app table."
+
+            ::= { zxr10IccpRgObjects 3 }
+
+zxr10IccpRgAppCfgEntry OBJECT-TYPE
+            SYNTAX     Zxr10IccpRgAppCfgEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                "The parameter of a rg app entity containing statistics 
+                information about a particular rg app."
+            INDEX { zxr10IccpRgAppCfgRgId }
+            ::= { zxr10IccpRgAppCfgTable 1 }
+
+Zxr10IccpRgAppCfgEntry ::= SEQUENCE {
+            zxr10IccpRgAppCfgRgId             Unsigned32,
+            zxr10IccpRgAppCfgMlacpEnble       INTEGER,
+            zxr10IccpRgAppCfgMcPortEnble      INTEGER,
+            zxr10IccpRgAppCfgMcPwEnble        INTEGER,
+            zxr10IccpRgAppCfgArpEnble         INTEGER,
+            zxr10IccpRgAppCfgMacEnble         INTEGER
+            }
+
+zxr10IccpRgAppCfgRgId OBJECT-TYPE
+            SYNTAX      Unsigned32
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION "The identifier of a redundancy group."
+            ::= { zxr10IccpRgAppCfgEntry 1 }
+
+zxr10IccpRgAppCfgMlacpEnble  OBJECT-TYPE
+            SYNTAX     INTEGER{enable(1),disable(2)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The mlacp applied status in this rg."
+            DEFVAL     {disable}
+            ::= { zxr10IccpRgAppCfgEntry 2 }
+
+zxr10IccpRgAppCfgMcPortEnble  OBJECT-TYPE
+            SYNTAX     INTEGER{enable(1),disable(2)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The mc-port applied status in this rg."
+            DEFVAL     {disable}
+            ::= { zxr10IccpRgAppCfgEntry 3 }
+
+zxr10IccpRgAppCfgMcPwEnble  OBJECT-TYPE
+            SYNTAX     INTEGER{enable(1),disable(2)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The mc-pw applied status in this rg."
+            DEFVAL     {disable}
+            ::= { zxr10IccpRgAppCfgEntry 4 }
+
+zxr10IccpRgAppCfgArpEnble  OBJECT-TYPE
+            SYNTAX     INTEGER{enable(1),disable(2)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The arp applied status in this rg."
+            DEFVAL     {disable}
+            ::= { zxr10IccpRgAppCfgEntry 5 }
+
+zxr10IccpRgAppCfgMacEnble  OBJECT-TYPE
+            SYNTAX     INTEGER{enable(1),disable(2)}
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "The mac applied status in this rg."
+            DEFVAL     {disable}
+            ::= { zxr10IccpRgAppCfgEntry 6 }            
+--***********zxr10IccpRgPeerStateTable*************
+zxr10IccpRgPeerStateTable OBJECT-TYPE
+            SYNTAX     SEQUENCE OF Zxr10IccpRgPeerStateEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION "ICCP Peer State Table. This table contains
+                    one entry per iccp peer state table."
+
+            ::= { zxr10IccpRgObjects 4 }
+
+zxr10IccpRgPeerStateEntry OBJECT-TYPE
+            SYNTAX     Zxr10IccpRgPeerStateEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                "The parameter of a rg peer entity containing statistics 
+                information about a particular rg peer."
+            INDEX { zxr10IccpRgPeerStateRgId,
+                    zxr10IccpRgPeerStatePeerLsrId }
+            ::= { zxr10IccpRgPeerStateTable 1 }
+
+Zxr10IccpRgPeerStateEntry ::= SEQUENCE {
+            zxr10IccpRgPeerStateRgId             Unsigned32,
+            zxr10IccpRgPeerStatePeerLsrId        IpAddress,
+            zxr10IccpRgPeerState                 INTEGER
+            }
+
+zxr10IccpRgPeerStateRgId OBJECT-TYPE
+            SYNTAX      Unsigned32
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION "The identifier of a redundancy group."
+            ::= { zxr10IccpRgPeerStateEntry 1 }
+
+zxr10IccpRgPeerStatePeerLsrId  OBJECT-TYPE
+            SYNTAX     IpAddress
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The identifier of peer lsr used to identify a session."
+            ::= { zxr10IccpRgPeerStateEntry 2 } 
+
+zxr10IccpRgPeerState  OBJECT-TYPE
+            SYNTAX     INTEGER {
+                 nonconnect(1),
+                 connectingsent(2),
+                 connectingrec(3),
+                 connected(4) }
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                    "Indicates the status of the rg connect."
+            DEFVAL    {nonconnect}
+                ::= { zxr10IccpRgPeerStateEntry 3 } 
+
+--***********zxr10IccpRgAppStateTable*************
+zxr10IccpRgAppStateTable OBJECT-TYPE
+            SYNTAX      SEQUENCE OF Zxr10IccpRgAppStateEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION "Rg Apply Protocol Table. This table contains
+                    one entry per iccp rg app table."
+
+            ::= { zxr10IccpRgObjects 5 }
+
+zxr10IccpRgAppStateEntry OBJECT-TYPE
+            SYNTAX     Zxr10IccpRgAppStateEntry
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                "The parameter of a app entity in a rg containing statistics 
+                information about a particular app."
+            INDEX { zxr10IccpRgAppStateRgId,
+                    zxr10IccpRgAppStateAppType,
+                    zxr10IccpRgAppStatePeerLsrId}
+            ::= { zxr10IccpRgAppStateTable 1 }
+
+Zxr10IccpRgAppStateEntry ::= SEQUENCE {
+            zxr10IccpRgAppStateRgId           Unsigned32,
+            zxr10IccpRgAppStateAppType        INTEGER,
+            zxr10IccpRgAppStatePeerLsrId      IpAddress,
+            zxr10IccpRgAppState               INTEGER
+            }
+
+zxr10IccpRgAppStateRgId OBJECT-TYPE
+            SYNTAX      Unsigned32
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION "The identifier of a redundancy group."
+            ::= { zxr10IccpRgAppStateEntry 1 }
+
+zxr10IccpRgAppStateAppType  OBJECT-TYPE
+            SYNTAX     INTEGER {
+                 pw(1),
+                 lacp(2),
+                 msp(3),
+                 mcportgroup(4),
+                 mcpwgroup(5),
+                 arp(6),
+                 mac(7)
+                 }
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The type of the app applied in a rg."
+            ::= { zxr10IccpRgAppStateEntry 2 } 
+
+zxr10IccpRgAppStatePeerLsrId  OBJECT-TYPE
+            SYNTAX     IpAddress
+            MAX-ACCESS not-accessible
+            STATUS     current
+            DESCRIPTION
+                    "The identifier of peer lsr used to identify a session."
+            ::= { zxr10IccpRgAppStateEntry 3 } 
+
+zxr10IccpRgAppState  OBJECT-TYPE
+            SYNTAX    INTEGER {
+                 nonconnect(1),
+                 connectingsent(2),
+                 connectingrec(3),
+                 connected(4) }
+            MAX-ACCESS read-only
+            STATUS    current
+            DESCRIPTION
+                    "Indicates the status of the app connect in a rg."
+            DEFVAL    {nonconnect}
+            ::= { zxr10IccpRgAppStateEntry 4 } 
+
+
+ END 

@@ -1,0 +1,2008 @@
+--========================================================
+-- ZXR10-TRILL-ISIS-MIB.mib
+--
+-- Copyright(c) 2013 by ZTE Corporaton
+--
+-- All rights reservered
+--========================================================
+
+ZXR10-TRILL-ISIS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE,
+--    enterprises, Unsigned32, Counter64, IpAddress
+    enterprises, Unsigned32
+        FROM SNMPv2-SMI
+    DisplayString,MacAddress
+        FROM SNMPv2-TC;
+
+
+zxr10TrillIsisMIB MODULE-IDENTITY
+    LAST-UPDATED "201511031705Z"
+    ORGANIZATION "ZTE Corporation."
+    CONTACT-INFO
+        " Sun jinsong
+        Tel    : 0086-0755-633865
+        E-mail : sun.jinsong@zte.com.cn"
+    DESCRIPTION
+        "This document describes a management information
+        base for the TRILL IS-IS Routing protocol." 
+    REVISION "201511031705Z"
+    DESCRIPTION
+        "Modify table:
+            1.The range of zxr10TrillIsisIntfMetric changed from 1..16777215 into 1..16777214.
+            2.The range of zxr10TrillIsisAttrLspMtu changed from 1470..65535 into 1470..7680.
+            3.The range of zxr10TrillEsadiLspGenInstId changed from 0..4094 into 1..4094.
+            4.The range of zxr10TrillEsadiInstID changed from 0..4094 into 1..4094."
+    REVISION "201410171105Z"
+    DESCRIPTION
+        "Perfect TRILL-MIB fuction."
+    REVISION "201406101429Z"
+    DESCRIPTION
+        "Add trill interface port mode."
+    REVISION "201306131100Z"
+    DESCRIPTION
+        "Initial version."
+    ::= {zxr10RosngMIB 163}
+
+    zte           OBJECT IDENTIFIER ::= { enterprises 3902 }
+    zxr10         OBJECT IDENTIFIER ::= { zte 3}
+    zxr10RosngMIB OBJECT IDENTIFIER ::= { zxr10 6000}
+
+    zxr10TrillIsisGlobalObjects   OBJECT IDENTIFIER ::= { zxr10TrillIsisMIB 1}
+    zxr10TrillIsisObjects         OBJECT IDENTIFIER ::= { zxr10TrillIsisMIB 2}
+    zxr10TrillIsisGlobalTraps     OBJECT IDENTIFIER ::= { zxr10TrillIsisMIB 3}
+    zxr10TrillIsisConformance     OBJECT IDENTIFIER ::= { zxr10TrillIsisMIB 4}  
+   
+--======================================================
+-- 1. zxr10TrillIsisGlobalObjects
+--======================================================
+
+--======================================================
+-- 2. zxr10TrillIsisObjects
+--======================================================
+
+    zxr10TrillIsisTrillObject        OBJECT IDENTIFIER ::= { zxr10TrillIsisObjects 2}
+    zxr10TrillIsisDistriTreesObject  OBJECT IDENTIFIER ::= { zxr10TrillIsisObjects 4}
+    zxr10TrillIsisIntfObject         OBJECT IDENTIFIER ::= { zxr10TrillIsisObjects 5}
+    zxr10TrillIsisAuthObject         OBJECT IDENTIFIER ::= { zxr10TrillIsisObjects 7}
+    zxr10TrillEsadiObject            OBJECT IDENTIFIER ::= { zxr10TrillIsisObjects 11}
+
+--======================================================
+-- 2.1 zxr10TrillIsisInstTable
+--======================================================        
+    zxr10TrillIsisInstTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisInstEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS instance. "
+            ::= { zxr10TrillIsisObjects 1 }
+
+        zxr10TrillIsisInstEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisInstEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS instance."
+                INDEX  { zxr10TrillIsisInstProcessId }
+                ::= { zxr10TrillIsisInstTable 1 }
+                
+        Zxr10TrillIsisInstEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisInstProcessId
+                        Unsigned32
+                }
+
+            zxr10TrillIsisInstProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisInstEntry 1 }
+    -- TRILL-ISIS instance  end
+  
+    -- TRILL nicknamelist  begin 
+    zxr10TrillNicknameListTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillNicknameListEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS nickname-list."
+            ::= { zxr10TrillIsisTrillObject 1 }
+
+        zxr10TrillNicknameListEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillNicknameListEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS nickname-list."
+                INDEX  { zxr10TrillNicknameListListNum }
+                ::= { zxr10TrillNicknameListTable 1 }
+            
+        Zxr10TrillNicknameListEntry ::=
+                SEQUENCE {
+                    zxr10TrillNicknameListListNum
+                        Unsigned32
+                         }
+
+            zxr10TrillNicknameListListNum OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..16)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS nickname-list number."
+                    ::= { zxr10TrillNicknameListEntry 1 }
+
+    zxr10TrillNicknameTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillNicknameEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to Trill nickname-list nickname"
+            ::= { zxr10TrillIsisTrillObject 2 }
+
+        zxr10TrillNicknameEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillNicknameEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to Trill nickname-list nickname"
+                INDEX  { zxr10TrillNicknameListNum,zxr10TrillNicknameNum }
+                ::= { zxr10TrillNicknameTable 1 }
+            
+        Zxr10TrillNicknameEntry ::=
+                SEQUENCE {
+                    zxr10TrillNicknameListNum
+                        Unsigned32,
+                    zxr10TrillNicknameNum
+                        Unsigned32
+                }
+
+            zxr10TrillNicknameListNum OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..16)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "Trill nickname-list."
+                    ::= { zxr10TrillNicknameEntry 1 }
+
+            zxr10TrillNicknameNum OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..65471)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "The value of trill nickname-list nickname."
+                    ::= { zxr10TrillNicknameEntry 2 }
+    -- TRILL nicknamelist  end
+    
+-- TRILL-ISIS nickname  begin 
+zxr10TrillIsisNicknameTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10TrillIsisNicknameEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to TRILL-ISIS nickname."
+        ::= { zxr10TrillIsisObjects 3 }
+
+    zxr10TrillIsisNicknameEntry OBJECT-TYPE
+            SYNTAX Zxr10TrillIsisNicknameEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "An entry to TRILL-ISIS nickname."
+            INDEX  { zxr10TrillIsisNicknameProcessId,
+                     zxr10TrillIsisNicknameSet
+                    }
+            ::= { zxr10TrillIsisNicknameTable 1 }
+                
+    Zxr10TrillIsisNicknameEntry ::=
+            SEQUENCE {
+                zxr10TrillIsisNicknameProcessId
+                    Unsigned32,
+                zxr10TrillIsisNicknameSet
+                    Unsigned32,
+                zxr10TrillIsisNicknamePri
+                    Unsigned32,
+                zxr10TrillIsisNicknameTreepri
+                    Unsigned32,
+                zxr10TrillIsisNicknameUse
+                    Unsigned32
+            }
+
+        zxr10TrillIsisNicknameProcessId OBJECT-TYPE
+                SYNTAX Unsigned32 (0..65535)
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "TRILL-ISIS process Id."
+                ::= { zxr10TrillIsisNicknameEntry 1 }
+
+        zxr10TrillIsisNicknameSet OBJECT-TYPE
+                SYNTAX Unsigned32 (0..65471)
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "The number of TRILL-ISIS nickname setted."
+                ::= { zxr10TrillIsisNicknameEntry 2 }
+
+        zxr10TrillIsisNicknamePri OBJECT-TYPE
+                SYNTAX Unsigned32 (0..127)
+                MAX-ACCESS  read-only
+                STATUS  current
+                DESCRIPTION
+                    "The priority of  TRILL-ISIS nickname."
+                DEFVAL { 64 }
+                ::= { zxr10TrillIsisNicknameEntry 3 }
+
+        zxr10TrillIsisNicknameTreepri OBJECT-TYPE
+                SYNTAX Unsigned32 (0..65535)
+                MAX-ACCESS  read-only
+                STATUS  current
+                DESCRIPTION
+                    "The tree-priority of  TRILL-ISIS nickname."
+                DEFVAL { 32768 }
+                ::= { zxr10TrillIsisNicknameEntry 4 }
+
+        zxr10TrillIsisNicknameUse OBJECT-TYPE
+                SYNTAX Unsigned32 (0..65471)
+                MAX-ACCESS  read-only
+                STATUS  current
+                DESCRIPTION
+                    "The nickname in use."
+                ::= { zxr10TrillIsisNicknameEntry 5 }
+-- TRILL-ISIS nickname  end 
+ 
+    -- TRILL-ISIS Treenum  begin 
+    zxr10TrillIsisTreenumTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisTreenumEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS distribution-tree number."
+            ::= { zxr10TrillIsisDistriTreesObject 1 }
+
+        zxr10TrillIsisTreenumEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisTreenumEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS distribution-tree number."
+                INDEX  { zxr10TrillIsisTreenumProcessId }
+                ::= { zxr10TrillIsisTreenumTable 1 }
+                    
+        Zxr10TrillIsisTreenumEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisTreenumProcessId
+                        Unsigned32,
+                    zxr10TrillIsisTreenumAbleToCalc
+                         Unsigned32,
+                    zxr10TrillIsisTreenumUse
+                        Unsigned32,
+                    zxr10TrillIsisTreenumWantToCalc
+                         Unsigned32
+                }
+
+            zxr10TrillIsisTreenumProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisTreenumEntry 1 }
+
+            zxr10TrillIsisTreenumAbleToCalc OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..16)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Number of trees able-to-calc, it can't be smaller than the use number and the want-to-calc number." 
+                    DEFVAL { 1 }
+                    ::= { zxr10TrillIsisTreenumEntry 2 }
+
+            zxr10TrillIsisTreenumUse OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..16)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Number of trees use, it can't be larger than the able-to-calc number." 
+                    DEFVAL { 1 }
+                    ::= { zxr10TrillIsisTreenumEntry 3 }
+
+            zxr10TrillIsisTreenumWantToCalc OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..16)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Number of trees want-to-calc, it can't be larger than the able-to-calc number."
+                    DEFVAL { 1 }
+                    ::= { zxr10TrillIsisTreenumEntry 4 }   
+             
+    -- TRILL-ISIS Treenum  end
+
+    -- TRILL-ISIS CTree  begin  
+    zxr10TrillIsisCTreelistTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisCTreelistEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to distribution-tree computed-treelist."
+            ::= { zxr10TrillIsisDistriTreesObject 2 }
+
+        zxr10TrillIsisCTreelistEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisCTreelistEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to distribution-tree computed-treelist."
+                INDEX  { zxr10TrillIsisCTreelistProcessId }
+                ::= { zxr10TrillIsisCTreelistTable 1 }
+                    
+        Zxr10TrillIsisCTreelistEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisCTreelistProcessId
+                        Unsigned32,
+                    zxr10TrillIsisCTreelistNum
+                        Unsigned32
+                      }
+
+            zxr10TrillIsisCTreelistProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisCTreelistEntry 1 }
+
+            zxr10TrillIsisCTreelistNum OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..16)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Number of computed-treelist."
+                    ::= { zxr10TrillIsisCTreelistEntry 2 }
+    -- TRILL-ISIS CTree  end  
+
+    --TRILL-ISIS calc-interval begin
+    zxr10TrillIsisCalcIntTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisCalcIntEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS distribution-tree calculation interval."
+            ::= { zxr10TrillIsisDistriTreesObject 3 }
+
+        zxr10TrillIsisCalcIntEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisCalcIntEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS distribution-tree calculation interval."
+                INDEX  { zxr10TrillIsisCalcIntProcessId }
+                ::= { zxr10TrillIsisCalcIntTable 1 }
+                    
+        Zxr10TrillIsisCalcIntEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisCalcIntProcessId
+                        Unsigned32,
+                    zxr10TrillIsisCalcIntMaxWait
+                        Unsigned32,
+                    zxr10TrillIsisCalcIntInitWait
+                        Unsigned32,
+                    zxr10TrillIsisCalcIntSecWait
+                        Unsigned32
+                }
+
+            zxr10TrillIsisCalcIntProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisCalcIntEntry 1 }
+
+            zxr10TrillIsisCalcIntMaxWait OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..120)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Max distribution-tree calculation interval in second." 
+                    DEFVAL { 10 }
+                    ::= { zxr10TrillIsisCalcIntEntry 2 }
+
+            zxr10TrillIsisCalcIntInitWait OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..120000)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "The waiting initial before first distribution-tree calculation in milliseconds." 
+                    DEFVAL { 5500 }
+                    ::= { zxr10TrillIsisCalcIntEntry 3 }
+
+            zxr10TrillIsisCalcIntSecWait OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..120000)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Minimum wait between first and second distribution-tree calculation in milliseconds." 
+                    DEFVAL { 5500 }
+                    ::= { zxr10TrillIsisCalcIntEntry 4 }
+    --TRILL-ISIS calc-interval end
+ 
+-- TRILL-ISIS interface object begin 
+    -- TRILL-ISIS interface priority begin      
+    zxr10TrillIsisIntfPriTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisIntfPriEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS interface priority."
+            ::= { zxr10TrillIsisIntfObject 1 }
+
+        zxr10TrillIsisIntfPriEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisIntfPriEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS interface priority."
+                INDEX  { zxr10TrillIsisIntfPriProcessId,zxr10TrillIsisIntfPriIntfName }
+                ::= { zxr10TrillIsisIntfPriTable 1 }
+                    
+        Zxr10TrillIsisIntfPriEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisIntfPriProcessId
+                        Unsigned32,
+                    zxr10TrillIsisIntfPriIntfName
+                        DisplayString,
+                    zxr10TrillIsisIntfPriValue
+                        Unsigned32
+                }
+
+            zxr10TrillIsisIntfPriProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisIntfPriEntry 1 }
+
+            zxr10TrillIsisIntfPriIntfName OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..255))
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS interface name."
+                    ::= { zxr10TrillIsisIntfPriEntry 2 }
+
+            zxr10TrillIsisIntfPriValue OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..127)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Priority value of the interface." 
+                    DEFVAL { 64 }
+                    ::= { zxr10TrillIsisIntfPriEntry 3 }
+    -- TRILL-ISIS interface priority end    
+
+    -- TRILL-ISIS interface begin
+    zxr10TrillIsisIntfTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisIntfEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS interface."
+            ::= { zxr10TrillIsisIntfObject 2 }
+
+        zxr10TrillIsisIntfEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisIntfEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS interface."
+                INDEX  { zxr10TrillIsisIntfProcessId,zxr10TrillIsisIntfIntfName }
+                ::= { zxr10TrillIsisIntfTable 1 }  
+                
+        Zxr10TrillIsisIntfEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisIntfProcessId
+                        Unsigned32,
+                    zxr10TrillIsisIntfIntfName
+                        DisplayString,
+                    zxr10TrillIsisIntfEnable
+                        Unsigned32
+                } 
+     
+            zxr10TrillIsisIntfProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisIntfEntry 1 }
+
+            zxr10TrillIsisIntfIntfName OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..255))
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS interface name."
+                    ::= { zxr10TrillIsisIntfEntry 2 }
+
+            zxr10TrillIsisIntfEnable OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..1)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Enable TRILL protocol on this interface." 
+                    DEFVAL { 0 }
+                    ::= { zxr10TrillIsisIntfEntry 3 }      
+    --TRILL-ISIS interface end   
+    
+    -- TRILL-ISIS interface port mode begin
+    zxr10TrillIsisIntfModTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisIntfModEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS interface."
+            ::= { zxr10TrillIsisIntfObject 3 }
+
+        zxr10TrillIsisIntfModEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisIntfModEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS interface mode."
+                INDEX  { zxr10TrillIsisIntfModProcessId,zxr10TrillIsisIntfModIntfName }
+                ::= { zxr10TrillIsisIntfModTable 1 }  
+                
+        Zxr10TrillIsisIntfModEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisIntfModProcessId
+                        Unsigned32,
+                    zxr10TrillIsisIntfModIntfName
+                        DisplayString,
+                    zxr10TrillIsisIntfMode
+                        INTEGER
+                } 
+     
+            zxr10TrillIsisIntfModProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisIntfModEntry 1 }
+
+            zxr10TrillIsisIntfModIntfName OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..255))
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS interface name."
+                    ::= { zxr10TrillIsisIntfModEntry 2 }
+
+            zxr10TrillIsisIntfMode OBJECT-TYPE
+                    SYNTAX INTEGER
+                           {
+                               access(1),
+                               trunk(2),
+                               hybrid(3)
+                           }      
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Port Mode on this interface." 
+                    DEFVAL { hybrid }
+                    ::= { zxr10TrillIsisIntfModEntry 3 }  
+    --TRILL-ISIS port mode end   
+
+    -- TRILL-ISIS interface auth begin
+    zxr10TrillIsisIntfAuthTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisIntfAuthEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS interface authentication."
+            ::= { zxr10TrillIsisIntfObject 4 }
+
+        zxr10TrillIsisIntfAuthEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisIntfAuthEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS interface authentication."
+                INDEX  { zxr10TrillIsisIntfAuthProcessId,zxr10TrillIsisIntfAuthIntfName }
+                ::= { zxr10TrillIsisIntfAuthTable 1 }  
+                
+        Zxr10TrillIsisIntfAuthEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisIntfAuthProcessId
+                        Unsigned32,
+                    zxr10TrillIsisIntfAuthIntfName
+                        DisplayString,
+                    zxr10TrillIsisIntfAuthEncWord
+                        DisplayString,
+                    zxr10TrillIsisIntfAuthEncrypted
+                        Unsigned32,
+                    zxr10TrillIsisIntfAuthClearWord
+                        DisplayString,
+                    zxr10TrillIsisIntfAuthClear
+                        Unsigned32
+                } 
+     
+            zxr10TrillIsisIntfAuthProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisIntfAuthEntry 1 }
+
+            zxr10TrillIsisIntfAuthIntfName OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..255))
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS interface name."
+                    ::= { zxr10TrillIsisIntfAuthEntry 2 }
+
+            zxr10TrillIsisIntfAuthEncWord OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..255))    
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Specify the encrypted password." 
+                    ::= { zxr10TrillIsisIntfAuthEntry 3 }  
+                    
+            zxr10TrillIsisIntfAuthEncrypted OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)    
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Flag of that the authentication type is encrypt." 
+                    ::= { zxr10TrillIsisIntfAuthEntry 4 } 
+                    
+            zxr10TrillIsisIntfAuthClearWord OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..255))   
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Specify the clear password." 
+                    ::= { zxr10TrillIsisIntfAuthEntry 5 } 
+                    
+            zxr10TrillIsisIntfAuthClear OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)    
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Flag of that the authentication type is clear." 
+                    ::= { zxr10TrillIsisIntfAuthEntry 6 } 
+    --TRILL-ISIS interface auth end   
+
+    -- TRILL-ISIS interface auth-type begin
+    zxr10TrillIsisIntfAuthTypeTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisIntfAuthTypeEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS interface authentication type."
+            ::= { zxr10TrillIsisIntfObject 5 }
+
+        zxr10TrillIsisIntfAuthTypeEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisIntfAuthTypeEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS interface authentication type."
+                INDEX  { zxr10TrillIsisIntfAuthTypePrId,zxr10TrillIsisIntfAuthTypeIntf }
+                ::= { zxr10TrillIsisIntfAuthTypeTable 1 }  
+                
+        Zxr10TrillIsisIntfAuthTypeEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisIntfAuthTypePrId
+                        Unsigned32,
+                    zxr10TrillIsisIntfAuthTypeIntf
+                        DisplayString,
+                    zxr10TrillIsisIntfAuthType
+                        INTEGER
+                } 
+     
+            zxr10TrillIsisIntfAuthTypePrId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisIntfAuthTypeEntry 1 }
+
+            zxr10TrillIsisIntfAuthTypeIntf OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..255))
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS interface name."
+                    ::= { zxr10TrillIsisIntfAuthTypeEntry 2 }
+
+            zxr10TrillIsisIntfAuthType OBJECT-TYPE
+                    SYNTAX INTEGER
+                           {
+                               md5(1),
+                               text(2)
+                           }   
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Interface authentication type." 
+                    DEFVAL { text }
+                    ::= { zxr10TrillIsisIntfAuthTypeEntry 3 }  
+    --TRILL-ISIS interface auth-type end   
+
+    -- TRILL-ISIS interface csnp interval begin
+    zxr10TrillIsisIntfCsnpIntTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisIntfCsnpIntEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS interface CSNP interval."
+            ::= { zxr10TrillIsisIntfObject 6 }
+
+        zxr10TrillIsisIntfCsnpIntEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisIntfCsnpIntEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS interface CSNP interval."
+                INDEX  { zxr10TrillIsisIntfCsnpIntPrId,zxr10TrillIsisIntfCsnpIntIntf }
+                ::= { zxr10TrillIsisIntfCsnpIntTable 1 }  
+                
+        Zxr10TrillIsisIntfCsnpIntEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisIntfCsnpIntPrId
+                        Unsigned32,
+                    zxr10TrillIsisIntfCsnpIntIntf
+                        DisplayString,
+                    zxr10TrillIsisIntfCsnpInterval
+                        Unsigned32
+                } 
+     
+            zxr10TrillIsisIntfCsnpIntPrId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisIntfCsnpIntEntry 1 }
+
+            zxr10TrillIsisIntfCsnpIntIntf OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..255))
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS interface name."
+                    ::= { zxr10TrillIsisIntfCsnpIntEntry 2 }
+
+            zxr10TrillIsisIntfCsnpInterval OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..65535)   
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Csnp transmission interval." 
+                    DEFVAL { 10 }
+                    ::= { zxr10TrillIsisIntfCsnpIntEntry 3 }  
+    --TRILL-ISIS interface CSNP interval end   
+
+    -- TRILL-ISIS interface PSNP interval begin
+    zxr10TrillIsisIntfPsnpIntTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisIntfPsnpIntEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS interface PSNP interval."
+            ::= { zxr10TrillIsisIntfObject 7 }
+
+        zxr10TrillIsisIntfPsnpIntEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisIntfPsnpIntEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS interface PSNP interval."
+                INDEX  { zxr10TrillIsisIntfPsnpIntPrId,zxr10TrillIsisIntfPsnpIntIntf }
+                ::= { zxr10TrillIsisIntfPsnpIntTable 1 }  
+                
+        Zxr10TrillIsisIntfPsnpIntEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisIntfPsnpIntPrId
+                        Unsigned32,
+                    zxr10TrillIsisIntfPsnpIntIntf
+                        DisplayString,
+                    zxr10TrillIsisIntfPsnpInterval
+                        Unsigned32
+                } 
+     
+            zxr10TrillIsisIntfPsnpIntPrId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisIntfPsnpIntEntry 1 }
+
+            zxr10TrillIsisIntfPsnpIntIntf OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..255))
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS interface name."
+                    ::= { zxr10TrillIsisIntfPsnpIntEntry 2 }
+
+            zxr10TrillIsisIntfPsnpInterval OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..65535)   
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "PSNP transmission interval." 
+                    DEFVAL { 3 }
+                    ::= { zxr10TrillIsisIntfPsnpIntEntry 3 }  
+    --TRILL-ISIS interface PSNP interval end   
+
+    -- TRILL-ISIS interface hello begin
+    zxr10TrillIsisIntfHelloTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisIntfHelloEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS interface hello."
+            ::= { zxr10TrillIsisIntfObject 8 }
+
+        zxr10TrillIsisIntfHelloEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisIntfHelloEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS interface hello."
+                INDEX  { zxr10TrillIsisIntfHelloProcessId,zxr10TrillIsisIntfHelloIntfName }
+                ::= { zxr10TrillIsisIntfHelloTable 1 }  
+                
+        Zxr10TrillIsisIntfHelloEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisIntfHelloProcessId
+                        Unsigned32,
+                    zxr10TrillIsisIntfHelloIntfName
+                        DisplayString,
+                    zxr10TrillIsisIntfHelloInterval
+                        Unsigned32,
+                    zxr10TrillIsisIntfHelloMulti
+                        Unsigned32
+                } 
+     
+            zxr10TrillIsisIntfHelloProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisIntfHelloEntry 1 }
+
+            zxr10TrillIsisIntfHelloIntfName OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..255))
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS interface name."
+                    ::= { zxr10TrillIsisIntfHelloEntry 2 }
+
+            zxr10TrillIsisIntfHelloInterval OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..65535)   
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS interface hello interval." 
+                    DEFVAL { 10 }
+                    ::= { zxr10TrillIsisIntfHelloEntry 3 }  
+                    
+            zxr10TrillIsisIntfHelloMulti OBJECT-TYPE
+                    SYNTAX Unsigned32 (3..1000)   
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS interface hello multiplier." 
+                    DEFVAL { 3 }
+                    ::= { zxr10TrillIsisIntfHelloEntry 4 } 
+            
+    --TRILL-ISIS interface hello end   
+
+    -- TRILL-ISIS interface LSP interval begin
+    zxr10TrillIsisIntfLspInterTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisIntfLspInterEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS interface LSP interval."
+            ::= { zxr10TrillIsisIntfObject 9 }
+
+        zxr10TrillIsisIntfLspInterEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisIntfLspInterEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS interface LSP interval."
+                INDEX  { zxr10TrillIsisIntfLspInterPrId,zxr10TrillIsisIntfLspInterIntf }
+                ::= { zxr10TrillIsisIntfLspInterTable 1 }  
+                
+        Zxr10TrillIsisIntfLspInterEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisIntfLspInterPrId
+                        Unsigned32,
+                    zxr10TrillIsisIntfLspInterIntf
+                        DisplayString,
+                    zxr10TrillIsisIntfLspInterval
+                        Unsigned32,
+                    zxr10TrillIsisIntfLspRtxInterval
+                        Unsigned32
+                } 
+     
+            zxr10TrillIsisIntfLspInterPrId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisIntfLspInterEntry 1 }
+
+            zxr10TrillIsisIntfLspInterIntf OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..255))
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS interface name."
+                    ::= { zxr10TrillIsisIntfLspInterEntry 2 }
+
+            zxr10TrillIsisIntfLspInterval OBJECT-TYPE
+                    SYNTAX Unsigned32 (33..4294967040)   
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Lsp transmission interval." 
+                    DEFVAL { 33 }
+                    ::= { zxr10TrillIsisIntfLspInterEntry 3 }  
+                    
+            zxr10TrillIsisIntfLspRtxInterval OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..65535)   
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Lsp retransmition interval." 
+                    DEFVAL { 5 }
+                    ::= { zxr10TrillIsisIntfLspInterEntry 4 } 
+            
+    --TRILL-ISIS interface LSP interval end   
+
+    -- TRILL-ISIS interface max burst per-time begin
+    zxr10TrillIsisIntfMaxBurstTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisIntfMaxBurstEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to max burst per-time."
+            ::= { zxr10TrillIsisIntfObject 10 }
+
+        zxr10TrillIsisIntfMaxBurstEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisIntfMaxBurstEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to max burst per-time."
+                INDEX  { zxr10TrillIsisIntfMaxBurstPrId,zxr10TrillIsisIntfMaxBurstIntf }
+                ::= { zxr10TrillIsisIntfMaxBurstTable 1 }  
+                
+        Zxr10TrillIsisIntfMaxBurstEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisIntfMaxBurstPrId
+                        Unsigned32,
+                    zxr10TrillIsisIntfMaxBurstIntf
+                        DisplayString,
+                    zxr10TrillIsisIntfMaxBurst
+                        Unsigned32
+                } 
+     
+            zxr10TrillIsisIntfMaxBurstPrId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisIntfMaxBurstEntry 1 }
+
+            zxr10TrillIsisIntfMaxBurstIntf OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..255))
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS interface name."
+                    ::= { zxr10TrillIsisIntfMaxBurstEntry 2 }
+
+            zxr10TrillIsisIntfMaxBurst OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..50)   
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "The maximum number of transmitted LSPs per-time." 
+                    DEFVAL { 1 }
+                    ::= { zxr10TrillIsisIntfMaxBurstEntry 3 }  
+ 
+    --TRILL-ISIS interface max burst per-time end   
+    
+    -- TRILL-ISIS interface metric begin
+    zxr10TrillIsisIntfMetricTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisIntfMetricEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS interface metric."
+            ::= { zxr10TrillIsisIntfObject 11 }
+
+        zxr10TrillIsisIntfMetricEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisIntfMetricEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS interface LSP interval."
+                INDEX  { zxr10TrillIsisIntfMetricPrId,zxr10TrillIsisIntfMetricIntfName }
+                ::= { zxr10TrillIsisIntfMetricTable 1 }  
+                
+        Zxr10TrillIsisIntfMetricEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisIntfMetricPrId
+                        Unsigned32,
+                    zxr10TrillIsisIntfMetricIntfName
+                        DisplayString,
+                    zxr10TrillIsisIntfMetric
+                        Unsigned32,
+                    zxr10TrillIsisIntfMetricAuto
+                        Unsigned32
+                } 
+     
+            zxr10TrillIsisIntfMetricPrId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisIntfMetricEntry 1 }
+
+            zxr10TrillIsisIntfMetricIntfName OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..255))
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS interface name."
+                    ::= { zxr10TrillIsisIntfMetricEntry 2 }
+
+            zxr10TrillIsisIntfMetric OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..16777214)   
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS LSP metric." 
+                    DEFVAL { 0 }
+                    ::= { zxr10TrillIsisIntfMetricEntry 3 }  
+                    
+            zxr10TrillIsisIntfMetricAuto OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..1)   
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Auto metric." 
+                    DEFVAL { 1 }
+                    ::= { zxr10TrillIsisIntfMetricEntry 4 } 
+            
+    --TRILL-ISIS interface LSP interval end   
+
+    -- TRILL-ISIS interface desired designated vlan begin
+    zxr10TrillIsisIntfDDVlanTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisIntfDDVlanEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS interface desired designated vlan."
+            ::= { zxr10TrillIsisIntfObject 12 }
+
+        zxr10TrillIsisIntfDDVlanEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisIntfDDVlanEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS interface desired designated vlan."
+                INDEX  { zxr10TrillIsisIntfDDVlanPrId,zxr10TrillIsisIntfDDVlanIntf }
+                ::= { zxr10TrillIsisIntfDDVlanTable 1 }  
+                
+        Zxr10TrillIsisIntfDDVlanEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisIntfDDVlanPrId
+                        Unsigned32,
+                    zxr10TrillIsisIntfDDVlanIntf
+                        DisplayString,
+                    zxr10TrillIsisIntfDDVlan
+                        Unsigned32
+                } 
+     
+            zxr10TrillIsisIntfDDVlanPrId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisIntfDDVlanEntry 1 }
+
+            zxr10TrillIsisIntfDDVlanIntf OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..255))
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS interface name."
+                    ::= { zxr10TrillIsisIntfDDVlanEntry 2 }
+
+            zxr10TrillIsisIntfDDVlan OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..4094)   
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Desired designated vlan." 
+                    DEFVAL { 1 }
+                    ::= { zxr10TrillIsisIntfDDVlanEntry 3 }  
+                    
+    --TRILL-ISIS interface desired designated vlan end   
+
+    -- TRILL-ISIS interface access vlan begin
+    zxr10TrillIsisIntfAcVlanTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisIntfAcVlanEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS interface access vlan."
+            ::= { zxr10TrillIsisIntfObject 13 }
+
+        zxr10TrillIsisIntfAcVlanEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisIntfAcVlanEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS interface access vlan."
+                INDEX  { zxr10TrillIsisIntfAcVlanPrId,zxr10TrillIsisIntfAcVlanIntf }
+                ::= { zxr10TrillIsisIntfAcVlanTable 1 }  
+                
+        Zxr10TrillIsisIntfAcVlanEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisIntfAcVlanPrId
+                        Unsigned32,
+                    zxr10TrillIsisIntfAcVlanIntf
+                        DisplayString,
+                    zxr10TrillIsisIntfAccessVlan
+                        OCTET STRING
+                } 
+     
+            zxr10TrillIsisIntfAcVlanPrId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisIntfAcVlanEntry 1 }
+
+            zxr10TrillIsisIntfAcVlanIntf OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..255))
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS interface name."
+                    ::= { zxr10TrillIsisIntfAcVlanEntry 2 }
+
+            zxr10TrillIsisIntfAccessVlan OBJECT-TYPE
+                    SYNTAX OCTET STRING (SIZE(0..128))  
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Access vlan." 
+                    ::= { zxr10TrillIsisIntfAcVlanEntry 3 }  
+                    
+    --TRILL-ISIS interface desired designated vlan end   
+
+
+--TRILL-ISIS interface object end    
+
+--TRILL-ISIS system ID begin
+zxr10TrillIsisSystemidTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF Zxr10TrillIsisSystemidEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+            "A table to TRILL-ISIS system-id."
+        ::= { zxr10TrillIsisObjects 6 } 
+
+    zxr10TrillIsisSystemidEntry OBJECT-TYPE
+            SYNTAX Zxr10TrillIsisSystemidEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "An entry to TRILL-ISIS system-id."
+            INDEX  { zxr10TrillIsisSystemidProcessId }
+            ::= { zxr10TrillIsisSystemidTable 1 }  
+            
+    Zxr10TrillIsisSystemidEntry ::=
+            SEQUENCE {
+                zxr10TrillIsisSystemidProcessId
+                    Unsigned32,
+                zxr10TrillIsisSystemidSystemId
+                    MacAddress,
+                zxr10TrillIsisSystemidRange
+                    Unsigned32,
+                zxr10TrillIsisSystemidSet
+                    Unsigned32
+            } 
+     
+        zxr10TrillIsisSystemidProcessId OBJECT-TYPE
+                SYNTAX Unsigned32 (0..65535)
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "TRILL-ISIS process id."
+                ::= { zxr10TrillIsisSystemidEntry 1 }
+                
+        zxr10TrillIsisSystemidSystemId OBJECT-TYPE
+                SYNTAX MacAddress
+                MAX-ACCESS  read-only
+                STATUS  current
+                DESCRIPTION
+                    "TRILL-ISIS system-id."
+                ::= { zxr10TrillIsisSystemidEntry 2 }
+                
+        zxr10TrillIsisSystemidRange OBJECT-TYPE
+                SYNTAX Unsigned32 (0..32)
+                MAX-ACCESS  read-only
+                STATUS  current
+                DESCRIPTION
+                    "The range of TRILL-ISIS system-id."
+                ::= { zxr10TrillIsisSystemidEntry 3 }
+
+        zxr10TrillIsisSystemidSet OBJECT-TYPE
+                SYNTAX Unsigned32 (0..1)
+                MAX-ACCESS  read-only
+                STATUS  current
+                DESCRIPTION
+                    "The flag of TRILL-ISIS system-id set."
+                ::= { zxr10TrillIsisSystemidEntry 4 }
+
+--TRILL-ISIS system ID end      
+
+--TRILL-ISIS Auth OBJ begin
+    -- TRILL-ISIS Auth  begin 
+    zxr10TrillIsisAuthTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisAuthEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS authentication."
+            ::= { zxr10TrillIsisAuthObject 1 }
+
+        zxr10TrillIsisAuthEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisAuthEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS authentication."
+                INDEX  { zxr10TrillIsisAuthProcessId }
+                ::= { zxr10TrillIsisAuthTable 1 }
+                    
+        Zxr10TrillIsisAuthEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisAuthProcessId
+                        Unsigned32,
+                    zxr10TrillIsisAuthEncryptedWord
+                        DisplayString,
+                    zxr10TrillIsisAuthEncrypted
+                        Unsigned32,
+                    zxr10TrillIsisAuthClearWord
+                        DisplayString,
+                    zxr10TrillIsisAuthClear
+                        Unsigned32
+                }
+
+            zxr10TrillIsisAuthProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisAuthEntry 1 }
+
+            zxr10TrillIsisAuthEncryptedWord OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..255))
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Specify the encrypted password." 
+                    ::= { zxr10TrillIsisAuthEntry 2 }
+
+            zxr10TrillIsisAuthEncrypted OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..1)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Flag of that the authentication type is encrypt." 
+                    ::= { zxr10TrillIsisAuthEntry 3 }
+
+            zxr10TrillIsisAuthClearWord OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..255))
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Specify the clear password."
+                    ::= { zxr10TrillIsisAuthEntry 4 }       
+                    
+            zxr10TrillIsisAuthClear OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..1)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Flag of that the authentication type is clear."
+                    ::= { zxr10TrillIsisAuthEntry 5 }
+             
+    -- TRILL-ISIS Auth  end
+
+    -- TRILL-ISIS AuthType  begin 
+    zxr10TrillIsisAuthTypeTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisAuthTypeEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS authentication type."
+            ::= { zxr10TrillIsisAuthObject 2 }
+
+        zxr10TrillIsisAuthTypeEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisAuthTypeEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS authentication type."
+                INDEX  { zxr10TrillIsisAuthTypeProcessId }
+                ::= { zxr10TrillIsisAuthTypeTable 1 }
+                    
+        Zxr10TrillIsisAuthTypeEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisAuthTypeProcessId
+                        Unsigned32,
+                    zxr10TrillIsisAuthType
+                        INTEGER
+                }
+
+            zxr10TrillIsisAuthTypeProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisAuthTypeEntry 1 }
+
+            zxr10TrillIsisAuthType OBJECT-TYPE
+                    SYNTAX INTEGER
+                           {
+                               md5(1),
+                               text(2)
+                           }
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Authentication type." 
+                    DEFVAL { text }
+                    ::= { zxr10TrillIsisAuthTypeEntry 2 }
+
+    -- TRILL-ISIS AuthType end
+--TRILL-ISIS Auth OBJ end
+
+--TRILL-ISIS lsp-gen begin
+    zxr10TrillIsisLspGenTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisLspGenEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS LSP generation interval."
+            ::= { zxr10TrillIsisObjects 8 }
+
+        zxr10TrillIsisLspGenEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisLspGenEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS LSP generation interval."
+                INDEX  { zxr10TrillIsisLspGenProcessId }
+                ::= { zxr10TrillIsisLspGenTable 1 }
+                    
+        Zxr10TrillIsisLspGenEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisLspGenProcessId
+                        Unsigned32,
+                    zxr10TrillIsisLspGenMaxWait
+                        Unsigned32,
+                    zxr10TrillIsisLspGenInitialWait
+                        Unsigned32,
+                    zxr10TrillIsisLspGenSecWait
+                        Unsigned32
+                }
+
+            zxr10TrillIsisLspGenProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisLspGenEntry 1 }
+
+            zxr10TrillIsisLspGenMaxWait OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..120)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Max LSP generation interval in seconds." 
+                    DEFVAL { 5 }
+                    ::= { zxr10TrillIsisLspGenEntry 2 }
+
+            zxr10TrillIsisLspGenInitialWait OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..120000)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Initial wait in milliseconds." 
+                    DEFVAL { 50 }
+                    ::= { zxr10TrillIsisLspGenEntry 3 }
+
+            zxr10TrillIsisLspGenSecWait OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..120000)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Wait between first and second LSP generation in milliseconds." 
+                    DEFVAL { 5000 }
+                    ::= { zxr10TrillIsisLspGenEntry 4 }
+--TRILL-ISIS lsp-gen end
+
+--TRILL-ISIS spf interval begin
+    zxr10TrillIsisSpfIntTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisSpfIntEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS SPF interval."
+            ::= { zxr10TrillIsisObjects 9 }
+
+        zxr10TrillIsisSpfIntEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisSpfIntEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS SPF interval."
+                INDEX  { zxr10TrillIsisSpfIntProcessId }
+                ::= { zxr10TrillIsisSpfIntTable 1 }
+                    
+        Zxr10TrillIsisSpfIntEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisSpfIntProcessId
+                        Unsigned32,
+                    zxr10TrillIsisSpfIntMaxWait
+                        Unsigned32,
+                    zxr10TrillIsisSpfIntInitWait
+                        Unsigned32,
+                    zxr10TrillIsisSpfIntSecWait
+                        Unsigned32
+                }
+
+            zxr10TrillIsisSpfIntProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisSpfIntEntry 1 }
+
+            zxr10TrillIsisSpfIntMaxWait OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..120)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Spf execution interval." 
+                    DEFVAL { 10 }
+                    ::= { zxr10TrillIsisSpfIntEntry 2 }
+
+            zxr10TrillIsisSpfIntInitWait OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..120000)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "The waiting initial before first SPF in milliseconds." 
+                    DEFVAL { 5500 }
+                    ::= { zxr10TrillIsisSpfIntEntry 3 }
+
+            zxr10TrillIsisSpfIntSecWait OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..120000)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Minimum wait between first and second SPF in milliseconds" 
+                    DEFVAL { 5500 }
+                    ::= { zxr10TrillIsisSpfIntEntry 4 }
+--TRILL-ISIS SPF interval end
+
+--TRILL-ISIS Attr begin
+    zxr10TrillIsisAttrTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillIsisAttrEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ISIS attributions."
+            ::= { zxr10TrillIsisObjects 10 }
+
+        zxr10TrillIsisAttrEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillIsisAttrEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ISIS attributions."
+                INDEX  { zxr10TrillIsisAttrProcessId }
+                ::= { zxr10TrillIsisAttrTable 1 }
+                    
+        Zxr10TrillIsisAttrEntry ::=
+                SEQUENCE {
+                    zxr10TrillIsisAttrProcessId
+                        Unsigned32,
+                    zxr10TrillIsisAttrSnpAuth
+                        Unsigned32,
+                    zxr10TrillIsisAttrFastFloodNum
+                        Unsigned32,
+                    zxr10TrillIsisAttrHostnameDyn
+                        Unsigned32,
+                    zxr10TrillIsisAttrIgnoreLspErr
+                        Unsigned32,
+                    zxr10TrillIsisAttrLspMtu
+                        Unsigned32,
+                    zxr10TrillIsisAttrLspRefreshTime
+                        Unsigned32,
+                    zxr10TrillIsisAttrLspMaxLifeTime
+                        Unsigned32,
+                    zxr10TrillIsisAttrMaxLoadBalance
+                        Unsigned32,
+                    zxr10TrillIsisAttrMtuProbeState
+                        Unsigned32,
+                    zxr11TrillIsisAttrMtuXTryTime
+                        Unsigned32,
+                    zxr12TrillIsisAttrEsadiState
+                        Unsigned32
+                }
+
+            zxr10TrillIsisAttrProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ISIS process Id."
+                    ::= { zxr10TrillIsisAttrEntry 1 }
+
+            zxr10TrillIsisAttrSnpAuth OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..1)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Flag of that the TRILL-ISIS instance support SNP authentication." 
+                    DEFVAL { 1 }
+                    ::= { zxr10TrillIsisAttrEntry 2 }
+
+            zxr10TrillIsisAttrFastFloodNum OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..15)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Number of LSPs of the fast flooding." 
+                    ::= { zxr10TrillIsisAttrEntry 3 }
+
+            zxr10TrillIsisAttrHostnameDyn OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..1)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Flag of that the hostname is of dynamicing." 
+                    DEFVAL { 1 }
+                    ::= { zxr10TrillIsisAttrEntry 4 }
+            
+            zxr10TrillIsisAttrIgnoreLspErr OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..1)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Flag of that wheather the system would ignore LSP checksum error." 
+                    DEFVAL { 1 }
+                    ::= { zxr10TrillIsisAttrEntry 5 }
+                    
+            zxr10TrillIsisAttrLspMtu OBJECT-TYPE
+                    SYNTAX Unsigned32 (1470..7680)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "LSP MTU." 
+                    DEFVAL { 1470 }
+                    ::= { zxr10TrillIsisAttrEntry 6 }
+                    
+            zxr10TrillIsisAttrLspRefreshTime OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..65535)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "LSP refresh interval." 
+                    DEFVAL { 900 }
+                    ::= { zxr10TrillIsisAttrEntry 7 }
+                    
+            zxr10TrillIsisAttrLspMaxLifeTime OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..65535)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Maximum LSP life time." 
+                    DEFVAL { 1200 }
+                    ::= { zxr10TrillIsisAttrEntry 8 }
+                    
+            zxr10TrillIsisAttrMaxLoadBalance OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..64)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Max load balance." 
+                    DEFVAL { 1 }
+                    ::= { zxr10TrillIsisAttrEntry 9 }
+                    
+            zxr10TrillIsisAttrMtuProbeState OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..1)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Flag of that the MTU-PROBE is enable." 
+                    DEFVAL { 0 }
+                    ::= { zxr10TrillIsisAttrEntry 10 }
+                    
+            zxr11TrillIsisAttrMtuXTryTime OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..255)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "MTU-PROBE time." 
+                    DEFVAL { 3 }
+                    ::= { zxr10TrillIsisAttrEntry 11 }
+                    
+            zxr12TrillIsisAttrEsadiState OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..1)
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "Flag of that the ESADI is enable." 
+                    DEFVAL { 0 }
+                    ::= { zxr10TrillIsisAttrEntry 12 }
+--TRILL-ISIS attribution end
+
+--TRILL-ISIS Esadi begin
+    zxr10TrillEsadiEnableVlanTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillEsadiEnableVlanEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ESADI enable vlan."
+            ::= { zxr10TrillEsadiObject 1 }
+
+        zxr10TrillEsadiEnableVlanEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillEsadiEnableVlanEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ESADI enable vlan."
+                INDEX  { zxr10TrillEsadiEnableVlanProcId }
+                ::= { zxr10TrillEsadiEnableVlanTable 1 }  
+
+        Zxr10TrillEsadiEnableVlanEntry ::=
+                SEQUENCE {
+                    zxr10TrillEsadiEnableVlanProcId
+                        Unsigned32,
+                    zxr10TrillEsadiEnableVlan
+                        OCTET STRING
+                } 
+
+            zxr10TrillEsadiEnableVlanProcId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ESADI process Id."
+                    ::= { zxr10TrillEsadiEnableVlanEntry 1 }
+
+            zxr10TrillEsadiEnableVlan OBJECT-TYPE
+                    SYNTAX OCTET STRING (SIZE (0..512))
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ESADI enable vlan."
+                    ::= { zxr10TrillEsadiEnableVlanEntry 2 }
+
+
+    zxr10TrillEsadiAuthTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillEsadiAuthEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ESADI authentication."
+            ::= { zxr10TrillEsadiObject 2 }
+
+        zxr10TrillEsadiAuthEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillEsadiAuthEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ESADI authentication."
+                INDEX  { zxr10TrillEsadiAuthProcessId }
+                ::= { zxr10TrillEsadiAuthTable 1 }  
+
+        Zxr10TrillEsadiAuthEntry ::=
+                SEQUENCE {
+                    zxr10TrillEsadiAuthProcessId
+                        Unsigned32,
+                    zxr10TrillEsadiAuthEncryptedWord
+                        DisplayString,
+                    zxr10TrillEsadiAuthEncrypted
+                        Unsigned32,
+                    zxr10TrillEsadiAuthClearWord
+                        DisplayString,
+                    zxr10TrillEsadiAuthClear
+                        Unsigned32
+                } 
+
+            zxr10TrillEsadiAuthProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ESADI authentication process Id."
+                    ::= { zxr10TrillEsadiAuthEntry 1 }
+
+            zxr10TrillEsadiAuthEncryptedWord OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..200))
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "Specify the encrypted password."
+                    ::= { zxr10TrillEsadiAuthEntry 2 }
+                    
+            zxr10TrillEsadiAuthEncrypted OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..1)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "Flag of that the Authentication Type is encrypt."
+                    ::= { zxr10TrillEsadiAuthEntry 3 }
+                    
+            zxr10TrillEsadiAuthClearWord OBJECT-TYPE
+                    SYNTAX DisplayString (SIZE (0..200))
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "Specify the clear password."
+                    ::= { zxr10TrillEsadiAuthEntry 4 }
+                    
+            zxr10TrillEsadiAuthClear OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..1)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "Flag of that the authentication type is clear."
+                    ::= { zxr10TrillEsadiAuthEntry 5 }
+                    
+                    
+    zxr10TrillEsadiAuthTypeTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillEsadiAuthTypeEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ESADI authentication type."
+            ::= { zxr10TrillEsadiObject 3 }
+
+        zxr10TrillEsadiAuthTypeEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillEsadiAuthTypeEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ESADI authentication."
+                INDEX  { zxr10TrillEsadiAuthTypeProcessId }
+                ::= { zxr10TrillEsadiAuthTypeTable 1 }  
+
+        Zxr10TrillEsadiAuthTypeEntry ::=
+                SEQUENCE {
+                    zxr10TrillEsadiAuthTypeProcessId
+                        Unsigned32,
+                    zxr10TrillEsadiAuthType
+                        INTEGER
+                } 
+
+            zxr10TrillEsadiAuthTypeProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ESADI authentication type process Id."
+                    ::= { zxr10TrillEsadiAuthTypeEntry 1 }
+                    
+            zxr10TrillEsadiAuthType OBJECT-TYPE
+                    SYNTAX INTEGER
+                           {
+                               md5(1),
+                               text(2)
+                           }   
+                    MAX-ACCESS  read-only
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ESADI authentication type."
+                    DEFVAL { text }
+                    ::= { zxr10TrillEsadiAuthTypeEntry 2 }
+                    
+    zxr10TrillEsadiInstTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillEsadiInstEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ESADI instance."
+            ::= { zxr10TrillEsadiObject 4 }
+
+        zxr10TrillEsadiInstEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillEsadiInstEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ESADI instance."
+                INDEX  { zxr10TrillEsadiInstProcessId,zxr10TrillEsadiInstID }
+                ::= { zxr10TrillEsadiInstTable 1 }  
+
+        Zxr10TrillEsadiInstEntry ::=
+                SEQUENCE {
+                    zxr10TrillEsadiInstProcessId
+                        Unsigned32,
+                    zxr10TrillEsadiInstID
+                        Unsigned32,
+                    zxr10TrillEsadiInstDrbPri
+                        Unsigned32,
+                    zxr10TrillEsadiInstCsnpTime
+                        Unsigned32,
+                    zxr10TrillEsadiInstConfidence
+                        Unsigned32
+                } 
+
+            zxr10TrillEsadiInstProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ESADI instance process Id."
+                    ::= { zxr10TrillEsadiInstEntry 1 }
+                    
+            zxr10TrillEsadiInstID OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..4094)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ESADI instance id."
+                    ::= { zxr10TrillEsadiInstEntry 2 }
+                    
+            zxr10TrillEsadiInstDrbPri OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..127)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ESADI instance DRB priority."
+                    DEFVAL { 64 }
+                    ::= { zxr10TrillEsadiInstEntry 3 }
+                    
+            zxr10TrillEsadiInstCsnpTime OBJECT-TYPE
+                    SYNTAX Unsigned32 (3..255)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ESADI instance CSNP time."
+                    DEFVAL { 30 }
+                    ::= { zxr10TrillEsadiInstEntry 4 }
+                    
+            zxr10TrillEsadiInstConfidence OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..255)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ESADI instance confidence."
+                    DEFVAL { 0 }
+                    ::= { zxr10TrillEsadiInstEntry 5 }
+                    
+                    
+    zxr10TrillEsadiLspGenTable OBJECT-TYPE
+            SYNTAX  SEQUENCE OF Zxr10TrillEsadiLspGenEntry
+            MAX-ACCESS  not-accessible
+            STATUS  current
+            DESCRIPTION
+                "A table to TRILL-ESADI LSP generation interval."
+            ::= { zxr10TrillEsadiObject 5 }
+
+        zxr10TrillEsadiLspGenEntry OBJECT-TYPE
+                SYNTAX Zxr10TrillEsadiLspGenEntry
+                MAX-ACCESS  not-accessible
+                STATUS  current
+                DESCRIPTION
+                    "An entry to TRILL-ESADI LSP generation interval."
+                INDEX  { zxr10TrillEsadiLspGenProcessId,zxr10TrillEsadiLspGenInstId }
+                ::= { zxr10TrillEsadiLspGenTable 1 }  
+
+        Zxr10TrillEsadiLspGenEntry ::=
+                SEQUENCE {
+                    zxr10TrillEsadiLspGenProcessId
+                        Unsigned32,
+                    zxr10TrillEsadiLspGenInstId
+                        Unsigned32,
+                    zxr10TrillEsadiLspGenMaxWait
+                        Unsigned32,
+                    zxr10TrillEsadiLspGenInitialWait
+                        Unsigned32,
+                    zxr10TrillEsadiLspGenSecWait
+                        Unsigned32
+                } 
+
+            zxr10TrillEsadiLspGenProcessId OBJECT-TYPE
+                    SYNTAX Unsigned32 (0..65535)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ESADI instance process Id."
+                    ::= { zxr10TrillEsadiLspGenEntry 1 }
+                    
+            zxr10TrillEsadiLspGenInstId OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..4094)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ESADI instance id."
+                    ::= { zxr10TrillEsadiLspGenEntry 2 }
+                    
+            zxr10TrillEsadiLspGenMaxWait OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..120)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "TRILL-ESADI LSP max generation wait."
+                    DEFVAL { 5 }
+                    ::= { zxr10TrillEsadiLspGenEntry 3 }
+                    
+            zxr10TrillEsadiLspGenInitialWait OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..120000)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "Initial wait in milliseconds."
+                    DEFVAL { 50 }
+                    ::= { zxr10TrillEsadiLspGenEntry 4 }
+                    
+            zxr10TrillEsadiLspGenSecWait OBJECT-TYPE
+                    SYNTAX Unsigned32 (1..120000)
+                    MAX-ACCESS  not-accessible
+                    STATUS  current
+                    DESCRIPTION
+                        "Wait between first and second LSP generation in milliseconds."
+                    DEFVAL { 5000 }
+                    ::= { zxr10TrillEsadiLspGenEntry 5 }
+
+--TRILL-ISIS Esadi end
+--======================================================
+-- 3. zxr10TrillIsisGlobalTraps
+--======================================================
+
+--======================================================
+-- 4. zxr10TrillIsisConformance
+--======================================================  
+
+END

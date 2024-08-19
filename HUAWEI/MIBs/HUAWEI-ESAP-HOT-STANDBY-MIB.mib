@@ -1,9 +1,9 @@
 -- =================================================================
--- Copyright (C) 2019 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- Copyright (C) 2021 by  HUAWEI TECHNOLOGIES. All rights reserved.
 --
 -- Description:HUAWEI-ESAP-HOT-STANDBY
 -- Reference:
--- Version: V1.13
+-- Version: V1.14
 -- History:
 --
 -- =================================================================
@@ -28,7 +28,7 @@
                 FROM IPV6-TC;
             
         hwEsapHsbMIB MODULE-IDENTITY 
-            LAST-UPDATED "201910261910Z"
+            LAST-UPDATED "202107051536Z"
             ORGANIZATION 
                 "Huawei Technologies Co.,Ltd."
             CONTACT-INFO 
@@ -41,6 +41,9 @@
             DESCRIPTION 
                 "The MIB contains objects of huawei-ar-hot-standby , referencing the draft-grall-huawei-ar-hot-standby-mib-01."
 
+            REVISION    "202107051536Z"
+            DESCRIPTION "Add the mib nodes that supports trap of HSB version mismatch."
+ 
             REVISION    "201910261910Z"
             DESCRIPTION "Add the function of HSB resource-map that supports obtaining the configuration."
     
@@ -473,6 +476,24 @@
                     This item shows the Interface name.
                     "
                 ::= { hwHsbIfMapEntry 2 }
+
+        hwEsapHsbTrapObjects OBJECT IDENTIFIER ::= { hwEsapHsbObject 6 }
+		
+        hwHsbLocalSoftVersion OBJECT-TYPE
+            SYNTAX OCTET STRING(SIZE(1..64))
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The local software version."
+            ::= { hwEsapHsbTrapObjects 1 }
+		
+        hwHsbPeerSoftVersion OBJECT-TYPE
+            SYNTAX OCTET STRING(SIZE(1..64))
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The peer software version."
+            ::= { hwEsapHsbTrapObjects 2 }
                    
 -- Description Of Hot Standby Group Vrrp Notification
         hwEsapHsbMIBNotifications OBJECT IDENTIFIER ::= { hwEsapHsbObject 3 }
@@ -487,8 +508,13 @@
                 status changes from one to another.
                 "
             ::= { hwEsapHsbMIBNotifications 1 }
-            
-        
+
+       hwEsapHsbVersionTrap NOTIFICATION-TYPE
+            OBJECTS { hwHsbServiceId, hwHsbLocalSoftVersion, hwHsbPeerSoftVersion }
+            STATUS current
+            DESCRIPTION
+                "This notification is used for events that Hot Standby Group version mismatch. "
+            ::= { hwEsapHsbMIBNotifications 2 } 
 
         hwEsapHsbMibConformance OBJECT IDENTIFIER ::= { hwEsapHsbMIB 2 }
         
@@ -497,7 +523,7 @@
         
         
         hwEsapHsbMibNotificationGroup NOTIFICATION-GROUP
-            NOTIFICATIONS { hwEsapHsbStatusNotification }
+            NOTIFICATIONS { hwEsapHsbStatusNotification, hwEsapHsbVersionTrap }
             STATUS current
             DESCRIPTION 
                 "
