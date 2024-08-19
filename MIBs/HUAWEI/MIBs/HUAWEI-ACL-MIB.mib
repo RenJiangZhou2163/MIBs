@@ -3,7 +3,7 @@
 -- 
 -- Description: Huawei Acl MIB Definition
 -- Reference:   Huawei Enterprise MIB
--- Version:     V2.29
+-- Version:     V2.31
 -- History:
 --         Version:     V2.0
 --             Wang Ning,2002-11-29,Reunification version based on the Fix-Net MIBs 
@@ -102,6 +102,9 @@
 --         Version:     V2.29
 --             zhangye, 2021-01-05.
 --             1, Modified the description of hwAclNumGroupAclNum, based on V2.28
+--         Version:     V2.30
+--             hanyaohui, 2021-03-01.
+--             1, Modified the description of hwAclResourceInfoTrap, based on V2.29
 -- ========================================================================
 
 HUAWEI-ACL-MIB DEFINITIONS ::= BEGIN
@@ -119,7 +122,7 @@ HUAWEI-ACL-MIB DEFINITIONS ::= BEGIN
         Ipv6Address                        FROM IPV6-TC;
 
     hwAcl MODULE-IDENTITY 
-        LAST-UPDATED "202101051016Z"        -- Jan 05, 2021 at 10:16 GMT
+        LAST-UPDATED "202110262112Z"        -- Oct 01, 2021 at 21:12 GMT
         ORGANIZATION "Huawei Technologies Co.,Ltd."
         CONTACT-INFO                           
            "Huawei Industrial Base            
@@ -146,6 +149,12 @@ HUAWEI-ACL-MIB DEFINITIONS ::= BEGIN
             ACL classifies data packets through these device interface applied
             rules, by which the device decides which packets can be received 
             and which should be rejected."
+        REVISION "202110262112Z"
+        DESCRIPTION
+            "Add table of hwAclIPPoolHostNameTable"
+        REVISION "202103012111Z"
+        DESCRIPTION
+            "Modified the description of hwAclResourceInfoTrap"
         REVISION "202101051016Z"
         DESCRIPTION
             "Modified the description of hwAclPortPoolPortOp"
@@ -5115,6 +5124,73 @@ HUAWEI-ACL-MIB DEFINITIONS ::= BEGIN
 			DESCRIPTION
 				"The object indicates ACL's mode type"
 			::= { hwAclIpv6UserRuleEntry 36 }
+
+    -- 1.3.6.1.4.1.2011.5.1.1.26
+	hwAclIPPoolHostNameTable OBJECT-TYPE
+	    SYNTAX SEQUENCE OF HwAclIPPoolHostNameEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+	    "Configure the host name of IP pool."
+	    ::= { hwAclMibObjects 26 }
+
+	-- 1.3.6.1.4.1.2011.5.1.1.26.1
+	hwAclIPPoolHostNameEntry OBJECT-TYPE
+	    SYNTAX HwAclIPPoolHostNameEntry
+	    MAX-ACCESS not-accessible
+	    STATUS current
+	    DESCRIPTION
+	    "Each entry is a host name of IP pool."
+	    INDEX { hwAclIPPoolHostIPPoolIndex, hwAclIPPoolHostNameIndex }
+	    ::= { hwAclIPPoolHostNameTable 1 }
+
+	HwAclIPPoolHostNameEntry ::=
+        SEQUENCE {
+        hwAclIPPoolHostIPPoolIndex
+        Integer32,
+        hwAclIPPoolHostNameIndex
+        Integer32,
+        hwAclIPPoolHostNameName
+        OCTET STRING,
+        hwAclIPPoolHostNameRowStatus
+        RowStatus
+        }
+
+	-- 1.3.6.1.4.1.2011.5.1.1.26.1.1
+	hwAclIPPoolHostIPPoolIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+        "This object indicates the level 1 index, that is, the index of an IP address pool used by an ACL."
+        ::= { hwAclIPPoolHostNameEntry 1 }
+
+	-- 1.3.6.1.4.1.2011.5.1.1.26.1.2
+	hwAclIPPoolHostNameIndex OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+        "This object indicates the level 2 index, that is, the index of an host name in an IP address pool used by an ACL."
+        ::= { hwAclIPPoolHostNameEntry 2 }
+
+	-- 1.3.6.1.4.1.2011.5.1.1.26.1.3
+	hwAclIPPoolHostNameName OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..255))
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+        "The object indicates the host name."
+        ::= { hwAclIPPoolHostNameEntry 3 }
+
+	-- 1.3.6.1.4.1.2011.5.1.1.26.1.4
+        hwAclIPPoolHostNameRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION
+        "Row status."
+        ::= { hwAclIPPoolHostNameEntry 4 }
     --    Acl Trap MIB definition
     -- 
     -- 1.3.6.1.4.1.2011.5.1.2
@@ -5357,6 +5433,72 @@ HUAWEI-ACL-MIB DEFINITIONS ::= BEGIN
         "Group for all acl meter resource traps."
         ::= { hwMeterResourceTrapsGroups 1 }
 
+    -- 1.3.6.1.4.1.2011.5.1.2.3
+    hwAclResourceInfoTrap OBJECT IDENTIFIER ::= { hwAclMibTrap 3 }
+
+    -- 1.3.6.1.4.1.2011.5.1.2.3.1
+    hwAclResourceOverloadTrap NOTIFICATION-TYPE
+        OBJECTS { hwAclResourceTotal, hwAclResourceUsed, hwAclResourceUsage}
+        STATUS current
+        DESCRIPTION
+        "The device acl resources were overloaded"
+        ::= { hwAclResourceInfoTrap 1 }
+
+    -- 1.3.6.1.4.1.2011.5.1.2.3.2
+    hwAclResourceResumeTrap NOTIFICATION-TYPE
+        OBJECTS { hwAclResourceTotal, hwAclResourceUsed, hwAclResourceUsage}
+        STATUS current
+        DESCRIPTION
+        "The device acl resources were resumed"
+        ::= { hwAclResourceInfoTrap 2 }
+
+    -- 1.3.6.1.4.1.2011.5.1.2.3.3
+    hwAclResourceEmptyTrap NOTIFICATION-TYPE
+        OBJECTS { hwAclResourceTotal, hwAclResourceUsed, hwAclResourceAlamInfo}
+        STATUS current
+        DESCRIPTION
+        "The device acl resources were not enough"
+        ::= { hwAclResourceInfoTrap 3 }
+
+    -- 1.3.6.1.4.1.2011.5.1.2.3.4
+    hwAclResourceItem OBJECT IDENTIFIER ::= { hwAclResourceInfoTrap 4 }
+
+    -- 1.3.6.1.4.1.2011.5.1.2.3.4.1
+    hwAclResourceTotal OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+        "The total num of rule resource."
+        ::= { hwAclResourceItem 1 }
+
+    -- 1.3.6.1.4.1.2011.5.1.2.3.4.2
+    hwAclResourceUsed OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+        "The used num of rule resource."
+        ::= { hwAclResourceItem 2 }
+
+    -- 1.3.6.1.4.1.2011.5.1.2.3.4.3
+    hwAclResourceUsage OBJECT-TYPE
+        SYNTAX Integer32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+        "The usage of rule resource."
+        ::= { hwAclResourceItem 3 }
+
+    -- 1.3.6.1.4.1.2011.5.1.2.3.4.4
+    hwAclResourceAlamInfo OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+        "The empty infomation of rule resource."
+        ::= { hwAclResourceItem 4 }
+
     --    Acl MIB Conformance definition
     -- 
     -- 1.3.6.1.4.1.2011.5.1.3
@@ -5526,7 +5668,8 @@ HUAWEI-ACL-MIB DEFINITIONS ::= BEGIN
 				hwAclIPPoolIndex, hwAclIPPoolName, hwAclIPPoolRowStatus, hwAclIPPoolIPPoolIndex, hwAclIPPoolIPIndex, 
 				hwAclIPPoolIPIpAdd, hwAclIPPoolIPIpWild, hwAclIPPoolIPRowStatus, hwAclPortPoolIndex, hwAclPortPoolName, 
 				hwAclPortPoolRowStatus, hwAclPortPoolPortPoolIndex, hwAclPortPoolPortIndex, hwAclPortPoolPortOp, hwAclPortPoolPortNumBegin, 
-				hwAclPortPoolPortNumEnd, hwAclPortPoolPortRowStatus }
+				hwAclPortPoolPortNumEnd, hwAclPortPoolPortRowStatus,
+                hwAclIPPoolHostIPPoolIndex, hwAclIPPoolHostNameIndex, hwAclIPPoolHostNameName, hwAclIPPoolHostNameRowStatus }
 			STATUS current
 			DESCRIPTION 
 				"A collection of objects providing mandatory acl information."

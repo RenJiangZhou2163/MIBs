@@ -1,9 +1,9 @@
 -- =================================================================
--- Copyright (C) 2020 by  HUAWEI TECHNOLOGIES. All rights reserved
+-- Copyright (C) 2022 by  HUAWEI TECHNOLOGIES. All rights reserved
 -- 
 -- Description: Network Quality Analyse MIB. 
 -- Reference:
--- Version:     V3.00
+-- Version:     V3.08
 -- History:
 --              V1.0 liyonggang 2006.6.7,publish 
 --              V1.1         
@@ -42,7 +42,7 @@
 
     
         nqa MODULE-IDENTITY
-          LAST-UPDATED "202011041919Z"
+          LAST-UPDATED "202210121459Z"
          ORGANIZATION 
                 "Huawei Technologies Co.,Ltd."
             CONTACT-INFO 
@@ -52,7 +52,31 @@
 		   People's Republic of China
 		   Website: http://www.huawei.com
 		   Email: support@huawei.com
-                "
+               "
+        DESCRIPTION 
+                "Modify description at 2022-10-12."
+        REVISION "202210121459Z"
+        DESCRIPTION 
+                "Modify description at 2022-08-28."
+        REVISION "202208281919Z"
+        DESCRIPTION 
+                "Modify description at 2022-06-16."
+        REVISION "202206161919Z"
+        DESCRIPTION 
+                "Modify description at 2022-06-08."
+        REVISION "202206081919Z"
+        DESCRIPTION 
+                "Modify description at 2022-06-06."
+        REVISION "202206061919Z" 
+        DESCRIPTION 
+                "Modify description at 2022-05-18."
+        REVISION "202205181919Z" 
+        DESCRIPTION 
+                "Modify description at 2022-05-11."
+        REVISION "202205111919Z" 
+        DESCRIPTION 
+                "Modify description at 2022-05-04."
+        REVISION "202205041919Z" 
         DESCRIPTION 
                 "Modify description at 2020-11-04."
         REVISION "202011041919Z" 
@@ -702,7 +726,7 @@ MAX-ACCESS read-only
 
         nqaAdminCtrlOwnerIndex OBJECT-TYPE
             SYNTAX SnmpAdminString (SIZE(0..32))
-            MAX-ACCESS not-accessible
+            MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
                 "To facilitate the provisioning of access control by a
@@ -723,7 +747,7 @@ MAX-ACCESS read-only
         
         nqaAdminCtrlTestName OBJECT-TYPE
             SYNTAX SnmpAdminString (SIZE(0..32))
-            MAX-ACCESS not-accessible
+            MAX-ACCESS read-only
             STATUS current
             DESCRIPTION
                 "The name of a test.  This is locally unique,
@@ -1306,6 +1330,7 @@ nqaAdminParaMTraceResponseAddress
                    overOwdThresholdDs(5),
                    overJitterThresholdSd(6),
                    overJitterThresholdDs(7),
+                   testResultChange(8),
                    resultChangePacked(9)
               }
              MAX-ACCESS read-write
@@ -1329,6 +1354,8 @@ nqaAdminParaMTraceResponseAddress
                   when the statistic results exceed threshold.
                 - overJitterThresholdDs(7)  - Generate an Overthreshold of Jitter-DS notification 
                   when the statistic results exceed threshold.
+                - testResultChange(8)  - Generate a TestResultChange notification
+                  when test result is changed. 
                 - resultChangePacked(9)  - Generate a packed trap when test result is changed. No
                   more than two traps will be sent in one second and each trap contains at most ten 
                   records.
@@ -2371,7 +2398,7 @@ nqaAdminParaLspNextHopAddress OBJECT-TYPE
              ::= { nqaAdminParaEntry 119 } 
 
           nqaAdminParaSrPolicyName OBJECT-TYPE
-             SYNTAX OCTET STRING(SIZE(0..32))  
+             SYNTAX OCTET STRING(SIZE(0..255))  
              MAX-ACCESS  read-write
              STATUS      current
              DESCRIPTION
@@ -3951,7 +3978,29 @@ The nqaResultsIndex and nqaResultsHopIndex values must be 0."
                nqaResultChangeRecord
                    DisplayString,
                nqaResultsDetail
-                   Unsigned32
+                   Unsigned32,
+               nqaResultsChangeToFailureTimes
+                   Gauge32,
+               nqaResultsChangeToSuccessTimes
+                   Gauge32,
+               nqaResultsChangeToNoResultTimes
+                   Gauge32,
+               nqaResultsChangeToNegotiationFailureTimes
+                   Gauge32,
+               nqaResultsChangeToAbnormalTimes
+                   Gauge32,
+               nqaResultsFailureTimes
+                   Gauge32,
+               nqaResultsSuccessTimes
+                   Gauge32,
+               nqaResultsNoResultTimes
+                   Gauge32,
+               nqaResultsNegotiationFailureTimes
+                   Gauge32,
+               nqaResultsAbnormalTimes
+                   Gauge32,
+               nqaResultsLastCompletions
+                   INTEGER
              }
 
         nqaResultsIndex OBJECT-TYPE
@@ -3976,8 +4025,11 @@ The nqaResultsIndex and nqaResultsHopIndex values must be 0."
             SYNTAX INTEGER
                 {
                    noResult(0),
-   success(1),
-           failure(2)
+                   success(1),
+                   failure(2),
+                   negotiateFailed(3),
+                   abnormal(5),
+                   init(255)
               }
             MAX-ACCESS read-only
             STATUS current
@@ -4259,7 +4311,103 @@ The nqaResultsIndex and nqaResultsHopIndex values must be 0."
             DESCRIPTION
                 "Records result change information for nqaResultsTestResultChangePackedNotification."
             ::= { nqaResultsEntry 29 } 
+            
+        nqaResultsChangeToFailureTimes OBJECT-TYPE
+            SYNTAX      Gauge32  
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Records result change information for nqaResultsTestResultChangeNotification."
+            ::= { nqaResultsEntry 31 } 
+            
+        nqaResultsChangeToSuccessTimes OBJECT-TYPE
+            SYNTAX      Gauge32  
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Records result change information for nqaResultsTestResultChangeNotification."
+            ::= { nqaResultsEntry 32 } 
+            
+        nqaResultsChangeToNoResultTimes OBJECT-TYPE
+            SYNTAX      Gauge32  
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Records result change information for nqaResultsTestResultChangeNotification."
+            ::= { nqaResultsEntry 33 } 
 
+        nqaResultsChangeToNegotiationFailureTimes OBJECT-TYPE
+            SYNTAX      Gauge32  
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Records result change information for nqaResultsTestResultChangeNotification."
+            ::= { nqaResultsEntry 34 } 
+
+        nqaResultsChangeToAbnormalTimes OBJECT-TYPE
+            SYNTAX      Gauge32  
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Records result change information for nqaResultsTestResultChangeNotification."
+            ::= { nqaResultsEntry 35 } 
+
+        nqaResultsFailureTimes OBJECT-TYPE
+            SYNTAX      Gauge32  
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Records result change information for nqaResultsTestResultChangeNotification."
+            ::= { nqaResultsEntry 36 } 
+
+        nqaResultsSuccessTimes OBJECT-TYPE
+            SYNTAX      Gauge32  
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Records result change information for nqaResultsTestResultChangeNotification."
+            ::= { nqaResultsEntry 37 } 
+
+        nqaResultsNoResultTimes OBJECT-TYPE
+            SYNTAX      Gauge32  
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Records result change information for nqaResultsTestResultChangeNotification."
+            ::= { nqaResultsEntry 38 } 
+            
+        nqaResultsNegotiationFailureTimes OBJECT-TYPE
+            SYNTAX      Gauge32  
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Records result change information for nqaResultsTestResultChangeNotification."
+            ::= { nqaResultsEntry 39 } 
+
+        nqaResultsAbnormalTimes OBJECT-TYPE
+            SYNTAX      Gauge32  
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Records result change information for nqaResultsTestResultChangeNotification."
+            ::= { nqaResultsEntry 40 }        
+
+        nqaResultsLastCompletions OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                   noResult(0),
+                   success(1),
+                   failure(2),
+                   negotiateFailed(3),
+                   abnormal(5),
+                   init(255)
+              }
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The status of test."
+            ::= { nqaResultsEntry 41 }
+            
         nqaHTTPStatsTable OBJECT-TYPE
             SYNTAX SEQUENCE OF NqaHTTPStatsEntry
             MAX-ACCESS not-accessible
@@ -11262,7 +11410,7 @@ INTEGER
                }
             STATUS  current
             DESCRIPTION
-                 "If the test result changes, the system sends trap information (only for icmp test-instance). "
+                 "If the test result changes, the system sends trap information. "
             ::= { nqaNotifications 28 }
 
             nqaResultsTestResultChangePackedNotification NOTIFICATION-TYPE
@@ -11274,6 +11422,26 @@ INTEGER
                  "If the test result changes, the system sends packed trap information. No more than two traps will
                   be sent in one second and each trap contains at most ten records."
             ::= { nqaNotifications 29 }
+            
+            nqaResultsTestResultStatusChange NOTIFICATION-TYPE
+            OBJECTS {
+                 nqaResultsLastCompletions,
+                 nqaResultsCompletions,
+                 nqaResultsChangeToFailureTimes,
+                 nqaResultsChangeToSuccessTimes,
+                 nqaResultsChangeToNoResultTimes,
+                 nqaResultsChangeToNegotiationFailureTimes,
+                 nqaResultsChangeToAbnormalTimes,
+                 nqaResultsFailureTimes,
+                 nqaResultsSuccessTimes,
+                 nqaResultsNoResultTimes,
+                 nqaResultsNegotiationFailureTimes,
+                 nqaResultsAbnormalTimes
+               }
+            STATUS  current
+            DESCRIPTION
+                 "If the test result changes, the system sends trap information. "
+            ::= { nqaNotifications 30 }
 
             nqaResultsDetail OBJECT-TYPE            
             SYNTAX Unsigned32
@@ -11408,7 +11576,7 @@ INTEGER
 				nqaMultiPathResultsSumCompletionTime, nqaMultiPathResultsSumCompletionTime2Low, nqaMultiPathResultsSumCompletionTime2High, nqaMultiPathResultsCompletionTimeMin,nqaMultiPathResultsCompletionTimeMax, nqaMultiPathResultsDisconnects, nqaMultiPathResultsTimeouts, nqaMultiPathResultsBusies, 
 				nqaMultiPathResultsNoConnections, nqaMultiPathResultsSequenceErrors, nqaMultiPathResultsDrops, nqaMultiPathResultsAddressType, nqaMultiPathResultsAddress, nqaMultiPathResultsProbeResponses, nqaMultiPathResultsSentProbes, nqaMultiPathResultsLastGoodProbe, nqaMultiPathResultsLastGoodPath, 
 				nqaMultiPathResultsTestFinished, nqaMultiPathResultsRttAvg, nqaMultiPathResultsLostPacketRatio, nqaMultiPathResultsSrPolicyPreference, nqaMultiPathResultsSrPolicyPathType, nqaMultiPathResultsSrPolicyProtocol, nqaMultiPathResultsSrPolicyNodeAddress, nqaMultiPathResultsSrPolicyDiscriminator,
-				nqaMultiPathResultsSrPolicySegListId, nqaMultiPathResultsSrPolicyXcIndex
+				nqaMultiPathResultsSrPolicySegListId, nqaMultiPathResultsSrPolicyXcIndex, nqaResultsChangeToFailureTimes, nqaResultsChangeToSuccessTimes, nqaResultsChangeToNoResultTimes, nqaResultsChangeToNegotiationFailureTimes, nqaResultsChangeToAbnormalTimes, nqaResultsFailureTimes, nqaResultsSuccessTimes, nqaResultsNoResultTimes, nqaResultsNegotiationFailureTimes, nqaResultsAbnormalTimes, nqaResultsLastCompletions
                 }
             STATUS current
             DESCRIPTION 
@@ -11468,7 +11636,8 @@ INTEGER
                 nqaJitterStatsJitterThresholdNotificationDS,
                 nqaReflectorStateChangeNotification, 
                 nqaResultsTestResultChange,
-                nqaResultsTestResultChangePackedNotification
+                nqaResultsTestResultChangePackedNotification,
+                nqaResultsTestResultStatusChange
               }
             STATUS        current
             DESCRIPTION

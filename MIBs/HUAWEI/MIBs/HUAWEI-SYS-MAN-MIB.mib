@@ -1,10 +1,15 @@
 -- =====================================================================
--- Copyright (C) 2021 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- Copyright (C) 2022 by  HUAWEI TECHNOLOGIES. All rights reserved.
 --
 -- Description: Huawei Configuration management MIB
 -- Reference:   HUAWEI Enterprise MIB
--- Version:     V2.49
+-- Version:     V2.54
 -- History:
+--  2022-10-26  v2.54  heyaner add hwHATraps for HA
+--  2022-04-02  v2.53  liujunjie modify description of node hwSmartUpgradeUserDataRetentionPeriodHasExpired, hwSmartUpgradeUserDataRetentionPeriodHasExpiredResume, hwTpmChipFault and hwTpmChipFaultClear.
+--  2021-11-08  v2.52  luowenbin add node hwPreviousPackage
+--  2021-10-18  v2.51  luxiaodong add node hwPackageOperationType, hwPackageType, hwPackageVersion, hwPreviousVersion, hwCurrentVersion and notification hwPackageOperationSuccess, hwPackageVersionDowngrade
+--  2021-09-17  v2.50  renxinwei add node hwSecurityRiskType and notification hwSecurityRisk, hwSecurityRiskClear
 --  2021-04-14  v2.49  wangchenglin modify the order of node HWPatchErrorType
 --  2021-03-10  v2.48  caiyanze add node hwSysImageSoftwareName to hwSysImageTable
 --  2021-03-02  v2.47  zhoukailong modify hwStartupSecureVersionConfurationTrap name to hwStartupSecureVersionTrap
@@ -73,7 +78,7 @@ HUAWEI-SYS-MAN-MIB DEFINITIONS ::= BEGIN
             FROM P-BRIDGE-MIB            
         OBJECT-GROUP, MODULE-COMPLIANCE, NOTIFICATION-GROUP            
             FROM SNMPv2-CONF            
-        Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, IpAddress, Unsigned32            
+        Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, IpAddress, Unsigned32, Counter64            
             FROM SNMPv2-SMI            
         RowPointer, DateAndTime, DisplayString, RowStatus, TEXTUAL-CONVENTION            
             FROM SNMPv2-TC
@@ -83,7 +88,7 @@ HUAWEI-SYS-MAN-MIB DEFINITIONS ::= BEGIN
             FROM SNMP-FRAMEWORK-MIB;
 
     huaweiSystemManMIB MODULE-IDENTITY 
-        LAST-UPDATED "202104141425Z"        -- April. 14, 2021  GMT
+        LAST-UPDATED "202210261425Z"        -- Oct. 26, 2022  GMT
         ORGANIZATION 
             "Huawei Technologies Co.,Ltd."
         CONTACT-INFO 
@@ -101,6 +106,26 @@ HUAWEI-SYS-MAN-MIB DEFINITIONS ::= BEGIN
             reload actions, and notifications. By querying the system time,
             configuration files and system image files, NMS can reboot the device
             in the specified time and the specified configuration and system image."
+       REVISION
+            "202210261425Z"
+       DESCRIPTION 
+           "add node hwHATraps, hwComponentBackupFail and hwComponentBackupFailResume."
+       REVISION
+            "202204021026Z"
+       DESCRIPTION 
+           "modify description of node hwSmartUpgradeUserDataRetentionPeriodHasExpired, hwSmartUpgradeUserDataRetentionPeriodHasExpiredResume, hwTpmChipFault and hwTpmChipFaultClear."
+       REVISION
+            "202111081026Z"
+       DESCRIPTION 
+           "add node hwPreviousPackage"
+       REVISION
+            "202110181218Z"
+       DESCRIPTION 
+           "add node hwPackageOperationType, hwPackageType, hwPackageVersion, hwPreviousVersion, hwCurrentVersion and notification hwPackageOperationSuccess, hwPackageVersionDowngrade."
+       REVISION
+            "202109171145Z"
+       DESCRIPTION 
+           " add node hwSecurityRiskType and notification hwSecurityRisk, hwSecurityRiskClear."
        REVISION
             "202104141425Z"
        DESCRIPTION 
@@ -3659,6 +3684,15 @@ HUAWEI-SYS-MAN-MIB DEFINITIONS ::= BEGIN
             2. AbnormalExit means application abnormal exit more than 30s."
         ::= { hwApplicationEntry 3 }
 
+-- 1.3.6.1.4.1.2011.5.25.19.1.31
+    hwSecurityRiskType OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "Risk type."
+        ::= { huaweiSystemManMIBObjects 31}
+
 --    ====================================
 -- HUAWEI-SYS-MAN-MIB MIB - Notification Information
 -- ====================================     
@@ -4073,14 +4107,14 @@ HUAWEI-SYS-MAN-MIB DEFINITIONS ::= BEGIN
     OBJECTS { entPhysicalIndex, entPhysicalName}
     STATUS current
     DESCRIPTION 
-        "A TPM chip fault occurred on a board."
+        "A HTM fault occurred on a board."
     ::= { huaweiSystemManMIBNotifications 31 }
 
     hwTpmChipFaultClear NOTIFICATION-TYPE
     OBJECTS { entPhysicalIndex, entPhysicalName}
     STATUS current
     DESCRIPTION 
-        "The TPM chip fault on the board was rectified."
+        "The HTM fault on the board was rectified."
     ::= { huaweiSystemManMIBNotifications 32 }
 	
     hwSysPackageVerifyFailed NOTIFICATION-TYPE
@@ -4180,13 +4214,13 @@ HUAWEI-SYS-MAN-MIB DEFINITIONS ::= BEGIN
    hwSmartUpgradeUserDataRetentionPeriodHasExpired NOTIFICATION-TYPE
            STATUS current
            DESCRIPTION
-                   "The alarm is generated when the smart-upgrade user data retention period has expired."
+                   "The alarm is generated when the smart-upgrade data retention period has expired."
            ::= { hwSmartUpgradeUserDataRetentionPeriodTrap 1 }
 
    hwSmartUpgradeUserDataRetentionPeriodHasExpiredResume NOTIFICATION-TYPE
            STATUS current
            DESCRIPTION
-                   "This alarm is cleared when the smart-upgrade user data is updated."
+                   "This alarm is cleared when the smart-upgrade data is updated."
            ::= { hwSmartUpgradeUserDataRetentionPeriodTrap 2 }
 
     hwSysNetconfCfgRecoverFail NOTIFICATION-TYPE
@@ -4195,6 +4229,142 @@ HUAWEI-SYS-MAN-MIB DEFINITIONS ::= BEGIN
        "Restore netconf rdb cfg have some errors."
      ::= { huaweiSystemManMIBNotifications 40 }
 
+-- 1.3.6.1.4.1.2011.5.25.19.2.41
+    hwSecurityRisk NOTIFICATION-TYPE
+    OBJECTS { hwSecurityRiskType }
+    STATUS current
+    DESCRIPTION
+        "This alarm is generated when the system has insecure configurations."
+    ::= { huaweiSystemManMIBNotifications 41 }
+
+-- 1.3.6.1.4.1.2011.5.25.19.2.42
+    hwSecurityRiskClear NOTIFICATION-TYPE
+    OBJECTS { hwSecurityRiskType }
+    STATUS current
+    DESCRIPTION
+        "This alarm is cleared when the system has no insecure configurations."
+    ::= { huaweiSystemManMIBNotifications 42 }
+-- 1.3.6.1.4.1.2011.5.25.19.2.43
+    hwPackageOperationTraps OBJECT IDENTIFIER ::= { huaweiSystemManMIBNotifications 43 }
+
+    hwPackageOperationTrapsObject OBJECT IDENTIFIER ::= { hwPackageOperationTraps 1 }
+        hwPackageOperationType OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+        install(1),
+        uninstall(2),
+        startup(3),
+        upgrade(4)
+        }
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "List the operation of the software."
+        ::= { hwPackageOperationTrapsObject 1 }
+
+	hwPackageType OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+        featureSoftware(1),
+        extendedSystemSoftware(2)
+        }
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "List the type of the software."
+        ::= { hwPackageOperationTrapsObject 2 }
+
+	hwPackageVersion OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..63))
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The version of the software package."
+        ::= { hwPackageOperationTrapsObject 3 }
+
+        hwPreviousVersion OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..63))
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The version of the previous software package."
+        ::= { hwPackageOperationTrapsObject 4 }
+
+	hwCurrentVersion OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..63))
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The version of the current software package."
+        ::= { hwPackageOperationTrapsObject 5 }
+
+        hwPreviousPackage OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (5..127))
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "The version of the current software package."
+        ::= { hwPackageOperationTrapsObject 6 }
+ 
+
+    hwPackageOperationNotifications OBJECT IDENTIFIER ::= { hwPackageOperationTraps 2 }
+        hwPackageOperationSuccess NOTIFICATION-TYPE
+	OBJECTS { hwPackageOperationType, hwPackageType, hwPackageName, hwPackageVersion }
+	STATUS current
+	DESCRIPTION
+		"Notification about a software package operation success. This trap is reported when software package installation, uninstallation, upgrade, or reboot succeeds. The trap content includes hwPackageOperationType, hwPackageType, hwPackageName, and hwPackageVersion."
+	::= { hwPackageOperationNotifications 1 }
+
+        hwPackageVersionDowngrade NOTIFICATION-TYPE
+ 	OBJECTS { hwPreviousPackage, hwPreviousVersion, hwPackageName, hwCurrentVersion }
+	STATUS current
+	DESCRIPTION
+		"Notification about a software package version downgrade. This trap is reported when the software package version is downgraded. The trap content includes hwPreviousPackage, hwPreviousVersion, hwPackageName and hwCurrentVersion."
+	::= { hwPackageOperationNotifications 2 }
+
+    hwHATraps OBJECT IDENTIFIER ::= { huaweiSystemManMIBNotifications 44 }
+
+    hwHATrapsObject OBJECT IDENTIFIER ::= { hwHATraps 1 }
+
+    hwBackupComponentName OBJECT-TYPE
+        SYNTAX OCTET STRING
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "Name of the component whose data is backed up on the active and standby components."
+        ::= { hwHATrapsObject 1 }
+	
+    hwBackupProcessId OBJECT-TYPE
+        SYNTAX Unsigned32
+        MAX-ACCESS accessible-for-notify
+        STATUS current
+        DESCRIPTION
+            "ID of the process for backing up data of the active and standby components."
+        ::= { hwHATrapsObject 2 }
+
+    hwBackupBlockId OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS  accessible-for-notify
+        STATUS      current
+        DESCRIPTION
+            "Block ID for backing up data of active and standby components."
+        ::= { hwHATrapsObject 3 }
+	
+    hwHANotifications OBJECT IDENTIFIER ::= { hwHATraps 2 }
+    hwComponentBackupFail NOTIFICATION-TYPE
+	OBJECTS { hwBackupComponentName, hwBackupProcessId, hwBackupBlockId } 
+	STATUS current
+	DESCRIPTION 
+		"This alarm is generated when data backup between the active and standby components fails."
+	::= { hwHANotifications 1 }
+
+    hwComponentBackupFailResume NOTIFICATION-TYPE
+	OBJECTS { hwBackupComponentName, hwBackupProcessId }  
+	STATUS current
+	DESCRIPTION 
+		"This alarm is cleared when the data of the active and standby components is successfully backed up."
+	::= { hwHANotifications 2 }
+	   
     huaweiSystemManMIBConformance OBJECT IDENTIFIER ::= { huaweiSystemManMIB 3 }
 
     huaweiSystemManMIBCompliances OBJECT IDENTIFIER ::= { huaweiSystemManMIBConformance 1 }
@@ -4258,7 +4428,7 @@ HUAWEI-SYS-MAN-MIB DEFINITIONS ::= BEGIN
             NOTIFICATIONS { hwSysClockChangedNotification, hwSysReloadNotification, hwSysSlaveSwitchSuccessNotification,
             hwSysSlaveSwitchFailNotification, hwSysIssuNotification, hwPatchInstallFail, hwPatchInstallFailClear, hwSumUpgradeSuccess, hwSysCfgFileErrorNotification, hwSysImageErrorNotification, hwSysPafChangeNotification, 
             hwSysLicenseChangeNotification, hwSystemBoardExclude, hwSystemBoardExcludeClear, hwEvmVmAbnormalRunNotification, hwEvmVmNotRunningNotification, hwEvmVmAbnormalRestartNotification, hwEvmDownloadFailedNotification, hwEvmInstallFailedNotification,
-            hwSysImageDamagedNotification }
+            hwSysImageDamagedNotification, hwComponentBackupFail, hwComponentBackupFailResume }
         STATUS current
         DESCRIPTION 
             "A collection of notification."

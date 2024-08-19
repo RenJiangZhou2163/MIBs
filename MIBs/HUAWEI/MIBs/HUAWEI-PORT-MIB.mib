@@ -1,8 +1,8 @@
 -- ===================================================================
--- Copyright (C) 2021 by HUAWEI TECHNOLOGIES. All rights reserved.
+-- Copyright (C) 2022 by HUAWEI TECHNOLOGIES. All rights reserved.
 -- Description:
 -- Reference:
--- Version: V3.26
+-- Version: V3.32
 -- ===================================================================
 HUAWEI-PORT-MIB DEFINITIONS ::= BEGIN
     IMPORTS
@@ -28,7 +28,7 @@ HUAWEI-PORT-MIB DEFINITIONS ::= BEGIN
             FROM HUAWEI-GTL-MIB;
 
     hwPortMIB MODULE-IDENTITY
-        LAST-UPDATED "202102240000Z"
+        LAST-UPDATED "202211020000Z"
         ORGANIZATION "Huawei Technologies Co.,Ltd."
         CONTACT-INFO
             "Huawei Industrial Base
@@ -40,6 +40,35 @@ HUAWEI-PORT-MIB DEFINITIONS ::= BEGIN
         DESCRIPTION 
             "The private mib file includes the general extent
             information of the device.hwDatacomm(157).hwPortMIB"
+
+-- Add revision info here!
+   REVISION "202211020000Z"
+        DESCRIPTION
+         "Modified chip of the card to subcard."
+
+-- Add revision info here!
+   REVISION "202210150000Z"
+        DESCRIPTION
+        "Add hwPortErrPktSpeedDownGrade,hwPortErrPktSpeedDownGradeResume."
+
+        REVISION "202208310000Z"
+        DESCRIPTION
+        "Add hwPortGroupModeInvalid,hwPortGroupModeInvalidResume."
+
+-- Add revision info here!
+  REVISION "202208310000Z"
+        DESCRIPTION
+        "Add hwBandwidthLast, Add hwBandwidthCurrent."
+
+-- Add revision info here!
+  REVISION "202111200000Z"
+        DESCRIPTION
+        "Add hwPortSfpWorkOnlyNonNego."
+
+-- Add revision info here!
+  REVISION "202109140000Z"
+        DESCRIPTION
+        "Modify the default value of hwLosAlarmResumeThreshold, from 5 to 32."
 
 -- Add revision info here!
   REVISION "202102240000Z"
@@ -2501,7 +2530,11 @@ HUAWEI-PORT-MIB DEFINITIONS ::= BEGIN
 		hwOutputDiscardInterval
 		    Integer32,
 		hwOutputDiscardStatistics
-		    Counter64	
+		    Counter64,
+        hwBandwidthLast
+            Counter64,
+        hwBandwidthCurrent
+            Counter64
         }
 
 
@@ -2939,6 +2972,24 @@ HUAWEI-PORT-MIB DEFINITIONS ::= BEGIN
             "Indicates the physical port output discard statistics"
         ::= { hwPhysicalPortEntry 48 }
 		
+    -- 1.3.6.1.4.1.2011.5.25.157.1.8.1.1.49
+    hwBandwidthLast OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Indicates the physical port last bandwidth."
+        ::= { hwPhysicalPortEntry 49 }
+
+    -- 1.3.6.1.4.1.2011.5.25.157.1.8.1.1.50
+    hwBandwidthCurrent OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "Indicates the physical port current bandwidth."
+        ::= { hwPhysicalPortEntry 50 }
+
 		-- 1.3.6.1.4.1.2011.5.25.157.1.8.2
     hwSDHRsMsPerfCurrentTable OBJECT-TYPE
         SYNTAX  SEQUENCE OF HwSDHRsMsPerfCurrentEntry
@@ -4452,7 +4503,7 @@ HUAWEI-PORT-MIB DEFINITIONS ::= BEGIN
         STATUS current
         DESCRIPTION
             "Resume Threshold of continuous loss packets of PW alarm group."
-        DEFVAL { 5 }
+        DEFVAL { 32 }
         ::= { hwPWAlarmEntry 8 }
 
 
@@ -11675,7 +11726,7 @@ hwPhysicalPortPreFecPowerStatistics OBJECT-TYPE
               hwPhysicalPortInCard}
             STATUS current
             DESCRIPTION 
-                "Multiple services be configured on the same chip of the card."
+                "Multiple services be configured on the same subcard."
             ::= { hwPortNotifications 217 }  
                
     -- 1.3.6.1.4.1.2011.5.25.157.2.218
@@ -11685,7 +11736,7 @@ hwPhysicalPortPreFecPowerStatistics OBJECT-TYPE
               hwPhysicalPortInCard}
             STATUS current
             DESCRIPTION 
-                "There is no multiple services on the same chip of the card."
+                "There is no multiple services on the same subcard."
             ::= { hwPortNotifications 218 }  
                
     -- 1.3.6.1.4.1.2011.5.25.157.2.219
@@ -12368,7 +12419,9 @@ hwPhysicalPortPreFecPowerStatistics OBJECT-TYPE
      hwEthRxFlowFallAlarm NOTIFICATION-TYPE
            OBJECTS { 
              hwPhysicalPortIfIndex, 
-             hwPhysicalPortName }
+             hwPhysicalPortName,
+             hwBandwidthLast,
+             hwBandwidthCurrent }
            STATUS current
            DESCRIPTION 
            "Traffic fall alarm in the receive direction of an Ethernet interface."
@@ -12388,7 +12441,9 @@ hwPhysicalPortPreFecPowerStatistics OBJECT-TYPE
      hwEthTxFlowFallAlarm NOTIFICATION-TYPE
            OBJECTS { 
              hwPhysicalPortIfIndex, 
-             hwPhysicalPortName }
+             hwPhysicalPortName,
+             hwBandwidthLast,
+             hwBandwidthCurrent }
            STATUS current
            DESCRIPTION 
            "Traffic fall alarm in the transmit direction of an Ethernet interface."
@@ -12695,7 +12750,43 @@ hwPhysicalPortPreFecPowerStatistics OBJECT-TYPE
             "The gain of the optical module too low has resumed."
         ::= { hwPortNotifications 327 }
 
+-- 1.3.6.1.4.1.2011.5.25.157.2.328
+	hwPortSfpWorkOnlyNonNego NOTIFICATION-TYPE
+        OBJECTS {hwPhysicalPortIfIndex, hwPhysicalPortName}
+        STATUS current
+        DESCRIPTION
+            "When an SFP module is installed, the port can work only at 1000 Mbit/s in non-auto-negotiation mode."
+        ::= { hwPortNotifications 328 }
 
+    -- 1.3.6.1.4.1.2011.5.25.157.2.329
+    	hwPortGroupModeInvalid NOTIFICATION-TYPE
+        OBJECTS { hwPhysicalPortInSlot, hwPhysicalPortInCard, hwPhysicalPortGroupID, hwPortTransModeReasonDescr }
+	STATUS current
+	DESCRIPTION 
+	        "The rate and PLL of the ports in the group do not match."
+	::= { hwPortNotifications 329 }
+			
+     -- 1.3.6.1.4.1.2011.5.25.157.2.330	
+    	hwPortGroupModeInvalidResume NOTIFICATION-TYPE
+        OBJECTS { hwPhysicalPortInSlot, hwPhysicalPortInCard, hwPhysicalPortGroupID, hwPortTransModeReasonDescr }
+	STATUS current
+	DESCRIPTION 
+	         "The rate and PLL of the ports in the group match now."
+	::= { hwPortNotifications 330 }	
+
+	hwPortErrPktSpeedDownGrade NOTIFICATION-TYPE
+        OBJECTS {hwPhysicalPortIfIndex, hwPhysicalPortName}
+        STATUS current
+        DESCRIPTION
+            "The number of error packets exceeds the threshold, triggering automatic rate reduction on the interface."
+        ::= { hwPortNotifications 331 }   
+
+      hwPortErrPktSpeedDownGradeResume NOTIFICATION-TYPE
+        OBJECTS {hwPhysicalPortIfIndex, hwPhysicalPortName}
+        STATUS current
+        DESCRIPTION
+            "The number of error packets is lower than the threshold and the interface rate is automatically recovered."
+        ::= { hwPortNotifications 332 }
 
     hwPortTotalStatistics OBJECT IDENTIFIER ::= { hwPortMIBObjects 25 }
     
@@ -13494,7 +13585,12 @@ hwPhysicalPortPreFecPowerStatistics OBJECT-TYPE
             hwOpticalAmplifierGainHigh,
             hwOpticalAmplifierGainHighResume,
             hwOpticalAmplifierGainLow,
-            hwOpticalAmplifierGainLowResume
+            hwOpticalAmplifierGainLowResume,
+            hwPortSfpWorkOnlyNonNego,
+	    hwPortGroupModeInvalid,
+	    hwPortGroupModeInvalidResume,
+            hwPortErrPktSpeedDownGrade,
+            hwPortErrPktSpeedDownGradeResume 
          }
         STATUS current
         DESCRIPTION

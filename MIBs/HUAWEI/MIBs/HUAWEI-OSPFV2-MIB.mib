@@ -1,9 +1,9 @@
 -- ==================================================================
--- Copyright (C) 2021 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- Copyright (C) 2022 by  HUAWEI TECHNOLOGIES. All rights reserved.
 -- 
 -- Description: HUAWEI-OSPFV2-MIB provides information about OSPFv2
 -- Reference:
--- Version: V2.22
+-- Version: V2.27
 -- History:
 -- <author>,   <date>,  <contents>
 --  HUAWEI   2008-1-05  OSPF private MIB
@@ -32,7 +32,7 @@
     
 
         hwOspfv2MIB MODULE-IDENTITY 
-            LAST-UPDATED "202105071018Z"      
+            LAST-UPDATED "202208151236Z"      
             ORGANIZATION 
                 "Huawei Technologies Co.,Ltd."
             CONTACT-INFO 
@@ -48,8 +48,23 @@
                 It defines the model used to represent configuration data that exists elsewhere 
                 in the system and on peripheral devices. The MIB is proper for system configuration.
                 There are no constraints on this MIB."
-	    
-	    REVISION "202105071018Z"
+
+            REVISION "202208151236Z"
+            DESCRIPTION "Added object hwOspfv2NbrThresholdUpper, hwOspfv2NbrExceedThreshold, hwOspfv2NbrExceedThresholdClear"
+
+            REVISION "202204202030Z"
+            DESCRIPTION "Modify hwOspfPrefixSidConflict, hwOspfPrefixSidConflictClear"         
+
+            REVISION "202204061538Z"
+            DESCRIPTION "Added hwOspfPrefixSidConflict, hwOspfPrefixSidConflictClear"
+
+	    REVISION "202203091538Z"
+            DESCRIPTION "Added hwOspfv2LinkCostAdjustment, hwOspfv2LinkCostAdjustmentClear, hwOspfCostAdjustReason, hwOspfOriginalCost, hwOspfAdjustedCost"
+
+	    REVISION "202203031538Z"
+            DESCRIPTION "Added hwOspfv2LinkCostAdjustment, hwOspfv2LinkCostAdjustmentClear, hwOspfCostAdjustReason, hwOspfOriginalCost, hwOspfAdjustedCost"
+        
+        REVISION "202105071018Z"
 	    DESCRIPTION "Added hwOspfv2IntfAuthModeType, hwOspfv2VLinkTable"
 	    
 	    REVISION "202101051447Z"
@@ -821,7 +836,7 @@
 
         hwOspfv2AreaIdIndex OBJECT-TYPE
             SYNTAX IpAddress
-            MAX-ACCESS not-accessible
+            MAX-ACCESS accessible-for-notify
             STATUS current
             DESCRIPTION
                 "A 32-bit integer uniquely identifies an area. Area ID 0.0.0.0 is used for the OSPF backbone."
@@ -1484,7 +1499,7 @@
 
         hwOspfv2InterfaceIndex OBJECT-TYPE
             SYNTAX Integer32
-            MAX-ACCESS not-accessible
+            MAX-ACCESS accessible-for-notify
             STATUS current
             DESCRIPTION
                 "A unique value for each interface."
@@ -1848,7 +1863,81 @@
             STATUS current
             DESCRIPTION
                   "This object indicates the redis-list router id and process id of the OSPFv2 import route loop detect."
-            ::= { hwOspfv2TrapsObjects 30 }	
+            ::= { hwOspfv2TrapsObjects 30 }
+            
+        hwOspfCostAdjustReason OBJECT-TYPE
+            SYNTAX DisplayString (SIZE (0..64))
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                  "This object indicates the reason why OSPF adjusts the link cost."
+            ::= { hwOspfv2TrapsObjects 31 }
+            
+        hwOspfOriginalCost OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                  "This object indicates the original cost."
+            ::= { hwOspfv2TrapsObjects 32 }
+            
+        hwOspfAdjustedCost OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                  "This object indicates Link cost of the current event that triggers OSPF adjustment. "
+            ::= { hwOspfv2TrapsObjects 33 }
+
+        hwOspfPrefixSid OBJECT-TYPE
+            SYNTAX Unsigned32 (1..2147483647)
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                  "Conflicted Prefix sid Index. The value ranges from  0 to 65534."
+            ::= { hwOspfv2TrapsObjects 34 }
+
+        hwOspfPrefixAddress OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                  "The Prefix Address configured in the Loopback Interface."
+            ::= { hwOspfv2TrapsObjects 35 }
+
+        hwOspfPrefixAddressMask OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                  "Prefix Ip Address Mask."
+            ::= { hwOspfv2TrapsObjects 36 }
+
+        hwOspfAlgorithm OBJECT-TYPE
+            SYNTAX Unsigned32 (128..255)
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                  "Flexible Algorithm."
+            ::= { hwOspfv2TrapsObjects 37 }
+
+        hwOspfConflictType OBJECT-TYPE
+            SYNTAX INTEGER { sidConflict (1),
+                                prefixConflict (2)
+                            }
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                  "Conflict type can be Prefix Sid conflict or Prefix conflict."
+            ::= { hwOspfv2TrapsObjects 38 }
+
+        hwOspfv2NbrThresholdUpper OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                  "This object indicates the upper alarm threshold for the number of neighbors. "
+            ::= { hwOspfv2TrapsObjects 39 }
 
         hwOspfv2Traps OBJECT IDENTIFIER ::= { hwOspfv2MIB 31 }
         
@@ -2129,7 +2218,7 @@
                 "This object indicates that the insecure authentication mode configured for OSPF is deleted."
             ::= { hwOspfv2Traps  35}
 	    
-	hwOspfv2RouteLoopDetected NOTIFICATION-TYPE
+	    hwOspfv2RouteLoopDetected NOTIFICATION-TYPE
             OBJECTS { hwOspfv2LoopDetectType, hwOspfv2LoopDetectProtocolAttr, hwOspfv2LoopDetectRedistributeID1, hwOspfv2LoopDetectRedistributeID2 }
             STATUS current
             DESCRIPTION
@@ -2141,7 +2230,49 @@
             STATUS current
             DESCRIPTION
                 "This object indicates that the routing loop is cleared."
-            ::= { hwOspfv2Traps  37}		
+            ::= { hwOspfv2Traps  37}
+            
+        hwOspfv2LinkCostAdjustment NOTIFICATION-TYPE
+            OBJECTS { hwOspfv2ProcessIdIndex, hwOspfv2AreaIdIndex, hwOspfv2InterfaceIndex, hwOspfv2InterfaceName, hwOspfCostAdjustReason, hwOspfOriginalCost, hwOspfAdjustedCost }
+            STATUS current
+            DESCRIPTION
+                "This object indicates that An OSPF link cost adjustment event occurs."
+            ::= { hwOspfv2Traps  38}
+            
+        hwOspfv2LinkCostAdjustmentClear NOTIFICATION-TYPE
+            OBJECTS { hwOspfv2ProcessIdIndex, hwOspfv2AreaIdIndex, hwOspfv2InterfaceIndex, hwOspfv2InterfaceName, hwOspfCostAdjustReason, hwOspfOriginalCost, hwOspfAdjustedCost }
+            STATUS current
+            DESCRIPTION
+                "This object indicates that An OSPF link cost adjustment event is cleared."
+            ::= { hwOspfv2Traps  39}
+
+        hwOspfPrefixSidConflict NOTIFICATION-TYPE
+            OBJECTS { hwOspfv2ProcessIdIndex, hwOspfPrefixSid, hwOspfPrefixAddress, hwOspfPrefixAddressMask, hwOspfAlgorithm, hwOspfConflictType }
+            STATUS current
+            DESCRIPTION
+                "This object indicates that An OSPF link cost adjustment event occurs."
+            ::= { hwOspfv2Traps  40}
+            
+        hwOspfPrefixSidConflictClear NOTIFICATION-TYPE
+            OBJECTS { hwOspfv2ProcessIdIndex, hwOspfPrefixSid, hwOspfPrefixAddress, hwOspfPrefixAddressMask, hwOspfAlgorithm, hwOspfConflictType }
+            STATUS current
+            DESCRIPTION
+                "This object indicates that An OSPF link cost adjustment event is cleared."
+            ::= { hwOspfv2Traps  41}
+
+        hwOspfv2NbrExceedThreshold NOTIFICATION-TYPE
+            OBJECTS { hwOspfv2NbrThresholdUpper }
+            STATUS current
+            DESCRIPTION
+                "This object indicates that the number of ospfv2 exceeds the configed threshold."
+            ::= { hwOspfv2Traps  42}
+            
+        hwOspfv2NbrExceedThresholdClear NOTIFICATION-TYPE
+            OBJECTS { hwOspfv2NbrThresholdUpper }
+            STATUS current
+            DESCRIPTION
+                "This object indicates that the number of ospfv2 has been less than the the configed threshold."
+            ::= { hwOspfv2Traps  43}
 
         hwOspfv2Conformance OBJECT IDENTIFIER ::= { hwOspfv2MIB 32 }
         
@@ -2411,8 +2542,16 @@
 		            hwOspfv2ThirdPartRouteBeDeletedByPurgeInexactClear,
 		            hwOspfv2ThirdPartRouteBeDeletedByPurge,
 		            hwOspfv2ThirdPartRouteBeDeletedByPurgeClear,
-                                               hwOspfv2AuthModeInsecure,
-		           hwOspfv2AuthModeInsecureClear
+                            hwOspfv2AuthModeInsecure,
+                            hwOspfv2AuthModeInsecureClear,
+		            hwOspfv2RouteLoopDetected,
+		            hwOspfv2RouteLoopDetectedClear,
+		            hwOspfv2LinkCostAdjustment,
+		            hwOspfv2LinkCostAdjustmentClear,
+		            hwOspfPrefixSidConflict,
+		            hwOspfPrefixSidConflictClear,
+		            hwOspfv2NbrExceedThreshold,
+		            hwOspfv2NbrExceedThresholdClear
 		           }
             STATUS current
             DESCRIPTION 
@@ -2420,7 +2559,7 @@
             ::= { hwOspfv2Groups 8 }
         
         hwOspfv2TrapsObjectsGroup OBJECT-GROUP
-            OBJECTS { hwOspfv2NbrChgReason, hwOspfv2IfChgReason, hwOspfv2AreaId, hwOspfv2NewRouterId, hwOspfv2ProcessIdIndex}
+            OBJECTS { hwOspfv2NbrChgReason, hwOspfv2IfChgReason, hwOspfv2AreaId, hwOspfv2NewRouterId, hwOspfv2ProcessIdIndex, hwOspfv2PeerFlappingSuppressStatus, hwOspfv2PeerFlappingSuppressReason, hwOspfv2LsaId, hwOspfv2LsaAge, hwOspfv2PurgeHostName, hwOspfv2PurgeIpAddress, hwOspfv2PurgeRouterId, hwOspfv2FlushLsaNum, hwOspfv2AffectedNodeNum, hwOspfv2TotalNodeNum, hwOspfv2PurgeStatPeriod, hwOspfv2RuledOutDeviceNum, hwOspfv2PurgeHostName1, hwOspfv2PurgeHostName2, hwOspfv2PurgeHostName3, hwOspfv2PurgeIpAddress1, hwOspfv2PurgeIpAddress2, hwOspfv2PurgeIpAddress3, hwOspfv2PurgeRouterId1, hwOspfv2PurgeRouterId2, hwOspfv2PurgeRouterId3, hwOspfv2InsecureAuthMode, hwOspfv2LoopDetectType, hwOspfv2LoopDetectProtocolAttr, hwOspfv2LoopDetectRedistributeID1, hwOspfv2LoopDetectRedistributeID2, hwOspfCostAdjustReason, hwOspfOriginalCost, hwOspfAdjustedCost, hwOspfPrefixSid, hwOspfPrefixAddress, hwOspfPrefixAddressMask, hwOspfAlgorithm, hwOspfConflictType, hwOspfv2NbrThresholdUpper}
             STATUS current
             DESCRIPTION 
                 "The objects are used to monitor/manage the neighbor state change from full to others."

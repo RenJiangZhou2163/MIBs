@@ -1,0 +1,352 @@
+-- ============================================================================
+-- Copyright (C) 2018 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- Description:  The mib is used for WLAN security policy.
+-- Reference:
+-- Version: V1.03
+-- 
+-- ============================================================================
+-- Module definition
+
+	HUAWEI-WLAN-SEC-POLICY-MIB DEFINITIONS ::= BEGIN
+ 
+		IMPORTS
+			hwWlan			
+				FROM HUAWEI-WLAN-MIB
+			OBJECT-GROUP, MODULE-COMPLIANCE, NOTIFICATION-GROUP
+				FROM SNMPv2-CONF
+			Integer32, OBJECT-TYPE,
+			MODULE-IDENTITY		
+				FROM SNMPv2-SMI
+	                                      RowStatus			
+				FROM SNMPv2-TC;
+	
+		-- 1.3.6.1.4.1.2011.6.139.22
+		hwWlanDefProfile MODULE-IDENTITY 
+			LAST-UPDATED "201805071512Z"		-- May 07, 2018 at 15:12 GMT
+			ORGANIZATION 
+				"Huawei Technologies Co.,Ltd."
+			CONTACT-INFO 
+                                  "Huawei Industrial Base
+				   Bantian, Longgang
+				   Shenzhen 518129
+				   People's Republic of China
+				   Website: http://www.huawei.com
+				   Email: support@huawei.com
+				  "
+			DESCRIPTION 
+				"The MIB module defines the information of the WLAN security policy."
+
+			REVISION "201805071512Z"		-- May 07, 2018 at 15:12 GMT
+			DESCRIPTION 
+				"Add hwUrlfProfileWhiteListHost."
+			REVISION "201610311522Z"		-- Oct 31, 2016 at 15:22 GMT
+			DESCRIPTION 
+				"V1.02, Add hwDefenceUserGroupTable."
+
+			REVISION "201608040922Z"		-- Aug 04, 2016 at 09:22 GMT
+			DESCRIPTION 
+				"V1.01, Edit the range of url length. and add description"
+
+			REVISION "201605041823Z"		-- May 04, 2016 at 18:23 GMT
+			DESCRIPTION 
+				"V1.00, Initial version."
+			::= { hwWlan 22 }
+
+		
+	
+	
+--
+-- Node definitions
+--
+	
+		-- 1.3.6.1.4.1.2011.6.139.22.2
+		hwDefProfileTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwDefProfileEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This table is used to query attack defense profile information."
+			::= { hwWlanDefProfile 2 }
+
+		
+		-- 1.3.6.1.4.1.2011.6.139.22.2.1
+		hwDefProfileEntry OBJECT-TYPE
+			SYNTAX HwDefProfileEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This entry is used to query attack defense profile information."
+			INDEX { hwDefProfileName }
+			::= { hwDefProfileTable 1 }
+
+		
+		HwDefProfileEntry ::=
+			SEQUENCE { 
+				hwDefProfileName
+					OCTET STRING,
+				hwUrlfProfile
+					OCTET STRING
+			 }
+
+		-- 1.3.6.1.4.1.2011.6.139.22.2.1.1
+		hwDefProfileName OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (1..32))
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This object indicates the name of an attack defense profile."
+			::= { hwDefProfileEntry 1 }
+
+		
+		-- 1.3.6.1.4.1.2011.6.139.22.2.1.2
+		hwUrlfProfile OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..32))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"This object indicates the URL filtering profile."
+			::= { hwDefProfileEntry 2 }
+
+		
+		-- 1.3.6.1.4.1.2011.6.139.22.3
+		hwUrlfProfileTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwUrlfProfileEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This table is used to query URL filtering profile information."
+			::= { hwWlanDefProfile 3 }
+
+		
+		-- 1.3.6.1.4.1.2011.6.139.22.3.1
+		hwUrlfProfileEntry OBJECT-TYPE
+			SYNTAX HwUrlfProfileEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This entry is used to query URL filtering profile information."
+			INDEX { hwUrlfProfileName }
+			::= { hwUrlfProfileTable 1 }
+
+		
+		HwUrlfProfileEntry ::=
+			SEQUENCE { 
+				hwUrlfProfileName
+					OCTET STRING,
+				hwDefaultAction
+					INTEGER
+			 }
+
+		-- 1.3.6.1.4.1.2011.6.139.22.3.1.1
+		hwUrlfProfileName OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (1..32))
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This object indicates the name of a URL filtering profile."
+			::= { hwUrlfProfileEntry 1 }
+
+		
+		-- 1.3.6.1.4.1.2011.6.139.22.3.1.2
+		hwDefaultAction OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				alert(1),
+				block(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"This object indicates the default action of the URL filtering profile."
+			::= { hwUrlfProfileEntry 2 }
+
+		
+		-- 1.3.6.1.4.1.2011.6.139.22.4
+		hwUrlfProfileWhiteListTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwUrlfProfileWhiteListEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This table is used to query whitelist information in the URL filtering profile."
+			::= { hwWlanDefProfile 4 }
+
+		
+		-- 1.3.6.1.4.1.2011.6.139.22.4.1
+		hwUrlfProfileWhiteListEntry OBJECT-TYPE
+			SYNTAX HwUrlfProfileWhiteListEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This entry is used to query whitelist information in the URL filtering profile."
+			INDEX { hwUrlfProfileName, hwUrlfProfileWhiteListIndex }
+			::= { hwUrlfProfileWhiteListTable 1 }
+
+		
+		HwUrlfProfileWhiteListEntry ::=
+			SEQUENCE { 
+				hwUrlfProfileWhiteListIndex
+					Integer32,
+				hwUrlfProfileWhiteListUrl
+					OCTET STRING,
+				hwUrlfProfileWhiteListHost
+					OCTET STRING
+			 }
+
+		-- 1.3.6.1.4.1.2011.6.139.22.4.1.1
+		hwUrlfProfileWhiteListIndex OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This object indicates the internal index of the whitelist."
+			::= { hwUrlfProfileWhiteListEntry 1 }
+
+		
+		-- 1.3.6.1.4.1.2011.6.139.22.4.1.2
+		hwUrlfProfileWhiteListUrl OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (4..255))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"This object indicates the whitelist URL."
+			::= { hwUrlfProfileWhiteListEntry 2 }
+
+		
+		-- 1.3.6.1.4.1.2011.6.139.22.4.1.3
+		hwUrlfProfileWhiteListHost OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (4..255))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"This object indicates the whitelist HOST."
+			::= { hwUrlfProfileWhiteListEntry 3 }
+			
+		-- 1.3.6.1.4.1.2011.6.139.22.5
+		hwUrlfProfileBlackListTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwUrlfProfileBlackListEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This table is used to query blacklist information in the URL filtering profile."
+			::= { hwWlanDefProfile 5 }
+
+		
+		-- 1.3.6.1.4.1.2011.6.139.22.5.1
+		hwUrlfProfileBlackListEntry OBJECT-TYPE
+			SYNTAX HwUrlfProfileBlackListEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This entry is used to query blacklist information in the URL filtering profile."
+			INDEX { hwUrlfProfileName, hwUrlfProfileBlackListIndex }
+			::= { hwUrlfProfileBlackListTable 1 }
+
+		
+		HwUrlfProfileBlackListEntry ::=
+			SEQUENCE { 
+				hwUrlfProfileBlackListIndex
+					Integer32,
+				hwUrlfProfileBlackListUrl
+					OCTET STRING,
+				hwUrlfProfileBlackListHost
+					OCTET STRING
+			 }
+
+		-- 1.3.6.1.4.1.2011.6.139.22.5.1.1
+		hwUrlfProfileBlackListIndex OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This object indicates the internal index of the blacklist."
+			::= { hwUrlfProfileBlackListEntry 1 }
+
+		
+		-- 1.3.6.1.4.1.2011.6.139.22.5.1.2
+		hwUrlfProfileBlackListUrl OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (4..255))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"This object indicates the blacklist URL."
+			::= { hwUrlfProfileBlackListEntry 2 }
+
+		
+		-- 1.3.6.1.4.1.2011.6.139.22.5.1.3
+		hwUrlfProfileBlackListHost OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (4..255))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"This object indicates the blacklist HOST."
+			::= { hwUrlfProfileBlackListEntry 3 }
+
+		-- 1.3.6.1.4.1.2011.6.139.22.16
+		hwDefenceUserGroupTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwDefenceUserGroupEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This table is used to query defence profile bound to user-group."
+			::= { hwWlanDefProfile 16 }
+
+
+		-- 1.3.6.1.4.1.2011.6.139.22.16.1
+		hwDefenceUserGroupEntry OBJECT-TYPE
+			SYNTAX HwDefenceUserGroupEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This entry is used to query defence profile bound to user-group."
+			INDEX { hwDefenceUserGroupName }
+			::= { hwDefenceUserGroupTable 1 }
+
+		
+		HwDefenceUserGroupEntry ::=
+			SEQUENCE { 
+				hwDefenceUserGroupName
+					OCTET STRING,
+				hwDefenceProfileName
+					OCTET STRING,
+				hwDefenceUserGroupRowStatus
+					RowStatus
+			 }
+
+
+		-- 1.3.6.1.4.1.2011.6.139.22.16.1.1
+		hwDefenceUserGroupName OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (1..64))
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This object indicates the internal index of the user-group."
+			::= { hwDefenceUserGroupEntry 1 }
+
+		
+		-- 1.3.6.1.4.1.2011.6.139.22.16.1.2
+		hwDefenceProfileName OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..32))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"This object indicates the defence profile."
+			::= { hwDefenceUserGroupEntry 2 }
+
+		
+		-- 1.3.6.1.4.1.2011.6.139.22.16.1.100
+		hwDefenceUserGroupRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"This object indicates the operation type of setting operation."
+			::= { hwDefenceUserGroupEntry 100 }
+
+
+		
+	
+	END
+
+--
+-- HUAWEI-WLAN-SEC-POLICY-MIB.mib
+--

@@ -1,31 +1,35 @@
 -- =================================================================
--- Copyright (C) 2021 by HUAWEI TECHNOLOGIES. All rights reserved
+-- Copyright (C) 2022 by HUAWEI TECHNOLOGIES. All rights reserved
 -- 
 -- Description:HUAWEI DHCP SNOOPING MIB
 -- Reference:
--- Version: V2.19
+-- Version: V2.23
 -- History:
---    wangcheng 60005987 initial    16/02/2006
---  hexiaoqin 60020960 modified   25/12/2006
---      wangcheng 64651    modified   1/3/2007  
+--      wangcheng initial 16/02/2006
+--      hexiaoqin modified 25/12/2006
+--      wangcheng modified   1/3/2007  
 --      modified by huangjun 2009-12-08
 --      modified by xiazhaolin 2013-06-19
---      modified by huangxiaomin 221241 2014/01/27
---      modified by caojingyun 00273809 2014/07/18
---      modified by liangyun 00353956 2016/10/11
---      modified by liangyun 00353956 2016/10/28 
---      modified by shaomaoran 00226598 2017/09/20 
---      modified by dinglei 00384574 2018/10/09 
---      modified by zhengyang 00348399 2019/2/26 
---      modified by wangwei 00242872 2019/07/23
---      modified by yinjinyan 00278826 2021/01/19
---      modified by yinjinyan 00278826 2021/02/18     
---      modified by zhangquwei 00504334 2021/02/19
---      modified by yinjinyan 00278826 2021/03/03
---      modified by yinjinyan 00278826 2021/03/17
---      modified by yinjinyan 00278826 2021/03/23 
---      modified by zhangquwei 00504334 2021/04/12
---      modified by chenhao 00564599 2021/06/05
+--      modified by huangxiaomin 2014/01/27
+--      modified by caojingyun 2014/07/18
+--      modified by liangyun 2016/10/11
+--      modified by liangyun 2016/10/28 
+--      modified by shaomaoran 2017/09/20 
+--      modified by dinglei 2018/10/09 
+--      modified by zhengyang 2019/2/26 
+--      modified by wangwei 2019/07/23
+--      modified by yinjinyan 2021/01/19
+--      modified by yinjinyan 2021/02/18     
+--      modified by zhangquwei 2021/02/19
+--      modified by yinjinyan 2021/03/03
+--      modified by yinjinyan 2021/03/17
+--      modified by yinjinyan 2021/03/23 
+--      modified by zhangquwei 2021/04/12
+--      modified by chenhao 2021/06/05
+--      modified by huanghe 2022/04/22
+--      modified by zhangminghui 2022/05/12
+--      modified by lianzhen 2022/09/15
+--      modified by dinglei 2022/10/21
 -- =================================================================
     
     HUAWEI-DHCP-SNOOPING-MIB DEFINITIONS ::= BEGIN
@@ -94,11 +98,27 @@
 -- Module Identifier                
 --
     hwDhcpSnpMib MODULE-IDENTITY 
-        LAST-UPDATED "202106050000Z"           
+        LAST-UPDATED "202210210000Z"           
         ORGANIZATION 
              "Huawei Technologies Co.,Ltd."
         CONTACT-INFO 
 "Huawei Industrial Base  Bantian, Longgang   Shenzhen 518129   People's Republic of China   Website: http://www.huawei.com   Email: support@huawei.com "     
+	   DESCRIPTION
+            "Add hwDhcpv6PktRateAlarm."
+       REVISION "202210210000Z"
+
+	   DESCRIPTION
+            "Add hwDhcpDegradation, hwDhcpDegradationResume."
+       REVISION "202209150000Z"
+
+	   DESCRIPTION
+            "Add hwRequestNoTrustPktAlarmBd, hwRequestNoTrustPktNumBd."
+       REVISION "202205120000Z"
+ 	   
+	   DESCRIPTION
+            "Modify History."
+       REVISION "202204220000Z" 
+
 	   DESCRIPTION
             "Modify hwDhcpSnpChaddrAlarm."
        REVISION "202106050000Z" 
@@ -317,8 +337,30 @@
         DESCRIPTION
             "DHCP packets that discarded for the rate limit. "
         ::= { hwDhcpSnpObjects 11 }
-    
-    
+
+    hwDhcpDegradeReason OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "DHCP degrade reason. "
+        ::= { hwDhcpSnpObjects 26 }
+
+    hwDhcpDegradeLevel OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "DHCP degrade level. "
+        ::= { hwDhcpSnpObjects 27 }
+
+    hwDhcpDegradeRate OBJECT-TYPE
+        SYNTAX     DisplayString(SIZE(1..32))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            "DHCP degrade rate. "
+        ::= { hwDhcpSnpObjects 28 }
             
     hwDhcpSnpCfgTable  OBJECT-TYPE
             SYNTAX SEQUENCE OF HWDhcpSnpCfgEntry
@@ -327,7 +369,6 @@
             DESCRIPTION
                 "The DHCP snooping configuration table. "
             ::= { hwDhcpSnpObjects 13 }
-    
            
     hwDhcpSnpCfgEntry OBJECT-TYPE
             SYNTAX HWDhcpSnpCfgEntry
@@ -1002,7 +1043,8 @@
                 hwSnpCfgMaxUserNum                  Counter32,
                 hwDhcpPktIfRateDiscardNum         Counter32,   
                 hwRequestNoTrustPktNum              Counter32,        
-                hwDhcpSnpStatisticBdId          Integer32
+                hwDhcpSnpStatisticBdId          Integer32,
+                hwRequestNoTrustPktNumBd        Counter32
                           }
     
     
@@ -1114,7 +1156,15 @@
                STATUS current
                DESCRIPTION 
                    "The BD Id."
-               ::= { hwDhcpSnpFalsePktStatisticEntry 13 }         
+               ::= { hwDhcpSnpFalsePktStatisticEntry 13 } 
+     
+     hwRequestNoTrustPktNumBd OBJECT-TYPE
+               SYNTAX  Counter32
+               MAX-ACCESS read-only
+               STATUS current
+               DESCRIPTION 
+                   "The DHCP request packets from bd count dropped due to no trust port."
+               ::= { hwDhcpSnpFalsePktStatisticEntry 14 }
                 
      hwDhcpSnpCarCfgTable  OBJECT-TYPE
             SYNTAX SEQUENCE OF HWDhcpSnpCarCfgEntry
@@ -1921,7 +1971,35 @@
             STATUS current     
             DESCRIPTION 
                 "There are Dhcpv6 request packets do not match the snooping bind table."
-            ::= {hwDhcpSnpTraps 49 }  
+            ::= {hwDhcpSnpTraps 49 }
+
+     hwRequestNoTrustPktAlarmBd NOTIFICATION-TYPE
+            OBJECTS { hwDhcpSnpStatisticIfDescr,hwDhcpSnpStatisticBdId,hwRequestNoTrustPktNumBd } 
+            STATUS current
+            DESCRIPTION
+                "Drop DHCP request packets because of dhcp snooping trust port is not configured or trust port is down."
+            ::= { hwDhcpSnpTraps 50 }
+
+     hwDhcpDegradation NOTIFICATION-TYPE
+            OBJECTS { hwDhcpDegradeReason,hwDhcpDegradeLevel,hwDhcpDegradeRate } 
+            STATUS current     
+            DESCRIPTION 
+                "DHCP degrade information."
+            ::= { hwDhcpSnpTraps 51 }
+
+     hwDhcpDegradationResume NOTIFICATION-TYPE
+            OBJECTS { hwDhcpDegradeReason,hwDhcpDegradeLevel,hwDhcpDegradeRate } 
+            STATUS current     
+            DESCRIPTION 
+                "DHCP degrade information."
+            ::= { hwDhcpSnpTraps 52 }
+
+    hwDhcpv6PktRateAlarm NOTIFICATION-TYPE
+            OBJECTS { hwDhcpSnpStatisticIfDescr,hwDhcpSnpStatisticVlanId } 
+            STATUS current     
+            DESCRIPTION 
+                "The rate of Dhcpv6 packets received is too large."
+            ::= { hwDhcpSnpTraps 53 }
 
 
     hwDhcpSnpCompliance OBJECT IDENTIFIER ::= { hwDhcpSnpMib 3 }
@@ -1963,11 +2041,8 @@
     
     hwDhcpSnpStatisticGroup OBJECT-GROUP
             OBJECTS { hwDhcpSnpStatisticIfDescr,hwDhcpSnpStatisticVlanId,hwChaddrNomatchSrcMacDhcpPktNum, hwArpNomatchSnpBindTblPktNum, hwIpNomatchSnpBindTblPktNum, 
-            hwNomatchSnpBindTblDhcpPktNum, hwUntrustedReplyPktNum, hwDhcpPktRateDiscardNum,hwDhcpSnpStatisticVsiId,hwSnpBindingItemNum,hwSnpCfgMaxUserNum
--- begin add for dhcprateAnddhcpoption82            
-            ,hwDhcpPktIfRateDiscardNum, hwRequestNoTrustPktNum
--- end add for dhcprateAnddhcpoption82    
-            }
+            hwNomatchSnpBindTblDhcpPktNum, hwUntrustedReplyPktNum, hwDhcpPktRateDiscardNum,hwDhcpSnpStatisticVsiId,hwSnpBindingItemNum,hwSnpCfgMaxUserNum     
+            ,hwDhcpPktIfRateDiscardNum, hwRequestNoTrustPktNum, hwRequestNoTrustPktNumBd}
             STATUS current
             DESCRIPTION 
                 "The DHCPSNP's Statistic group."
@@ -1982,11 +2057,11 @@
             hwBdArpNomatchSnpBindTblPktAlarm, hwBdIpNomatchSnpBindTblPktAlarm, hwBdUntrustedReplyPktAlarm, hwBdSnpUserNumberAlarm,
             hwDhcpSnpChaddrAlarmResume, hwArpNomatchSnpBindTblPktAlarmResume, hwIpNomatchSnpBindTblPktAlarmResume,
             hwUntrustedReplyPktAlarmResume, hwNomatchSnpBindTblDhcpPktAlarmResume, hwSnpUserNumberAlarmResume,hwSnpBindingItemResourceAlarm,
-			hwNomatchSnpBindTblDhcpv6PktAlarm, hwNomatchSnpBindTblNDPktAlarm, hwSnpRemoteBackupAlarm, hwSnpRemoteBackupAlarmResume, hwRequestNoTrustPktAlarm,   
-			hwNomatchSnpBindTblNDPktAlarmBd, hwDhcpSnpChaddrAlarmBd, hwNomatchSnpBindTblDhcpPktAlarmBd, hwUntrustedReplyPktAlarmBd,
-			hwDhcpSnpBindTblThreshold, hwDhcpSnpBindTblThresholdResume, hwDhcpSnpBindTblExhaust, hwDhcpSnpBindTblExhaustResume,
-			hwDhcpv6SnpBindTblThreshold, hwDhcpv6SnpBindTblThresholdResume, hwDhcpv6SnpBindTblExhaust, hwDhcpv6SnpBindTblExhaustResume, hwIpv6NomatchV6SnpBindTblPktAlarm,
-			hwDHCPv6SnpDetectAlarm}
+            hwNomatchSnpBindTblDhcpv6PktAlarm, hwNomatchSnpBindTblNDPktAlarm, hwSnpRemoteBackupAlarm, hwSnpRemoteBackupAlarmResume, hwRequestNoTrustPktAlarm,   
+            hwNomatchSnpBindTblNDPktAlarmBd, hwDhcpSnpChaddrAlarmBd, hwNomatchSnpBindTblDhcpPktAlarmBd, hwUntrustedReplyPktAlarmBd,
+            hwDhcpSnpBindTblThreshold, hwDhcpSnpBindTblThresholdResume, hwDhcpSnpBindTblExhaust, hwDhcpSnpBindTblExhaustResume,
+            hwDhcpv6SnpBindTblThreshold, hwDhcpv6SnpBindTblThresholdResume, hwDhcpv6SnpBindTblExhaust, hwDhcpv6SnpBindTblExhaustResume, hwIpv6NomatchV6SnpBindTblPktAlarm,
+            hwDHCPv6SnpDetectAlarm, hwRequestNoTrustPktAlarmBd, hwDhcpDegradation, hwDhcpDegradationResume, hwDhcpv6PktRateAlarm}
             STATUS current
             DESCRIPTION 
                 "The DHCPSNP's Notification group."

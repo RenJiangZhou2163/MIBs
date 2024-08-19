@@ -1,9 +1,9 @@
 -- =================================================================
--- Copyright (C) 2021 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- Copyright (C) 2022 by  HUAWEI TECHNOLOGIES. All rights reserved.
 --
 -- Description: configuration mangement mib
 -- Reference:   huawei enterprise mib
--- Version:     V2.31
+-- Version:     V2.36
 -- History:
 --                initial version 2002-12-20
 -- =================================================================
@@ -26,7 +26,7 @@ HUAWEI-CONFIG-MAN-MIB DEFINITIONS ::= BEGIN
 
     -- 1.3.6.1.4.1.2011.6.10
     hwConfig MODULE-IDENTITY
-        LAST-UPDATED"202108121000Z"        -- August 12 2021 at 10:00GMT
+        LAST-UPDATED"202210151000Z"        -- October 15 2022 at 10:00GMT
         ORGANIZATION
               "Huawei Technologies Co.,Ltd."
         CONTACT-INFO
@@ -40,7 +40,21 @@ HUAWEI-CONFIG-MAN-MIB DEFINITIONS ::= BEGIN
 
            DESCRIPTION 
             "The description of some nodes was changed."
-
+        REVISION "202210151000Z"         -- October 15 2022 at 10:00GMT
+           DESCRIPTION
+            "Modiffy trap node hwcfgStartupFileIntegrityFailFileType."
+        REVISION "202206251000Z"         -- June 25 2022 at 10:00GMT
+           DESCRIPTION
+            "Modiffy trap node hwCfgMinisystemConfigRecovery and hwCfgMinisystemConfigRecoveryClear."
+        REVISION "202206131000Z"         -- June 13 2022 at 10:00GMT
+           DESCRIPTION
+            "Add new trap node hwCfgMinisystemConfigRecovery and hwCfgMinisystemConfigRecoveryClear."
+        REVISION "202202101000Z"         -- February 10 2022 at 10:00GMT
+           DESCRIPTION 
+            "Modify the OBJECTS of the hwcfgStartupFileIntegrityFailResume node."
+        REVISION "202110271000Z"         -- October 27 2021 at 10:00GMT
+           DESCRIPTION 
+            "The value range of the hwCfgOperateState object was changed."
         REVISION "202108121000Z"         -- August 12 2021 at 10:00GMT
            DESCRIPTION
             "Add new trap node hwCfgNextStartupFileIntegrityFail , hwCfgStartupFileIntegrityFail and hwCfgStartupFileIntegrityFailResume."
@@ -1015,7 +1029,9 @@ HUAWEI-CONFIG-MAN-MIB DEFINITIONS ::= BEGIN
             opInvalidSourceInterface(22),
             opCmdExecuteFail(23),
             opWaitFileTrans(24),
-            opLockStartUp(25)
+            opLockStartUp(25),
+            opSetStartupFileFail(26),
+            opGetStartupFileFailInMiniSystem(27)
             }
         MAX-ACCESS read-only
         STATUS current
@@ -1095,7 +1111,19 @@ HUAWEI-CONFIG-MAN-MIB DEFINITIONS ::= BEGIN
                 invalid source interface specified.   
             
             opCmdExecuteFail :
-                execute command return error.          
+                execute command return error.    
+
+            opWaitFileTrans :
+                device is ready, wait nms file transfer. 
+
+            opLockStartUp :
+                the next startup file is locked by another user.  
+
+            opSetStartupFileFail :
+                set startup file fail. 
+
+            opGetStartupFileFailInMiniSystem :
+                get next startup file fail in mini-system mode. 
                 "
         ::= { hwCfgOperateResultEntry 4 }
 
@@ -1692,7 +1720,9 @@ the function of saving configuration automatically is disable when the interval 
         SYNTAX INTEGER
         {
            default(0),
-           startup(1)
+           startup(1),
+           nextCfgFile(2),
+           nextPafFile(3)
         }
         MAX-ACCESS accessible-for-notify
         STATUS current
@@ -1882,10 +1912,25 @@ the function of saving configuration automatically is disable when the interval 
 
     -- 1.3.6.1.4.1.2011.6.10.2.22
     hwcfgStartupFileIntegrityFailResume NOTIFICATION-TYPE
+    OBJECTS { hwcfgStartupFileIntegrityFailFileType }
     STATUS current
     DESCRIPTION
     "The trap is generated when the hwcfgStartupFileIntegrityFail trap is manually cleared by user."
     ::= { hwConfigManNotifications 22 }
+
+    -- 1.3.6.1.4.1.2011.6.10.2.23
+    hwCfgMinisystemConfigRecovery NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+    "The trap is generated when the system restores to the minimum system configuration."
+    ::= { hwConfigManNotifications 23 }
+
+    -- 1.3.6.1.4.1.2011.6.10.2.24
+    hwCfgMinisystemConfigRecoveryClear NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+    "The trap is generated when the system does not restore the system to the minimum system configuration."
+    ::= { hwConfigManNotifications 24 }
 
     -- 1.3.6.1.4.1.2011.6.10.3
     hwConfigManConformance OBJECT IDENTIFIER ::= { hwConfig 3 }

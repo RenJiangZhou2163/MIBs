@@ -1,8 +1,8 @@
 -- ============================================================================
--- Copyright (C) 2021 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- Copyright (C) 2022 by  HUAWEI TECHNOLOGIES. All rights reserved.
 -- Description:  The mib is used for capwap configuration.
 -- Reference: 
--- Version: V1.16
+-- Version: V1.21
 -- ============================================================================
 -- Module definition
 
@@ -20,7 +20,7 @@
 				FROM SNMPv2-TC;
 		--1.3.6.1.4.1.2011.6.139.9
 		hwWlanCapwap MODULE-IDENTITY
-			LAST-UPDATED "202107071600Z"		-- Jul 7, 2021 at 16:00 GMT
+			LAST-UPDATED "202206220930Z"		-- Jun 22, 2022 at 09:30 GMT
 			ORGANIZATION 
 				"Huawei Technologies Co.,Ltd."
 			CONTACT-INFO 
@@ -31,6 +31,21 @@
 				   Website: http://www.huawei.com
 				   Email: support@huawei.com
 				  "
+		    DESCRIPTION
+				"AddhwWlanCapwapDtlsVersion1Dot0Switch and hwWlanCapwapDtlsCbcSwitch." 
+		    REVISION "202206220930Z"		-- Jun 22, 2022 at 09:30 GMT
+		    DESCRIPTION
+				"Modify hwCapwapEchoInterval." 
+		    REVISION "202205191800Z"		-- May 19, 2022 at 18:00 GMT
+		    DESCRIPTION
+				"Add hwWlanCapwapWceSyncPskApSn." 
+		    REVISION "202201271800Z"		-- Mon 27, 2022 at 18:00 GMT
+			DESCRIPTION
+				"Add hwWlanCapwapControlMtu." 
+		    REVISION "202112211800Z"		-- Dec 21, 2021 at 18:00 GMT
+		    DESCRIPTION
+				"Add hwWlanCapwapControlMtu." 
+		    REVISION "202111251600Z"		-- Nov 25, 2021 at 16:00 GMT
 		    DESCRIPTION
 				"Add hwCapwapSecurityParaNotSetTrap and hwCapwapSecurityParaNotSetTrapRestore." 
 		    REVISION "202107071600Z"		-- Jul 7, 2021 at 16:00 GMT
@@ -229,7 +244,7 @@
 
 		 --1.3.6.1.4.1.2011.6.139.9.2.7
 		hwCapwapEchoInterval OBJECT-TYPE
-			SYNTAX Integer32 (3..300)
+			SYNTAX Integer32 (2..300)
 			MAX-ACCESS read-write
 			STATUS current
 			DESCRIPTION 
@@ -374,7 +389,7 @@
 			MAX-ACCESS read-write
 			STATUS current
 			DESCRIPTION 
-				"This object indicates whether the global default cert function for CAPWAP DTLS is enabled. The default value is 1."
+				"This object indicates whether the global default cert function for CAPWAP DTLS is enabled. The default value is 2."
 			::= { hwWlanCapwapSysPara 20 }
 
 		 --1.3.6.1.4.1.2011.6.139.9.2.21
@@ -389,6 +404,41 @@
 			DESCRIPTION 
 				"This object indicates whether the no auth function for CAPWAP DTLS is enabled. The default value is 1."
 			::= { hwWlanCapwapSysPara 21 }
+
+		 --1.3.6.1.4.1.2011.6.139.9.2.22
+		hwWlanCapwapDtlsVersion1Dot0Switch OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				disable(1),
+				enable(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION 
+				"This object indicates whether the version1.0 of CAPWAP DTLS is enabled. The default value is 1."
+			::= { hwWlanCapwapSysPara 22 }
+
+		 --1.3.6.1.4.1.2011.6.139.9.2.23
+		hwWlanCapwapDtlsCbcSwitch OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				disable(1),
+				enable(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION 
+				"This object indicates whether cbc support for CAPWAP DTLS is enabled. The default value is 1."
+			::= { hwWlanCapwapSysPara 23 }
+
+		 --1.3.6.1.4.1.2011.6.139.9.2.24
+		hwWlanCapwapControlMtu OBJECT-TYPE
+			SYNTAX Integer32 (1000..1700)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION 
+				"This object indicates the MTU for sending control packets in a CAPWAP tunnel. The default value is 1500."
+			::= { hwWlanCapwapSysPara 24 }
 
               --  1.3.6.1.4.1.2011.6.139.9.3
 		hwWlanCapwapSource OBJECT IDENTIFIER ::= { hwWlanCapwap 3 }
@@ -530,7 +580,8 @@
 			hwWlanCapwapInterControllerDtlsPsk, hwCapwapEchoInterval, hwCapwapEchoTimes, hwWlanCapwapControlPriorityLocal, hwWlanCapwapControlPriorityRemote,
 			hwWlanCapwapSensitiveInfoPsk, hwWlanCapwapInterControllerSensitiveInfoPsk, hwWlanCapwapMessageIntegrityPsk, hwWlanCapwapInterControllerMessageIntegrityPsk,
 			hwWlanCapwapMessageIntegrityPskMandatoryMatchSwitch, hwWlanCapwapMsgCheckSwitch, hwWlanCapwapInterControllerMsgCheckSwitch,
-			hwWlanCapwapDtlsDataSwitch, hwWlanCapwapInterControllerDtlsDataSwitch, hwWlanCapwapDtlsDefaultCertSwitch, hwWlanCapwapDtlsNoAuthSwitch}
+			hwWlanCapwapDtlsDataSwitch, hwWlanCapwapInterControllerDtlsDataSwitch, hwWlanCapwapDtlsDefaultCertSwitch, hwWlanCapwapDtlsNoAuthSwitch,
+			hwWlanCapwapDtlsVersion1Dot0Switch, hwWlanCapwapDtlsCbcSwitch, hwWlanCapwapControlMtu}
 			STATUS current
 			DESCRIPTION 
 				"Description."
@@ -657,11 +708,22 @@
             DESCRIPTION
                 "This object indicates the info of CAPWAP security parameter."
             ::= { hwWlanCapwapTrapObjects 5 }
+		
+		-- 1.3.6.1.4.1.2011.6.139.9.6
+		hwWlanCapwapWceSyncPsk OBJECT IDENTIFIER ::= { hwWlanCapwap 6 }
+		
+		-- 1.3.6.1.4.1.2011.6.139.9.6.1
+		hwWlanCapwapWceSyncPskApSn OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (1..31))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"This object indicates Synchronize PSK by Serial Number or other ap identifier."
+			::= { hwWlanCapwapWceSyncPsk 1 }
 	END
 --
 -- HUAWEI-WLAN-CAPWAP-MIB.mib
 --
-
 
 
 

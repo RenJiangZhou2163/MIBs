@@ -1,9 +1,9 @@
 --==================================================================
--- Copyright (C) 2019 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- Copyright (C) 2022 by  HUAWEI TECHNOLOGIES. All rights reserved.
 -- 
 -- Description: HUAWEI LINE MIB
 -- Reference:
--- Version: V2.13
+-- Version: V2.17
 -- History:
 -- <author>,  <date>,  <contents>
 -- huxiaolin 2012-12-28 
@@ -26,7 +26,7 @@
 -- July 31, 2009 at 16:24 GMT
         -- 1.3.6.1.4.1.2011.5.25.207
         hwLineMIB MODULE-IDENTITY 
-            LAST-UPDATED "201901311239Z"        -- Jan 31, 2019 at 12:43 GMT
+            LAST-UPDATED "202201251056Z"        -- Jan 25, 2022 at 10:56 GMT
             ORGANIZATION 
                 "Huawei Technologies Co.,Ltd."
             CONTACT-INFO 
@@ -42,7 +42,24 @@
                 through management interfaces by users, such as the maximum number of Telnet 
                 connections and login information about users.
                 "
-             REVISION "201901311239Z"        
+
+            REVISION "202201251056Z"
+            DESCRIPTION 
+                "modify hwConSlotId to hwConSlot  for notification-type hwConAuthModeIncomplete."
+
+            REVISION "202201101628Z"
+            DESCRIPTION 
+                "modify hwConSlotId to chasisId/slotId for notification-type hwConAuthModeIncomplete."
+
+            REVISION "202110200920Z"
+            DESCRIPTION 
+                "Add hwConSlotId and hwConAuthMode for notification-type hwConAuthModeIncomplete."
+
+            REVISION "202110131720Z"        
+            DESCRIPTION 
+                "Add hwConAuthModeIncomplete."
+            
+            REVISION "201901311239Z"        
             DESCRIPTION 
                 "Modify description for hwVtyExceed."
 
@@ -451,6 +468,22 @@
             DESCRIPTION
                 "The value of this object identifies the maximum number of VTY"
             ::= { hwLineMibTrapObjects 6 }
+        -- 1.3.6.1.4.1.2011.5.25.207.1.5.7            
+          hwConAuthMode OBJECT-TYPE
+                    SYNTAX OCTET STRING (SIZE (0..20))
+                    MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The value of this object identifies the authentication mode of console port"
+            ::= { hwLineMibTrapObjects 7 }
+        -- 1.3.6.1.4.1.2011.5.25.207.1.5.8            
+          hwConSlot OBJECT-TYPE
+                    SYNTAX OCTET STRING (SIZE (0..32))
+                    MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The value of this object identifies the chasis/slot id of console port"
+            ::= { hwLineMibTrapObjects 8 }
 		 
 -- =======================================
 -- HUAWEI-LINE-MIB MIB - Notification Information
@@ -575,6 +608,13 @@
             DESCRIPTION 
                 "When the number of available VTY channels is higher than or equal to the threshold value, the alarm is cleared."
             ::= { hwLineNotification 14 }	
+        -- 1.3.6.1.4.1.2011.5.25.207.2.15
+        hwConAuthModeIncomplete NOTIFICATION-TYPE
+            OBJECTS { hwConSlot, hwConAuthMode }
+            STATUS current
+            DESCRIPTION 
+                "When device startup and check console authentication mode that is not suit for first-login after upgrade, an event is generated."
+            ::= { hwLineNotification 15 }
 -- =========================================
 -- HUAWEI-LINE-MIB MIB - Conformance Information
 -- =========================================
@@ -601,7 +641,7 @@
 
         -- 1.3.6.1.4.1.2011.5.25.207.3.2.1
         hwLineNotificationGroup NOTIFICATION-GROUP
-            NOTIFICATIONS { hwVtyNumExceed, hwUserLogin, hwUserLoginFail, hwUserLogout, hwUserSshLogin, hwUserSshLogout, hwIpLocked, hwIpUnLocked   }
+            NOTIFICATIONS { hwVtyNumExceed, hwUserLogin, hwUserLoginFail, hwUserLogout, hwUserSshLogin, hwUserSshLogout, hwIpLocked, hwIpUnLocked, hwConAuthModeIncomplete   }
             STATUS current
             DESCRIPTION 
                 "The collection of notifications in the module."

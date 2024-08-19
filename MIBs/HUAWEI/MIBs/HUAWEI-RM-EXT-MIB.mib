@@ -1,8 +1,8 @@
 -- ============================================================================
--- Copyright (C) 2020 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- Copyright (C) 2022 by  HUAWEI TECHNOLOGIES. All rights reserved.
 -- Description:  This mib file is used for Manage the static route table configuration.
 -- Reference:  
--- Version:      V2.34
+-- Version:      V2.35
 -- 
 -- ============================================================================
 
@@ -26,7 +26,7 @@
 	
 		-- 1.3.6.1.4.1.2011.5.25.145
 		hwRmExt MODULE-IDENTITY 
-			LAST-UPDATED "202008031722Z"
+			LAST-UPDATED "202201121052Z"
 			ORGANIZATION 
 				"Huawei Technologies Co.,Ltd."
 			CONTACT-INFO 
@@ -37,6 +37,9 @@
 				 Website: http://www.huawei.com
 				 Email: support@huawei.com
                                                                              "
+                                                          DESCRIPTION 
+			                    "Version V2.35,addhwEvpnStickyMacConflict and hwEvpnStickyMacConflictClear."
+                                                          REVISION "202201121052Z"		 --Jan 12, 2022 at 10:52GMT
                                                           DESCRIPTION 
 			                    "Version V2.33,modify the description of hwL3vpnIpv6PrefixExceedClear and hwPublicIpv6PrefixExceed ."
                                                           REVISION "202008031722Z"		 --Aug 03, 2020 at 17:22GMT
@@ -3187,6 +3190,65 @@
 			STATUS current
 			DESCRIPTION 
 				"The object indicates the number of MAC routes of the device ."
-			::= { hwVstmMacExceedConformance 2 }	
+			::= { hwVstmMacExceedConformance 2 }
+
+		-- 1.3.6.1.4.1.2011.5.25.145.42
+		hwEvpnStickyMacObjects OBJECT IDENTIFIER ::= { hwRmExt 42 }
+
+		-- 1.3.6.1.4.1.2011.5.25.145.42.1
+		hwEVPNInstanceName OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..31))
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"This object indicates the name of the EVPN instance with sticky MAC addresses conflicting."
+			::= { hwEvpnStickyMacObjects 1 }
+
+                -- 1.3.6.1.4.1.2011.5.25.145.42.2
+		hwBdId OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"This object indicates the BDID with sticky MAC addresses conflicting."
+			::= { hwEvpnStickyMacObjects 2 }
+
+		-- 1.3.6.1.4.1.2011.5.25.145.43
+		hwEvpnStickyMacConflictTraps OBJECT IDENTIFIER ::= { hwRmExt 43 }
+
+		-- 1.3.6.1.4.1.2011.5.25.145.43.1
+		hwEvpnStickyMacConflict NOTIFICATION-TYPE
+			OBJECTS { hwEVPNInstanceName, hwBdId }
+			STATUS current
+			DESCRIPTION 
+				"This object indicates the name of the EVPN instance with sticky MAC addresses conflicting."
+			::= { hwEvpnStickyMacConflictTraps 1 }
+	
+		-- 1.3.6.1.4.1.2011.5.25.145.43.2
+		hwEvpnStickyMacConflictClear NOTIFICATION-TYPE
+			OBJECTS { hwEVPNInstanceName, hwBdId }
+			STATUS current
+			DESCRIPTION 
+				"This object indicates the name of the EVPN instance which sticky MAC addresses conflicting has been resumed."
+			::= { hwEvpnStickyMacConflictTraps 2 }
+			
+		-- 1.3.6.1.4.1.2011.5.25.145.44
+		hwEvpnStickyMacConflictConformance OBJECT IDENTIFIER ::= { hwRmExt 44 }
+
+		-- 1.3.6.1.4.1.2011.5.25.145.44.1
+		hwEvpnStickyMacConflictNotificationGroup NOTIFICATION-GROUP
+			NOTIFICATIONS { hwEvpnStickyMacConflict, hwEvpnStickyMacConflictClear }
+			STATUS current
+			DESCRIPTION 
+				"The object indicates the alarm of sticky MAC conflicting on the device."
+			::= { hwEvpnStickyMacConflictConformance 1 }
+		
+		-- 1.3.6.1.4.1.2011.5.25.145.44.2
+		hwEvpnStickyMacConflictObjectGroup OBJECT-GROUP
+			OBJECTS { hwEVPNInstanceName, hwBdId }
+			STATUS current
+			DESCRIPTION 
+				"This object indicates the name of the EVPN instance with sticky MAC addresses conflicting."
+			::= { hwEvpnStickyMacConflictConformance 2 }	
 
 	END

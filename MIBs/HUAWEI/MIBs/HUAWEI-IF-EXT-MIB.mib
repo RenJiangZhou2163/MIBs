@@ -1,9 +1,9 @@
 -- ==================================================================
--- Copyright (C) 2021 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- Copyright (C) 2022 by  HUAWEI TECHNOLOGIES. All rights reserved.
 -- 
 -- Description: HUAWEI Private Extended Interface MIB
 -- Reference:
--- Version: V3.23
+-- Version: V3.30
 -- History:
 --      V1.0 
 -- ==================================================================
@@ -42,7 +42,7 @@
     
     
         hwIFExtMib MODULE-IDENTITY 
-            LAST-UPDATED "202107050000Z"
+            LAST-UPDATED "202206180000Z"
             ORGANIZATION 
                 "Huawei Technologies Co.,Ltd."
             CONTACT-INFO 
@@ -53,6 +53,27 @@
                    Website: http://www.huawei.com
                    Email: support@huawei.com
                  "
+                DESCRIPTION 
+                "V3.30 Add  hwIPv4StateChangeReason." 
+                 REVISION     "202206180000Z"
+                DESCRIPTION
+                "V3.29 Add  hwIPv4IfStateAlarm and hwIPv4IfStateAlarmResume." 
+                 REVISION     "202205270000Z"
+                DESCRIPTION
+                "V3.28  Add hwFlexeChannelNotSupportAlarm and hwFlexeChannelNotSupportResume."
+                REVISION     "202204150000Z"
+                DESCRIPTION
+                "V3.27  Add hwVirtualEthernetChipMismatchAlarm and hwVirtualEthernetChipMismatchResume."
+                REVISION     "202203250000Z"
+                DESCRIPTION
+                "V3.26  Add hwIfIPConflict and hwIfIPConflictResume."
+                REVISION     "202203120000Z"
+                DESCRIPTION
+                "V3.25  Add hwModeFlexeBandwidth."
+                REVISION     "202202220000Z"
+                 DESCRIPTION 
+                 "V3.24 Add hwIFExtPhyStatusUpTime." 
+                 REVISION     "202112290000Z"
                  DESCRIPTION 
                  "V3.23 Update hwTrunkIfModel, add object-type roundRobin(21),resilient(22),dynProfile(23)" 
                  REVISION     "202107050000Z"
@@ -539,7 +560,9 @@
                 hwIFExtOutputBitRate
                     CounterBasedGauge64,
                 hwIFExtDampStatus
-                    INTEGER
+                    INTEGER,
+                hwIFExtPhyStatusUpTime
+                    Unsigned32
              }
 
         hwIFExtIndex OBJECT-TYPE
@@ -963,6 +986,15 @@
                 0: The interface is not suppressed.
                 1: The interface is suppressed."
             ::= { hwIFExtEntry 41 }  
+
+        hwIFExtPhyStatusUpTime OBJECT-TYPE
+            SYNTAX Unsigned32
+            UNITS "seconds"
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION 
+               "This object indicates the accumulated time in seconds during which the physical status of the interface remains up after its creation."
+            ::= { hwIFExtEntry 42 }
 
         hwIFExtPhyStatus OBJECT-TYPE
             SYNTAX INTEGER { up(1), down(2) }
@@ -5731,6 +5763,23 @@ hwAdminVrrpMemberIf OBJECT IDENTIFIER ::= { hwIFExtObjects 9 }
                 "The bandwidth of the interface. 
                 The value is 64 bits. The unit is bit/s."
             ::= { hwIFExtTrapObjects 20 }
+            
+        hwIPv4StateChangeReason  OBJECT-TYPE
+            SYNTAX      INTEGER {
+                        interfaceIsDown(1),
+                        isL2Interface(2),
+                        protocolIsDown(3),
+                        addressIsConflict(4),
+                        addressIsDeleted(5),
+                        protocolIsUp(6),
+                        interfaceIsDeleted(7),
+                        unnumberedIpIsConflict(8)
+                }
+	         MAX-ACCESS  accessible-for-notify
+	         STATUS      current
+	         DESCRIPTION
+	               "The reason code of IPv4 state changes."
+	         ::= { hwIFExtTrapObjects 21 }  
           			
 --  ===========================================================================
 -- Trunk map table
@@ -6200,6 +6249,34 @@ OBJECTS{
             DESCRIPTION
             "The total bandwidth of the Trunk interfaces alarm monitor group."
             ::= { hwIFExtGroups 31 }
+  hwModeFlexeBandwidthGroup OBJECT-GROUP
+    OBJECTS{
+                      hwModeFlexeBandwidthIfIndex,              
+                      hwModeFlexeBandwidthValue,            
+                      hwModeFlexeSubIfBandwidthSum,           
+                      hwModeFlexeIfName                      
+    }
+    STATUS current
+    DESCRIPTION
+    "The total bandwidth of the sliced sub-interfaces alarm monitor group."
+    ::= { hwIFExtGroups 32 }
+    hwVirtualEthernetChipGroup  OBJECT-GROUP
+            OBJECTS{
+                    hwVirtualEthernetChipIfName,
+                    hwVirtualEthernetChipIfIndex
+                    }
+            STATUS current
+            DESCRIPTION
+            "Virtual-Ethernet attribute Group."
+            ::= { hwIFExtGroups 33 } 
+    hwFlexeChannelNotSupportGroup OBJECT-GROUP
+        OBJECTS{
+                        hwFlexeChannelNotSupportIfName                      
+        }
+        STATUS current
+        DESCRIPTION
+        "The interface does not support sliced sub-interface alarm monitor group."
+        ::= { hwIFExtGroups 34 }
 -- =========================================
 -- compliance statements
 -- =========================================            
@@ -6666,7 +6743,35 @@ This object can be bound to two variables:
                 Indexes: 1. hwTrunkIndex;
                          2. ifIndex. "
             ::= { hwIFExtTraps 59 }
-		
+
+        hwIfIPConflict NOTIFICATION-TYPE
+            OBJECTS { ifIndex, ifName}
+            STATUS  current
+            DESCRIPTION
+                "This notification is generated when an IPv4 address of the interface conflicts with that of another interface."
+            ::=  {hwIFExtTraps 60}
+
+        hwIfIPConflictResume NOTIFICATION-TYPE
+            OBJECTS { ifIndex, ifName}
+            STATUS  current
+            DESCRIPTION
+                "The IPv4 address conflict is cleared."
+            ::=  {hwIFExtTraps 61}
+
+        hwIPv4IfStateAlarm NOTIFICATION-TYPE
+            OBJECTS { ifIndex, ifName, ifOperStatus, hwIPv4StateChangeReason }
+            STATUS current
+            DESCRIPTION 
+                "The interface IPv4 status changes."
+            ::= { hwIFExtTraps 62 }
+
+		hwIPv4IfStateAlarmResume NOTIFICATION-TYPE
+            OBJECTS { ifIndex, ifName, ifOperStatus, hwIPv4StateChangeReason }
+            STATUS current
+            DESCRIPTION 
+                "The interface IPv4 status changes."
+            ::= { hwIFExtTraps 63 }
+
     hwMonitorNotifications OBJECT IDENTIFIER ::= { hwIFExtMib 4 }        
 
         hwIfMonitorCrcErrorRising NOTIFICATION-TYPE
@@ -7003,6 +7108,53 @@ This object can be bound to two variables:
             DESCRIPTION
                 "The alarm disappear when the bandwidth ratio between trunk member interfaces is within the normal range."
             ::= {hwMonitorNotifications 63 }
+
+        -- 1.3.6.1.4.1.2011.5.25.41.4.64
+        hwModeFlexeBandwidthAlarm NOTIFICATION-TYPE
+            OBJECTS { hwModeFlexeBandwidthIfIndex ,hwModeFlexeBandwidthValue, hwModeFlexeSubIfBandwidthSum, hwModeFlexeIfName }
+            STATUS current
+            DESCRIPTION
+                "The alarm appear when the total bandwidth of the sliced sub-interfaces on the same physical interface has exceeded the maximum available bandwidth of the physical interface."
+            ::= { hwMonitorNotifications 64 }
+            
+        -- 1.3.6.1.4.1.2011.5.25.41.4.65
+        hwModeFlexeBandwidthResume NOTIFICATION-TYPE
+            OBJECTS { hwModeFlexeBandwidthIfIndex ,hwModeFlexeBandwidthValue, hwModeFlexeSubIfBandwidthSum, hwModeFlexeIfName }
+            STATUS current
+            DESCRIPTION
+                "The alarm disappear when the total bandwidth of the sliced sub-interfaces on the same physical interface less than the maximum available bandwidth of the physical interface."
+            ::= { hwMonitorNotifications 65 }
+
+        -- 1.3.6.1.4.1.2011.5.25.41.4.66
+        hwVirtualEthernetChipMismatchAlarm NOTIFICATION-TYPE
+            OBJECTS { hwVirtualEthernetChipIfName, hwVirtualEthernetChipIfIndex }
+            STATUS current
+            DESCRIPTION
+                "The alarm appear when the chip of the Virtual-Ethernet port is inconsistent with the chip of the internal binding channel port."
+            ::= {hwMonitorNotifications 66 }
+ 
+        -- 1.3.6.1.4.1.2011.5.25.41.4.67
+        hwVirtualEthernetChipMismatchResume NOTIFICATION-TYPE
+            OBJECTS { hwVirtualEthernetChipIfName, hwVirtualEthernetChipIfIndex }
+            STATUS current
+            DESCRIPTION
+                "The alarm disappear when this Virtual-Ethernet Interface configuration has been deleted."
+            ::= {hwMonitorNotifications 67 }
+        -- 1.3.6.1.4.1.2011.5.25.41.4.68
+        hwFlexeChannelNotSupportAlarm NOTIFICATION-TYPE
+            OBJECTS { hwFlexeChannelNotSupportIfName }
+            STATUS current
+            DESCRIPTION
+                "The alarm appear when the mode flexe enable is configured on the sub-interface, and the main interface is not a GigabitEthernet interface, or the main interface works in non-1GE mode."
+            ::= { hwMonitorNotifications 68 }
+            
+        -- 1.3.6.1.4.1.2011.5.25.41.4.69
+        hwFlexeChannelNotSupportResume NOTIFICATION-TYPE
+            OBJECTS { hwFlexeChannelNotSupportIfName }
+            STATUS current
+            DESCRIPTION
+                "The alarm disappear when the mode flexe enable is not configured on the sub-interface, and the main interface is a GigabitEthernet interface, or the main interface works in 1GE mode."
+            ::= { hwMonitorNotifications 69 }
         hwIFExtTrapConformance OBJECT IDENTIFIER ::= { hwIFExtMib 5 }
 
         
@@ -7017,7 +7169,7 @@ This object can be bound to two variables:
                         hwLacpPDUChange, hwLacpPDUChangeResume, hwIfEfmDown, hwIfEfmUp, hwExtTrunkMemberCountExceedThreshold, hwExtTrunkMemberCountExceedThresholdResume, 
                         hwExtTrunkWorkingStatusChange, hwIfControlFlapSuppressIPv6,hwIfControlFlapResumeIPv6,hwLagMemberDown, hwLagMemberDownResume,hwLicenseEffectServiceAlarm,hwLicenseEffectServiceResume,
                         hwTrunkAllMemUpNotify,hwPhysicalAdminIfDown,hwPhysicalAdminIfUp,hwLacpPartnerMisconnect,hwLacpPartnerMisconnectResume, hwTrunkMemberChange,hwTrunkStatusChange,hwIfDampSuppress,hwIfDampResume,
-                        hwLacpStateDown,hwLacpStateDownResume}
+                        hwLacpStateDown,hwLacpStateDownResume,hwIPv4IfStateAlarm,hwIPv4IfStateAlarmResume}
             STATUS current
             DESCRIPTION 
                 "IF Trap Group."
@@ -7067,7 +7219,13 @@ This object can be bound to two variables:
                     hwModeChannelBandwidthAlarm,
                     hwModeChannelBandwidthResume,  
                     hwTrunkBandwidthAlarm,
-                    hwTrunkBandwidthResume
+                    hwTrunkBandwidthResume,
+                    hwModeFlexeBandwidthAlarm,
+                    hwModeFlexeBandwidthResume,
+                    hwVirtualEthernetChipMismatchAlarm,
+                    hwVirtualEthernetChipMismatchResume,
+                    hwFlexeChannelNotSupportAlarm,
+                    hwFlexeChannelNotSupportResume
                  }
             STATUS current
             DESCRIPTION
@@ -7583,6 +7741,163 @@ This object can be bound to two variables:
             DESCRIPTION
                 "Interface name of Trunk member interface."
             ::= { hwTrunkBandwidthEntry 2 }
+
+-- ===========================================================================
+--  Mode Flexe Bandwidth 
+-- ===========================================================================   
+        -- hwModeFlexeBandwidth 1.3.6.1.4.1.2011.5.25.41.1.27
+        hwModeFlexeBandwidth OBJECT IDENTIFIER ::= { hwIFExtObjects 27 }
+        
+        -- hwModeFlexeBandwidthTable 1.3.6.1.4.1.2011.5.25.41.1.27.1
+        hwModeFlexeBandwidthTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwModeFlexeBandwidthEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                " The total bandwidth of the sliced sub-interfaces alarm monitor table."
+            ::= { hwModeFlexeBandwidth 1 }
+
+        -- hwModeFlexeBandwidthEntry 1.3.6.1.4.1.2011.5.25.41.1.27.1.1      
+        hwModeFlexeBandwidthEntry OBJECT-TYPE
+            SYNTAX HwModeFlexeBandwidthEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                " Entry of the total bandwidth of the sliced sub-interfaces alarm monitor table."
+            INDEX { hwModeFlexeBandwidthIfIndex}
+            ::= { hwModeFlexeBandwidthTable 1 }
+     
+        HwModeFlexeBandwidthEntry ::=
+            SEQUENCE { 
+                hwModeFlexeBandwidthIfIndex              InterfaceIndex,
+                hwModeFlexeBandwidthValue                Integer32,
+                hwModeFlexeSubIfBandwidthSum         Integer32,
+                hwModeFlexeIfName                              DisplayString
+             }
+
+        -- hwModeFlexeBandwidthIfIndex  1.3.6.1.4.1.2011.5.25.41.1.27.1.1.1
+        hwModeFlexeBandwidthIfIndex OBJECT-TYPE
+            SYNTAX     InterfaceIndex
+            MAX-ACCESS accessible-for-notify
+            STATUS     current
+            DESCRIPTION
+                "The Index Value of the total bandwidth of the sliced sub-interfaces alarm monitor table."
+            ::= { hwModeFlexeBandwidthEntry 1 }
+
+        -- hwModeFlexeBandwidthValue 1.3.6.1.4.1.2011.5.25.41.1.27.1.1.2
+        hwModeFlexeBandwidthValue OBJECT-TYPE
+            SYNTAX     Integer32
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                "The maximum available bandwidth of the main interface."
+            ::= { hwModeFlexeBandwidthEntry 2 }
+
+    
+        -- hwModeFlexeSubIfBandwidthSum 1.3.6.1.4.1.2011.5.25.41.1.27.1.1.3
+        hwModeFlexeSubIfBandwidthSum OBJECT-TYPE
+            SYNTAX     Integer32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total bandwidth of the sliced sub-interfaces on the main interface."
+            ::= { hwModeFlexeBandwidthEntry 3 } 
+            
+        -- hwModeFlexeIfName 1.3.6.1.4.1.2011.5.25.41.1.27.1.1.4
+        hwModeFlexeIfName OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Interface name of main interface."
+            ::= { hwModeFlexeBandwidthEntry 4 }
+
+-- ===========================================================================
+--  Virtual-Ethernet inconsistent chipId alarm
+-- ===========================================================================
+        -- hwVirtualEthernetChip
+        hwVirtualEthernetChip OBJECT IDENTIFIER ::= { hwIFExtObjects 28 }
+        
+        -- hwVirtualEthernetChipTable
+        hwVirtualEthernetChipTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwVirtualEthernetChipEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "The inconsistent chipId of this Virtual-Ethernet intefaces alarm monitor table."
+            ::= { hwVirtualEthernetChip 1 }
+ 
+        -- hwVirtualEthernetChipEntry
+        hwVirtualEthernetChipEntry OBJECT-TYPE
+            SYNTAX HwVirtualEthernetChipEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                " Entry of the inconsistent chipId of this Virtual-Ethernet intefaces alarm monitor table."
+            INDEX { hwVirtualEthernetChipIfName}
+            ::= { hwVirtualEthernetChipTable 1 }
+ 
+        HwVirtualEthernetChipEntry ::=
+            SEQUENCE { 
+                hwVirtualEthernetChipIfName               DisplayString,
+                hwVirtualEthernetChipIfIndex              InterfaceIndex
+             }
+ 
+        -- hwVirtualEthernetChipIfName
+        hwVirtualEthernetChipIfName OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                "Interface name of Virtual-Ethernet interface."
+            ::= { hwVirtualEthernetChipEntry 1 }
+ 
+        -- hwVirtualEthernetChipIfIndex
+        hwVirtualEthernetChipIfIndex OBJECT-TYPE
+            SYNTAX     InterfaceIndex
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                "The Index Value of Virtual-Ethernet interface."
+            ::= { hwVirtualEthernetChipEntry 2 }
+ -- ===========================================================================
+--  Mode Flexe Not Supported 
+-- ===========================================================================   
+        -- hwModeFlexeNotSupport 1.3.6.1.4.1.2011.5.25.41.1.29
+        hwModeFlexeNotSupport OBJECT IDENTIFIER ::= { hwIFExtObjects 29 }
+        
+        -- hwModeFlexeNotSupportTable 1.3.6.1.4.1.2011.5.25.41.1.29.1
+        hwModeFlexeNotSupportTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwModeFlexeNotSupportEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                " The interface does not support sliced sub-interface alarm monitor table."
+            ::= { hwModeFlexeNotSupport 1 }
+
+        -- hwModeFlexeNotSupportEntry 1.3.6.1.4.1.2011.5.25.41.1.29.1.1      
+        hwModeFlexeNotSupportEntry OBJECT-TYPE
+            SYNTAX HwModeFlexeNotSupportEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                " Entry of the interface does not support sliced sub-interface alarm monitor table."
+            INDEX { hwFlexeChannelNotSupportIfName}
+            ::= { hwModeFlexeNotSupportTable 1 }
+     
+        HwModeFlexeNotSupportEntry::=
+            SEQUENCE {
+                hwFlexeChannelNotSupportIfName                      DisplayString
+             }
+
+        -- hwFlexeChannelNotSupportIfName 1.3.6.1.4.1.2011.5.25.41.1.29.1.1.1
+        hwFlexeChannelNotSupportIfName OBJECT-TYPE
+            SYNTAX     DisplayString
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Interface name of the interface."
+            ::= { hwModeFlexeNotSupportEntry 1 }
 	
     END
 
